@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://cw7c5v70tt0xj"]
+
+[ext_resource type="Texture2D" uid="uid://cyb21tspui86c" path="res://items/Itens/Incones/265.png" id="1_k77xu"]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="2_e8rdc"]
+
+[resource]
+script = ExtResource("2_e8rdc")
+Icone = ExtResource("1_k77xu")
+Acumulavel = true
+metadata/_custom_type_script = "uid://ck8h0m5wglv8a"
