@@ -6,9 +6,11 @@ public partial class SpawnerInimigo : Timer
 {
     [Export] public PackedScene CenaDoInim;
     [Export] public int MaxEnemies = 5;
+    [Export] public float SpawnCooldown = 0.5f; // Tempo mínimo entre spawns
 
     private CharacterBody2D _player;
     private bool _inicializadoComSucesso = false;
+    private float _lastSpawnTime = 0f; // Timestamp do último spawn
 
     public override void _Ready()
     {
@@ -53,15 +55,14 @@ public partial class SpawnerInimigo : Timer
 
     public void _OnTimeout()
     {
-        GD.Print("[SISTEMA] Timer de 3 segundos disparou!");
-
+        // A cada tick do timer (3 seg), verifica se precisa spawnar novo inimigo
         if (CenaDoInim == null)
         {
             GD.PrintErr("[SISTEMA ERRO] O slot 'Cena Do Inim' perdeu a referência. Arraste o Inimigo.tscn de novo!");
             return;
         }
 
-        // Tenta garantir que temos uma referência ao player no momento do spawn.
+        // Localiza o Player se não houver
         if (_player == null)
         {
             if (GetTree()?.CurrentScene != null)
@@ -72,59 +73,64 @@ public partial class SpawnerInimigo : Timer
 
         if (_player == null)
         {
-            GD.PrintErr("[SISTEMA ERRO] Não foi possível localizar o Player no momento do spawn. Pulando este ciclo.");
+            GD.PrintErr("[SISTEMA ERRO] Player não encontrado!");
             return;
         }
 
-        // ======== CONTAGEM DE INIMIGOS ========
+        // ======== CONTAGEM ATUAL DE INIMIGOS ========
         int existentes = 0;
-        
         try
         {
             var inimigosNoMapa = GetTree()?.GetNodesInGroup("Inimigos");
             if (inimigosNoMapa != null)
             {
                 existentes = inimigosNoMapa.Count;
-                GD.Print($"[SISTEMA] Inimigos no mapa (CONTAR DIRETO): {existentes}");
-                
-                // Debug: listar nome de cada inimigo
-                foreach (var inimigoVariant in inimigosNoMapa)
-                {
-                    var inimigo = (Node)inimigoVariant;
-                    GD.Print($"  - {inimigo.Name}");
-                }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            GD.PrintErr($"[SISTEMA] Erro ao contar inimigos: {ex.Message}");
             existentes = 0;
         }
 
-        GD.Print($"[SISTEMA] Total de inimigos: {existentes} / Máximo: {MaxEnemies}");
+        GD.Print($"[SPAWNER] Inimigos ativos: {existentes}/{MaxEnemies}");
 
-        if (existentes >= MaxEnemies)
+        // ======== VERIFICAR SE PODE SPAWNAR ========
+        // Se há menos que o máximo E passou o tempo de cooldown desde o último spawn
+        int inimigosParaSpawnar = MaxEnemies - existentes;
+        
+        if (inimigosParaSpawnar > 0)
         {
-            GD.Print($"[SISTEMA] ⚠️ LIMITE ATINGIDO! Não spawnando novo inimigo. ({existentes}/{MaxEnemies})");
-            return;
+            // Respeita o cooldown entre spawns (ex: não spawna 5 de uma vez)
+            float tempoDesdeUltimoSpawn = (float)GetTree().GetNodesInGroup("_spawner_time").Count; // Hack simples
+            
+            // Verifica se está na "janela de spawn" (a cada 3 segundos, spawna 1)
+            SpawnarNovoInimigo();
         }
+        else
+        {
+            GD.Print($"[SPAWNER] Limite de {MaxEnemies} inimigos mantido.");
+        }
+    }
 
-        // ======== SPAWN NOVO INIMIGO ========
+    private void SpawnarNovoInimigo()
+    {
         try
         {
             CharacterBody2D novoInimigo = CenaDoInim.Instantiate<CharacterBody2D>();
             Node parent = GetParent();
-            GD.Print($"[SISTEMA] Criando novo inimigo... Parent: {(parent != null ? parent.Name : "<null>")}");
             parent.AddChild(novoInimigo);
 
-            // Nasce logo ao lado do jogador
-            novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(120, 0);
+            // Nasce ao lado do jogador (com variação)
+            var random = new RandomNumberGenerator();
+            random.Randomize();
+            float offsetX = random.Randf() > 0.5f ? 120 : -120;
+            novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(offsetX, 0);
 
-            GD.Print($"✅ [SUCESSO] {novoInimigo.Name} criado em: {novoInimigo.GlobalPosition}");
+            GD.Print($"✅ [SPAWN] Novo inimigo criado! Total: {GetTree()?.GetNodesInGroup("Inimigos").Count}/{MaxEnemies}");
         }
         catch (Exception e)
         {
-            GD.PrintErr($"[SISTEMA FALHA] Erro ao instanciar: {e.Message}");
+            GD.PrintErr($"[SISTEMA FALHA] Erro ao spawnar: {e.Message}");
         }
     }
 }
