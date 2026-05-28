@@ -100,15 +100,16 @@ public partial class Inimigo : CharacterBody2D
         if (GetTree() != null && GetTree().CurrentScene != null)
         {
             _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
+            GD.Print($"[INIMIGO] Buscando Player na cena: {GetTree().CurrentScene.Name}");
         }
         
         if (_player != null)
         {
-            GD.Print("[INIMIGO] Player encontrado com sucesso!");
+            GD.Print($"[INIMIGO] ✅ Player encontrado! Posição: {_player.GlobalPosition}");
         }
         else
         {
-            GD.Print("[INIMIGO] AVISO: Player ainda não está na cena. Ele tentará buscar novamente em movimento.");
+            GD.PrintErr("[INIMIGO] ❌ AVISO: Player não encontrado na _Ready()! Tentará novamente em _PhysicsProcess.");
         }
 
         AddToGroup("Inimigos");
@@ -125,29 +126,44 @@ public partial class Inimigo : CharacterBody2D
             if (GetTree() != null && GetTree().CurrentScene != null)
             {
                 _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
+                if (_player != null)
+                {
+                    GD.Print($"[INIMIGO] ✅ Player encontrado em _PhysicsProcess! Posição: {_player.GlobalPosition}");
+                }
             }
             return; // Se ainda não achou, pula este frame para não dar erro
         }
 
-        // Calcula a direção exata até o Player
+        // ======== MOVIMENTO ========
         Vector2 direcao = (_player.GlobalPosition - GlobalPosition).Normalized();
         Velocity = direcao * Velocidade;
         
         // Move o corpo físico na Godot
         MoveAndSlide();
 
-        // Faz o sprite virar para o lado correto onde está andando
+        // Debug a cada N frames (não a cada frame para não poluir o console)
+        if (Engine.GetPhysicsFrames() % 30 == 0)
+        {
+            GD.Print($"[INIMIGO] Posição: {GlobalPosition}, Direção: {direcao}, Velocidade: {Velocity}");
+        }
+
+        // ======== ANIMAÇÃO ========
         AtualizarDirecaoDoSprite(direcao);
     }
 
     private void AtualizarDirecaoDoSprite(Vector2 direcao)
     {
-        if (_sprite == null || _sprite.SpriteFrames == null) return;
+        if (_sprite == null || _sprite.SpriteFrames == null) 
+        {
+            GD.PrintErr("[INIMIGO] ERRO: Sprite ou SpriteFrames é null!");
+            return;
+        }
 
         string desejada = null;
+        float velocidadeMagnitude = Velocity.Length();
 
-        // Se quase parado, toca animação idle baseada na última velocidade
-        if (direcao.Length() < 0.1f)
+        // Se quase parado, toca animação idle
+        if (velocidadeMagnitude < 5f) // Mudei de direcao.Length() para Velocity.Length()
         {
             if (Math.Abs(Velocity.X) > Math.Abs(Velocity.Y))
             {
@@ -160,7 +176,7 @@ public partial class Inimigo : CharacterBody2D
         }
         else
         {
-            // Escolhe animação de caminhada baseada na direção predominante
+            // Escolhe animação de caminhada
             if (Math.Abs(direcao.X) > Math.Abs(direcao.Y))
             {
                 desejada = direcao.X < 0 ? "goblim_walk_left" : "goblim_walk_right";
@@ -175,6 +191,10 @@ public partial class Inimigo : CharacterBody2D
         if (!string.IsNullOrEmpty(desejada) && _sprite.SpriteFrames.HasAnimation(desejada))
         {
             _sprite.Play(desejada);
+        }
+        else if (!string.IsNullOrEmpty(desejada))
+        {
+            GD.PrintErr($"[INIMIGO] ERRO: Animação '{desejada}' não existe em SpriteFrames!");
         }
     }
 
@@ -196,17 +216,5 @@ public partial class Inimigo : CharacterBody2D
             GD.Print($"{NomeDoInimigo} foi derrotado!");
             QueueFree(); // Remove o monstro do jogo com segurança
         }
-    }
-
-    public override void _ExitTree()
-    {
-        int totalRestante = 0;
-        try 
-        { 
-            totalRestante = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
-        }
-        catch { }
-        GD.Print($"[INIMIGO REMOVIDO] {NomeDoInimigo} saiu. Inimigos restantes ANTES de remover: {totalRestante}");
-        base._ExitTree();
     }
 }

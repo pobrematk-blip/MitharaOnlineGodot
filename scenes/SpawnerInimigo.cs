@@ -6,11 +6,9 @@ public partial class SpawnerInimigo : Timer
 {
     [Export] public PackedScene CenaDoInim;
     [Export] public int MaxEnemies = 5;
-    [Export] public float SpawnCooldown = 0.5f; // Tempo mínimo entre spawns
 
     private CharacterBody2D _player;
     private bool _inicializadoComSucesso = false;
-    private float _lastSpawnTime = 0f; // Timestamp do último spawn
 
     public override void _Ready()
     {
@@ -55,82 +53,92 @@ public partial class SpawnerInimigo : Timer
 
     public void _OnTimeout()
     {
-        // A cada tick do timer (3 seg), verifica se precisa spawnar novo inimigo
+        // A cada 3 segundos, verifica se pode spawnar 1 inimigo
+        
         if (CenaDoInim == null)
         {
-            GD.PrintErr("[SISTEMA ERRO] O slot 'Cena Do Inim' perdeu a referência. Arraste o Inimigo.tscn de novo!");
+            GD.PrintErr("[SPAWNER] ERRO: CenaDoInim não foi setada!");
             return;
         }
 
-        // Localiza o Player se não houver
+        // Localiza Player se não encontrado
         if (_player == null)
         {
             if (GetTree()?.CurrentScene != null)
             {
                 _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
             }
-        }
-
-        if (_player == null)
-        {
-            GD.PrintErr("[SISTEMA ERRO] Player não encontrado!");
-            return;
-        }
-
-        // ======== CONTAGEM ATUAL DE INIMIGOS ========
-        int existentes = 0;
-        try
-        {
-            var inimigosNoMapa = GetTree()?.GetNodesInGroup("Inimigos");
-            if (inimigosNoMapa != null)
+            
+            if (_player == null)
             {
-                existentes = inimigosNoMapa.Count;
+                GD.PrintErr("[SPAWNER] ERRO: Player não encontrado!");
+                return;
             }
         }
-        catch (Exception)
+
+        // ======== CONTAR INIMIGOS VIVOS ========
+        int inimigosVivos = 0;
+        try
         {
-            existentes = 0;
+            var grupoInimigos = GetTree()?.GetNodesInGroup("Inimigos");
+            inimigosVivos = grupoInimigos?.Count ?? 0;
+        }
+        catch
+        {
+            inimigosVivos = 0;
         }
 
-        GD.Print($"[SPAWNER] Inimigos ativos: {existentes}/{MaxEnemies}");
+        GD.Print($"[SPAWNER TICK] Inimigos vivos: {inimigosVivos} / Max: {MaxEnemies}");
 
-        // ======== VERIFICAR SE PODE SPAWNAR ========
-        // Se há menos que o máximo E passou o tempo de cooldown desde o último spawn
-        int inimigosParaSpawnar = MaxEnemies - existentes;
-        
-        if (inimigosParaSpawnar > 0)
+        // ======== SPAW APENAS 1 SE NECESSÁRIO ========
+        if (inimigosVivos < MaxEnemies)
         {
-            // Respeita o cooldown entre spawns (ex: não spawna 5 de uma vez)
-            float tempoDesdeUltimoSpawn = (float)GetTree().GetNodesInGroup("_spawner_time").Count; // Hack simples
-            
-            // Verifica se está na "janela de spawn" (a cada 3 segundos, spawna 1)
-            SpawnarNovoInimigo();
+            SpawnarUmInimigo();
         }
         else
         {
-            GD.Print($"[SPAWNER] Limite de {MaxEnemies} inimigos mantido.");
+            GD.Print($"[SPAWNER] Limite mantido em {MaxEnemies} inimigos.");
         }
     }
 
-    private void SpawnarNovoInimigo()
+    private void SpawnarUmInimigo()
     {
         try
         {
+            GD.Print("[SPAWNER] Spawning novo inimigo...");
+            
             CharacterBody2D novoInimigo = CenaDoInim.Instantiate<CharacterBody2D>();
+            
+            if (novoInimigo == null)
+            {
+                GD.PrintErr("[SPAWNER] ERRO: Instantiate retornou null!");
+                return;
+            }
+
             Node parent = GetParent();
+            if (parent == null)
+            {
+                GD.PrintErr("[SPAWNER] ERRO: Parent é null!");
+                return;
+            }
+
+            // Adiciona à cena PRIMEIRO
             parent.AddChild(novoInimigo);
+            GD.Print("[SPAWNER] Inimigo adicionado à cena.");
 
-            // Nasce ao lado do jogador (com variação)
-            var random = new RandomNumberGenerator();
-            random.Randomize();
-            float offsetX = random.Randf() > 0.5f ? 120 : -120;
+            // Define posição
+            float offsetX = GD.Randf() > 0.5f ? 120 : -120;
             novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(offsetX, 0);
-
-            GD.Print($"✅ [SPAWN] Novo inimigo criado! Total: {GetTree()?.GetNodesInGroup("Inimigos").Count}/{MaxEnemies}");
+            
+            GD.Print($"✅ [SPAWNER] Novo inimigo criado em posição: {novoInimigo.GlobalPosition}");
+            
+            // Conta de novo para confirmar
+            var totalAgora = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
+            GD.Print($"[SPAWNER] Total após spawn: {totalAgora}/{MaxEnemies}");
         }
         catch (Exception e)
         {
-            GD.PrintErr($"[SISTEMA FALHA] Erro ao spawnar: {e.Message}");
+            GD.PrintErr($"[SPAWNER] ERRO ao spawnar: {e}");
         }
     }
 }
