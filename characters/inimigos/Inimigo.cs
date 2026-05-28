@@ -112,6 +112,8 @@ public partial class Inimigo : CharacterBody2D
         }
 
         AddToGroup("Inimigos");
+        int totalInimigos = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
+        GD.Print($"[INIMIGO] Adicionado ao grupo 'Inimigos'. Total agora: {totalInimigos}");
         GD.Print("[INIMIGO] Inicialização concluída!");
     }
 
@@ -169,12 +171,10 @@ public partial class Inimigo : CharacterBody2D
             }
         }
 
+        // Sempre toca a animação desejada para garantir transição
         if (!string.IsNullOrEmpty(desejada) && _sprite.SpriteFrames.HasAnimation(desejada))
         {
-            if (_sprite.Animation != desejada)
-            {
-                _sprite.Play(desejada);
-            }
+            _sprite.Play(desejada);
         }
     }
 
@@ -200,8 +200,13 @@ public partial class Inimigo : CharacterBody2D
 
     public override void _ExitTree()
     {
-        // Loga quando o inimigo sai da cena (QueueFree ou cena trocada)
-        GD.Print($"[INIMIGO] {_vidaAtual} - {NomeDoInimigo} saiu da árvore (removido).");
+        int totalRestante = 0;
+        try 
+        { 
+            totalRestante = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
+        }
+        catch { }
+        GD.Print($"[INIMIGO REMOVIDO] {NomeDoInimigo} saiu. Inimigos restantes ANTES de remover: {totalRestante}");
         base._ExitTree();
     }
 }

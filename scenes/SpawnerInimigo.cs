@@ -76,45 +76,51 @@ public partial class SpawnerInimigo : Timer
             return;
         }
 
-        // Verifica quantos inimigos já existem no mapa antes de spawnar
+        // ======== CONTAGEM DE INIMIGOS ========
         int existentes = 0;
+        
         try
         {
-            var nodes = GetTree()?.GetNodesInGroup("Inimigos");
-            if (nodes != null)
+            var inimigosNoMapa = GetTree()?.GetNodesInGroup("Inimigos");
+            if (inimigosNoMapa != null)
             {
-                existentes = nodes.Count;
+                existentes = inimigosNoMapa.Count;
+                GD.Print($"[SISTEMA] Inimigos no mapa (CONTAR DIRETO): {existentes}");
+                
+                // Debug: listar nome de cada inimigo
+                foreach (var inimigoVariant in inimigosNoMapa)
+                {
+                    var inimigo = (Node)inimigoVariant;
+                    GD.Print($"  - {inimigo.Name}");
+                }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            GD.PrintErr($"[SISTEMA] Erro ao contar inimigos: {ex.Message}");
             existentes = 0;
         }
 
-        GD.Print($"[SISTEMA] Inimigos existentes no mapa: {existentes}");
+        GD.Print($"[SISTEMA] Total de inimigos: {existentes} / Máximo: {MaxEnemies}");
 
         if (existentes >= MaxEnemies)
         {
-            GD.Print($"[SISTEMA] Limite de inimigos ({MaxEnemies}) atingido. Pulando spawn.");
+            GD.Print($"[SISTEMA] ⚠️ LIMITE ATINGIDO! Não spawnando novo inimigo. ({existentes}/{MaxEnemies})");
             return;
         }
 
+        // ======== SPAWN NOVO INIMIGO ========
         try
         {
             CharacterBody2D novoInimigo = CenaDoInim.Instantiate<CharacterBody2D>();
             Node parent = GetParent();
-            GD.Print($"[SISTEMA] Parent para novo inimigo: {(parent != null ? parent.Name : "<null>")}");
+            GD.Print($"[SISTEMA] Criando novo inimigo... Parent: {(parent != null ? parent.Name : "<null>")}");
             parent.AddChild(novoInimigo);
 
             // Nasce logo ao lado do jogador
             novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(120, 0);
 
-            GD.Print($">>> [SUCESSO] {novoInimigo.Name} criado em: {novoInimigo.GlobalPosition} <<<");
-
-            // Debug extra: mostra se o inimigo recém-criado tem script e visibilidade
-            var scriptValue = novoInimigo.Get("script");
-            GD.Print($"[SISTEMA] Novo inimigo script value: {scriptValue}");
-            GD.Print($"[SISTEMA] Novo inimigo visível: {novoInimigo.Visible}");
+            GD.Print($"✅ [SUCESSO] {novoInimigo.Name} criado em: {novoInimigo.GlobalPosition}");
         }
         catch (Exception e)
         {
