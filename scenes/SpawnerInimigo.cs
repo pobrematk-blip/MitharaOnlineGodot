@@ -9,6 +9,7 @@ public partial class SpawnerInimigo : Timer
 
     private CharacterBody2D _player;
     private bool _inicializadoComSucesso = false;
+    private float _tempoDecorrido = 0f; // Para contar tempo de spawn inicial
 
     public override void _Ready()
     {
@@ -54,6 +55,7 @@ public partial class SpawnerInimigo : Timer
     public void _OnTimeout()
     {
         // A cada 3 segundos, verifica se pode spawnar 1 inimigo
+        // MAS NUNCA vai spawnar se tiver >= 5 inimigos no mapa
         
         if (CenaDoInim == null)
         {
@@ -76,7 +78,7 @@ public partial class SpawnerInimigo : Timer
             }
         }
 
-        // ======== CONTAR INIMIGOS VIVOS ========
+        // ======== CONTAR INIMIGOS VIVOS (CHECK RIGOROSO) ========
         int inimigosVivos = 0;
         try
         {
@@ -88,25 +90,40 @@ public partial class SpawnerInimigo : Timer
             inimigosVivos = 0;
         }
 
-        GD.Print($"[SPAWNER TICK] Inimigos vivos: {inimigosVivos} / Max: {MaxEnemies}");
+        GD.Print($"[SPAWNER] TICK - Total de inimigos vivos: {inimigosVivos}/{MaxEnemies}");
 
-        // ======== SPAW APENAS 1 SE NECESSÁRIO ========
-        if (inimigosVivos < MaxEnemies)
+        // ======== VERIFICAÇÃO RIGOROSA: NÃO SPAWNA SE >= MaxEnemies ========
+        if (inimigosVivos >= MaxEnemies)
         {
-            SpawnarUmInimigo();
+            GD.Print($"[SPAWNER] ⚠️ LIMITE JÁ ATINGIDO ({inimigosVivos}/{MaxEnemies}). NÃO SPAWNANDO.");
+            return; // NUNCA spawna se tem 5 ou mais
         }
-        else
-        {
-            GD.Print($"[SPAWNER] Limite mantido em {MaxEnemies} inimigos.");
-        }
+
+        // ======== SPAWNAR 1 INIMIGO ========
+        GD.Print($"[SPAWNER] ✅ Spawnando novo inimigo (faltam {MaxEnemies - inimigosVivos} para atingir máximo)");
+        SpawnarUmInimigo();
     }
 
     private void SpawnarUmInimigo()
     {
         try
         {
-            GD.Print("[SPAWNER] Spawning novo inimigo...");
-            
+            // Contagem FINAL antes de spawnar (double check)
+            int verificacaoFinal = 0;
+            try
+            {
+                var grupoFinal = GetTree()?.GetNodesInGroup("Inimigos");
+                verificacaoFinal = grupoFinal?.Count ?? 0;
+            }
+            catch { }
+
+            // Se já tem 5 ou mais, NÃO SPAWNA (proteção extra)
+            if (verificacaoFinal >= MaxEnemies)
+            {
+                GD.PrintErr($"[SPAWNER] BLOQUEADO! Já tem {verificacaoFinal} inimigos. Cancelando spawn.");
+                return;
+            }
+
             CharacterBody2D novoInimigo = CenaDoInim.Instantiate<CharacterBody2D>();
             
             if (novoInimigo == null)
@@ -122,19 +139,28 @@ public partial class SpawnerInimigo : Timer
                 return;
             }
 
-            // Adiciona à cena PRIMEIRO
+            // Adiciona à cena
             parent.AddChild(novoInimigo);
-            GD.Print("[SPAWNER] Inimigo adicionado à cena.");
 
             // Define posição
             float offsetX = GD.Randf() > 0.5f ? 120 : -120;
             novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(offsetX, 0);
             
-            GD.Print($"✅ [SPAWNER] Novo inimigo criado em posição: {novoInimigo.GlobalPosition}");
-            
-            // Conta de novo para confirmar
-            var totalAgora = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
-            GD.Print($"[SPAWNER] Total após spawn: {totalAgora}/{MaxEnemies}");
+            // Conta DEPOIS de spawnar
+            int totalAposSpawn = 0;
+            try
+            {
+                totalAposSpawn = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
+            }
+            catch { }
+
+            GD.Print($"✅ [SPAWNER] Novo inimigo criado! Total agora: {totalAposSpawn}/{MaxEnemies}");
+
+            // Se ultrapassou, algo está errado!
+            if (totalAposSpawn > MaxEnemies)
+            {
+                GD.PrintErr($"⚠️⚠️⚠️ ERRO CRÍTICO! Total após spawn é {totalAposSpawn}, ultrapassou limite {MaxEnemies}!");
+            }
         }
         catch (Exception e)
         {

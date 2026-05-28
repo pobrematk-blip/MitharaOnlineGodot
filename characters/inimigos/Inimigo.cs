@@ -114,7 +114,7 @@ public partial class Inimigo : CharacterBody2D
 
         AddToGroup("Inimigos");
         int totalInimigos = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
-        GD.Print($"[INIMIGO] Adicionado ao grupo 'Inimigos'. Total agora: {totalInimigos}");
+        GD.Print($"[INIMIGO] ✅ ADICIONADO ao grupo 'Inimigos'. Total no mapa AGORA: {totalInimigos}");
         GD.Print("[INIMIGO] Inicialização concluída!");
     }
 
@@ -213,8 +213,22 @@ public partial class Inimigo : CharacterBody2D
 
         if (_vidaAtual <= 0)
         {
-            GD.Print($"{NomeDoInimigo} foi derrotado!");
+            GD.Print($"💀 {NomeDoInimigo} foi derrotado! RemovEndO do mapa...");
             QueueFree(); // Remove o monstro do jogo com segurança
         }
+    }
+
+    public override void _ExitTree()
+    {
+        // Log quando sai da cena (morte)
+        int totalAntes = 0;
+        try 
+        { 
+            totalAntes = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
+        }
+        catch { }
+        
+        GD.Print($"[INIMIGO REMOVER] {NomeDoInimigo} removido da cena. Inimigos restantes: {totalAntes - 1}");
+        base._ExitTree();
     }
 }
