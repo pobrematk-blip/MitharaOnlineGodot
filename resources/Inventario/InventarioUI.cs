@@ -146,6 +146,7 @@ public partial class InventarioUI : Control
         if (_containerBolsas == null || _inventarioAlvo == null) return;
 
         _slotsBolsasVisuais.Clear();
+        GD.Print($"[INVENTÁRIO UI] 🔗 Mapeando slots de bolsa no container...");
 
         for (int i = 0; i < 6; i++)
         {
@@ -155,6 +156,8 @@ public partial class InventarioUI : Control
             {
                 SlotUI slotManual = _containerBolsas.GetNode<SlotUI>(nomeSlotManual);
                 _slotsBolsasVisuais.Add(slotManual);
+                
+                GD.Print($"[INVENTÁRIO UI]   ✅ {nomeSlotManual} encontrado e mapeado");
 
                 // Força o vínculo inicial lógico <-> visual
                 if (_inventarioAlvo.SlotsDasBolsasEquipadas != null && i < _inventarioAlvo.SlotsDasBolsasEquipadas.Count)
@@ -164,9 +167,11 @@ public partial class InventarioUI : Control
             }
             else
             {
-                GD.PrintErr($"[INVENTÁRIO UI] ❌ ERRO: Não achei o slot manual '{nomeSlotManual}' no ContainerBolsas do editor!");
+                GD.PrintErr($"[INVENTÁRIO UI] ❌ Não achei o slot manual '{nomeSlotManual}' no ContainerBolsas!");
             }
         }
+        
+        GD.Print($"[INVENTÁRIO UI] ✅ Mapeamento de {_slotsBolsasVisuais.Count} slots completado!");
     }
 
     private void InicializarGrade()
@@ -206,11 +211,16 @@ public partial class InventarioUI : Control
         }
 
         // 2. Atualiza as imagens do rodapé fixo de bolsas
+        GD.Print($"[INVENTÁRIO UI] 🔄 Atualizando {_slotsBolsasVisuais.Count} slots de bolsa...");
         for (int i = 0; i < _slotsBolsasVisuais.Count; i++)
         {
             if (_inventarioAlvo.SlotsDasBolsasEquipadas != null && i < _inventarioAlvo.SlotsDasBolsasEquipadas.Count)
             {
-                _slotsBolsasVisuais[i].AtualizarSlot(_inventarioAlvo.SlotsDasBolsasEquipadas[i]);
+                var bolsaLogica = _inventarioAlvo.SlotsDasBolsasEquipadas[i];
+                var nomeItem = bolsaLogica?.Item?.Nome ?? "VAZIO";
+                
+                GD.Print($"[INVENTÁRIO UI]   Slot {i}: {nomeItem}");
+                _slotsBolsasVisuais[i].AtualizarSlot(bolsaLogica);
             }
         }
     }

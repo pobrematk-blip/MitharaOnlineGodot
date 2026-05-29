@@ -68,6 +68,11 @@ public partial class SlotUI : Control
             
             _quantidadeTexto.Text = "";
             _quantidadeTexto.Visible = false;
+
+            if (Name.ToString().StartsWith("SlotBolsa_"))
+            {
+                GD.Print($"[SLOTUI] {Name}: 🟫 VAZIO");
+            }
         }
         else
         {
@@ -89,6 +94,11 @@ public partial class SlotUI : Control
             if (Name.ToString().StartsWith("SlotBolsa_") && slotLogico.Item != null && slotLogico.Item.EhBolsa)
             {
                 TooltipText = $"🎒 {slotLogico.Item.Nome}\n\n✓ Clique DIREITO para remover\n✓ Ou arraste para fora\n\n+{slotLogico.Item.SlotsAdicionais} slots";
+                GD.Print($"[SLOTUI] {Name}: 🎒 BOLSA '{slotLogico.Item.Nome}' atualizada!");
+            }
+            else if (Name.ToString().StartsWith("SlotBolsa_"))
+            {
+                GD.Print($"[SLOTUI] {Name}: ⚠️ Item '{slotLogico.Item.Nome}' não é bolsa! EhBolsa={slotLogico.Item.EhBolsa}");
             }
         }
     }
@@ -188,6 +198,10 @@ public partial class SlotUI : Control
             if (Name.ToString().StartsWith("SlotBolsa_"))
             {
                 int indexBolsa = int.Parse(Name.ToString().Split('_')[1]);
+                ItemResource bolsaQueVaiEquipar = slotOrigem.SlotInterno.Item;
+
+                GD.Print($"[SLOT] 🎒 EQUIPANDO bolsa '{bolsaQueVaiEquipar.Nome}' no slot {indexBolsa}...");
+                GD.Print($"[SLOT] Slot de origem: {slotOrigem.Name} com item: {slotOrigem.SlotInterno.Item?.Nome}");
 
                 // Guarda se tinha uma bolsa antiga voltando
                 var itemAntigoNaBolsa = inventario.SlotsDasBolsasEquipadas[indexBolsa].Item;
@@ -195,12 +209,11 @@ public partial class SlotUI : Control
                 // 1. Aplica a alteração lógica no componente do Player
                 inventario.EquiparBolsaNoSlot(slotOrigem.SlotInterno, indexBolsa);
 
-                // 2. Limpa ou substitui o slot de origem lá em cima ANTES do redesenho ocorrer
-                if (itemAntigoNaBolsa == null)
-                {
-                    slotOrigem.SlotInterno.Item = null;
-                    slotOrigem.SlotInterno.Quantidade = 0;
-                }
+                // 2. Limpa o slot de origem MANUALMENTE antes de notificar
+                slotOrigem.SlotInterno.Item = null;
+                slotOrigem.SlotInterno.Quantidade = 0;
+
+                GD.Print($"[SLOT] ✅ Bolsa movida! Slot de origem agora está vazio.");
 
                 // 3. Agora sim forçamos a interface a atualizar com tudo nos conformes!
                 inventario.NotificarMudancaExterna();
