@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cuygoxaafa5dg" path="res://characters/inimigos/SpriteInimigo/Inimigo.tscn" id="2_0bbpv"]
 [ext_resource type="Script" uid="uid://cdyu5bx6dgqjo" path="res://scenes/SpawnerInimigo.cs" id="3_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://4n32wneynhk" path="res://resources/Inventario/InventarioUI.tscn" id="4_rarhs"]
-[ext_resource type="PackedScene" uid="uid://qjbsd78nk7e2" path="res://items/Itens/ItemColetavel.tscn" id="5_vcsgt"]
+[ext_resource type="PackedScene" uid="uid://qjbsd78nk7e2" path="res://Itens/ItemColetavel.tscn" id="5_vcsgt"]
 
 [node name="main" type="Node2D"]
 

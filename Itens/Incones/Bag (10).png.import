@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cyb21tspui86c"
-path="res://.godot/imported/265.png-42ec6e5f2b82184c241c662ea48efffe.ctex"
+uid="uid://bnms414kn7pgj"
+path="res://.godot/imported/Bag (10).png-966f8ce97fc8e286405708d79752f2ca.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://items/Itens/Incones/265.png"
-dest_files=["res://.godot/imported/265.png-42ec6e5f2b82184c241c662ea48efffe.ctex"]
+source_file="res://Itens/Incones/Bag (10).png"
+dest_files=["res://.godot/imported/Bag (10).png-966f8ce97fc8e286405708d79752f2ca.ctex"]
 
 [params]
 

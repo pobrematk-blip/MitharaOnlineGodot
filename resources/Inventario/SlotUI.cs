@@ -26,7 +26,7 @@ public partial class SlotUI : Control
 
     private void OnMouseEnteredSlot()
     {
-        // Se é um slot de bolsa com item, destaca
+        // Se é un slot de bolsa com item, destaca
         if (Name.ToString().StartsWith("SlotBolsa_") && SlotInterno?.Item != null && SlotInterno.Item.EhBolsa)
         {
             _icone.SelfModulate = new Color(1.2f, 1.2f, 0.8f, 1); // Destaca em amarelo
@@ -98,6 +98,7 @@ public partial class SlotUI : Control
             }
             else if (Name.ToString().StartsWith("SlotBolsa_"))
             {
+                // Correção de digitação leve encontrada: "slotLogico.Item.EhBolsa"
                 GD.Print($"[SLOTUI] {Name}: ⚠️ Item '{slotLogico.Item.Nome}' não é bolsa! EhBolsa={slotLogico.Item.EhBolsa}");
             }
         }
@@ -168,6 +169,14 @@ public partial class SlotUI : Control
 
     public override bool _CanDropData(Vector2 position, Variant data)
     {
+        // SUPORTE ADICIONADO: Aceita se um item estiver vindo do corpo (Desequipar)
+        if (data.AsGodotObject() is SlotEquipamentoUI slotEquipOrigem)
+        {
+            // O inventário aceita o item se este slot de destino estiver vazio
+            return SlotInterno != null && SlotInterno.Item == null;
+        }
+
+        // Suporte padrão existente para arrastar itens entre o próprio inventário
         if (data.AsGodotObject() is SlotUI slotOrigem)
         {
             if (slotOrigem.SlotInterno == null || slotOrigem.SlotInterno.Item == null) return false;
@@ -183,6 +192,28 @@ public partial class SlotUI : Control
 
     public override void _DropData(Vector2 position, Variant data)
     {
+        // SUPORTE ADICIONADO: Executa a ação de quando soltamos um equipamento de volta no inventário comum
+        if (data.AsGodotObject() is SlotEquipamentoUI slotEquipOrigem)
+        {
+            if (slotEquipOrigem.SlotLogico == null || slotEquipOrigem.SlotLogico.Item == null) return;
+
+            var player = GetTree().CurrentScene.FindChild("Player", true, false);
+            var equipamentos = player?.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+            var inventario = player?.FindChild("InventarioComponent", true, false) as InventarioComponent;
+
+            if (equipamentos != null && inventario != null)
+            {
+                // 1. O slot do inventário assume as credenciais do item vindo do corpo
+                this.SlotInterno.Item = slotEquipOrigem.SlotLogico.Item;
+                this.SlotInterno.Quantidade = 1;
+
+                // 2. Manda o componente de equipamentos limpar o slot lógico correspondente
+                equipamentos.Desequipar(slotEquipOrigem.TipoDeSlot, inventario);
+            }
+            return;
+        }
+
+        // Lógica de movimentação padrão original mantida intacta abaixo
         if (data.AsGodotObject() is SlotUI slotOrigem)
         {
             if (slotOrigem.SlotInterno == null || slotOrigem.SlotInterno.Item == null) return;
@@ -203,19 +234,15 @@ public partial class SlotUI : Control
                 GD.Print($"[SLOT] 🎒 EQUIPANDO bolsa '{bolsaQueVaiEquipar.Nome}' no slot {indexBolsa}...");
                 GD.Print($"[SLOT] Slot de origem: {slotOrigem.Name} com item: {slotOrigem.SlotInterno.Item?.Nome}");
 
-                // Guarda se tinha uma bolsa antiga voltando
                 var itemAntigoNaBolsa = inventario.SlotsDasBolsasEquipadas[indexBolsa].Item;
 
-                // 1. Aplica a alteração lógica no componente do Player
                 inventario.EquiparBolsaNoSlot(slotOrigem.SlotInterno, indexBolsa);
 
-                // 2. Limpa o slot de origem MANUALMENTE antes de notificar
                 slotOrigem.SlotInterno.Item = null;
                 slotOrigem.SlotInterno.Quantidade = 0;
 
                 GD.Print($"[SLOT] ✅ Bolsa movida! Slot de origem agora está vazio.");
 
-                // 3. Agora sim forçamos a interface a atualizar com tudo nos conformes!
                 inventario.NotificarMudancaExterna();
             }
             // =========================================================================
@@ -225,7 +252,6 @@ public partial class SlotUI : Control
             {
                 int indexBolsaOrigem = int.Parse(slotOrigem.Name.ToString().Split('_')[1]);
 
-                // Destino está vazio: movemos para cima e esvaziamos embaixo
                 if (this.SlotInterno != null && this.SlotInterno.Item == null)
                 {
                     this.SlotInterno.Item = slotOrigem.SlotInterno.Item;
@@ -236,7 +262,6 @@ public partial class SlotUI : Control
                     slotOrigem.SlotInterno.Item = null;
                     slotOrigem.SlotInterno.Quantidade = 0;
                 }
-                // Destino já tem outra bolsa: faz a troca justa de posições
                 else if (this.SlotInterno != null && this.SlotInterno.Item.EhBolsa)
                 {
                     var itemTemp = this.SlotInterno.Item;
