@@ -50,10 +50,19 @@ public partial class Player : CharacterBody2D
         {
             // Verifica se o inventário está aberto - se estiver, NÃO ataca
             var inventarioUI = GetTree().CurrentScene.FindChild("InventarioUi", true, false) as InventarioUI;
-            if (inventarioUI == null || !inventarioUI.Visible)
+            bool inventarioAberto = inventarioUI != null && inventarioUI.PainelVisivel;
+            
+            GD.Print($"[PLAYER] Ataque pressionado! Inventário aberto: {inventarioAberto}");
+            
+            if (inventarioUI == null || !inventarioUI.PainelVisivel)
             {
+                GD.Print("[PLAYER] ✅ Ataque liberado!");
                 Atacar();
                 return;
+            }
+            else
+            {
+                GD.Print("[PLAYER] ❌ Ataque bloqueado - Inventário aberto!");
             }
         }
 

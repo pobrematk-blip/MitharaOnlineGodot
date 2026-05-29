@@ -19,6 +19,9 @@ public partial class InventarioUI : Control
     private Vector2 _pontoCliqueOriginal;
     private Button _closeButton;
 
+    // Propriedade pública para verificar se o painel do inventário está visível
+    public bool PainelVisivel => _panel != null && _panel.Visible;
+
     public override void _Ready()
     {
         _panel = GetNode<Panel>("Panel");
@@ -133,12 +136,13 @@ public partial class InventarioUI : Control
             {
                 DesenharInterface();
                 GD.Print("[INVENTÁRIO] 📖 Painel aberto!");
-                GD.Print($"[INVENTÁRIO] Panel.Visible = {_panel.Visible}");
+                GD.Print($"[INVENTÁRIO] Panel.Visible = {_panel.Visible}, PainelVisivel = {PainelVisivel}");
             }
             else
             {
                 _arrastando = false; 
                 GD.Print("[INVENTÁRIO] 📖 Painel fechado!");
+                GD.Print($"[INVENTÁRIO] Panel.Visible = {_panel.Visible}, PainelVisivel = {PainelVisivel}");
             }
 
             GetViewport().SetInputAsHandled();
@@ -152,7 +156,7 @@ public partial class InventarioUI : Control
                 GD.Print("[INVENTÁRIO] 🔴 Clique detectado no botão X!");
                 _panel.Visible = false;
                 _arrastando = false;
-                GD.Print("[INVENTÁRIO] ✅ Inventário fechado pelo botão X!");
+                GD.Print($"[INVENTÁRIO] ✅ Inventário fechado! Panel.Visible = {_panel.Visible}, PainelVisivel = {PainelVisivel}");
                 GetViewport().SetInputAsHandled();
             }
         }
