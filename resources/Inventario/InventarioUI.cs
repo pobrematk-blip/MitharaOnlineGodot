@@ -17,6 +17,7 @@ public partial class InventarioUI : Control
 
     private bool _arrastando = false;
     private Vector2 _pontoCliqueOriginal;
+    private Button _closeButton;
 
     public override void _Ready()
     {
@@ -52,9 +53,11 @@ public partial class InventarioUI : Control
             // Conecta o botão X para fechar o inventário
             if (_panel.HasNode("CloseButton"))
             {
-                var closeButton = _panel.GetNode<Button>("CloseButton");
-                closeButton.Pressed += OnCloseButtonPressed;
+                _closeButton = _panel.GetNode<Button>("CloseButton");
+                _closeButton.Pressed += OnCloseButtonPressed;
                 GD.Print("[INVENTÁRIO UI] ✅ CloseButton conectado com sucesso!");
+                GD.Print($"[INVENTÁRIO UI] CloseButton nome: {_closeButton.Name}");
+                GD.Print($"[INVENTÁRIO UI] CloseButton rect: {_closeButton.GetRect()}");
             }
             else
             {
@@ -129,15 +132,29 @@ public partial class InventarioUI : Control
             if (_panel.Visible)
             {
                 DesenharInterface();
-                GD.Print("[INVENTÁRIO] Painel aberto!");
+                GD.Print("[INVENTÁRIO] 📖 Painel aberto!");
+                GD.Print($"[INVENTÁRIO] Panel.Visible = {_panel.Visible}");
             }
             else
             {
                 _arrastando = false; 
-                GD.Print("[INVENTÁRIO] Painel fechado!");
+                GD.Print("[INVENTÁRIO] 📖 Painel fechado!");
             }
 
             GetViewport().SetInputAsHandled();
+        }
+
+        // Detecta clique no botão X se o inventário está visível
+        if (_panel.Visible && @event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
+        {
+            if (_closeButton != null && _closeButton.GetGlobalRect().HasPoint(mouseEvent.GlobalPosition))
+            {
+                GD.Print("[INVENTÁRIO] 🔴 Clique detectado no botão X!");
+                _panel.Visible = false;
+                _arrastando = false;
+                GD.Print("[INVENTÁRIO] ✅ Inventário fechado pelo botão X!");
+                GetViewport().SetInputAsHandled();
+            }
         }
     }
 
