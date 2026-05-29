@@ -139,12 +139,6 @@ public partial class InventarioUI : Control
 
             GetViewport().SetInputAsHandled();
         }
-        
-        // Bloqueia todos os eventos de input enquanto o inventário está aberto
-        if (_panel.Visible && @event is InputEventMouseButton mouseEvent)
-        {
-            GetViewport().SetInputAsHandled();
-        }
     }
 
     private void OnPanelGuiInput(InputEvent @event)
@@ -153,16 +147,6 @@ public partial class InventarioUI : Control
         {
             if (mouseEvent.ButtonIndex == MouseButton.Left)
             {
-                // Verifica se o clique foi no botão X para evitar conflito de arrasto
-                if (_panel.HasNode("CloseButton"))
-                {
-                    var closeButton = _panel.GetNode<Button>("CloseButton");
-                    if (closeButton.GetGlobalRect().HasPoint(mouseEvent.Position + _panel.GlobalPosition))
-                    {
-                        return; // Ignora este evento se foi no botão
-                    }
-                }
-
                 if (mouseEvent.Pressed)
                 {
                     _arrastando = true;
