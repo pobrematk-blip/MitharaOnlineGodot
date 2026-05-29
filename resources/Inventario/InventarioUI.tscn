@@ -47,6 +47,7 @@ layout_mode = 2
 columns = 6
 
 [node name="ContainerBolsas" type="HBoxContainer" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(288, 48)
 layout_mode = 2
 size_flags_vertical = 3
