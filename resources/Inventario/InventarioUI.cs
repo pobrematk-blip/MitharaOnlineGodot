@@ -54,6 +54,11 @@ public partial class InventarioUI : Control
             {
                 var closeButton = _panel.GetNode<Button>("CloseButton");
                 closeButton.Pressed += OnCloseButtonPressed;
+                GD.Print("[INVENTÁRIO UI] ✅ CloseButton conectado com sucesso!");
+            }
+            else
+            {
+                GD.PrintErr("[INVENTÁRIO UI] ❌ CloseButton não encontrado no painel!");
             }
 
             // Centraliza o painel na tela
@@ -66,6 +71,7 @@ public partial class InventarioUI : Control
 
     private void OnCloseButtonPressed()
     {
+        GD.Print("[INVENTÁRIO UI] ❌ Botão X clicado - FECHANDO INVENTÁRIO!");
         if (_panel != null)
         {
             _panel.Visible = false;
@@ -141,6 +147,16 @@ public partial class InventarioUI : Control
         {
             if (mouseEvent.ButtonIndex == MouseButton.Left)
             {
+                // Verifica se o clique foi no botão X para evitar conflito de arrasto
+                if (_panel.HasNode("CloseButton"))
+                {
+                    var closeButton = _panel.GetNode<Button>("CloseButton");
+                    if (closeButton.GetGlobalRect().HasPoint(mouseEvent.Position + _panel.GlobalPosition))
+                    {
+                        return; // Ignora este evento se foi no botão
+                    }
+                }
+
                 if (mouseEvent.Pressed)
                 {
                     _arrastando = true;
