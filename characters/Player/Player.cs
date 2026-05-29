@@ -46,6 +46,13 @@ public partial class Player : CharacterBody2D
         // Se estiver travado no ataque, não processa movimento
         if (IsAttacking) return;
 
+        // Verifica se o inventário está aberto - se estiver, não processa input de ataque
+        var inventarioUI = GetTree().CurrentScene.FindChild("InventarioUi", true, false) as InventarioUI;
+        if (inventarioUI != null && inventarioUI.Visible)
+        {
+            return; // Bloqueia ataque enquanto inventário está aberto
+        }
+
         if (Input.IsActionJustPressed("atacar"))
         {
             Atacar();

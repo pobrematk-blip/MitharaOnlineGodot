@@ -139,6 +139,12 @@ public partial class InventarioUI : Control
 
             GetViewport().SetInputAsHandled();
         }
+        
+        // Bloqueia todos os eventos de input enquanto o inventário está aberto
+        if (_panel.Visible && @event is InputEventMouseButton mouseEvent)
+        {
+            GetViewport().SetInputAsHandled();
+        }
     }
 
     private void OnPanelGuiInput(InputEvent @event)
