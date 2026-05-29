@@ -4,30 +4,124 @@ using System.Collections.Generic;
 
 public partial class InventarioComponent : Node
 {
-    [Export] public int TamanhoDoInventario { get; set; } = 24;
+    [Signal] public delegate void InventarioAtualizadoEventHandler();
+
+    private int _tamanhoBase = 30; // Começa fixo com 30 slots base!
+    public int TamanhoDoInventario { get; private set; }
     
-    // Lista contendo os slots do nosso inventário
+    // Lista contendo os slots do nosso inventário geral
     public List<SlotInventario> Slots { get; private set; } = new List<SlotInventario>();
 
-    // Sinal para avisar a UI quando o inventário mudar
-    [Signal] public delegate void InventarioAtualizadoEventHandler();
+    // Lista contendo os 6 slots especiais de bolsas
+    public List<SlotInventario> SlotsDasBolsasEquipadas { get; private set; } = new List<SlotInventario>();
 
     public override void _Ready()
     {
-        // Inicializa o inventário com slots vazios
-        for (int i = 0; i < TamanhoDoInventario; i++)
+        // Inicializa os 6 slots de bolsas vazios no início do jogo
+        for (int i = 0; i < 6; i++)
+        {
+            SlotsDasBolsasEquipadas.Add(new SlotInventario());
+        }
+
+        // Calcula os slots iniciais (30 base + somatório das bolsas)
+        RecalcularTamanhoDoInventario(false); // false para não disparar sinal no _Ready
+        
+        GD.Print($"[INVENTÁRIO] Sistema inicializado com {TamanhoDoInventario} slots base e 6 slots de bolsa!");
+    }
+
+    // Ajustado para podermos escolher se queremos ou não disparar o sinal na hora
+    public void RecalcularTamanhoDoInventario(bool dispararSinal = true)
+    {
+        int slotsDasBolsas = 0;
+
+        foreach (var slotBolsa in SlotsDasBolsasEquipadas)
+        {
+            if (slotBolsa != null && slotBolsa.Item != null && slotBolsa.Item.EhBolsa)
+            {
+                slotsDasBolsas += slotBolsa.Item.SlotsAdicionais;
+            }
+        }
+
+        TamanhoDoInventario = _tamanhoBase + slotsDasBolsas;
+
+        // Ajusta o tamanho da lista dinâmica de slots
+        AjustarListaDeSlots();
+
+        // Avisa a UI para redesenhar a grade na tela (se permitido)
+        if (dispararSinal)
+        {
+            EmitSignal(SignalName.InventarioAtualizado);
+        }
+    }
+
+    private void AjustarListaDeSlots()
+    {
+        // Se o inventário cresceu (bolsa equipada), cria novos slots vazios
+        while (Slots.Count < TamanhoDoInventario)
         {
             Slots.Add(new SlotInventario(null, 0));
         }
-        GD.Print("[INVENTÁRIO] Sistema inicializado com ", TamanhoDoInventario, " slots!");
+
+        // Se o inventário encolheu (bolsa removida), remove os últimos slots
+        while (Slots.Count > TamanhoDoInventario)
+        {
+            Slots.RemoveAt(Slots.Count - 1);
+        }
     }
 
-    // Função para adicionar um item ao inventário
+    // Equipar a bolsa em um índice específico (0 a 5) vindo do Drag & Drop
+    public void EquiparBolsaNoSlot(SlotInventario slotOrigem, int indexBolsa)
+    {
+        if (indexBolsa < 0 || indexBolsa >= SlotsDasBolsasEquipadas.Count) return;
+        if (slotOrigem == null || slotOrigem.Item == null || !slotOrigem.Item.EhBolsa) return;
+
+        // Guarda temporariamente o item que porventura já estava equipado nesse slot específico
+        ItemResource bolsaAntiga = SlotsDasBolsasEquipadas[indexBolsa].Item;
+
+        // Transfere a nova mochila para o slot dedicado escolhido
+        SlotsDasBolsasEquipadas[indexBolsa].Item = slotOrigem.Item;
+        SlotsDasBolsasEquipadas[indexBolsa].Quantidade = 1;
+
+        // Se o jogador já tinha uma mochila nesse slot, devolve a antiga para o slot de onde veio a nova
+        if (bolsaAntiga != null)
+        {
+            slotOrigem.Item = bolsaAntiga;
+            slotOrigem.Quantidade = 1;
+            GD.Print($"[INVENTÁRIO] Substituída bolsa no slot {indexBolsa} por '{SlotsDasBolsasEquipadas[indexBolsa].Item.Nome}'!");
+        }
+        else
+        {
+            // Deixa para o SlotUI limpar o slot de origem de forma limpa para evitar concorrência de dados
+            GD.Print($"[INVENTÁRIO] Nova bolsa '{SlotsDasBolsasEquipadas[indexBolsa].Item.Nome}' reservada no slot {indexBolsa}!");
+        }
+
+        // Recalcula o tamanho interno sem disparar o sinal ainda (deixamos o SlotUI notificar no final do drop!)
+        RecalcularTamanhoDoInventario(false);
+    }
+
+    // Desequipar a bolsa de um slot específico (0 a 5) quando arrastada para fora
+    public void DesequiparBolsaNoSlot(int indexBolsa)
+    {
+        if (indexBolsa < 0 || indexBolsa >= SlotsDasBolsasEquipadas.Count) return;
+
+        SlotsDasBolsasEquipadas[indexBolsa].Item = null;
+        SlotsDasBolsasEquipadas[indexBolsa].Quantidade = 0;
+
+        RecalcularTamanhoDoInventario(false);
+        GD.Print($"[INVENTÁRIO] Bolsa do slot {indexBolsa} removida da lógica! Capacidade recalculada.");
+    }
+
+    // Permite forçar o redesenho manual da interface no momento exato desejado
+    public void NotificarMudancaExterna()
+    {
+        EmitSignal(SignalName.InventarioAtualizado);
+    }
+
+    // Função para adicionar um item comum ao inventário
     public bool AdicionarItem(ItemResource novoItem, int quantidade = 1)
     {
         if (novoItem == null) return false;
 
-        // 1. Se o item for acumulável, procura por um slot que já tenha esse item e que não esteja cheio
         if (novoItem.Acumulavel)
         {
             foreach (var slot in Slots)
@@ -42,13 +136,12 @@ public partial class InventarioComponent : Node
             }
         }
 
-        // 2. Se não achou slot igual ou não é acumulável, procura o primeiro slot vazio disponível
         for (int i = 0; i < Slots.Count; i++)
         {
             if (Slots[i].Item == null)
             {
                 Slots[i].Item = novoItem;
-                Slots[i].Quantidade = quantidade;
+                Slots[i].Quantidade = quantidade; // CORRIGIDO: Atribuição limpa sem variáveis inexistentes
                 GD.Print($"[INVENTÁRIO] {novoItem.Nome} colocado no Slot {i}!");
                 EmitSignal(SignalName.InventarioAtualizado);
                 return true;

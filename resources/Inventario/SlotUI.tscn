@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://77fei5pbtuu7" path="res://items/Itens/Incones/bagitem.png" id="2_7fjui"]
 
 [node name="SlotUI" type="Control"]
+custom_minimum_size = Vector2(34, 35)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

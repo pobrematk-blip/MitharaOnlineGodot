@@ -1,0 +1,71 @@
+[gd_scene load_steps=4 format=3 uid="uid://4n32wneynhk"]
+
+[ext_resource type="Script" uid="uid://b0qhj8f2ca5yg" path="res://resources/Inventario/InventarioUI.cs" id="1_x6jdb"]
+[ext_resource type="PackedScene" uid="uid://blo3yab0lyoi3" path="res://resources/Inventario/SlotUI.tscn" id="2_ygxso"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_x6jdb"]
+
+[node name="InventarioUi" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_x6jdb")
+SlotUIPrefab = ExtResource("2_ygxso")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(320, 380)
+layout_mode = 1
+offset_right = 245.0
+offset_bottom = 397.0
+
+[node name="Label" type="Label" parent="Panel"]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 320.0
+offset_bottom = 24.0
+text = "Inventario"
+label_settings = SubResource("LabelSettings_x6jdb")
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="CenterContainer" type="CenterContainer" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(100, 300)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 5.15
+
+[node name="GridContainer" type="GridContainer" parent="Panel/VBoxContainer/CenterContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 6
+
+[node name="ContainerBolsas" type="HBoxContainer" parent="Panel/VBoxContainer"]
+custom_minimum_size = Vector2(288, 48)
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="SlotBolsa_0" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]
+layout_mode = 2
+
+[node name="SlotBolsa_1" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]
+layout_mode = 2
+
+[node name="SlotBolsa_2" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]
+layout_mode = 2
+
+[node name="SlotBolsa_3" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]
+layout_mode = 2
+
+[node name="SlotBolsa_4" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]
+layout_mode = 2
+
+[node name="SlotBolsa_5" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]
+layout_mode = 2

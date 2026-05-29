@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://du717ibioj6gi"]
+
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_4cfvj"]
+[ext_resource type="Texture2D" uid="uid://e4ktg64uwj4i" path="res://items/Itens/Incones/Bag (3).png" id="1_puljv"]
+
+[resource]
+script = ExtResource("1_4cfvj")
+Nome = "Mochila de Couro"
+Icone = ExtResource("1_puljv")
+EhBolsa = true
+SlotsAdicionais = 6
+metadata/_custom_type_script = "uid://ck8h0m5wglv8a"

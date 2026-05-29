@@ -1,7 +1,6 @@
 using Godot;
 using System;
 
-// IMPORTANTE: Esse nome (SpawnerInimigo) deve ser IGUAL ao nome do seu arquivo .cs
 public partial class SpawnerInimigo : Timer
 {
     [Export] public PackedScene CenaDoInim;
@@ -9,16 +8,14 @@ public partial class SpawnerInimigo : Timer
 
     private CharacterBody2D _player;
     private bool _inicializadoComSucesso = false;
-    private float _tempoDecorrido = 0f; // Para contar tempo de spawn inicial
 
     public override void _Ready()
     {
-        // Força o terminal a printar no exato milissegundo em que o jogo liga
         GD.Print("=========================================");
         GD.Print("[SISTEMA CRÍTICO] SPAWNER ACORDOU NA MEMÓRIA!");
         GD.Print("=========================================");
 
-        // Conecta o sinal nativo do Timer por código (independente do editor)
+        // Conecta o sinal nativo do Timer por código
         Timeout += _OnTimeout;
 
         WaitTime = 3.0f;
@@ -37,33 +34,26 @@ public partial class SpawnerInimigo : Timer
         }
         else
         {
-            GD.PrintErr("[SISTEMA ERRO] Spawner não encontrou o Player no mapa.");
-            GD.Print("[SISTEMA] O Spawner vai iniciar mesmo assim e tentará spawnar quando possível.");
+            GD.PrintErr("[SISTEMA ERRO] Spawner não encontrou o Player no mapa. Tentará novamente no ciclo.");
         }
 
-        // Garante que o Timer esteja rodando mesmo que o Player ainda não tenha sido encontrado.
-        // Isso permite que o spawner tente instanciar (ou re-tentar localizar o player) durante o jogo.
         Start();
     }
 
-    // Código de teste bruto: Se o nó estiver vivo no mapa, isso vai mandar mensagem sem parar!
     public override void _Process(double delta)
     {
-        // Removido debug ruidoso. Mantemos o process desligado por padrão.
+        // Mantemos desativado por padrão
     }
 
     public void _OnTimeout()
     {
-        // A cada 3 segundos, verifica se pode spawnar 1 inimigo
-        // MAS NUNCA vai spawnar se tiver >= 5 inimigos no mapa
-        
         if (CenaDoInim == null)
         {
-            GD.PrintErr("[SPAWNER] ERRO: CenaDoInim não foi setada!");
+            GD.PrintErr("[SPAWNER] ERRO: CenaDoInim não foi setada no Inspetor!");
             return;
         }
 
-        // Localiza Player se não encontrado
+        // Tenta remapear o Player caso ele tenha nascido atrasado
         if (_player == null)
         {
             if (GetTree()?.CurrentScene != null)
@@ -73,7 +63,7 @@ public partial class SpawnerInimigo : Timer
             
             if (_player == null)
             {
-                GD.PrintErr("[SPAWNER] ERRO: Player não encontrado!");
+                GD.PrintErr("[SPAWNER] ERRO: Player não encontrado! Abortando ciclo.");
                 return;
             }
         }
@@ -92,15 +82,15 @@ public partial class SpawnerInimigo : Timer
 
         GD.Print($"[SPAWNER] TICK - Total de inimigos vivos: {inimigosVivos}/{MaxEnemies}");
 
-        // ======== VERIFICAÇÃO RIGOROSA: NÃO SPAWNA SE >= MaxEnemies ========
+        // ======== VERIFICAÇÃO RIGOROSA: TRAVA NO LIMITE ========
         if (inimigosVivos >= MaxEnemies)
         {
-            GD.Print($"[SPAWNER] ⚠️ LIMITE JÁ ATINGIDO ({inimigosVivos}/{MaxEnemies}). NÃO SPAWNANDO.");
-            return; // NUNCA spawna se tem 5 ou mais
+            GD.Print($"[SPAWNER] ⚠️ LIMITE JÁ ATINGIDO ({inimigosVivos}/{MaxEnemies}). MANTENDO APENAS OS 5.");
+            return; 
         }
 
         // ======== SPAWNAR 1 INIMIGO ========
-        GD.Print($"[SPAWNER] ✅ Spawnando novo inimigo (faltam {MaxEnemies - inimigosVivos} para atingir máximo)");
+        GD.Print($"[SPAWNER] ✅ Spawnando novo inimigo (Faltam {MaxEnemies - inimigosVivos} para o máximo)");
         SpawnarUmInimigo();
     }
 
@@ -108,16 +98,14 @@ public partial class SpawnerInimigo : Timer
     {
         try
         {
-            // Contagem FINAL antes de spawnar (double check)
+            // Double check de segurança antes de instanciar
             int verificacaoFinal = 0;
             try
             {
-                var grupoFinal = GetTree()?.GetNodesInGroup("Inimigos");
-                verificacaoFinal = grupoFinal?.Count ?? 0;
+                verificacaoFinal = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
             }
             catch { }
 
-            // Se já tem 5 ou mais, NÃO SPAWNA (proteção extra)
             if (verificacaoFinal >= MaxEnemies)
             {
                 GD.PrintErr($"[SPAWNER] BLOQUEADO! Já tem {verificacaoFinal} inimigos. Cancelando spawn.");
@@ -139,14 +127,17 @@ public partial class SpawnerInimigo : Timer
                 return;
             }
 
+            // CORREÇÃO CRÍTICA ABSOLUTA: Coloca o monstro no grupo antes de adicionar à árvore!
+            novoInimigo.AddToGroup("Inimigos");
+
             // Adiciona à cena
             parent.AddChild(novoInimigo);
 
-            // Define posição
-            float offsetX = GD.Randf() > 0.5f ? 120 : -120;
-            novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(offsetX, 0);
+            // MELHORIA DE POSIÇÃO: Sorteia posições em X e Y ao redor do player para eles não nascerem empilhados
+            float offsetX = (float)GD.RandRange(130, 200) * (GD.Randf() > 0.5f ? 1 : -1);
+            float offsetY = (float)GD.RandRange(130, 200) * (GD.Randf() > 0.5f ? 1 : -1);
+            novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(offsetX, offsetY);
             
-            // Conta DEPOIS de spawnar
             int totalAposSpawn = 0;
             try
             {
@@ -155,12 +146,6 @@ public partial class SpawnerInimigo : Timer
             catch { }
 
             GD.Print($"✅ [SPAWNER] Novo inimigo criado! Total agora: {totalAposSpawn}/{MaxEnemies}");
-
-            // Se ultrapassou, algo está errado!
-            if (totalAposSpawn > MaxEnemies)
-            {
-                GD.PrintErr($"⚠️⚠️⚠️ ERRO CRÍTICO! Total após spawn é {totalAposSpawn}, ultrapassou limite {MaxEnemies}!");
-            }
         }
         catch (Exception e)
         {

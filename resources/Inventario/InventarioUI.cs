@@ -4,17 +4,61 @@ using System.Collections.Generic;
 
 public partial class InventarioUI : Control
 {
-    [Export] public PackedScene SlotUIPrefab; // Arraste a ceninha do slot aqui no inspetor
+    [Export] public PackedScene SlotUIPrefab; // Lembre de conferir se está arrastado no Inspetor!
     
+    private Panel _panel; 
     private GridContainer _gridContainer;
     private InventarioComponent _inventarioAlvo;
     private List<SlotUI> _slotsVisuais = new List<SlotUI>();
 
+    // Referências para o container e uma lista das bolsas visuais
+    private HBoxContainer _containerBolsas;
+    private List<SlotUI> _slotsBolsasVisuais = new List<SlotUI>();
+
+    private bool _arrastando = false;
+    private Vector2 _pontoCliqueOriginal;
+
     public override void _Ready()
     {
-        _gridContainer = GetNode<GridContainer>("Panel/GridContainer");
+        _panel = GetNode<Panel>("Panel");
         
-        // Busca o componente de inventário que anexamos ao Player anteriormente
+        // Busca o GridContainer usando o nome único (%), ignorando caminhos de pastas!
+        if (HasNode("%GridContainer"))
+        {
+            _gridContainer = GetNode<GridContainer>("%GridContainer");
+        }
+        else
+        {
+            GD.PrintErr("[INVENTÁRIO UI] ❌ ERRO: GridContainer não encontrado. Verifique se ativou o 'Acesso Único ao Nó' (símbolo de %) nele no editor!");
+        }
+        
+        // Captura o HBoxContainer que guarda a fileira de 6 mochilas manuais
+        if (HasNode("%ContainerBolsas"))
+        {
+            _containerBolsas = GetNode<HBoxContainer>("%ContainerBolsas");
+        }
+        else
+        {
+            GD.Print("[INVENTÁRIO UI] ⚠️ Aviso: ContainerBolsas não encontrado por Acesso Único. Verifique se o nome está correto e com a % ativa.");
+        }
+        
+        Visible = true;
+        
+        if (_panel != null) 
+        {
+            _panel.Visible = false;
+            _panel.GuiInput += OnPanelGuiInput;
+
+            // Centraliza o painel na tela
+            CallDeferred(MethodName.CentralizarPainelNaTela);
+        }
+
+        // Espera a árvore inteira do jogo estar pronta antes de buscar o Player!
+        CallDeferred(MethodName.ConectarComponenteInventario);
+    }
+
+    private void ConectarComponenteInventario()
+    {
         var player = GetTree().CurrentScene.FindChild("Player", true, false);
         if (player != null)
         {
@@ -22,89 +66,169 @@ public partial class InventarioUI : Control
             
             if (_inventarioAlvo != null)
             {
-                // Conecta o sinal do C# para atualizar a tela quando ganhar itens
+                // Mapeia os slots fixos do rodapé uma única vez para evitar concorrência de dados
+                MapearSlotsBolsasDoEditor();
+
                 _inventarioAlvo.InventarioAtualizado += DesenharInterface;
                 InicializarGrade();
-            }
-        }
-        
-        // Começa escondido (Aperte 'I' para abrir/fechar)
-        Visible = false;
-        // Garantir que o node processe _Process mesmo estando invisível,
-        // para capturar a tecla globalmente e alternar a visibilidade.
-        SetProcess(true);
-    }
-    public override void _Input(InputEvent @event)
-    {
-        // Mantemos o _Input funcionando caso o node esteja visível e receba eventos GUI
-        if (@event.IsActionPressed("inventario") || 
-           (@event is InputEventKey eventKey && eventKey.Pressed && eventKey.Keycode == Key.I))
-        {
-            Visible = !Visible;
-            if (Visible)
-            {
-                DesenharInterface();
-                GD.Print("[INVENTÁRIO] Painel aberto visualmente!");
+                GD.Print("[INVENTÁRIO] ✅ Conectado com sucesso ao InventarioComponent do Player!");
             }
             else
             {
-                GD.Print("[INVENTÁRIO] Painel fechado!");
+                GD.PrintErr("[INVENTÁRIO] ❌ Erro: Player encontrado, mas ele não tem o InventarioComponent!");
             }
+        }
+        else
+        {
+            GD.PrintErr("[INVENTÁRIO] ❌ Erro: Não foi possível encontrar o nó 'Player' na cena atual!");
         }
     }
 
-    private bool _prevIState = false;
-    public override void _Process(double delta)
+    private void CentralizarPainelNaTela()
     {
-        // Verifica ação do input globalmente mesmo com o Control invisível
-        bool currentI = Input.IsKeyPressed(Key.I);
-        if (Input.IsActionJustPressed("inventario") || (currentI && !_prevIState))
+        if (_panel == null) return;
+
+        Vector2 tamanhoDaTela = GetViewportRect().Size;
+        Vector2 tamanhoDoPainel = _panel.Size;
+
+        _panel.Position = (tamanhoDaTela / 2) - (tamanhoDoPainel / 2);
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (_panel == null) return;
+
+        if (@event.IsActionPressed("inventario", false) || 
+            (@event is InputEventKey eventKey && eventKey.Pressed && !eventKey.Echo && eventKey.Keycode == Key.I))
         {
-            Visible = !Visible;
-            if (Visible)
+            _panel.Visible = !_panel.Visible;
+
+            if (_panel.Visible)
             {
                 DesenharInterface();
-                GD.Print("[INVENTÁRIO] Painel aberto visualmente! (via _Process)");
+                GD.Print("[INVENTÁRIO] Painel aberto!");
             }
             else
             {
-                GD.Print("[INVENTÁRIO] Painel fechado! (via _Process)");
+                _arrastando = false; 
+                GD.Print("[INVENTÁRIO] Painel fechado!");
+            }
+
+            GetViewport().SetInputAsHandled();
+        }
+    }
+
+    private void OnPanelGuiInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mouseEvent)
+        {
+            if (mouseEvent.ButtonIndex == MouseButton.Left)
+            {
+                if (mouseEvent.Pressed)
+                {
+                    _arrastando = true;
+                    _pontoCliqueOriginal = mouseEvent.Position; 
+                }
+                else
+                {
+                    _arrastando = false;
+                }
             }
         }
-        _prevIState = currentI;
+        else if (@event is InputEventMouseMotion mouseMotion && _arrastando)
+        {
+            _panel.Position += mouseMotion.Position - _pontoCliqueOriginal;
+        }
+    }
+
+    private void MapearSlotsBolsasDoEditor()
+    {
+        if (_containerBolsas == null || _inventarioAlvo == null) return;
+
+        _slotsBolsasVisuais.Clear();
+
+        for (int i = 0; i < 6; i++)
+        {
+            string nomeSlotManual = $"SlotBolsa_{i}";
+
+            if (_containerBolsas.HasNode(nomeSlotManual))
+            {
+                SlotUI slotManual = _containerBolsas.GetNode<SlotUI>(nomeSlotManual);
+                _slotsBolsasVisuais.Add(slotManual);
+
+                // Força o vínculo inicial lógico <-> visual
+                if (_inventarioAlvo.SlotsDasBolsasEquipadas != null && i < _inventarioAlvo.SlotsDasBolsasEquipadas.Count)
+                {
+                    slotManual.AtualizarSlot(_inventarioAlvo.SlotsDasBolsasEquipadas[i]);
+                }
+            }
+            else
+            {
+                GD.PrintErr($"[INVENTÁRIO UI] ❌ ERRO: Não achei o slot manual '{nomeSlotManual}' no ContainerBolsas do editor!");
+            }
+        }
     }
 
     private void InicializarGrade()
     {
-        if (_inventarioAlvo == null || SlotUIPrefab == null) return;
+        if (_inventarioAlvo == null || SlotUIPrefab == null || _gridContainer == null) return;
 
-        // Limpa lixos antigos do editor
+        // Limpa os slots dinâmicos da grade principal de cima
         foreach (Node child in _gridContainer.GetChildren())
         {
             child.QueueFree();
         }
         _slotsVisuais.Clear();
 
-        // Cria a quantidade exata de quadradinhos físicos na tela
+        // Recria a grade baseado no tamanho atualizado
         for (int i = 0; i < _inventarioAlvo.TamanhoDoInventario; i++)
         {
             SlotUI novoSlotUI = SlotUIPrefab.Instantiate<SlotUI>();
             _gridContainer.AddChild(novoSlotUI);
             _slotsVisuais.Add(novoSlotUI);
         }
+
+        // Sincroniza imediatamente os dados nos novos slots criados
+        ForçarAtualizacaoDosDadosDosSlots();
     }
 
-    private void DesenharInterface()
+    private void ForçarAtualizacaoDosDadosDosSlots()
     {
-        if (_inventarioAlvo == null || _slotsVisuais.Count == 0) return;
+        if (_inventarioAlvo == null) return;
 
-        // Passa de slot em slot atualizando as imagens
+        // 1. Atualiza as imagens da grade superior comum
         for (int i = 0; i < _inventarioAlvo.Slots.Count; i++)
         {
             if (i < _slotsVisuais.Count)
             {
                 _slotsVisuais[i].AtualizarSlot(_inventarioAlvo.Slots[i]);
             }
+        }
+
+        // 2. Atualiza as imagens do rodapé fixo de bolsas
+        for (int i = 0; i < _slotsBolsasVisuais.Count; i++)
+        {
+            if (_inventarioAlvo.SlotsDasBolsasEquipadas != null && i < _inventarioAlvo.SlotsDasBolsasEquipadas.Count)
+            {
+                _slotsBolsasVisuais[i].AtualizarSlot(_inventarioAlvo.SlotsDasBolsasEquipadas[i]);
+            }
+        }
+    }
+
+    private void DesenharInterface()
+    {
+        if (_inventarioAlvo == null) return;
+
+        // Se o tamanho mudou na lógica, reconstrói a grade de cima de forma segura
+        if (_slotsVisuais.Count != _inventarioAlvo.TamanhoDoInventario)
+        {
+            // Usamos CallDeferred para dar tempo da Godot processar o término do Drag antes de recriar nós
+            CallDeferred(MethodName.InicializarGrade);
+        }
+        else
+        {
+            // Se o tamanho não mudou, apenas atualiza as imagens de forma leve
+            ForçarAtualizacaoDosDadosDosSlots();
         }
     }
 }

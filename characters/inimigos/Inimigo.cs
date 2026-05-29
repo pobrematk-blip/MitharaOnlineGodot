@@ -6,80 +6,42 @@ public partial class Inimigo : CharacterBody2D
     [Export] public string NomeDoInimigo = "Goblin";
     [Export] public int VidaMaxima = 30;
     [Export] public float Velocidade = 100.0f;
+    
+    // Configurações do Ataque (Valores calibrados para MMOs 2D)
+    [Export] public float DistanciaAtaque = 45.0f; // Aumentado para casar perfeitamente com o raio de colisão
+    [Export] public int DanoDoAtaque = 10;
+    [Export] public float TempoEntreAtaques = 1.2f; // Cooldown do ataque em segundos
 
     private int _vidaAtual;
     private CharacterBody2D _player;
     private AnimatedSprite2D _sprite; 
+    private bool _estaAtacando = false;
+    private float _cronometroAtaque = 0f;
 
     public override void _Ready()
     {
         GD.Print("[INIMIGO] Inicializando...");
-
         _vidaAtual = VidaMaxima;
 
-        // PROTEÇÃO 1: Evita que o jogo quebre se o nó do sprite sumir ou mudar de nome
+        // PROTEÇÃO 1: Garante o nó do sprite
         if (HasNode("AnimatedSprite2D"))
         {
             _sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-            GD.Print($"[INIMIGO] Sprite encontrado: {_sprite.Name}");
-
-            // Força o sprite e a animação a ficarem ativos logo no nascimento
             Visible = true;
             _sprite.Visible = true;
 
-            // Debug: mostra propriedades importantes para diagnóstico
-            GD.Print($"[INIMIGO] Sprite visível: {_sprite.Visible}");
-            GD.Print($"[INIMIGO] Nodo visível: {Visible}");
-            GD.Print($"[INIMIGO] Modulate: {Modulate}");
-            GD.Print($"[INIMIGO] Scale: {Scale}");
-            GD.Print($"[INIMIGO] ZIndex: {GetZIndex()}");
-
-            // Lista as animações disponíveis no SpriteFrames (se houver)
             if (_sprite.SpriteFrames != null)
             {
                 try
                 {
                     var names = _sprite.SpriteFrames.GetAnimationNames();
-                    GD.Print("[INIMIGO] Animações disponíveis no SpriteFrames:");
-                    foreach (var n in names)
-                    {
-                        GD.Print($" - {n}");
-                    }
-
-                    GD.Print($"[INIMIGO] Animação atual do AnimatedSprite2D: {_sprite.Animation}");
-
-                    // Tenta reproduzir a animação atual, se válida
                     if (!string.IsNullOrEmpty(_sprite.Animation) && _sprite.SpriteFrames.HasAnimation(_sprite.Animation))
                     {
                         _sprite.Play(_sprite.Animation);
-                        GD.Print($"[INIMIGO] Tocando animação existente: {_sprite.Animation}");
                     }
-                    else
+                    else if (_sprite.SpriteFrames.HasAnimation("goblim_idle_down"))
                     {
-                        // Tenta possíveis nomes (corrige erro de digitação: goblim vs goblin)
-                        if (_sprite.SpriteFrames.HasAnimation("goblim_idle_down"))
-                        {
-                            _sprite.Play("goblim_idle_down");
-                            GD.Print("[INIMIGO] Tocando 'goblim_idle_down' (variante encontrada)");
-                        }
-                        else if (_sprite.SpriteFrames.HasAnimation("goblin_idle_down"))
-                        {
-                            _sprite.Play("goblin_idle_down");
-                            GD.Print("[INIMIGO] Tocando 'goblin_idle_down' (variante encontrada)");
-                        }
-                        else
-                        {
-                            // Toca a primeira animação disponível como fallback
-                            if (names.Length > 0)
-                            {
-                                _sprite.Play(names[0]);
-                                GD.Print($"[INIMIGO] Tocando fallback: {names[0]}");
-                            }
-                            else
-                            {
-                                GD.PrintErr("[INIMIGO] Nenhuma animação disponível no SpriteFrames!");
-                            }
-                        }
+                        _sprite.Play("goblim_idle_down");
                     }
                 }
                 catch (Exception e)
@@ -93,77 +55,116 @@ public partial class Inimigo : CharacterBody2D
             GD.PrintErr("[INIMIGO] ERRO CRÍTICO: O nó filho chamado 'AnimatedSprite2D' não foi encontrado!");
         }
         
-        GD.Print($"[INIMIGO] Posição Inicial: {GlobalPosition}");
-        GD.Print($"[INIMIGO] Visível no mapa: {Visible}");
-        
-        // PROTEÇÃO 2: Busca robusta para encontrar o Player independente de onde o Spawner criar o monstro
+        // PROTEÇÃO 2: Busca robusta para encontrar o Player
         if (GetTree() != null && GetTree().CurrentScene != null)
         {
             _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
-            GD.Print($"[INIMIGO] Buscando Player na cena: {GetTree().CurrentScene.Name}");
-        }
-        
-        if (_player != null)
-        {
-            GD.Print($"[INIMIGO] ✅ Player encontrado! Posição: {_player.GlobalPosition}");
-        }
-        else
-        {
-            GD.PrintErr("[INIMIGO] ❌ AVISO: Player não encontrado na _Ready()! Tentará novamente em _PhysicsProcess.");
         }
 
+        // CORREÇÃO DO SPAWNER: O próprio monstro se adiciona ao grupo assim que nasce!
         AddToGroup("Inimigos");
         int totalInimigos = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
         GD.Print($"[INIMIGO] ✅ ADICIONADO ao grupo 'Inimigos'. Total no mapa AGORA: {totalInimigos}");
-        GD.Print("[INIMIGO] Inicialização concluída!");
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        // PROTEÇÃO 3: Se o player não foi achado no nascimento, continua tentando localizá-lo a cada frame
+        // Garante que o player existe
         if (_player == null) 
         {
             if (GetTree() != null && GetTree().CurrentScene != null)
             {
                 _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
-                if (_player != null)
-                {
-                    GD.Print($"[INIMIGO] ✅ Player encontrado em _PhysicsProcess! Posição: {_player.GlobalPosition}");
-                }
             }
-            return; // Se ainda não achou, pula este frame para não dar erro
+            return;
         }
 
-        // ======== MOVIMENTO ========
-        Vector2 direcao = (_player.GlobalPosition - GlobalPosition).Normalized();
-        Velocity = direcao * Velocidade;
-        
-        // Move o corpo físico na Godot
-        MoveAndSlide();
-
-        // Debug a cada N frames (não a cada frame para não poluir o console)
-        if (Engine.GetPhysicsFrames() % 30 == 0)
+        // Gerencia o tempo de recarga do ataque
+        if (_estaAtacando)
         {
-            GD.Print($"[INIMIGO] Posição: {GlobalPosition}, Direção: {direcao}, Velocidade: {Velocity}");
+            _cronometroAtaque -= (float)delta;
+            if (_cronometroAtaque <= 0f)
+            {
+                _estaAtacando = false; // Pronto para agir de novo após o fim do cooldown
+            }
         }
 
-        // ======== ANIMAÇÃO ========
-        AtualizarDirecaoDoSprite(direcao);
+        // Calcula a distância real até o jogador
+        float distanciaAoplayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
+        Vector2 direcao = (_player.GlobalPosition - GlobalPosition).Normalized();
+
+        // ======== INTELIGÊNCIA DE ATAQUE VS MOVIMENTO ========
+        if (distanciaAoplayer <= DistanciaAtaque)
+        {
+            // ALINHAMENTO MMO: Em vez de travar o movimento do nada (o que causa o empilhamento),
+            // fazemos ele deslizar suavemente até parar na distância correta, respeitando os outros monstros.
+            Velocity = Velocity.MoveToward(Vector2.Zero, Velocidade * 0.2f);
+            MoveAndSlide();
+            
+            if (!_estaAtacando)
+            {
+                IniciarAtaque(direcao);
+            }
+        }
+        else if (!_estaAtacando)
+        {
+            // SEGUIR O PLAYER (Apenas se não estiver executando um ataque)
+            Velocity = direcao * Velocidade;
+            MoveAndSlide();
+            
+            // Atualiza animação de caminhada normal
+            AtualizarDirecaoDoSprite(direcao);
+        }
+
+        // Debug controlado
+        if (Engine.GetPhysicsFrames() % 45 == 0 && !_estaAtacando)
+        {
+            GD.Print($"[INIMIGO] Caçando Player. Distância: {distanciaAoplayer}px");
+        }
+    }
+
+    private void IniciarAtaque(Vector2 direcaoDoPlayer)
+    {
+        _estaAtacando = true;
+        _cronometroAtaque = TempoEntreAtaques;
+
+        // Define a animação baseada para onde o jogador está em relação ao monstro
+        string animacaoAtaque = "goblim_idle_down"; // Fallback seguro
+
+        if (Math.Abs(direcaoDoPlayer.X) > Math.Abs(direcaoDoPlayer.Y))
+        {
+            animacaoAtaque = direcaoDoPlayer.X < 0 ? "goblim_attack_left" : "goblim_attack_right";
+        }
+        else
+        {
+            // CORRIGIDO: Agora verifica corretamente Y < 0 para "up" e Y > 0 para "down"
+            animacaoAtaque = direcaoDoPlayer.Y < 0 ? "goblim_attack_up" : "goblim_attack_down";
+        }
+
+        // Toca a animação de combate
+        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(animacaoAtaque))
+        {
+            _sprite.Play(animacaoAtaque);
+            GD.Print($"[ATAQUE] {NomeDoInimigo} atacou na direção: {animacaoAtaque}!");
+        }
+        else
+        {
+            GD.PrintErr($"[INIMIGO] ⚠️ Animação de ataque '{animacaoAtaque}' não encontrada no AnimatedSprite2D.");
+        }
+
+        // APLICAR DANO NO PLAYER
+        // Se o seu script do Player tiver uma função pública chamada 'LevarDano', descomente a linha abaixo:
+        // if (_player.HasMethod("LevarDano")) { _player.Call("LevarDano", DanoDoAtaque); }
     }
 
     private void AtualizarDirecaoDoSprite(Vector2 direcao)
     {
-        if (_sprite == null || _sprite.SpriteFrames == null) 
-        {
-            GD.PrintErr("[INIMIGO] ERRO: Sprite ou SpriteFrames é null!");
-            return;
-        }
+        if (_sprite == null || _sprite.SpriteFrames == null) return;
 
         string desejada = null;
         float velocidadeMagnitude = Velocity.Length();
 
-        // Se quase parado, toca animação idle
-        if (velocidadeMagnitude < 5f) // Mudei de direcao.Length() para Velocity.Length()
+        if (velocidadeMagnitude < 5f)
         {
             if (Math.Abs(Velocity.X) > Math.Abs(Velocity.Y))
             {
@@ -176,7 +177,6 @@ public partial class Inimigo : CharacterBody2D
         }
         else
         {
-            // Escolhe animação de caminhada
             if (Math.Abs(direcao.X) > Math.Abs(direcao.Y))
             {
                 desejada = direcao.X < 0 ? "goblim_walk_left" : "goblim_walk_right";
@@ -187,14 +187,9 @@ public partial class Inimigo : CharacterBody2D
             }
         }
 
-        // Sempre toca a animação desejada para garantir transição
         if (!string.IsNullOrEmpty(desejada) && _sprite.SpriteFrames.HasAnimation(desejada))
         {
             _sprite.Play(desejada);
-        }
-        else if (!string.IsNullOrEmpty(desejada))
-        {
-            GD.PrintErr($"[INIMIGO] ERRO: Animação '{desejada}' não existe em SpriteFrames!");
         }
     }
 
@@ -203,9 +198,7 @@ public partial class Inimigo : CharacterBody2D
         _vidaAtual -= quantidade;
         GD.Print($"{NomeDoInimigo} levou {quantidade} de dano! Vida: {_vidaAtual}");
 
-        // Efeito visual de piscar em vermelho
         Modulate = Color.FromHtml("ff6666");
-        
         if (GetTree() != null)
         {
             GetTree().CreateTimer(0.15f).Timeout += () => Modulate = Color.FromHtml("ffffff");
@@ -213,22 +206,16 @@ public partial class Inimigo : CharacterBody2D
 
         if (_vidaAtual <= 0)
         {
-            GD.Print($"💀 {NomeDoInimigo} foi derrotado! RemovEndO do mapa...");
-            QueueFree(); // Remove o monstro do jogo com segurança
+            GD.Print($"💀 {NomeDoInimigo} foi derrotado! Removendo do mapa...");
+            QueueFree(); 
         }
     }
 
     public override void _ExitTree()
     {
-        // Log quando sai da cena (morte)
         int totalAntes = 0;
-        try 
-        { 
-            totalAntes = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
-        }
-        catch { }
-        
-        GD.Print($"[INIMIGO REMOVER] {NomeDoInimigo} removido da cena. Inimigos restantes: {totalAntes - 1}");
+        try { totalAntes = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0; } catch { }
+        GD.Print($"[INIMIGO REMOVER] {NomeDoInimigo} removido da cena. Inimigos restantes no grupo: {totalAntes}");
         base._ExitTree();
     }
 }
