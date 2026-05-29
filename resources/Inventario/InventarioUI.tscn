@@ -5,6 +5,12 @@
 
 [sub_resource type="LabelSettings" id="LabelSettings_x6jdb"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+
 [node name="InventarioUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
@@ -25,6 +31,17 @@ offset_bottom = 24.0
 text = "Inventario"
 label_settings = SubResource("LabelSettings_x6jdb")
 horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 295.0
+offset_top = 5.0
+offset_right = 315.0
+offset_bottom = 23.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "X"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
 layout_mode = 1

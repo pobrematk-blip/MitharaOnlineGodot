@@ -49,12 +49,29 @@ public partial class InventarioUI : Control
             _panel.Visible = false;
             _panel.GuiInput += OnPanelGuiInput;
 
+            // Conecta o botão X para fechar o inventário
+            if (_panel.HasNode("CloseButton"))
+            {
+                var closeButton = _panel.GetNode<Button>("CloseButton");
+                closeButton.Pressed += OnCloseButtonPressed;
+            }
+
             // Centraliza o painel na tela
             CallDeferred(MethodName.CentralizarPainelNaTela);
         }
 
         // Espera a árvore inteira do jogo estar pronta antes de buscar o Player!
         CallDeferred(MethodName.ConectarComponenteInventario);
+    }
+
+    private void OnCloseButtonPressed()
+    {
+        if (_panel != null)
+        {
+            _panel.Visible = false;
+            _arrastando = false;
+            GD.Print("[INVENTÁRIO] Inventário fechado!");
+        }
     }
 
     private void ConectarComponenteInventario()
