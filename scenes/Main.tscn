@@ -5,6 +5,9 @@
 [ext_resource type="Script" uid="uid://cdyu5bx6dgqjo" path="res://scenes/SpawnerInimigo.cs" id="3_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://4n32wneynhk" path="res://resources/Inventario/InventarioUI.tscn" id="4_rarhs"]
 [ext_resource type="PackedScene" uid="uid://qjbsd78nk7e2" path="res://Itens/ItemColetavel.tscn" id="5_vcsgt"]
+[ext_resource type="PackedScene" uid="uid://cweva008qxjnq" path="res://characterSlots/CharacterUI.tscn" id="6_xkpqm"]
+[ext_resource type="PackedScene" uid="uid://dntdyevkybtpn" path="res://Banco/BancoUI.tscn" id="7_banco"]
+[ext_resource type="PackedScene" uid="uid://playerhudscene" path="res://characterSlots/PlayerHud.tscn" id="8_playerhud"]
 
 [node name="main" type="Node2D"]
 
@@ -22,6 +25,12 @@ CenaDoInim = ExtResource("2_0bbpv")
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="InventarioUi" parent="HUD" instance=ExtResource("4_rarhs")]
+
+[node name="CharacterUI" parent="HUD" instance=ExtResource("6_xkpqm")]
+
+[node name="BancoUi" parent="HUD" instance=ExtResource("7_banco")]
+
+[node name="PlayerHud" parent="HUD" instance=ExtResource("8_playerhud")]
 
 [node name="UI" type="CanvasLayer" parent="."]
 

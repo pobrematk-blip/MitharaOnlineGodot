@@ -1,263 +1,449 @@
-[gd_scene load_steps=3 format=3 uid="uid://bnf8u5pqj2c4"]
+[gd_scene load_steps=5 format=3 uid="uid://cweva008qxjnq"]
 
-[ext_resource type="Script" path="res://characterSlots/CharacterUI.cs" id="1_7x2o8"]
+[ext_resource type="Script" uid="uid://bko5ndbhrnjvi" path="res://characterSlots/CharacterUI.cs" id="1_7x2o8"]
 [ext_resource type="PackedScene" uid="uid://ddcwutpertafj" path="res://characterSlots/SlotEquipamentoUI.tscn" id="2_1g2m4"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
 
 [node name="CharacterUI" type="Control"]
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
 script = ExtResource("1_7x2o8")
 
 [node name="Panel" type="Panel" parent="."]
 custom_minimum_size = Vector2(900, 600)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -450.0
-offset_top = -300.0
-offset_right = 450.0
-offset_bottom = 300.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="Panel"]
 layout_mode = 0
-offset_top = 10.0
 offset_right = 900.0
-offset_bottom = 35.0
-text = "Tela do Personagem"
-horizontal_alignment = 1
+offset_bottom = 600.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+[node name="TitleBar" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_right = 900.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 13
+
+[node name="TitleLabel" type="Label" parent="Panel/TitleBar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 40.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+text = "Personagem"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="SlotsEsquerda" type="VBoxContainer" parent="Panel/HBoxContainer"]
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 872.0
+offset_top = 4.0
+offset_right = 892.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="ContentHBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="ColunaSlotsEsquerda" type="VBoxContainer" parent="Panel/ContentHBox"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 theme_override_constants/separation = 8
 
-[node name="SlotCapacete" parent="Panel/HBoxContainer/SlotsEsquerda" instance=ExtResource("2_1g2m4")]
+[node name="SlotCapacete" parent="Panel/ContentHBox/ColunaSlotsEsquerda" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 1
 
-[node name="SlotOmbreiras" parent="Panel/HBoxContainer/SlotsEsquerda" instance=ExtResource("2_1g2m4")]
+[node name="SlotOmbreiras" parent="Panel/ContentHBox/ColunaSlotsEsquerda" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 3
 
-[node name="SlotPeitoral" parent="Panel/HBoxContainer/SlotsEsquerda" instance=ExtResource("2_1g2m4")]
+[node name="SlotPeitoral" parent="Panel/ContentHBox/ColunaSlotsEsquerda" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 2
 
-[node name="SlotCalca" parent="Panel/HBoxContainer/SlotsEsquerda" instance=ExtResource("2_1g2m4")]
+[node name="SlotCalca" parent="Panel/ContentHBox/ColunaSlotsEsquerda" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 5
 
-[node name="SlotBotas" parent="Panel/HBoxContainer/SlotsEsquerda" instance=ExtResource("2_1g2m4")]
+[node name="SlotBotas" parent="Panel/ContentHBox/ColunaSlotsEsquerda" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 6
 
-[node name="SlotSkin" parent="Panel/HBoxContainer/SlotsEsquerda" instance=ExtResource("2_1g2m4")]
+[node name="SlotSkin" parent="Panel/ContentHBox/ColunaSlotsEsquerda" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 16
 
-[node name="CenterContainer" type="CenterContainer" parent="Panel/HBoxContainer"]
+[node name="ColunaCentro" type="VBoxContainer" parent="Panel/ContentHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 12
+alignment = 1
 
-[node name="StandeePersonagem" type="TextureRect" parent="Panel/HBoxContainer/CenterContainer"]
+[node name="StandeePersonagem" type="TextureRect" parent="Panel/ContentHBox/ColunaCentro"]
+custom_minimum_size = Vector2(150, 280)
 layout_mode = 2
-custom_minimum_size = Vector2(150, 300)
+size_flags_horizontal = 4
 expand_mode = 1
+stretch_mode = 5
 
-[node name="SlotsDireita" type="VBoxContainer" parent="Panel/HBoxContainer"]
+[node name="SlotsInferiores" type="HBoxContainer" parent="Panel/ContentHBox/ColunaCentro"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 theme_override_constants/separation = 8
+alignment = 1
 
-[node name="SlotBrinco" parent="Panel/HBoxContainer/SlotsDireita" instance=ExtResource("2_1g2m4")]
-layout_mode = 2
-TipoDeSlot = 11
-
-[node name="SlotColar" parent="Panel/HBoxContainer/SlotsDireita" instance=ExtResource("2_1g2m4")]
-layout_mode = 2
-TipoDeSlot = 9
-
-[node name="SlotLuvas" parent="Panel/HBoxContainer/SlotsDireita" instance=ExtResource("2_1g2m4")]
-layout_mode = 2
-TipoDeSlot = 4
-
-[node name="SlotAnel" parent="Panel/HBoxContainer/SlotsDireita" instance=ExtResource("2_1g2m4")]
-layout_mode = 2
-TipoDeSlot = 10
-
-[node name="SlotRuna" parent="Panel/HBoxContainer/SlotsDireita" instance=ExtResource("2_1g2m4")]
-layout_mode = 2
-TipoDeSlot = 12
-
-[node name="SlotAsa" parent="Panel/HBoxContainer/SlotsDireita" instance=ExtResource("2_1g2m4")]
-layout_mode = 2
-TipoDeSlot = 13
-
-[node name="SlotsInferiores" type="HBoxContainer" parent="Panel"]
-layout_mode = 0
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 200.0
-offset_top = -70.0
-offset_right = 700.0
-offset_bottom = -20.0
-theme_override_constants/separation = 8
-
-[node name="SlotArma" parent="Panel/SlotsInferiores" instance=ExtResource("2_1g2m4")]
+[node name="SlotArma" parent="Panel/ContentHBox/ColunaCentro/SlotsInferiores" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 7
 
-[node name="SlotEscudo" parent="Panel/SlotsInferiores" instance=ExtResource("2_1g2m4")]
+[node name="SlotEscudo" parent="Panel/ContentHBox/ColunaCentro/SlotsInferiores" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 8
 
-[node name="SlotMontaria" parent="Panel/SlotsInferiores" instance=ExtResource("2_1g2m4")]
+[node name="SlotMontaria" parent="Panel/ContentHBox/ColunaCentro/SlotsInferiores" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 14
 
-[node name="SlotPet" parent="Panel/SlotsInferiores" instance=ExtResource("2_1g2m4")]
+[node name="SlotPet" parent="Panel/ContentHBox/ColunaCentro/SlotsInferiores" instance=ExtResource("2_1g2m4")]
 layout_mode = 2
 TipoDeSlot = 15
 
-[node name="PainelEstatisticas" type="VBoxContainer" parent="Panel"]
-layout_mode = 0
-offset_left = 600.0
-offset_top = 40.0
-offset_right = 890.0
-offset_bottom = 580.0
-theme_override_constants/separation = 5
+[node name="ColunaSlotsDireita" type="VBoxContainer" parent="Panel/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = 8
 
-[node name="PontosDisponiveisLabel" type="Label" parent="Panel/PainelEstatisticas"]
+[node name="SlotBrinco" parent="Panel/ContentHBox/ColunaSlotsDireita" instance=ExtResource("2_1g2m4")]
+layout_mode = 2
+TipoDeSlot = 11
+
+[node name="SlotColar" parent="Panel/ContentHBox/ColunaSlotsDireita" instance=ExtResource("2_1g2m4")]
+layout_mode = 2
+TipoDeSlot = 9
+
+[node name="SlotLuvas" parent="Panel/ContentHBox/ColunaSlotsDireita" instance=ExtResource("2_1g2m4")]
+layout_mode = 2
+TipoDeSlot = 4
+
+[node name="SlotAnel" parent="Panel/ContentHBox/ColunaSlotsDireita" instance=ExtResource("2_1g2m4")]
+layout_mode = 2
+TipoDeSlot = 10
+
+[node name="SlotRuna" parent="Panel/ContentHBox/ColunaSlotsDireita" instance=ExtResource("2_1g2m4")]
+layout_mode = 2
+TipoDeSlot = 12
+
+[node name="SlotAsa" parent="Panel/ContentHBox/ColunaSlotsDireita" instance=ExtResource("2_1g2m4")]
+layout_mode = 2
+TipoDeSlot = 13
+
+[node name="ColunaStatus" type="VBoxContainer" parent="Panel/ContentHBox"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+theme_override_constants/separation = 4
+
+[node name="ScrollStatus" type="ScrollContainer" parent="Panel/ContentHBox/ColunaStatus"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PainelEstatisticas" type="VBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="PontosDisponiveisLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Pontos Disponíveis: 0"
 horizontal_alignment = 1
+autowrap_mode = 2
 
-[node name="Separator1" type="HSeparator" parent="Panel/PainelEstatisticas"]
+[node name="Linha_Forca" type="HBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="Linha_Forca" type="HBoxContainer" parent="Panel/PainelEstatisticas"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="ForcaLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Forca"]
+[node name="ForcaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Forca"]
+custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "Força"
-custom_minimum_size = Vector2(100, 0)
 
-[node name="ForcaValorLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Forca"]
+[node name="ForcaValorLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Forca"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "10"
 size_flags_horizontal = 3
+text = "10"
+horizontal_alignment = 2
 
-[node name="ForcaBotaoPlus" type="Button" parent="Panel/PainelEstatisticas/Linha_Forca"]
+[node name="ForcaBotaoPlus" type="Button" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Forca"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 text = "+"
-custom_minimum_size = Vector2(30, 30)
 
-[node name="Linha_Agilidade" type="HBoxContainer" parent="Panel/PainelEstatisticas"]
+[node name="Linha_Agilidade" type="HBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
-[node name="AgilidadeLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Agilidade"]
+[node name="AgilidadeLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Agilidade"]
+custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "Agilidade"
-custom_minimum_size = Vector2(100, 0)
 
-[node name="AgilidadeValorLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Agilidade"]
+[node name="AgilidadeValorLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Agilidade"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "10"
 size_flags_horizontal = 3
+text = "10"
+horizontal_alignment = 2
 
-[node name="AgilidadeBotaoPlus" type="Button" parent="Panel/PainelEstatisticas/Linha_Agilidade"]
+[node name="AgilidadeBotaoPlus" type="Button" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Agilidade"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 text = "+"
-custom_minimum_size = Vector2(30, 30)
 
-[node name="Linha_Destreza" type="HBoxContainer" parent="Panel/PainelEstatisticas"]
+[node name="Linha_Destreza" type="HBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
-[node name="DestrexaLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Destreza"]
+[node name="DestrexaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Destreza"]
+custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "Destreza"
-custom_minimum_size = Vector2(100, 0)
 
-[node name="DestrexaValorLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Destreza"]
+[node name="DestrexaValorLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Destreza"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "10"
 size_flags_horizontal = 3
+text = "10"
+horizontal_alignment = 2
 
-[node name="DestrexaBotaoPlus" type="Button" parent="Panel/PainelEstatisticas/Linha_Destreza"]
+[node name="DestrexaBotaoPlus" type="Button" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Destreza"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 text = "+"
-custom_minimum_size = Vector2(30, 30)
 
-[node name="Linha_Inteligencia" type="HBoxContainer" parent="Panel/PainelEstatisticas"]
+[node name="Linha_Inteligencia" type="HBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
-[node name="InteligenciaLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Inteligencia"]
+[node name="InteligenciaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Inteligencia"]
+custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "Inteligência"
-custom_minimum_size = Vector2(100, 0)
 
-[node name="InteligenciaValorLabel" type="Label" parent="Panel/PainelEstatisticas/Linha_Inteligencia"]
+[node name="InteligenciaValorLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Inteligencia"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "10"
 size_flags_horizontal = 3
+text = "10"
+horizontal_alignment = 2
 
-[node name="InteligenciaBotaoPlus" type="Button" parent="Panel/PainelEstatisticas/Linha_Inteligencia"]
+[node name="InteligenciaBotaoPlus" type="Button" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Inteligencia"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 text = "+"
-custom_minimum_size = Vector2(30, 30)
 
-[node name="Separator2" type="HSeparator" parent="Panel/PainelEstatisticas"]
+[node name="Separator2" type="HSeparator" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 layout_mode = 2
 
-[node name="AtaqueLabel" type="Label" parent="Panel/PainelEstatisticas"]
+[node name="TituloOfensivo" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Ataque: 15"
+size_flags_horizontal = 3
+text = "OFENSIVO"
 
-[node name="DefesaLabel" type="Label" parent="Panel/PainelEstatisticas"]
+[node name="DanoFisicoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Defesa: 10"
+size_flags_horizontal = 3
+text = "Dano Físico: 0"
+autowrap_mode = 2
 
-[node name="RegenLabel" type="Label" parent="Panel/PainelEstatisticas"]
+[node name="DanoMagicoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Regen: 2"
+size_flags_horizontal = 3
+text = "Dano Mágico: 0"
+autowrap_mode = 2
 
-[node name="VidaTotalLabel" type="Label" parent="Panel/PainelEstatisticas"]
+[node name="ChanceCriticaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Vida Total: 100"
+size_flags_horizontal = 3
+text = "Chance Crítica: 0%"
+autowrap_mode = 2
+
+[node name="DanoCriticoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dano Crítico: 1.5x"
+autowrap_mode = 2
+
+[node name="PrecisaoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Precisão: 0"
+autowrap_mode = 2
+
+[node name="VelocidadeAtaqueLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Vel. Ataque: 0"
+autowrap_mode = 2
+
+[node name="RouboVidaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Roubo Vida: 0"
+autowrap_mode = 2
+
+[node name="RouboManaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Roubo Mana: 0"
+autowrap_mode = 2
+
+[node name="BonusExperienciaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Bônus XP: 0"
+autowrap_mode = 2
+
+[node name="Separator_Ofensivo" type="HSeparator" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+layout_mode = 2
+
+[node name="TituloDefensivo" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "DEFENSIVO"
+
+[node name="HpLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Vida: 0"
+autowrap_mode = 2
+
+[node name="ManaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Mana: 0"
+autowrap_mode = 2
+
+[node name="DefesaFisicaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Defesa Física: 0"
+autowrap_mode = 2
+
+[node name="DefesaMagicaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Defesa Mágica: 0"
+autowrap_mode = 2
+
+[node name="EvasaoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Evasão: 0"
+autowrap_mode = 2
+
+[node name="TenacidadeLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tenacidade: 0"
+autowrap_mode = 2
+
+[node name="ReducaoCooldownLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Red. Cooldown: 0"
+autowrap_mode = 2
+
+[node name="Separator_Defensivo" type="HSeparator" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+layout_mode = 2
+
+[node name="TituloPvP" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PvP / Suporte"
+
+[node name="DanoPvpLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dano PvP: 0"
+autowrap_mode = 2
+
+[node name="DefesaPvpLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Defesa PvP: 0"
+autowrap_mode = 2
+
+[node name="PenetracacaoArmaduraLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pen. Armadura: 0"
+autowrap_mode = 2
+
+[node name="RegeneracaoVidaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Regen Vida: 0"
+autowrap_mode = 2
+
+[node name="RegeneracaoManaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Regen Mana: 0"
+autowrap_mode = 2
+
+[node name="VelocidadeMovimentoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Vel. Movimento: 0"
+autowrap_mode = 2

@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://b2nkw74p5pnfj" path="res://resources/Projetil/Projetil.tscn" id="2_yrol7"]
 [ext_resource type="Script" uid="uid://cxup2it1klgr6" path="res://resources/Inventario/InventarioComponent.cs" id="3_b405y"]
 [ext_resource type="Script" uid="uid://c5f6lfw76ep4k" path="res://characters/Player/CameraPlayer.cs" id="4_yrol7"]
+[ext_resource type="Script" uid="uid://7bdh12xai51f" path="res://Banco/BancoComponent.cs" id="5_banco"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8wceg"]
 atlas = ExtResource("1_8gp0o")
@@ -988,13 +989,17 @@ size = Vector2(30, 47)
 
 [node name="Player" type="CharacterBody2D"]
 y_sort_enabled = true
-collision_mask = 2
+collision_layer = 1
+collision_mask = 0
 script = ExtResource("1_j7dd2")
 ProjetilScene = ExtResource("2_yrol7")
 
 [node name="InventarioComponent" type="Node2D" parent="."]
 script = ExtResource("3_b405y")
 TamanhoDoInventario = 50
+
+[node name="BancoComponent" type="Node" parent="."]
+script = ExtResource("5_banco")
 
 [node name="AnimatedSprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_phtqj")

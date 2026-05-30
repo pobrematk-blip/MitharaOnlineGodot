@@ -14,9 +14,13 @@ public partial class Inimigo : CharacterBody2D
 
     private int _vidaAtual;
     private CharacterBody2D _player;
-    private AnimatedSprite2D _sprite; 
+    private AnimatedSprite2D _sprite;
     private bool _estaAtacando = false;
     private float _cronometroAtaque = 0f;
+    private readonly Vector2 _healthBarSize = new Vector2(50, 6);
+    private readonly Vector2 _healthBarOffset = new Vector2(0, -48);
+    private readonly Color _healthBarBackground = new Color(0, 0, 0, 0.55f);
+    private readonly Color _healthBarForeground = new Color(0.85f, 0.15f, 0.15f, 1);
 
     public override void _Ready()
     {
@@ -65,6 +69,7 @@ public partial class Inimigo : CharacterBody2D
         AddToGroup("Inimigos");
         int totalInimigos = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
         GD.Print($"[INIMIGO] ✅ ADICIONADO ao grupo 'Inimigos'. Total no mapa AGORA: {totalInimigos}");
+        QueueRedraw();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -153,8 +158,16 @@ public partial class Inimigo : CharacterBody2D
         }
 
         // APLICAR DANO NO PLAYER
-        // Se o seu script do Player tiver uma função pública chamada 'LevarDano', descomente a linha abaixo:
-        // if (_player.HasMethod("LevarDano")) { _player.Call("LevarDano", DanoDoAtaque); }
+        if (_player is Player player)
+        {
+            player.LevarDano(DanoDoAtaque);
+            GD.Print($"[INIMIGO] {NomeDoInimigo} causou {DanoDoAtaque} de dano ao Player.");
+        }
+        else if (_player != null && _player.HasMethod("LevarDano"))
+        {
+            _player.Call("LevarDano", DanoDoAtaque);
+            GD.Print($"[INIMIGO] {NomeDoInimigo} causou {DanoDoAtaque} de dano ao Player via Call.");
+        }
     }
 
     private void AtualizarDirecaoDoSprite(Vector2 direcao)
@@ -193,6 +206,19 @@ public partial class Inimigo : CharacterBody2D
         }
     }
 
+    public override void _Draw()
+    {
+        if (VidaMaxima <= 0) return;
+        if (_vidaAtual <= 0) return;
+
+        var barTopLeft = _healthBarOffset - new Vector2(_healthBarSize.X / 2.0f, 0);
+        var fillWidth = Math.Max(0, Math.Min(_healthBarSize.X, (_vidaAtual / (float)VidaMaxima) * _healthBarSize.X));
+        var foregroundWidth = Math.Max(0, fillWidth - 2);
+
+        DrawRect(new Rect2(barTopLeft, _healthBarSize), _healthBarBackground);
+        DrawRect(new Rect2(barTopLeft + new Vector2(1, 1), new Vector2(foregroundWidth, _healthBarSize.Y - 2)), _healthBarForeground);
+    }
+
     public void LevarDano(int quantidade)
     {
         _vidaAtual -= quantidade;
@@ -204,10 +230,14 @@ public partial class Inimigo : CharacterBody2D
             GetTree().CreateTimer(0.15f).Timeout += () => Modulate = Color.FromHtml("ffffff");
         }
 
+        // Redesenha a barra de vida imediatamente
+        QueueRedraw();
+
         if (_vidaAtual <= 0)
         {
             GD.Print($"💀 {NomeDoInimigo} foi derrotado! Removendo do mapa...");
-            QueueFree(); 
+            QueueFree();
+            return;
         }
     }
 
