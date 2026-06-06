@@ -1,7 +1,7 @@
 [gd_scene load_steps=71 format=3 uid="uid://cuygoxaafa5dg"]
 
-[ext_resource type="Texture2D" uid="uid://cwhpc6k61pdnn" path="res://characters/inimigos/SpriteInimigo/inimigoGoblim.png" id="1_28o51"]
-[ext_resource type="Script" uid="uid://bbrfqwprqqnh" path="res://characters/inimigos/Inimigo.cs" id="script_inimigo"]
+[ext_resource type="Texture2D" uid="uid://cwhpc6k61pdnn" path="res://characters/Inimigos/SpriteInimigo/inimigoGoblim.png" id="1_28o51"]
+[ext_resource type="Script" uid="uid://bbrfqwprqqnh" path="res://characters/Inimigos/Inimigo.cs" id="script_inimigo"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_23uyv"]
 atlas = ExtResource("1_28o51")
@@ -533,13 +533,14 @@ size = Vector2(26, 46)
 
 [node name="Inimigo" type="CharacterBody2D"]
 y_sort_enabled = true
-collision_layer = 2
-collision_mask = 0
+collision_layer = 4
+collision_mask = 1
 script = ExtResource("script_inimigo")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_ghvf1")
 animation = &"goblim_idle_down"
+scale = Vector2(2, 2)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 6)

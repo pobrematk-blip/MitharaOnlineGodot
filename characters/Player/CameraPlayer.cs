@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 
 public partial class CameraPlayer : Camera2D
@@ -19,6 +19,7 @@ public partial class CameraPlayer : Camera2D
             
             // Força a câmera a começar exatamente em cima do Player
             GlobalPosition = _alvo.GlobalPosition;
+            MakeCurrent();
         }
         else
         {

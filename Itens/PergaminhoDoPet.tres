@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://daokfn4m3sgsh"]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Scroll de Pet.png" id="2_scroll"]
+
+[resource]
+script = ExtResource("1")
+Icone = ExtResource("2_scroll")
+ItemID = 100
+Nome = "Pergaminho do Pet"
+Descricao = "Um pergaminho antigo. Clique com botão direito para abrir o mini-game e desbloquear um pet!"
+Acumulavel = true
+QuantidadeMaximaPorSlot = 99
+EhBolsa = false
+SlotsAdicionais = 10
+Tipo = 17
+NivelRequerido = 1
+Valor = 100
+Forca = 0
+Agilidade = 0
+Destreza = 0
+Inteligencia = 0
+DanoFisico = 0
+DanoMagico = 0
+DefesaFisica = 0
+DefesaMagica = 0

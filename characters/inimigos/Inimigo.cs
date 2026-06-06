@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 
 public partial class Inimigo : CharacterBody2D
@@ -8,19 +8,55 @@ public partial class Inimigo : CharacterBody2D
     [Export] public float Velocidade = 100.0f;
     
     // Configurações do Ataque (Valores calibrados para MMOs 2D)
-    [Export] public float DistanciaAtaque = 45.0f; // Aumentado para casar perfeitamente com o raio de colisão
+    [Export] public float DistanciaAtaque = 45.0f;
     [Export] public int DanoDoAtaque = 10;
-    [Export] public float TempoEntreAtaques = 1.2f; // Cooldown do ataque em segundos
+    [Export] public float TempoEntreAtaques = 1.2f;
+
+    [Export] public bool IsBoss = false;
+    [Export] public int ExperienciaDropada = 20;
+
+    // Passive / Aggressive mode
+    [Export] public bool EhAgressivo = false;
+    [Export] public float RaioPatrulha = 80.0f;
+    [Export] public float RaioDetectarPlayer = 200.0f;
+    [Export] public float TempoAggroAposDano = 8.0f;
+
+    // Drop configuration
+    [Export] public int DropItemID = 0;
+    [Export] public float DropChance = 0.0f;
 
     private int _vidaAtual;
     private CharacterBody2D _player;
     private AnimatedSprite2D _sprite;
     private bool _estaAtacando = false;
     private float _cronometroAtaque = 0f;
+
+    // Patrol state
+    private Vector2 _pontoSpawn;
+    private Vector2 _pontoPatrulha;
+    private float _tempoEsperaPatrulha = 0f;
+    private bool _patrulhando = false;
+    private bool _posicaoInicializada = false;
+
+    // Aggro state
+    private bool _foiAtacado = false;
+    private float _tempoAggro = 0f;
+
     private readonly Vector2 _healthBarSize = new Vector2(50, 6);
     private readonly Vector2 _healthBarOffset = new Vector2(0, -48);
     private readonly Color _healthBarBackground = new Color(0, 0, 0, 0.55f);
     private readonly Color _healthBarForeground = new Color(0.85f, 0.15f, 0.15f, 1);
+
+    // Expose current HP for pet scroll check
+    public int VidaAtual => _vidaAtual;
+    public int VidaMax => VidaMaxima;
+
+    public void DefinirPosicaoInicial(Vector2 posicao)
+    {
+        _pontoSpawn = posicao;
+        _posicaoInicializada = true;
+        EscolherNovoPontoPatrulha();
+    }
 
     public override void _Ready()
     {
@@ -68,13 +104,12 @@ public partial class Inimigo : CharacterBody2D
         // CORREÇÃO DO SPAWNER: O próprio monstro se adiciona ao grupo assim que nasce!
         AddToGroup("Inimigos");
         int totalInimigos = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
-        GD.Print($"[INIMIGO] ✅ ADICIONADO ao grupo 'Inimigos'. Total no mapa AGORA: {totalInimigos}");
+        GD.Print($"[INIMIGO] ✓ ADICIONADO ao grupo 'Inimigos'. Total no mapa AGORA: {totalInimigos}");
         QueueRedraw();
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        // Garante que o player existe
         if (_player == null) 
         {
             if (GetTree() != null && GetTree().CurrentScene != null)
@@ -84,48 +119,109 @@ public partial class Inimigo : CharacterBody2D
             return;
         }
 
-        // Gerencia o tempo de recarga do ataque
         if (_estaAtacando)
         {
             _cronometroAtaque -= (float)delta;
             if (_cronometroAtaque <= 0f)
+                _estaAtacando = false;
+            else if (_sprite != null && !_sprite.IsPlaying())
             {
-                _estaAtacando = false; // Pronto para agir de novo após o fim do cooldown
+                // Animação de ataque terminou: volta para idle
+                string idleAnim = _sprite.Animation.ToString().Replace("attack", "idle");
+                if (!string.IsNullOrEmpty(idleAnim) && _sprite.SpriteFrames.HasAnimation(idleAnim))
+                    _sprite.Play(idleAnim);
             }
         }
 
-        // Calcula a distância real até o jogador
-        float distanciaAoplayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
-        Vector2 direcao = (_player.GlobalPosition - GlobalPosition).Normalized();
-
-        // ======== INTELIGÊNCIA DE ATAQUE VS MOVIMENTO ========
-        if (distanciaAoplayer <= DistanciaAtaque)
+        // Aggro timeout — volta a ser passivo após algum tempo
+        if (_foiAtacado)
         {
-            // ALINHAMENTO MMO: Em vez de travar o movimento do nada (o que causa o empilhamento),
-            // fazemos ele deslizar suavemente até parar na distância correta, respeitando os outros monstros.
+            _tempoAggro -= (float)delta;
+            if (_tempoAggro <= 0f)
+                _foiAtacado = false;
+        }
+
+        float distanciaAoPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
+        Vector2 direcaoPlayer = (_player.GlobalPosition - GlobalPosition).Normalized();
+
+        bool deveAtacar = EhAgressivo || _foiAtacado;
+
+        if (deveAtacar && distanciaAoPlayer <= DistanciaAtaque)
+        {
             Velocity = Velocity.MoveToward(Vector2.Zero, Velocidade * 0.2f);
             MoveAndSlide();
-            
+
             if (!_estaAtacando)
-            {
-                IniciarAtaque(direcao);
-            }
+                IniciarAtaque(direcaoPlayer);
         }
-        else if (!_estaAtacando)
+        else if (deveAtacar && distanciaAoPlayer <= RaioDetectarPlayer)
         {
-            // SEGUIR O PLAYER (Apenas se não estiver executando um ataque)
-            Velocity = direcao * Velocidade;
+            Velocity = direcaoPlayer * Velocidade;
             MoveAndSlide();
-            
-            // Atualiza animação de caminhada normal
-            AtualizarDirecaoDoSprite(direcao);
+            AtualizarDirecaoDoSprite(direcaoPlayer, false);
+        }
+        else if (_foiAtacado && distanciaAoPlayer > RaioDetectarPlayer)
+        {
+            // Perdeu o player de vista, volta a patrulhar
+            _foiAtacado = false;
+        }
+        else
+        {
+            // Comportamento passivo / patrulha
+            AtualizarPatrulha((float)delta);
+        }
+    }
+
+    private void EscolherNovoPontoPatrulha()
+    {
+        float angulo = (float)(GD.Randf() * Math.PI * 2);
+        float distancia = (float)GD.RandRange(20, RaioPatrulha);
+        _pontoPatrulha = _pontoSpawn + new Vector2(
+            (float)Math.Cos(angulo) * distancia,
+            (float)Math.Sin(angulo) * distancia
+        );
+        _patrulhando = true;
+        _tempoEsperaPatrulha = 0f;
+    }
+
+    private void AtualizarPatrulha(float delta)
+    {
+        if (!_posicaoInicializada)
+        {
+            _pontoSpawn = GlobalPosition;
+            _posicaoInicializada = true;
+            EscolherNovoPontoPatrulha();
         }
 
-        // Debug controlado
-        if (Engine.GetPhysicsFrames() % 45 == 0 && !_estaAtacando)
+        if (_tempoEsperaPatrulha > 0f)
         {
-            GD.Print($"[INIMIGO] Caçando Player. Distância: {distanciaAoplayer}px");
+            _tempoEsperaPatrulha -= delta;
+            if (_tempoEsperaPatrulha <= 0f)
+                EscolherNovoPontoPatrulha();
+            else
+            {
+                Velocity = Velocity.MoveToward(Vector2.Zero, Velocidade * 2f);
+                MoveAndSlide();
+            }
+            return;
         }
+
+        float distAoPonto = GlobalPosition.DistanceTo(_pontoPatrulha);
+
+        if (distAoPonto < 10f)
+        {
+            _tempoEsperaPatrulha = (float)GD.RandRange(2.0, 5.0);
+            _patrulhando = false;
+            AtualizarDirecaoDoSprite(Vector2.Zero, true);
+            Velocity = Vector2.Zero;
+            MoveAndSlide();
+            return;
+        }
+
+        Vector2 direcao = (_pontoPatrulha - GlobalPosition).Normalized();
+        Velocity = direcao * Velocidade * 0.5f;
+        MoveAndSlide();
+        AtualizarDirecaoDoSprite(direcao, false);
     }
 
     private void IniciarAtaque(Vector2 direcaoDoPlayer)
@@ -154,7 +250,7 @@ public partial class Inimigo : CharacterBody2D
         }
         else
         {
-            GD.PrintErr($"[INIMIGO] ⚠️ Animação de ataque '{animacaoAtaque}' não encontrada no AnimatedSprite2D.");
+            GD.PrintErr($"[INIMIGO] ✘ Animação de ataque '{animacaoAtaque}' não encontrada no AnimatedSprite2D.");
         }
 
         // APLICAR DANO NO PLAYER
@@ -170,14 +266,14 @@ public partial class Inimigo : CharacterBody2D
         }
     }
 
-    private void AtualizarDirecaoDoSprite(Vector2 direcao)
+    private void AtualizarDirecaoDoSprite(Vector2 direcao, bool forcarIdle = false)
     {
         if (_sprite == null || _sprite.SpriteFrames == null) return;
 
         string desejada = null;
         float velocidadeMagnitude = Velocity.Length();
 
-        if (velocidadeMagnitude < 5f)
+        if (forcarIdle || velocidadeMagnitude < 5f)
         {
             if (Math.Abs(Velocity.X) > Math.Abs(Velocity.Y))
             {
@@ -202,7 +298,8 @@ public partial class Inimigo : CharacterBody2D
 
         if (!string.IsNullOrEmpty(desejada) && _sprite.SpriteFrames.HasAnimation(desejada))
         {
-            _sprite.Play(desejada);
+            if (_sprite.Animation != desejada)
+                _sprite.Play(desejada);
         }
     }
 
@@ -222,7 +319,14 @@ public partial class Inimigo : CharacterBody2D
     public void LevarDano(int quantidade)
     {
         _vidaAtual -= quantidade;
-        GD.Print($"{NomeDoInimigo} levou {quantidade} de dano! Vida: {_vidaAtual}");
+
+        // Ao levar dano, fica agressivo por um tempo
+        if (!EhAgressivo)
+        {
+            _foiAtacado = true;
+            _tempoAggro = TempoAggroAposDano;
+            GD.Print($"[INIMIGO] {NomeDoInimigo} aggro! Player atacou, vai retaliar por {TempoAggroAposDano}s.");
+        }
 
         Modulate = Color.FromHtml("ff6666");
         if (GetTree() != null)
@@ -230,22 +334,60 @@ public partial class Inimigo : CharacterBody2D
             GetTree().CreateTimer(0.15f).Timeout += () => Modulate = Color.FromHtml("ffffff");
         }
 
-        // Redesenha a barra de vida imediatamente
         QueueRedraw();
 
         if (_vidaAtual <= 0)
         {
-            GD.Print($"💀 {NomeDoInimigo} foi derrotado! Removendo do mapa...");
+            if (GetTree()?.CurrentScene != null)
+            {
+                var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
+                if (player != null)
+                {
+                    var xpComp = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+                    var equipComp = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+                    if (xpComp != null)
+                        xpComp.AdicionarExperiencia(ExperienciaDropada, equipComp);
+                }
+            }
+
+            TentarDrop();
             QueueFree();
-            return;
         }
+    }
+
+    private void TentarDrop()
+    {
+        if (DropItemID <= 0) return;
+        if (GD.Randf() > DropChance) return;
+
+        string[] caminhos =
+        {
+            $"res://Itens/ItemNovo.tres",
+            $"res://Itens/Capacete.tres",
+            $"res://Itens/Peitoral.tres",
+        };
+
+        string caminho = $"res://Itens/ItemNovo.tres";
+        if (DropItemID == 20) caminho = "res://Itens/Capacete.tres";
+        else if (DropItemID == 21) caminho = "res://Itens/Peitoral.tres";
+        else if (DropItemID == 100) caminho = "res://Itens/PergaminhoDoPet.tres";
+
+        if (!ResourceLoader.Exists(caminho)) return;
+
+        var item = ResourceLoader.Load<ItemResource>(caminho);
+        if (item == null) return;
+
+        var cenaDrop = GD.Load<PackedScene>("res://Itens/ItemColetavel.tscn");
+        if (cenaDrop == null) return;
+
+        var drop = cenaDrop.Instantiate<ItemColetavel>();
+        drop.ItemContido = item;
+        drop.GlobalPosition = GlobalPosition;
+        GetParent().AddChild(drop);
     }
 
     public override void _ExitTree()
     {
-        int totalAntes = 0;
-        try { totalAntes = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0; } catch { }
-        GD.Print($"[INIMIGO REMOVER] {NomeDoInimigo} removido da cena. Inimigos restantes no grupo: {totalAntes}");
         base._ExitTree();
     }
 }

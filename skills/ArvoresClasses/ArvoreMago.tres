@@ -1,0 +1,614 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+
+[sub_resource type="Resource" id="mago_n0"]
+script = ExtResource("2")
+NodeId = "mago_01"
+Nome = "Mago Base"
+Descricao = "Nó de talento nível 0 (Mago)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusInteligencia = 6
+BonusManaPercent = 4
+BonusDanoPercent = 0.6
+
+[sub_resource type="Resource" id="mago_n1"]
+script = ExtResource("2")
+NodeId = "mago_02"
+Nome = "Mago Essencial"
+Descricao = "Nó de talento nível 0 (Mago)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusInteligencia = 6
+BonusManaPercent = 4
+
+[sub_resource type="Resource" id="mago_n2"]
+script = ExtResource("2")
+NodeId = "mago_03"
+Nome = "Mago Primordial"
+Descricao = "Nó de talento nível 0 (Mago)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusInteligencia = 6
+BonusManaPercent = 4
+
+[sub_resource type="Resource" id="mago_n3"]
+script = ExtResource("2")
+NodeId = "mago_04"
+Nome = "Mago Fundamental"
+Descricao = "Nó de talento nível 1 (Mago)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("mago_01", "mago_02")
+
+[sub_resource type="Resource" id="mago_n4"]
+script = ExtResource("2")
+NodeId = "mago_05"
+Nome = "Mago Natural"
+Descricao = "Nó de talento nível 1 (Mago)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+Requisitos = PackedStringArray("mago_02")
+
+[sub_resource type="Resource" id="mago_n5"]
+script = ExtResource("2")
+NodeId = "mago_06"
+Nome = "Mago Básico"
+Descricao = "Nó de talento nível 1 (Mago)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+Requisitos = PackedStringArray("mago_03", "mago_01")
+
+[sub_resource type="Resource" id="mago_n6"]
+script = ExtResource("2")
+NodeId = "mago_07"
+Nome = "Mago Inicial"
+Descricao = "Nó de talento nível 1 (Mago)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("mago_01")
+
+[sub_resource type="Resource" id="mago_n7"]
+script = ExtResource("2")
+NodeId = "mago_08"
+Nome = "Mago Concentração"
+Descricao = "Nó de talento nível 1 (Mago)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+Requisitos = PackedStringArray("mago_02", "mago_03")
+
+[sub_resource type="Resource" id="mago_n8"]
+script = ExtResource("2")
+NodeId = "mago_09"
+Nome = "Mago Foco"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("mago_04", "mago_05")
+
+[sub_resource type="Resource" id="mago_n9"]
+script = ExtResource("2")
+NodeId = "mago_10"
+Nome = "Mago Potencial"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("mago_05")
+
+[sub_resource type="Resource" id="mago_n10"]
+script = ExtResource("2")
+NodeId = "mago_11"
+Nome = "Mago Expansão"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("mago_06", "mago_07")
+
+[sub_resource type="Resource" id="mago_n11"]
+script = ExtResource("2")
+NodeId = "mago_12"
+Nome = "Mago Crescimento"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("mago_07")
+
+[sub_resource type="Resource" id="mago_n12"]
+script = ExtResource("2")
+NodeId = "mago_13"
+Nome = "Mago Despertar"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("mago_08", "mago_04")
+
+[sub_resource type="Resource" id="mago_n13"]
+script = ExtResource("2")
+NodeId = "mago_14"
+Nome = "Mago Evolução"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("mago_04")
+
+[sub_resource type="Resource" id="mago_n14"]
+script = ExtResource("2")
+NodeId = "mago_15"
+Nome = "Mago Progresso"
+Descricao = "Nó de talento nível 2 (Mago)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("mago_05", "mago_06")
+
+[sub_resource type="Resource" id="mago_n15"]
+script = ExtResource("2")
+NodeId = "mago_16"
+Nome = "Mago Aprimoramento"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_09", "mago_10")
+
+[sub_resource type="Resource" id="mago_n16"]
+script = ExtResource("2")
+NodeId = "mago_17"
+Nome = "Mago Avanço"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_10")
+
+[sub_resource type="Resource" id="mago_n17"]
+script = ExtResource("2")
+NodeId = "mago_18"
+Nome = "Mago Superior"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_11", "mago_12")
+
+[sub_resource type="Resource" id="mago_n18"]
+script = ExtResource("2")
+NodeId = "mago_19"
+Nome = "Mago Elevado"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_12")
+
+[sub_resource type="Resource" id="mago_n19"]
+script = ExtResource("2")
+NodeId = "mago_20"
+Nome = "Mago Mestre"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_13", "mago_14")
+
+[sub_resource type="Resource" id="mago_n20"]
+script = ExtResource("2")
+NodeId = "mago_21"
+Nome = "Mago Supremo"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_14")
+
+[sub_resource type="Resource" id="mago_n21"]
+script = ExtResource("2")
+NodeId = "mago_22"
+Nome = "Mago Lendário"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_15", "mago_09")
+
+[sub_resource type="Resource" id="mago_n22"]
+script = ExtResource("2")
+NodeId = "mago_23"
+Nome = "Mago Mítico"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_09")
+
+[sub_resource type="Resource" id="mago_n23"]
+script = ExtResource("2")
+NodeId = "mago_24"
+Nome = "Mago Divino"
+Descricao = "Nó de talento nível 3 (Mago)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_10", "mago_11")
+
+[sub_resource type="Resource" id="mago_n24"]
+script = ExtResource("2")
+NodeId = "mago_25"
+Nome = "Mago Épico"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_16", "mago_17")
+
+[sub_resource type="Resource" id="mago_n25"]
+script = ExtResource("2")
+NodeId = "mago_26"
+Nome = "Mago Guerreiro"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_17")
+
+[sub_resource type="Resource" id="mago_n26"]
+script = ExtResource("2")
+NodeId = "mago_27"
+Nome = "Mago Sábio"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_18", "mago_19")
+
+[sub_resource type="Resource" id="mago_n27"]
+script = ExtResource("2")
+NodeId = "mago_28"
+Nome = "Mago Destemido"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_19")
+
+[sub_resource type="Resource" id="mago_n28"]
+script = ExtResource("2")
+NodeId = "mago_29"
+Nome = "Mago Poderoso"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_20", "mago_21")
+
+[sub_resource type="Resource" id="mago_n29"]
+script = ExtResource("2")
+NodeId = "mago_30"
+Nome = "Mago Ágil"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_21")
+
+[sub_resource type="Resource" id="mago_n30"]
+script = ExtResource("2")
+NodeId = "mago_31"
+Nome = "Mago Feroz"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_22", "mago_23")
+
+[sub_resource type="Resource" id="mago_n31"]
+script = ExtResource("2")
+NodeId = "mago_32"
+Nome = "Mago Sombrio"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_23")
+
+[sub_resource type="Resource" id="mago_n32"]
+script = ExtResource("2")
+NodeId = "mago_33"
+Nome = "Mago Sagrado"
+Descricao = "Nó de talento nível 4 (Mago)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_24", "mago_16")
+
+[sub_resource type="Resource" id="mago_n33"]
+script = ExtResource("2")
+NodeId = "mago_34"
+Nome = "Mago Arcana"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_25", "mago_26")
+
+[sub_resource type="Resource" id="mago_n34"]
+script = ExtResource("2")
+NodeId = "mago_35"
+Nome = "Mago Rápido"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_26")
+
+[sub_resource type="Resource" id="mago_n35"]
+script = ExtResource("2")
+NodeId = "mago_36"
+Nome = "Mago Resistente"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_27", "mago_28")
+
+[sub_resource type="Resource" id="mago_n36"]
+script = ExtResource("2")
+NodeId = "mago_37"
+Nome = "Mago Letal"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_28")
+
+[sub_resource type="Resource" id="mago_n37"]
+script = ExtResource("2")
+NodeId = "mago_38"
+Nome = "Mago Preciso"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_29", "mago_30")
+
+[sub_resource type="Resource" id="mago_n38"]
+script = ExtResource("2")
+NodeId = "mago_39"
+Nome = "Mago Brutal"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_30")
+
+[sub_resource type="Resource" id="mago_n39"]
+script = ExtResource("2")
+NodeId = "mago_40"
+Nome = "Mago Sutil"
+Descricao = "Nó de talento nível 5 (Mago)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_31", "mago_32")
+
+[sub_resource type="Resource" id="mago_n40"]
+script = ExtResource("2")
+NodeId = "mago_41"
+Nome = "Mago Gélido"
+Descricao = "Nó de talento nível 6 (Mago)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_34", "mago_35")
+
+[sub_resource type="Resource" id="mago_n41"]
+script = ExtResource("2")
+NodeId = "mago_42"
+Nome = "Mago Flamejante"
+Descricao = "Nó de talento nível 6 (Mago)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_35")
+
+[sub_resource type="Resource" id="mago_n42"]
+script = ExtResource("2")
+NodeId = "mago_43"
+Nome = "Mago Tempestuoso"
+Descricao = "Nó de talento nível 6 (Mago)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_36", "mago_37")
+
+[sub_resource type="Resource" id="mago_n43"]
+script = ExtResource("2")
+NodeId = "mago_44"
+Nome = "Mago Venenoso"
+Descricao = "Nó de talento nível 6 (Mago)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_37")
+
+[sub_resource type="Resource" id="mago_n44"]
+script = ExtResource("2")
+NodeId = "mago_45"
+Nome = "Mago Sangrento"
+Descricao = "Nó de talento nível 6 (Mago)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_38", "mago_39")
+
+[sub_resource type="Resource" id="mago_n45"]
+script = ExtResource("2")
+NodeId = "mago_46"
+Nome = "Mago Eterno"
+Descricao = "Nó de talento nível 7 (Mago)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_41", "mago_42")
+
+[sub_resource type="Resource" id="mago_n46"]
+script = ExtResource("2")
+NodeId = "mago_47"
+Nome = "Mago Celestial"
+Descricao = "Nó de talento nível 7 (Mago)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_42")
+
+[sub_resource type="Resource" id="mago_n47"]
+script = ExtResource("2")
+NodeId = "mago_48"
+Nome = "Mago Abissal"
+Descricao = "Nó de talento nível 7 (Mago)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_43", "mago_44")
+
+[sub_resource type="Resource" id="mago_n48"]
+script = ExtResource("2")
+NodeId = "mago_49"
+Nome = "Mago Primordial"
+Descricao = "Nó de talento nível 8 (Mago)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_46", "mago_47")
+
+[sub_resource type="Resource" id="mago_n49"]
+script = ExtResource("2")
+NodeId = "mago_50"
+Nome = "Mago Final"
+Descricao = "Nó de talento nível 8 (Mago)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("mago_47")
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore Mago"
+RootNodeIds = PackedStringArray("mago_01", "mago_02", "mago_03")
+
+Nodes = Array[Resource]([
+	SubResource("mago_n0"),
+	SubResource("mago_n1"),
+	SubResource("mago_n2"),
+	SubResource("mago_n3"),
+	SubResource("mago_n4"),
+	SubResource("mago_n5"),
+	SubResource("mago_n6"),
+	SubResource("mago_n7"),
+	SubResource("mago_n8"),
+	SubResource("mago_n9"),
+	SubResource("mago_n10"),
+	SubResource("mago_n11"),
+	SubResource("mago_n12"),
+	SubResource("mago_n13"),
+	SubResource("mago_n14"),
+	SubResource("mago_n15"),
+	SubResource("mago_n16"),
+	SubResource("mago_n17"),
+	SubResource("mago_n18"),
+	SubResource("mago_n19"),
+	SubResource("mago_n20"),
+	SubResource("mago_n21"),
+	SubResource("mago_n22"),
+	SubResource("mago_n23"),
+	SubResource("mago_n24"),
+	SubResource("mago_n25"),
+	SubResource("mago_n26"),
+	SubResource("mago_n27"),
+	SubResource("mago_n28"),
+	SubResource("mago_n29"),
+	SubResource("mago_n30"),
+	SubResource("mago_n31"),
+	SubResource("mago_n32"),
+	SubResource("mago_n33"),
+	SubResource("mago_n34"),
+	SubResource("mago_n35"),
+	SubResource("mago_n36"),
+	SubResource("mago_n37"),
+	SubResource("mago_n38"),
+	SubResource("mago_n39"),
+	SubResource("mago_n40"),
+	SubResource("mago_n41"),
+	SubResource("mago_n42"),
+	SubResource("mago_n43"),
+	SubResource("mago_n44"),
+	SubResource("mago_n45"),
+	SubResource("mago_n46"),
+	SubResource("mago_n47"),
+	SubResource("mago_n48"),
+	SubResource("mago_n49")
+])

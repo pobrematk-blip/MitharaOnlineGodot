@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore da Força Brutal"
+RootNodeIds = PackedStringArray("ber_base_forca", "ber_base_vit")
+
+Nodes = Array[Resource]([
+	Resource("res://skills/nodes/BerserkForça.tres"),
+	Resource("res://skills/nodes/BerserkVitalidade.tres"),
+	Resource("res://skills/nodes/BerserkRajada.tres"),
+	Resource("res://skills/nodes/BerserkScudo.tres"),
+	Resource("res://skills/nodes/BerserkFuriaTotal.tres"),
+	Resource("res://skills/nodes/BerserkMestreBerserk.tres")
+])

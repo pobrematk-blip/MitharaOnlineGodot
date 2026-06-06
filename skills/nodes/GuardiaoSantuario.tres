@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "gua_santuario"
+Nome = "Santuário"
+Descricao = "Você cria um santuário reduzindo dano em área. +50% vida."
+Requisitos = PackedStringArray("gua_base_defesa")
+CustoPontos = 3
+NivelMinimo = 5
+BonusVidaPercent = 0.5

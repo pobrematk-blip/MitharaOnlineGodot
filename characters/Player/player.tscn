@@ -1,4 +1,4 @@
-[gd_scene load_steps=130 format=3 uid="uid://cd0ex1ra6mxif"]
+[gd_scene load_steps=134 format=3 uid="uid://cd0ex1ra6mxif"]
 
 [ext_resource type="Texture2D" uid="uid://d3uuwl5rvnshr" path="res://characters/Player/SpritePlayer/character-spritesheet.png" id="1_8gp0o"]
 [ext_resource type="Script" uid="uid://bsx8lybimjhh7" path="res://characters/Player/Player.cs" id="1_j7dd2"]
@@ -6,6 +6,9 @@
 [ext_resource type="Script" uid="uid://cxup2it1klgr6" path="res://resources/Inventario/InventarioComponent.cs" id="3_b405y"]
 [ext_resource type="Script" uid="uid://c5f6lfw76ep4k" path="res://characters/Player/CameraPlayer.cs" id="4_yrol7"]
 [ext_resource type="Script" uid="uid://7bdh12xai51f" path="res://Banco/BancoComponent.cs" id="5_banco"]
+[ext_resource type="Script" uid="uid://2b1kh0j87juc" path="res://characterSlots/EquipamentoComponent.cs" id="6_equip"]
+[ext_resource type="Script" uid="uid://bp4td6tsecadf" path="res://characterSlots/LevelProgressionComponent.cs" id="8_level"]
+[ext_resource type="Script" path="res://characterSlots/OverheadUI.cs" id="10_overhead"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8wceg"]
 atlas = ExtResource("1_8gp0o")
@@ -989,21 +992,63 @@ size = Vector2(30, 47)
 
 [node name="Player" type="CharacterBody2D"]
 y_sort_enabled = true
-collision_layer = 1
-collision_mask = 0
+collision_mask = 5
 script = ExtResource("1_j7dd2")
 ProjetilScene = ExtResource("2_yrol7")
 
 [node name="InventarioComponent" type="Node2D" parent="."]
 script = ExtResource("3_b405y")
-TamanhoDoInventario = 50
 
 [node name="BancoComponent" type="Node" parent="."]
 script = ExtResource("5_banco")
 
+[node name="EquipamentoComponent" type="Node" parent="."]
+script = ExtResource("6_equip")
+
+[node name="LevelProgressionComponent" type="Node" parent="."]
+script = ExtResource("8_level")
+
 [node name="AnimatedSprite" type="AnimatedSprite2D" parent="."]
+z_index = 1
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_phtqj")
-animation = &"arqueiro_attack_down"
+animation = &"idle_down"
+
+[node name="CabeloOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 2
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
+[node name="BarbaOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 3
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
+[node name="ArmaOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 4
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
+[node name="ArmaduraOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 4
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
+[node name="CapaceteOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 4
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
+[node name="LuvasOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 4
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
+[node name="BotasOverlay" type="AnimatedSprite2D" parent="."]
+z_index = 4
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
 
 [node name="Collision" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 5.5)
@@ -1011,4 +1056,6 @@ shape = SubResource("RectangleShape2D_8gp0o")
 
 [node name="Camera" type="Camera2D" parent="."]
 position = Vector2(0, 14)
+zoom = Vector2(0.58, 0.58)
 script = ExtResource("4_yrol7")
+

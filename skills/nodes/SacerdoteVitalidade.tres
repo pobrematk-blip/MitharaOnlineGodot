@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "sac_base_vit"
+Nome = "Vitalidade Espiritual"
+Descricao = "Aumenta sua vida máxima em +25%. Resistência sagrada."
+CustoPontos = 1
+NivelMinimo = 1
+BonusVidaPercent = 0.25

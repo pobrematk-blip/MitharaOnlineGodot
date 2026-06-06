@@ -1,0 +1,614 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+
+[sub_resource type="Resource" id="lad_n0"]
+script = ExtResource("2")
+NodeId = "lad_01"
+Nome = "Ladino Base"
+Descricao = "Nó de talento nível 0 (Ladino)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusAgilidade = 6
+BonusDestreza = 4
+BonusDanoPercent = 0.6
+
+[sub_resource type="Resource" id="lad_n1"]
+script = ExtResource("2")
+NodeId = "lad_02"
+Nome = "Ladino Essencial"
+Descricao = "Nó de talento nível 0 (Ladino)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusAgilidade = 6
+BonusDestreza = 4
+
+[sub_resource type="Resource" id="lad_n2"]
+script = ExtResource("2")
+NodeId = "lad_03"
+Nome = "Ladino Primordial"
+Descricao = "Nó de talento nível 0 (Ladino)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusAgilidade = 6
+BonusDestreza = 4
+
+[sub_resource type="Resource" id="lad_n3"]
+script = ExtResource("2")
+NodeId = "lad_04"
+Nome = "Ladino Fundamental"
+Descricao = "Nó de talento nível 1 (Ladino)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusAgilidade = 5
+BonusDestreza = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("lad_01", "lad_02")
+
+[sub_resource type="Resource" id="lad_n4"]
+script = ExtResource("2")
+NodeId = "lad_05"
+Nome = "Ladino Natural"
+Descricao = "Nó de talento nível 1 (Ladino)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusAgilidade = 5
+BonusDestreza = 3
+Requisitos = PackedStringArray("lad_02")
+
+[sub_resource type="Resource" id="lad_n5"]
+script = ExtResource("2")
+NodeId = "lad_06"
+Nome = "Ladino Básico"
+Descricao = "Nó de talento nível 1 (Ladino)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusAgilidade = 5
+BonusDestreza = 3
+Requisitos = PackedStringArray("lad_03", "lad_01")
+
+[sub_resource type="Resource" id="lad_n6"]
+script = ExtResource("2")
+NodeId = "lad_07"
+Nome = "Ladino Inicial"
+Descricao = "Nó de talento nível 1 (Ladino)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusAgilidade = 5
+BonusDestreza = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("lad_01")
+
+[sub_resource type="Resource" id="lad_n7"]
+script = ExtResource("2")
+NodeId = "lad_08"
+Nome = "Ladino Concentração"
+Descricao = "Nó de talento nível 1 (Ladino)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusAgilidade = 5
+BonusDestreza = 3
+Requisitos = PackedStringArray("lad_02", "lad_03")
+
+[sub_resource type="Resource" id="lad_n8"]
+script = ExtResource("2")
+NodeId = "lad_09"
+Nome = "Ladino Foco"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+Requisitos = PackedStringArray("lad_04", "lad_05")
+
+[sub_resource type="Resource" id="lad_n9"]
+script = ExtResource("2")
+NodeId = "lad_10"
+Nome = "Ladino Potencial"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("lad_05")
+
+[sub_resource type="Resource" id="lad_n10"]
+script = ExtResource("2")
+NodeId = "lad_11"
+Nome = "Ladino Expansão"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+Requisitos = PackedStringArray("lad_06", "lad_07")
+
+[sub_resource type="Resource" id="lad_n11"]
+script = ExtResource("2")
+NodeId = "lad_12"
+Nome = "Ladino Crescimento"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+Requisitos = PackedStringArray("lad_07")
+
+[sub_resource type="Resource" id="lad_n12"]
+script = ExtResource("2")
+NodeId = "lad_13"
+Nome = "Ladino Despertar"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("lad_08", "lad_04")
+
+[sub_resource type="Resource" id="lad_n13"]
+script = ExtResource("2")
+NodeId = "lad_14"
+Nome = "Ladino Evolução"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+Requisitos = PackedStringArray("lad_04")
+
+[sub_resource type="Resource" id="lad_n14"]
+script = ExtResource("2")
+NodeId = "lad_15"
+Nome = "Ladino Progresso"
+Descricao = "Nó de talento nível 2 (Ladino)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusAgilidade = 4
+BonusDestreza = 2
+Requisitos = PackedStringArray("lad_05", "lad_06")
+
+[sub_resource type="Resource" id="lad_n15"]
+script = ExtResource("2")
+NodeId = "lad_16"
+Nome = "Ladino Aprimoramento"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_09", "lad_10")
+
+[sub_resource type="Resource" id="lad_n16"]
+script = ExtResource("2")
+NodeId = "lad_17"
+Nome = "Ladino Avanço"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_10")
+
+[sub_resource type="Resource" id="lad_n17"]
+script = ExtResource("2")
+NodeId = "lad_18"
+Nome = "Ladino Superior"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_11", "lad_12")
+
+[sub_resource type="Resource" id="lad_n18"]
+script = ExtResource("2")
+NodeId = "lad_19"
+Nome = "Ladino Elevado"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_12")
+
+[sub_resource type="Resource" id="lad_n19"]
+script = ExtResource("2")
+NodeId = "lad_20"
+Nome = "Ladino Mestre"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_13", "lad_14")
+
+[sub_resource type="Resource" id="lad_n20"]
+script = ExtResource("2")
+NodeId = "lad_21"
+Nome = "Ladino Supremo"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_14")
+
+[sub_resource type="Resource" id="lad_n21"]
+script = ExtResource("2")
+NodeId = "lad_22"
+Nome = "Ladino Lendário"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_15", "lad_09")
+
+[sub_resource type="Resource" id="lad_n22"]
+script = ExtResource("2")
+NodeId = "lad_23"
+Nome = "Ladino Mítico"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_09")
+
+[sub_resource type="Resource" id="lad_n23"]
+script = ExtResource("2")
+NodeId = "lad_24"
+Nome = "Ladino Divino"
+Descricao = "Nó de talento nível 3 (Ladino)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusAgilidade = 3
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_10", "lad_11")
+
+[sub_resource type="Resource" id="lad_n24"]
+script = ExtResource("2")
+NodeId = "lad_25"
+Nome = "Ladino Épico"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_16", "lad_17")
+
+[sub_resource type="Resource" id="lad_n25"]
+script = ExtResource("2")
+NodeId = "lad_26"
+Nome = "Ladino Guerreiro"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_17")
+
+[sub_resource type="Resource" id="lad_n26"]
+script = ExtResource("2")
+NodeId = "lad_27"
+Nome = "Ladino Sábio"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_18", "lad_19")
+
+[sub_resource type="Resource" id="lad_n27"]
+script = ExtResource("2")
+NodeId = "lad_28"
+Nome = "Ladino Destemido"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_19")
+
+[sub_resource type="Resource" id="lad_n28"]
+script = ExtResource("2")
+NodeId = "lad_29"
+Nome = "Ladino Poderoso"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_20", "lad_21")
+
+[sub_resource type="Resource" id="lad_n29"]
+script = ExtResource("2")
+NodeId = "lad_30"
+Nome = "Ladino Ágil"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_21")
+
+[sub_resource type="Resource" id="lad_n30"]
+script = ExtResource("2")
+NodeId = "lad_31"
+Nome = "Ladino Feroz"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_22", "lad_23")
+
+[sub_resource type="Resource" id="lad_n31"]
+script = ExtResource("2")
+NodeId = "lad_32"
+Nome = "Ladino Sombrio"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_23")
+
+[sub_resource type="Resource" id="lad_n32"]
+script = ExtResource("2")
+NodeId = "lad_33"
+Nome = "Ladino Sagrado"
+Descricao = "Nó de talento nível 4 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusAgilidade = 2
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_24", "lad_16")
+
+[sub_resource type="Resource" id="lad_n33"]
+script = ExtResource("2")
+NodeId = "lad_34"
+Nome = "Ladino Arcana"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_25", "lad_26")
+
+[sub_resource type="Resource" id="lad_n34"]
+script = ExtResource("2")
+NodeId = "lad_35"
+Nome = "Ladino Rápido"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_26")
+
+[sub_resource type="Resource" id="lad_n35"]
+script = ExtResource("2")
+NodeId = "lad_36"
+Nome = "Ladino Resistente"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_27", "lad_28")
+
+[sub_resource type="Resource" id="lad_n36"]
+script = ExtResource("2")
+NodeId = "lad_37"
+Nome = "Ladino Letal"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_28")
+
+[sub_resource type="Resource" id="lad_n37"]
+script = ExtResource("2")
+NodeId = "lad_38"
+Nome = "Ladino Preciso"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_29", "lad_30")
+
+[sub_resource type="Resource" id="lad_n38"]
+script = ExtResource("2")
+NodeId = "lad_39"
+Nome = "Ladino Brutal"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_30")
+
+[sub_resource type="Resource" id="lad_n39"]
+script = ExtResource("2")
+NodeId = "lad_40"
+Nome = "Ladino Sutil"
+Descricao = "Nó de talento nível 5 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_31", "lad_32")
+
+[sub_resource type="Resource" id="lad_n40"]
+script = ExtResource("2")
+NodeId = "lad_41"
+Nome = "Ladino Gélido"
+Descricao = "Nó de talento nível 6 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_34", "lad_35")
+
+[sub_resource type="Resource" id="lad_n41"]
+script = ExtResource("2")
+NodeId = "lad_42"
+Nome = "Ladino Flamejante"
+Descricao = "Nó de talento nível 6 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_35")
+
+[sub_resource type="Resource" id="lad_n42"]
+script = ExtResource("2")
+NodeId = "lad_43"
+Nome = "Ladino Tempestuoso"
+Descricao = "Nó de talento nível 6 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_36", "lad_37")
+
+[sub_resource type="Resource" id="lad_n43"]
+script = ExtResource("2")
+NodeId = "lad_44"
+Nome = "Ladino Venenoso"
+Descricao = "Nó de talento nível 6 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_37")
+
+[sub_resource type="Resource" id="lad_n44"]
+script = ExtResource("2")
+NodeId = "lad_45"
+Nome = "Ladino Sangrento"
+Descricao = "Nó de talento nível 6 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_38", "lad_39")
+
+[sub_resource type="Resource" id="lad_n45"]
+script = ExtResource("2")
+NodeId = "lad_46"
+Nome = "Ladino Eterno"
+Descricao = "Nó de talento nível 7 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_41", "lad_42")
+
+[sub_resource type="Resource" id="lad_n46"]
+script = ExtResource("2")
+NodeId = "lad_47"
+Nome = "Ladino Celestial"
+Descricao = "Nó de talento nível 7 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_42")
+
+[sub_resource type="Resource" id="lad_n47"]
+script = ExtResource("2")
+NodeId = "lad_48"
+Nome = "Ladino Abissal"
+Descricao = "Nó de talento nível 7 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_43", "lad_44")
+
+[sub_resource type="Resource" id="lad_n48"]
+script = ExtResource("2")
+NodeId = "lad_49"
+Nome = "Ladino Primordial"
+Descricao = "Nó de talento nível 8 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_46", "lad_47")
+
+[sub_resource type="Resource" id="lad_n49"]
+script = ExtResource("2")
+NodeId = "lad_50"
+Nome = "Ladino Final"
+Descricao = "Nó de talento nível 8 (Ladino)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusAgilidade = 1
+BonusDestreza = 1
+Requisitos = PackedStringArray("lad_47")
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore Ladino"
+RootNodeIds = PackedStringArray("lad_01", "lad_02", "lad_03")
+
+Nodes = Array[Resource]([
+	SubResource("lad_n0"),
+	SubResource("lad_n1"),
+	SubResource("lad_n2"),
+	SubResource("lad_n3"),
+	SubResource("lad_n4"),
+	SubResource("lad_n5"),
+	SubResource("lad_n6"),
+	SubResource("lad_n7"),
+	SubResource("lad_n8"),
+	SubResource("lad_n9"),
+	SubResource("lad_n10"),
+	SubResource("lad_n11"),
+	SubResource("lad_n12"),
+	SubResource("lad_n13"),
+	SubResource("lad_n14"),
+	SubResource("lad_n15"),
+	SubResource("lad_n16"),
+	SubResource("lad_n17"),
+	SubResource("lad_n18"),
+	SubResource("lad_n19"),
+	SubResource("lad_n20"),
+	SubResource("lad_n21"),
+	SubResource("lad_n22"),
+	SubResource("lad_n23"),
+	SubResource("lad_n24"),
+	SubResource("lad_n25"),
+	SubResource("lad_n26"),
+	SubResource("lad_n27"),
+	SubResource("lad_n28"),
+	SubResource("lad_n29"),
+	SubResource("lad_n30"),
+	SubResource("lad_n31"),
+	SubResource("lad_n32"),
+	SubResource("lad_n33"),
+	SubResource("lad_n34"),
+	SubResource("lad_n35"),
+	SubResource("lad_n36"),
+	SubResource("lad_n37"),
+	SubResource("lad_n38"),
+	SubResource("lad_n39"),
+	SubResource("lad_n40"),
+	SubResource("lad_n41"),
+	SubResource("lad_n42"),
+	SubResource("lad_n43"),
+	SubResource("lad_n44"),
+	SubResource("lad_n45"),
+	SubResource("lad_n46"),
+	SubResource("lad_n47"),
+	SubResource("lad_n48"),
+	SubResource("lad_n49")
+])

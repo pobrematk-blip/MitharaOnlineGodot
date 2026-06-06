@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Collections.Generic;
 
@@ -114,6 +114,31 @@ public partial class InventarioComponent : Node
     // Permite forçar o redesenho manual da interface no momento exato desejado
     public void NotificarMudancaExterna()
     {
+        EmitSignal(SignalName.InventarioAtualizado);
+    }
+
+    public void AplicarDadosServidor(Godot.Collections.Array<Godot.Collections.Dictionary> items, ItemDatabase itemDB)
+    {
+        Slots.Clear();
+        RecalcularTamanhoDoInventario(false);
+
+        for (int i = 0; i < Slots.Count; i++)
+            Slots[i] = new SlotInventario(null, 0);
+
+        foreach (var entry in items)
+        {
+            int slot = (int)entry["slot"];
+            int itemId = (int)entry["item_id"];
+            int qty = (int)entry["quantity"];
+
+            if (slot >= 0 && slot < Slots.Count)
+            {
+                var resource = itemDB.GetItem(itemId);
+                if (resource != null)
+                    Slots[slot] = new SlotInventario(resource, qty);
+            }
+        }
+
         EmitSignal(SignalName.InventarioAtualizado);
     }
 

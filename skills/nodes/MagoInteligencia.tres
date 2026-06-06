@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "mago_base_int"
+Nome = "Inteligência Base"
+Descricao = "Aumenta sua inteligência em +10 permanentemente. Base para todos os magos."
+CustoPontos = 1
+NivelMinimo = 1
+BonusInteligencia = 10

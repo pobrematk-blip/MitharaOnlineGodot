@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3 uid="uid://cmijt7l2m3f0j"]
+
+[ext_resource type="Script" uid="uid://cjmxq1pkd1o3w" path="res://Editor/ClasseCustomResource.cs" id="1"]
+[ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvoreMago.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+NomeClasse = "Mago"
+Descricao = "Dano mágico à distância com bola de fogo."
+Forca = 8
+Inteligencia = 18
+VidaMaxima = 90
+ManaMaxima = 80
+VelocidadeMovimento = 175.0
+PrefixoAnimacaoAtaque = "mago"
+UsaProjetil = true
+DanoProjetilMin = 20
+DanoProjetilMax = 30
+VelocidadeDoProjetil = 220.0
+ArvoreTalentos = ExtResource("2")

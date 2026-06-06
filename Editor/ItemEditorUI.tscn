@@ -1,0 +1,1479 @@
+[gd_scene load_steps=7 format=3 uid="uid://b6dga51f7ggt1"]
+
+[ext_resource type="Script" path="res://Editor/ItemEditorUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+
+[sub_resource type="Theme" id="Theme_editor"]
+default_font_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yellow"]
+bg_color = Color(0.9, 0.7, 0.1, 0.25)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_border"]
+bg_color = Color(0.15, 0.15, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="ItemEditorUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+theme = SubResource("Theme_editor")
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(640, 480)
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 480.0
+
+[node name="Header" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 13
+
+[node name="Title" type="Label" parent="Panel/Header"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Editor de Itens"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Header"]
+layout_mode = 0
+offset_left = 612.0
+offset_top = 4.0
+offset_right = 632.0
+offset_bottom = 24.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="LeftPanel" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+
+[node name="LabelItens" type="Label" parent="Panel/HBox/LeftPanel"]
+layout_mode = 2
+text = "Itens"
+
+[node name="ItemList" type="ItemList" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BtnAddItem" type="Button" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+ Novo Item"
+
+[node name="BtnRemoveItem" type="Button" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "- Excluir Item"
+
+[node name="BtnReload" type="Button" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Recarregar"
+
+[node name="ScrollForm" type="ScrollContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Form" type="VBoxContainer" parent="Panel/HBox/ScrollForm"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 0)
+
+[node name="PreviewStatus" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+
+[node name="NomeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="NomeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/NomeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Nome"
+
+[node name="NomeEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/NomeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nome do item"
+
+[node name="IconeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="IconeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/IconeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Icone"
+
+[node name="IconePreview" type="TextureRect" parent="Panel/HBox/ScrollForm/Form/IconeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+expand_mode = 1
+stretch_mode = 4
+
+[node name="BtnBrowseIcone" type="Button" parent="Panel/HBox/ScrollForm/Form/IconeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Procurar..."
+
+[node name="SpritesheetRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SpritesheetLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/SpritesheetRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Spritesheet Equip."
+
+[node name="SpritesheetPreview" type="TextureRect" parent="Panel/HBox/ScrollForm/Form/SpritesheetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+expand_mode = 1
+stretch_mode = 4
+
+[node name="BtnBrowseSpritesheet" type="Button" parent="Panel/HBox/ScrollForm/Form/SpritesheetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Procurar..."
+
+[node name="HSeparatorAnim" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoAnimacao" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Animacao ---"
+
+[node name="AnimacaoUsarRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="AnimacaoUsarLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AnimacaoUsarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Animacao de Uso"
+
+[node name="AnimacaoUsarEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/AnimacaoUsarRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ex: mago_attack_down, spellcast..."
+
+[node name="AnimacaoEquipadoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="AnimacaoEquipadoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AnimacaoEquipadoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Animacao Equipado"
+
+[node name="AnimacaoEquipadoEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/AnimacaoEquipadoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ex: idle_down, efeito_especial..."
+
+[node name="ClassesRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ClassesLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ClassesRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Classes Permitidas"
+
+[node name="ClassesEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/ClassesRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Arqueiro, Ladino, ... (vazio = todos)"
+
+[node name="AcumulavelRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="AcumulavelLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AcumulavelRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Acumulavel"
+
+[node name="AcumulavelCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/AcumulavelRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="QtdMaxRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="QtdMaxLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/QtdMaxRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Max por slot"
+
+[node name="QtdMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/QtdMaxRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1
+max_value = 9999
+value = 99
+step = 1
+
+[node name="EhBolsaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="EhBolsaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/EhBolsaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Eh Bolsa?"
+
+[node name="EhBolsaCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/EhBolsaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="SlotsAdicionaisRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SlotsAdicionaisLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/SlotsAdicionaisRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Slots extras"
+
+[node name="SlotsAdicionaisSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/SlotsAdicionaisRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0
+max_value = 100
+value = 10
+step = 1
+
+[node name="TipoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TipoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/TipoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Tipo"
+
+[node name="TipoDropdown" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/TipoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DuasMaosRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DuasMaosLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DuasMaosRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Duas Maos?"
+
+[node name="DuasMaosCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/DuasMaosRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="EhPvpRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="EhPvpLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/EhPvpRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Item PvP?"
+
+[node name="EhPvpCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/EhPvpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="CategoriaPesoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="CategoriaPesoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/CategoriaPesoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Categoria"
+
+[node name="CategoriaPesoDropdown" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/CategoriaPesoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparatorComport" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoComportamento" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Comportamento ---"
+
+[node name="PodeDroparRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PodeDroparLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PodeDroparRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Pode Dropar?"
+
+[node name="PodeDroparCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/PodeDroparRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="PodeTrocarRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PodeTrocarLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PodeTrocarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Pode Trocar?"
+
+[node name="PodeTrocarCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/PodeTrocarRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="PodeVenderRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PodeVenderLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PodeVenderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Pode Vender?"
+
+[node name="PodeVenderCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/PodeVenderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="PodeArmazenarBancoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PodeArmazenarBancoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PodeArmazenarBancoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Armazenar Banco?"
+
+[node name="PodeArmazenarBancoCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/PodeArmazenarBancoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="PodeArmazenarBancoGuildRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PodeArmazenarBancoGuildLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PodeArmazenarBancoGuildRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Armazenar BGuild?"
+
+[node name="PodeArmazenarBancoGuildCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/PodeArmazenarBancoGuildRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="DropEmPkRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DropEmPkLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DropEmPkRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Drop em PK?"
+
+[node name="DropEmPkCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form/DropEmPkRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_yellow")
+
+[node name="ChanceDropRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ChanceDropLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ChanceDropRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Chance de Drop (%)"
+
+[node name="ChanceDropSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ChanceDropRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0
+max_value = 100
+value = 0
+step = 1
+
+[node name="TempoDesaparecimentoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TempoDesaparecimentoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/TempoDesaparecimentoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Desaparecer (seg)"
+
+[node name="TempoDesaparecimentoSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/TempoDesaparecimentoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0
+max_value = 3600
+value = 30
+step = 1
+
+[node name="TempoCooldownRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TempoCooldownLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/TempoCooldownRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Cooldown (seg)"
+
+[node name="TempoCooldownSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/TempoCooldownRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0
+max_value = 3600
+value = 0
+step = 0.5
+
+[node name="BtnSalvar" type="Button" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Salvar Item"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoIdentidade" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Identidade ---"
+
+[node name="ItemIdRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ItemIdLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ItemIdRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Item ID"
+
+[node name="ItemIdSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ItemIdRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0
+max_value = 9999
+value = 0
+step = 1
+
+[node name="DescricaoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DescricaoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DescricaoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Descricao"
+valign = 1
+
+[node name="DescricaoEdit" type="TextEdit" parent="Panel/HBox/ScrollForm/Form/DescricaoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 64)
+wrap_mode = 1
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoRequisitos" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Requisitos & Valor ---"
+
+[node name="NivelReqRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="NivelReqLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/NivelReqRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Nivel Req."
+
+[node name="NivelReqSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/NivelReqRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1
+max_value = 999
+value = 1
+step = 1
+
+[node name="ValorRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ValorLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ValorRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Valor (gold)"
+
+[node name="ValorSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ValorRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0
+max_value = 999999
+value = 0
+step = 1
+
+[node name="HSeparatorStatus" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoStatus" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Status ---"
+
+[node name="HpRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="HpLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/HpRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Vida (HP)"
+
+[node name="HpMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/HpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="HpSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/HpRow"]
+layout_mode = 2
+text = "~"
+
+[node name="HpMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/HpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="ManaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ManaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ManaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Mana"
+
+[node name="ManaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="ManaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/ManaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="ManaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="StaminaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="StaminaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/StaminaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Stamina"
+
+[node name="StaminaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/StaminaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="StaminaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/StaminaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="StaminaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/StaminaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="HSeparatorRaridade" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoRaridade" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Raridade ---"
+
+[node name="TipoItemRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TipoItemLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/TipoItemRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Tipo do Item"
+
+[node name="TipoItemDropdown" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/TipoItemRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RaridadeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="RaridadeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/RaridadeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Raridade"
+
+[node name="RaridadeDropdown" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/RaridadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnGerarValores" type="Button" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Gerar Valores Aleatorios"
+
+[node name="HSeparatorCombate" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoCombate" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Combate ---"
+
+[node name="ForcaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ForcaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ForcaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Forca"
+
+[node name="ForcaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ForcaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="ForcaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/ForcaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="ForcaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ForcaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="AgilidadeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="AgilidadeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AgilidadeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Agilidade"
+
+[node name="AgilidadeMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/AgilidadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="AgilidadeSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/AgilidadeRow"]
+layout_mode = 2
+text = "~"
+
+[node name="AgilidadeMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/AgilidadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DestrezaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DestrezaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DestrezaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Destreza"
+
+[node name="DestrezaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DestrezaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DestrezaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DestrezaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DestrezaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DestrezaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="InteligenciaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="InteligenciaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/InteligenciaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Inteligencia"
+
+[node name="InteligenciaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/InteligenciaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="InteligenciaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/InteligenciaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="InteligenciaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/InteligenciaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DanoFisicoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DanoFisicoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoFisicoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Dano Fisico"
+
+[node name="DanoFisicoMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoFisicoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DanoFisicoSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoFisicoRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DanoFisicoMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoFisicoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DanoMagicoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DanoMagicoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoMagicoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Dano Magico"
+
+[node name="DanoMagicoMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoMagicoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DanoMagicoSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoMagicoRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DanoMagicoMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoMagicoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DefesaFisicaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DefesaFisicaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DefesaFisicaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Defesa Fisica"
+
+[node name="DefesaFisicaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DefesaFisicaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DefesaFisicaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DefesaFisicaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DefesaFisicaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DefesaFisicaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DefesaMagicaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DefesaMagicaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DefesaMagicaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Defesa Magica"
+
+[node name="DefesaMagicaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DefesaMagicaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DefesaMagicaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DefesaMagicaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DefesaMagicaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DefesaMagicaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="ChanceCriticaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ChanceCriticaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ChanceCriticaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Chance Critica"
+
+[node name="ChanceCriticaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ChanceCriticaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="ChanceCriticaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/ChanceCriticaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="ChanceCriticaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ChanceCriticaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="DanoCriticoBonusRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DanoCriticoBonusLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoCriticoBonusRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Dano Critico Bonus"
+
+[node name="DanoCriticoBonusMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoCriticoBonusRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="DanoCriticoBonusSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoCriticoBonusRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DanoCriticoBonusMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoCriticoBonusRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="RouboVidaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="RouboVidaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/RouboVidaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Roubo Vida"
+
+[node name="RouboVidaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RouboVidaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="RouboVidaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/RouboVidaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="RouboVidaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RouboVidaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="RouboManaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="RouboManaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/RouboManaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Roubo Mana"
+
+[node name="RouboManaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RouboManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="RouboManaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/RouboManaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="RouboManaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RouboManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="RegeneracaoVidaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="RegeneracaoVidaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/RegeneracaoVidaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Regen. Vida"
+
+[node name="RegeneracaoVidaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RegeneracaoVidaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="RegeneracaoVidaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/RegeneracaoVidaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="RegeneracaoVidaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RegeneracaoVidaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="RegeneracaoManaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="RegeneracaoManaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/RegeneracaoManaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Regen. Mana"
+
+[node name="RegeneracaoManaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RegeneracaoManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="RegeneracaoManaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/RegeneracaoManaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="RegeneracaoManaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/RegeneracaoManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="TenacidadeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TenacidadeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/TenacidadeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Tenacidade"
+
+[node name="TenacidadeMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/TenacidadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.01
+value = 0
+
+[node name="TenacidadeSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/TenacidadeRow"]
+layout_mode = 2
+text = "~"
+
+[node name="TenacidadeMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/TenacidadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.01
+value = 0
+
+[node name="HSeparatorBonus" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoBonus" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- Bonus ---"
+
+[node name="PrecisaoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PrecisaoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PrecisaoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Precisao"
+
+[node name="PrecisaoMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PrecisaoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.01
+value = 0
+
+[node name="PrecisaoSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/PrecisaoRow"]
+layout_mode = 2
+text = "~"
+
+[node name="PrecisaoMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PrecisaoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.01
+value = 0
+
+[node name="EvasaoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="EvasaoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/EvasaoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Evasao"
+
+[node name="EvasaoMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/EvasaoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="EvasaoSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/EvasaoRow"]
+layout_mode = 2
+text = "~"
+
+[node name="EvasaoMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/EvasaoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="VelocidadeAtaqueRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="VelocidadeAtaqueLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/VelocidadeAtaqueRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Vel. Ataque"
+
+[node name="VelocidadeAtaqueMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/VelocidadeAtaqueRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="VelocidadeAtaqueSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/VelocidadeAtaqueRow"]
+layout_mode = 2
+text = "~"
+
+[node name="VelocidadeAtaqueMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/VelocidadeAtaqueRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.01
+
+[node name="VelocidadeMovimentoRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="VelocidadeMovimentoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/VelocidadeMovimentoRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Vel. Movimento"
+
+[node name="VelocidadeMovimentoMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/VelocidadeMovimentoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="VelocidadeMovimentoSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/VelocidadeMovimentoRow"]
+layout_mode = 2
+text = "~"
+
+[node name="VelocidadeMovimentoMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/VelocidadeMovimentoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.01
+
+[node name="ReducaoCooldownRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ReducaoCooldownLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ReducaoCooldownRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Red. Cooldown"
+
+[node name="ReducaoCooldownMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ReducaoCooldownRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="ReducaoCooldownSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/ReducaoCooldownRow"]
+layout_mode = 2
+text = "~"
+
+[node name="ReducaoCooldownMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ReducaoCooldownRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="BonusExperienciaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="BonusExperienciaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/BonusExperienciaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Bonus XP"
+
+[node name="BonusExperienciaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/BonusExperienciaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="BonusExperienciaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/BonusExperienciaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="BonusExperienciaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/BonusExperienciaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="ChanceDropAumentadaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="ChanceDropAumentadaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/ChanceDropAumentadaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Chance Drop"
+
+[node name="ChanceDropAumentadaMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ChanceDropAumentadaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+
+[node name="ChanceDropAumentadaSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/ChanceDropAumentadaRow"]
+layout_mode = 2
+text = "~"
+
+[node name="ChanceDropAumentadaMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/ChanceDropAumentadaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 0.1
+value = 0
+step = 0.1
+
+[node name="HSeparatorPvp" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SecaoPvp" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+text = "--- PvP ---"
+
+[node name="DanoPvpRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DanoPvpLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoPvpRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Dano PvP"
+
+[node name="DanoPvpMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoPvpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DanoPvpSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DanoPvpRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DanoPvpMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DanoPvpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DefesaPvpRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="DefesaPvpLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DefesaPvpRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Defesa PvP"
+
+[node name="DefesaPvpMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DefesaPvpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="DefesaPvpSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/DefesaPvpRow"]
+layout_mode = 2
+text = "~"
+
+[node name="DefesaPvpMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/DefesaPvpRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="PenetracaoArmaduraRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="PenetracaoArmaduraLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PenetracaoArmaduraRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Pen. Armadura"
+
+[node name="PenetracaoArmaduraMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PenetracaoArmaduraRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="PenetracaoArmaduraSeparador" type="Label" parent="Panel/HBox/ScrollForm/Form/PenetracaoArmaduraRow"]
+layout_mode = 2
+text = "~"
+
+[node name="PenetracaoArmaduraMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PenetracaoArmaduraRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+step = 1
+value = 0
+
+[node name="BtnCriarTodos" type="Button" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Criar Todos os Itens Faltantes (servidor)"

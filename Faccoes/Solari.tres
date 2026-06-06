@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="FaccaoResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Editor/FaccaoResource.cs" id="1"]
+[ext_resource type="Texture2D" path="res://Faccoes/Solari.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+IdFaccao = "solari"
+NomeFaccao = "Solari"
+Descricao = "Seguidores da luz de Aethor. Humanos, elfos e trolls defendem a honra, a esperança e Mithara sob o sol dourado. Sua capital é Helion, a Cidade do Sol Eterno."
+CorTema = Color(0.95, 0.82, 0.35, 1)
+Emblema = ExtResource("2")

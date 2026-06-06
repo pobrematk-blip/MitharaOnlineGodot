@@ -1,0 +1,23 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://d0yo8dr45p8ph"]
+
+[ext_resource type="Script" path="res://resources/Pets/PetResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+PetID = 2
+Nome = "Lobo Pet"
+Descricao = "Um lobo feroz que ataca seus inimigos!"
+Tipo = 1
+Level = 3
+HP = 150
+Mana = 20
+AttackDamage = 12
+Forca = 3
+Agilidade = 4
+Destreza = 2
+Inteligencia = 0
+Speed = 220.0
+AttackRange = 40.0
+AttackCooldown = 1.2
+ColetaRange = 0.0
+GuardRange = 250.0

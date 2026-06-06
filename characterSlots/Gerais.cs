@@ -1,11 +1,12 @@
-using Godot;
+﻿using Godot;
 
 public enum TipoEquipamento 
 { 
     Nenhum, 
-    Capacete, Peitoral, Ombreiras, Luvas, Calca, Botas, 
+    Capacete, Peitoral, Cinto, Luvas, Calca, Botas, 
     Arma, Escudo, 
     Colar, Anel, Brinco, 
     Runa, Asa, 
-    Montaria, Pet, Skin
+    Montaria, Pet, Skin,
+    Consumivel, Moeda, Feitico
 }

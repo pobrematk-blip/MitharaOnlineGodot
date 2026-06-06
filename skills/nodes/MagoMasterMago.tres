@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "mago_master"
+Nome = "Mestre da Magia"
+Descricao = "Você domina a magia arcana completamente. +20 Inteligência, +50% dano, +40% vida."
+Requisitos = PackedStringArray("mago_choque", "mago_fireball", "mago_mana_shield")
+CustoPontos = 5
+NivelMinimo = 10
+BonusInteligencia = 20
+BonusDanoPercent = 0.5
+BonusVidaPercent = 0.4
+BonusManaPercent = 0.5

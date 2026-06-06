@@ -1,0 +1,23 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://cehs8rml4dbga"]
+
+[ext_resource type="Script" path="res://resources/Pets/PetResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+PetID = 1
+Nome = "Slime Pet"
+Descricao = "Um slime amigável que segue você e coleta itens do chão!"
+Tipo = 0
+Level = 1
+HP = 80
+Mana = 10
+AttackDamage = 0
+Forca = 1
+Agilidade = 2
+Destreza = 1
+Inteligencia = 0
+Speed = 180.0
+AttackRange = 40.0
+AttackCooldown = 2.0
+ColetaRange = 150.0
+GuardRange = 200.0

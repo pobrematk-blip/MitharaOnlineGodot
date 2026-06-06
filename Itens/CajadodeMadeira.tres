@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_yv3t1"]
+
+[resource]
+script = ExtResource("1_yv3t1")
+ItemID = 12
+Nome = "Cajado de Madeira"
+QuantidadeMaximaPorSlot = 1
+SlotsAdicionais = 0
+Tipo = 7
+Inteligencia = 5
+DanoFisico = 3
+ClassesPermitidas = "Mago,Prist"

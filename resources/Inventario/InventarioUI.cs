@@ -6,7 +6,8 @@ public partial class InventarioUI : Control
 {
     [Export] public PackedScene SlotUIPrefab; // Lembre de conferir se está arrastado no Inspetor!
     
-    private Panel _panel; 
+    private Panel _panel;
+    private Panel _titleBar;
     private GridContainer _gridContainer;
     private InventarioComponent _inventarioAlvo;
     private List<SlotUI> _slotsVisuais = new List<SlotUI>();
@@ -18,6 +19,11 @@ public partial class InventarioUI : Control
     private bool _arrastando = false;
     private Vector2 _pontoCliqueOriginal;
     private Button _closeButton;
+    private Label _infoCapacidade;
+    private Label _goldLabel;
+    private Label _diamondLabel;
+    private GameNetwork _gameNet;
+    private CashManager _cashManager;
 
     // Propriedade pública para verificar se o painel do inventário está visível
     public bool PainelVisivel => _panel != null && _panel.Visible;
@@ -45,13 +51,31 @@ public partial class InventarioUI : Control
         {
             GD.Print("[INVENTÁRIO UI] ⚠️ Aviso: ContainerBolsas não encontrado por Acesso Único. Verifique se o nome está correto e com a % ativa.");
         }
+
+        _goldLabel = GetNodeOrNull<Label>("%GoldLabel");
+        _diamondLabel = GetNodeOrNull<Label>("%DiamondLabel");
+
+        _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (_gameNet != null)
+        {
+            _gameNet.OnGoldUpdate += OnGoldUpdate;
+            if (_goldLabel != null && _gameNet.Gold > 0)
+                _goldLabel.Text = $"Ouro: {_gameNet.Gold}";
+        }
+
+        _cashManager = GetNodeOrNull<CashManager>("/root/CashManager");
+        if (_cashManager != null && _diamondLabel != null)
+            _diamondLabel.Text = $"Diamantes: {_cashManager.Diamantes}";
         
         Visible = true;
         
         if (_panel != null) 
         {
             _panel.Visible = false;
-            _panel.GuiInput += OnPanelGuiInput;
+            _titleBar = _panel.GetNode<Panel>("TitleBar");
+            _titleBar.GuiInput += OnTitleBarGuiInput;
+
+            _infoCapacidade = GetNode<Label>("%InfoCapacidade");
 
             // Conecta o botão X para fechar o inventário
             if (_panel.HasNode("CloseButton"))
@@ -73,6 +97,12 @@ public partial class InventarioUI : Control
 
         // Espera a árvore inteira do jogo estar pronta antes de buscar o Player!
         CallDeferred(MethodName.ConectarComponenteInventario);
+    }
+
+    private void OnGoldUpdate(int gold)
+    {
+        if (_goldLabel != null)
+            _goldLabel.Text = $"Ouro: {gold}";
     }
 
     private void OnCloseButtonPressed()
@@ -123,9 +153,18 @@ public partial class InventarioUI : Control
         _panel.Position = (tamanhoDaTela / 2) - (tamanhoDoPainel / 2);
     }
 
+    private void AtualizarMoedas()
+    {
+        if (_goldLabel != null && _gameNet != null)
+            _goldLabel.Text = $"Ouro: {_gameNet.Gold}";
+        if (_diamondLabel != null && _cashManager != null)
+            _diamondLabel.Text = $"Diamantes: {_cashManager.Diamantes}";
+    }
+
     public override void _Input(InputEvent @event)
     {
         if (_panel == null) return;
+        if (GetViewport().GuiGetFocusOwner() is LineEdit) return;
 
         if (@event.IsActionPressed("inventario", false) || 
             (@event is InputEventKey eventKey && eventKey.Pressed && !eventKey.Echo && eventKey.Keycode == Key.I))
@@ -135,6 +174,7 @@ public partial class InventarioUI : Control
             if (_panel.Visible)
             {
                 DesenharInterface();
+                AtualizarMoedas();
                 GD.Print("[INVENTÁRIO] 📖 Painel aberto!");
                 GD.Print($"[INVENTÁRIO] Panel.Visible = {_panel.Visible}, PainelVisivel = {PainelVisivel}");
             }
@@ -162,22 +202,13 @@ public partial class InventarioUI : Control
         }
     }
 
-    private void OnPanelGuiInput(InputEvent @event)
+    private void OnTitleBarGuiInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseEvent)
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
         {
-            if (mouseEvent.ButtonIndex == MouseButton.Left)
-            {
-                if (mouseEvent.Pressed)
-                {
-                    _arrastando = true;
-                    _pontoCliqueOriginal = mouseEvent.Position; 
-                }
-                else
-                {
-                    _arrastando = false;
-                }
-            }
+            _arrastando = mouseEvent.Pressed;
+            if (mouseEvent.Pressed)
+                _pontoCliqueOriginal = mouseEvent.Position;
         }
         else if (@event is InputEventMouseMotion mouseMotion && _arrastando)
         {
@@ -233,6 +264,7 @@ public partial class InventarioUI : Control
         for (int i = 0; i < _inventarioAlvo.TamanhoDoInventario; i++)
         {
             SlotUI novoSlotUI = SlotUIPrefab.Instantiate<SlotUI>();
+            novoSlotUI.SlotIndex = i;
             _gridContainer.AddChild(novoSlotUI);
             _slotsVisuais.Add(novoSlotUI);
         }
@@ -267,6 +299,9 @@ public partial class InventarioUI : Control
                 _slotsBolsasVisuais[i].AtualizarSlot(bolsaLogica);
             }
         }
+
+        if (_infoCapacidade != null)
+            _infoCapacidade.Text = $"Capacidade: {_inventarioAlvo.TamanhoDoInventario} slots";
     }
 
     private void DesenharInterface()

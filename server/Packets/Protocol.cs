@@ -1,0 +1,116 @@
+﻿using LiteNetLib.Utils;
+
+namespace Mithara.Server.Packets;
+
+public enum PacketId : ushort
+{
+    // Client -> Server
+    C2S_Login = 0x0101,
+    C2S_CreateCharacter = 0x0102,
+    C2S_SelectCharacter = 0x0103,
+    C2S_EnterWorld = 0x0104,
+    C2S_PlayerMove = 0x0105,
+    C2S_PlayerStop = 0x0106,
+    C2S_PlayerAction = 0x0107,
+    C2S_ChannelSwitch = 0x0108,
+    C2S_Register = 0x0109,
+    C2S_GetSecurityQuestion = 0x010A,
+    C2S_RecoverPassword = 0x010B,
+    C2S_Chat = 0x0110,
+    C2S_Attack = 0x0120,
+    C2S_SkillUse = 0x0121,
+    C2S_InventoryRequest = 0x0130,
+    C2S_EquipItem = 0x0131,
+    C2S_UnequipItem = 0x0132,
+    C2S_MoveItem = 0x0133,
+    C2S_DropItem = 0x0134,
+    C2S_PartyInvite = 0x0140,
+    C2S_PartyAccept = 0x0141,
+    C2S_PartyLeave = 0x0142,
+    C2S_PartyKick = 0x0143,
+    C2S_PartyPromote = 0x0144,
+    C2S_GuildCreate = 0x0150,
+    C2S_GuildInvite = 0x0151,
+    C2S_GuildAccept = 0x0152,
+    C2S_GuildLeave = 0x0153,
+    C2S_GuildKick = 0x0154,
+    C2S_GuildPromote = 0x0155,
+    C2S_GuildDemote = 0x0156,
+    C2S_GuildBuySkill = 0x0157,
+    C2S_LootPickup = 0x0160,
+    C2S_QuestList = 0x0170,
+    C2S_QuestClaimReward = 0x0171,
+    C2S_NpcInteract = 0x0180,
+    C2S_NpcSelectOption = 0x0181,
+    C2S_NpcBuyItem = 0x0182,
+    C2S_NpcSellItem = 0x0183,
+    C2S_BankDeposit = 0x0184,
+    C2S_BankWithdraw = 0x0185,
+    C2S_BankRequest = 0x0186,
+    C2S_Ping = 0x01FF,
+
+    // Server -> Client
+    S2C_LoginResult = 0x0201,
+    S2C_CharacterList = 0x0202,
+    S2C_EnterWorld = 0x0203,
+    S2C_SpawnEntity = 0x0204,
+    S2C_DespawnEntity = 0x0205,
+    S2C_EntityMove = 0x0206,
+    S2C_EntityUpdate = 0x0207,
+    S2C_Chat = 0x0208,
+    S2C_ChannelList = 0x0209,
+    S2C_RegisterResult = 0x020A,
+    S2C_SecurityQuestion = 0x020B,
+    S2C_RecoverResult = 0x020C,
+    S2C_CombatResult = 0x0220,
+    S2C_EntityDamage = 0x0221,
+    S2C_EntityDied = 0x0222,
+    S2C_GainExp = 0x0223,
+    S2C_LevelUp = 0x0224,
+    S2C_InventoryData = 0x0230,
+    S2C_EquipUpdate = 0x0231,
+    S2C_ItemUpdate = 0x0232,
+    S2C_PartyData = 0x0240,
+    S2C_PartyMemberUpdate = 0x0241,
+    S2C_PartyLeaderUpdate = 0x0242,
+    S2C_GuildData = 0x0250,
+    S2C_GuildMemberUpdate = 0x0251,
+    S2C_GuildRankUpdate = 0x0252,
+    S2C_GuildLevelUp = 0x0253,
+    S2C_GuildSkillUpdate = 0x0254,
+    S2C_LootSpawn = 0x0260,
+    S2C_LootDespawn = 0x0261,
+    S2C_QuestList = 0x0270,
+    S2C_QuestProgress = 0x0271,
+    S2C_QuestCompleted = 0x0272,
+    S2C_QuestRewardClaimed = 0x0273,
+    S2C_NpcDialog = 0x0280,
+    S2C_NpcShopItems = 0x0281,
+    S2C_NpcBuyResult = 0x0282,
+    S2C_NpcSellResult = 0x0283,
+    S2C_BankData = 0x0284,
+    S2C_BankResult = 0x0285,
+    S2C_GoldUpdate = 0x0286,
+    S2C_Pong = 0x02FF,
+}
+
+public static class PacketSerializer
+{
+    public static bool TryReadPacket(NetDataReader reader, out PacketId id, out byte[] data)
+    {
+        id = default;
+        data = Array.Empty<byte>();
+        if (reader.AvailableBytes < 2) return false;
+        id = (PacketId)reader.GetUShort();
+        int len = reader.AvailableBytes;
+        data = reader.GetRemainingBytes();
+        return true;
+    }
+
+    public static NetDataWriter WritePacket(PacketId id)
+    {
+        var writer = new NetDataWriter();
+        writer.Put((ushort)id);
+        return writer;
+    }
+}

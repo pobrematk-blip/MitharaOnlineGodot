@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "ber_base_forca"
+Nome = "Força Base"
+Descricao = "Aumenta sua força em +12 permanentemente. Base do guerreiro brutal."
+CustoPontos = 1
+NivelMinimo = 1
+BonusForca = 12

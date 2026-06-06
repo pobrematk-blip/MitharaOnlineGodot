@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "ber_master"
+Nome = "Mestre Berserker"
+Descricao = "Você é a encarnação da fúria. +25 Força, +80% dano, +100% vida."
+Requisitos = PackedStringArray("ber_rajada", "ber_escudo", "ber_furia")
+CustoPontos = 5
+NivelMinimo = 10
+BonusForca = 25
+BonusDanoPercent = 0.8
+BonusVidaPercent = 1.0
+BonusVelocidadePercent = 0.4

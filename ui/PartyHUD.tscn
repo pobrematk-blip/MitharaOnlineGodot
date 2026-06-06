@@ -1,0 +1,13 @@
+[gd_scene load_steps=1 format=3 uid="uid://partyhud"]
+
+[ext_resource type="Script" path="res://ui/PartyHUD.cs" id="1"]
+
+[node name="PartyHUD" type="Control"]
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -210.0
+offset_right = -8.0
+offset_top = 120.0
+script = ExtResource("1")

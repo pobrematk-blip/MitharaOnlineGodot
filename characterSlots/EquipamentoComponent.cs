@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 using System.Collections.Generic;
 
@@ -53,23 +53,23 @@ public partial class EquipamentoComponent : Node
     public float VelocidadeAtaque => 1.0f + (Agilidade * 0.03f);
     
     // Defesas
-    public int DefesaFisica => (int)(Agilidade / 2);
-    public int DefesaMagica => (int)(Inteligencia / 3);
+    public int DefesaFisica => Agilidade / 2;
+    public int DefesaMagica => Inteligencia / 3;
     
     // Precisão (por Agilidade + Destreza) e Tenacidade
     public int Precisao => (Agilidade / 2) + Destreza;
-    public int Tenacidade => (int)(Forca / 5);
+    public int Tenacidade => Forca / 5;
     
     // PvP
     public int DanoPvp => (Forca + Inteligencia) / 2;
     public int DefesaPvp => (Agilidade + Destreza) / 2;
     
     // Penetração e Absorção
-    public int PenetracacaoArmadura => (int)(Forca / 10);
+    public int PenetracaoArmadura => Forca / 10;
     
     // Regeneração
-    public int RegeneracaoVida => (int)(Forca / 20);
-    public int RegeneracaoMana => (int)(Inteligencia / 10);
+    public int RegeneracaoVida => Forca / 20;
+    public int RegeneracaoMana => Inteligencia / 10;
     
     // Roubo
     public float RouboVida => Destreza / 50f;
@@ -77,7 +77,7 @@ public partial class EquipamentoComponent : Node
     
     // Redução e Bônus
     public float ReducaoCooldown => Agilidade / 100f;
-    public float BonusExperiencia => (int)(Inteligencia / 100);
+    public float BonusExperiencia => Inteligencia / 100f;
 
     public override void _Ready()
     {
@@ -154,7 +154,7 @@ public partial class EquipamentoComponent : Node
     {
         _bonusDanoCritico += bonusPercentual;
         EmitSignal(SignalName.EquipamentoAtualizado);
-        GD.Print($"[EQUIPAMENTO] 🔥 Dano Crítico aumentado! Novo bônus: +{bonusPercentual:F2}x (Total: {DanoCritico:F2}x)");
+        GD.Print($"[EQUIPAMENTO] ðŸ”¥ Dano Crítico aumentado! Novo bônus: +{bonusPercentual:F2}x (Total: {DanoCritico:F2}x)");
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public partial class EquipamentoComponent : Node
         _bonusDanoCritico -= bonusPercentual;
         _bonusDanoCritico = Mathf.Max(_bonusDanoCritico, 0f);  // Não pode ser negativo
         EmitSignal(SignalName.EquipamentoAtualizado);
-        GD.Print($"[EQUIPAMENTO] 📉 Dano Crítico reduzido! Novo bônus: +{_bonusDanoCritico:F2}x (Total: {DanoCritico:F2}x)");
+        GD.Print($"[EQUIPAMENTO] ðŸ“‰ Dano Crítico reduzido! Novo bônus: +{_bonusDanoCritico:F2}x (Total: {DanoCritico:F2}x)");
     }
 
     // Métodos para adicionar pontos nos atributos
@@ -176,7 +176,7 @@ public partial class EquipamentoComponent : Node
             _forca++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] 💪 Força aumentada! Novo valor: {_forca}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] ðŸ’ª Força aumentada! Novo valor: {_forca}. Pontos restantes: {_pontosDisponiveis}");
         }
     }
 
@@ -187,7 +187,7 @@ public partial class EquipamentoComponent : Node
             _agilidade++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] ⚡ Agilidade aumentada! Novo valor: {_agilidade}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] ✘ Agilidade aumentada! Novo valor: {_agilidade}. Pontos restantes: {_pontosDisponiveis}");
         }
     }
 
@@ -198,7 +198,7 @@ public partial class EquipamentoComponent : Node
             _destreza++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] 🎯 Destreza aumentada! Novo valor: {_destreza}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] ðŸŽ¯ Destreza aumentada! Novo valor: {_destreza}. Pontos restantes: {_pontosDisponiveis}");
         }
     }
 
@@ -209,7 +209,52 @@ public partial class EquipamentoComponent : Node
             _inteligencia++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] 🧠 Inteligência aumentada! Novo valor: {_inteligencia}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] ðŸ§  Inteligência aumentada! Novo valor: {_inteligencia}. Pontos restantes: {_pontosDisponiveis}");
+        }
+    }
+
+    public void AdicionarPontosDisponiveis(int qtd)
+    {
+        _pontosDisponiveis += qtd;
+        EmitSignal(SignalName.EquipamentoAtualizado);
+    }
+
+    public static bool PodeEquipar(ItemResource item, string nomeClasse)
+    {
+        if (item == null) return true;
+        if (string.IsNullOrWhiteSpace(item.ClassesPermitidas)) return true;
+        var classes = item.ClassesPermitidas.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var c in classes)
+        {
+            if (string.Equals(c, nomeClasse, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
+    public void ImportarEstado(int forca, int agilidade, int destreza, int inteligencia, int pontosDisponiveis)
+    {
+        _forca = forca;
+        _agilidade = agilidade;
+        _destreza = destreza;
+        _inteligencia = inteligencia;
+        _pontosDisponiveis = pontosDisponiveis;
+        EmitSignal(SignalName.EquipamentoAtualizado);
+    }
+
+    public static void PreencherPreview(ClasseCustomResource classe, out int forca, out int agilidade, out int destreza, out int inteligencia)
+    {
+        forca = classe.Forca;
+        agilidade = classe.Agilidade;
+        destreza = classe.Destreza;
+        inteligencia = classe.Inteligencia;
+
+        if (classe.Raca != null)
+        {
+            forca += classe.Raca.BonusForca;
+            agilidade += classe.Raca.BonusAgilidade;
+            destreza += classe.Raca.BonusDestreza;
+            inteligencia += classe.Raca.BonusInteligencia;
         }
     }
 }

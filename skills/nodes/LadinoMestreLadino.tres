@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "lad_master"
+Nome = "Mestre Ladino"
+Descricao = "Você é a morte nas sombras. +15 Agilidade, +15 Destreza, +70% dano, +80% velocidade."
+Requisitos = PackedStringArray("lad_sombras", "lad_veneno", "lad_esperteza")
+CustoPontos = 5
+NivelMinimo = 10
+BonusAgilidade = 15
+BonusDestreza = 15
+BonusDanoPercent = 0.7
+BonusVelocidadePercent = 0.8

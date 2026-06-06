@@ -1,0 +1,166 @@
+namespace Mithara.Server.World;
+
+public class Guild
+{
+    private static int _nextId;
+    public int Id { get; set; }
+    public string Name { get; }
+    public ulong LeaderEntityId { get; set; }
+    public HashSet<ulong> Members { get; } = new();
+    public Dictionary<ulong, int> MemberRanks { get; } = new();
+    public int Level { get; set; } = 1;
+    public int Xp { get; set; }
+    public int SkillPoints { get; set; }
+    public Dictionary<string, int> SkillLevels { get; } = new();
+
+    private static readonly int[] XpPerLevel = { 0, 100, 250, 500, 1000 };
+    public int XpForNextLevel => Level < XpPerLevel.Length ? XpPerLevel[Level] : 999999;
+
+    public Guild(string name, ulong leaderId)
+    {
+        Id = Interlocked.Increment(ref _nextId);
+        Name = name;
+        LeaderEntityId = leaderId;
+        Members.Add(leaderId);
+        MemberRanks[leaderId] = 0; // Lider
+    }
+
+    public int GetRank(ulong entityId) =>
+        MemberRanks.TryGetValue(entityId, out var r) ? r : 4; // Novato
+
+    public void SetRank(ulong entityId, int rank)
+    {
+        if (Members.Contains(entityId))
+            MemberRanks[entityId] = rank;
+    }
+
+    public void AddXp(int amount)
+    {
+        Xp += amount;
+        while (Level < XpPerLevel.Length && Xp >= XpForNextLevel)
+        {
+            Xp -= XpForNextLevel;
+            Level++;
+            SkillPoints++;
+        }
+    }
+
+    public bool TryBuySkill(string skillId)
+    {
+        if (SkillPoints <= 0) return false;
+        SkillLevels.TryGetValue(skillId, out var current);
+        if (current >= 5) return false;
+        SkillLevels[skillId] = current + 1;
+        SkillPoints--;
+        return true;
+    }
+
+    public int GetSkillLevel(string skillId) =>
+        SkillLevels.TryGetValue(skillId, out var l) ? l : 0;
+}
+
+public class GuildManager
+{
+    private readonly Dictionary<int, Guild> _guilds = new();
+    private readonly Dictionary<ulong, int> _playerGuild = new();
+    private readonly object _lock = new();
+
+    public Guild? GetGuild(int guildId)
+    {
+        lock (_lock) { _guilds.TryGetValue(guildId, out var g); return g; }
+    }
+
+    public int? GetPlayerGuildId(ulong entityId)
+    {
+        lock (_lock) { return _playerGuild.TryGetValue(entityId, out var id) ? id : null; }
+    }
+
+    public Guild? GetPlayerGuild(ulong entityId)
+    {
+        var id = GetPlayerGuildId(entityId);
+        return id.HasValue ? GetGuild(id.Value) : null;
+    }
+
+    public Guild? CreateGuild(string name, ulong leaderId)
+    {
+        lock (_lock)
+        {
+            if (_playerGuild.ContainsKey(leaderId)) return null;
+            if (_guilds.Values.Any(g => g.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                return null;
+
+            var guild = new Guild(name, leaderId);
+            _guilds[guild.Id] = guild;
+            _playerGuild[leaderId] = guild.Id;
+            return guild;
+        }
+    }
+
+    public bool AddMember(int guildId, ulong entityId)
+    {
+        lock (_lock)
+        {
+            if (_playerGuild.ContainsKey(entityId)) return false;
+            if (!_guilds.TryGetValue(guildId, out var guild)) return false;
+            guild.Members.Add(entityId);
+            guild.MemberRanks[entityId] = 4; // Novato
+            _playerGuild[entityId] = guildId;
+            return true;
+        }
+    }
+
+    public void RemoveMember(ulong entityId)
+    {
+        lock (_lock)
+        {
+            if (!_playerGuild.Remove(entityId, out var guildId)) return;
+            if (!_guilds.TryGetValue(guildId, out var guild)) return;
+            guild.Members.Remove(entityId);
+
+            if (guild.Members.Count == 0)
+                _guilds.Remove(guildId);
+            else if (guild.LeaderEntityId == entityId)
+                guild.LeaderEntityId = guild.Members.First();
+        }
+    }
+
+    public void LoadGuild(Guild guild)
+    {
+        lock (_lock)
+        {
+            _guilds[guild.Id] = guild;
+        }
+    }
+
+    public void LoadMember(int guildId, ulong entityId, int rank)
+    {
+        lock (_lock)
+        {
+            if (_guilds.TryGetValue(guildId, out var guild))
+            {
+                guild.Members.Add(entityId);
+                guild.SetRank(entityId, rank);
+                _playerGuild[entityId] = guildId;
+            }
+        }
+    }
+
+    public void LoadSkill(int guildId, string skillId, int level)
+    {
+        lock (_lock)
+        {
+            if (_guilds.TryGetValue(guildId, out var guild))
+                guild.SkillLevels[skillId] = level;
+        }
+    }
+
+    public List<ulong> GetMemberEntityIds(int guildId)
+    {
+        lock (_lock)
+        {
+            return _guilds.TryGetValue(guildId, out var guild)
+                ? guild.Members.ToList()
+                : new List<ulong>();
+        }
+    }
+}

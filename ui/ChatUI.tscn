@@ -1,0 +1,17 @@
+[gd_scene load_steps=1 format=3 uid="uid://d2q5cnsxb1nb3"]
+
+[ext_resource type="Script" path="res://ui/ChatUI.cs" id="1"]
+
+[node name="ChatUI" type="Control"]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = 388.0
+offset_top = -150.0
+offset_bottom = 0.0
+script = ExtResource("1")
+

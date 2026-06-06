@@ -6,7 +6,7 @@ public partial class BancoUI : Control
     [Export] public PackedScene SlotUIPrefab;
 
     private Panel _panel;
-    private Control _titleBar;
+    private Panel _titleBar;
     private Button _closeButton;
     private GridContainer _gridContainer;
     private HBoxContainer _containerBolsas;
@@ -19,25 +19,94 @@ public partial class BancoUI : Control
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
 
+    private GameNetwork _gameNet;
+    private Label _goldOnHand;
+    private Label _goldInBank;
+    private SpinBox _goldAmount;
+    private Button _depositButton;
+    private Button _withdrawButton;
+    private Label _goldResult;
+
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
     public override void _Ready()
     {
         _panel = GetNode<Panel>("Panel");
-        _titleBar = _panel.GetNode<Control>("TitleBar");
+        _titleBar = _panel.GetNode<Panel>("TitleBar");
         _closeButton = _panel.GetNode<Button>("CloseButton");
         _gridContainer = GetNode<GridContainer>("%GridContainer");
         _containerBolsas = GetNode<HBoxContainer>("%ContainerBolsas");
         _infoCapacidade = GetNode<Label>("%InfoCapacidade");
+
+        _goldOnHand = GetNode<Label>("%GoldOnHand");
+        _goldInBank = GetNode<Label>("%GoldInBank");
+        _goldAmount = GetNode<SpinBox>("%GoldAmount");
+        _depositButton = GetNode<Button>("%DepositButton");
+        _withdrawButton = GetNode<Button>("%WithdrawButton");
+        _goldResult = GetNode<Label>("%GoldResult");
+
+        _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (_gameNet != null)
+        {
+            _gameNet.OnBankData += OnBankData;
+            _gameNet.OnBankResult += OnBankResult;
+        }
 
         Visible = true;
         _panel.Visible = false;
 
         _closeButton.Pressed += FecharPainel;
         _titleBar.GuiInput += OnTitleBarGuiInput;
+        _depositButton.Pressed += OnDeposit;
+        _withdrawButton.Pressed += OnWithdraw;
 
         CallDeferred(MethodName.CentralizarPainelNaTela);
         CallDeferred(MethodName.ConectarComponenteBanco);
+    }
+
+    private void OnDeposit()
+    {
+        if (_gameNet == null) return;
+        int amount = (int)_goldAmount.Value;
+        if (amount > 0)
+        {
+            _goldResult.Text = "";
+            _gameNet.SendBankDeposit(amount);
+        }
+    }
+
+    private void OnWithdraw()
+    {
+        if (_gameNet == null) return;
+        int amount = (int)_goldAmount.Value;
+        if (amount > 0)
+        {
+            _goldResult.Text = "";
+            _gameNet.SendBankWithdraw(amount);
+        }
+    }
+
+    private void OnBankData(int onHandGold, int bankGold)
+    {
+        _goldOnHand.Text = $"Mãos: {onHandGold}";
+        _goldInBank.Text = $"Banco: {bankGold}";
+        _goldAmount.Value = 10;
+        _goldResult.Text = "";
+        _panel.Visible = true;
+        CentralizarPainelNaTela();
+    }
+
+    private void OnBankResult(bool success, string message)
+    {
+        _goldResult.Text = message;
+        if (success)
+        {
+            _goldResult.AddThemeColorOverride("font_color", new Color(0, 1, 0));
+        }
+        else
+        {
+            _goldResult.AddThemeColorOverride("font_color", new Color(1, 0.3f, 0.3f));
+        }
     }
 
     private void FecharPainel()
@@ -45,7 +114,7 @@ public partial class BancoUI : Control
         if (_panel == null) return;
         _panel.Visible = false;
         _arrastando = false;
-        GD.Print("[BANCO UI] ❌ Banco fechado!");
+        _goldResult.Text = "";
     }
 
     private void CentralizarPainelNaTela()
@@ -74,27 +143,25 @@ public partial class BancoUI : Control
         var player = GetTree().CurrentScene.FindChild("Player", true, false);
         if (player == null)
         {
-            GD.PrintErr("[BANCO UI] ❌ Player não encontrado!");
+            GD.PrintErr("[BANCO UI] Player não encontrado!");
             return;
         }
 
         _bancoAlvo = player.FindChild("BancoComponent", true, false) as BancoComponent;
         if (_bancoAlvo == null)
         {
-            GD.PrintErr("[BANCO UI] ❌ Player não tem BancoComponent!");
+            GD.PrintErr("[BANCO UI] Player não tem BancoComponent!");
             return;
         }
 
         MapearSlotsBolsasDoEditor();
         _bancoAlvo.BancoAtualizado += DesenharInterface;
         InicializarGrade();
-        GD.Print("[BANCO UI] ✅ Conectado ao BancoComponent!");
     }
 
     private void MapearSlotsBolsasDoEditor()
     {
         if (_containerBolsas == null || _bancoAlvo == null) return;
-
         _slotsBolsasVisuais.Clear();
 
         for (int i = 0; i < 6; i++)
@@ -102,7 +169,7 @@ public partial class BancoUI : Control
             string nome = $"SlotBolsaBanco_{i}";
             if (!_containerBolsas.HasNode(nome))
             {
-                GD.PrintErr($"[BANCO UI] ❌ Slot '{nome}' não encontrado!");
+                GD.PrintErr($"[BANCO UI] Slot '{nome}' não encontrado!");
                 continue;
             }
 
@@ -162,6 +229,7 @@ public partial class BancoUI : Control
     public override void _Input(InputEvent @event)
     {
         if (_panel == null) return;
+        if (GetViewport().GuiGetFocusOwner() is LineEdit) return;
 
         if (@event.IsActionPressed("banco"))
         {
@@ -172,11 +240,9 @@ public partial class BancoUI : Control
             if (_panel.Visible)
             {
                 DesenharInterface();
-                GD.Print("[BANCO UI] 🏦 Banco aberto!");
-            }
-            else
-            {
-                GD.Print("[BANCO UI] 🏦 Banco fechado!");
+                _goldResult.Text = "";
+                if (_gameNet != null)
+                    _gameNet.SendBankRequest();
             }
         }
 
@@ -186,6 +252,15 @@ public partial class BancoUI : Control
         {
             FecharPainel();
             GetViewport().SetInputAsHandled();
+        }
+    }
+
+    public override void _ExitTree()
+    {
+        if (_gameNet != null)
+        {
+            _gameNet.OnBankData -= OnBankData;
+            _gameNet.OnBankResult -= OnBankResult;
         }
     }
 }

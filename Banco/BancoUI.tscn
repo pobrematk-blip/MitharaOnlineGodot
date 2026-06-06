@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://dntdyevkybtpn"]
+[gd_scene load_steps=7 format=3 uid="uid://dntdyevkybtpn"]
 
 [ext_resource type="Script" uid="uid://b7k2mnc4p8qwr" path="res://Banco/BancoUI.cs" id="1_bancoui"]
 [ext_resource type="PackedScene" uid="uid://blo3yab0lyoi3" path="res://resources/Inventario/SlotUI.tscn" id="2_slot"]
@@ -11,17 +11,21 @@ bg_color = Color(1, 0, 0, 0.8)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
 bg_color = Color(0.7, 0, 0, 0.9)
 
+[sub_resource type="Theme" id="Theme_banco"]
+default_font_size = 14
+
 [node name="BancoUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
+theme = SubResource("Theme_banco")
 script = ExtResource("1_bancoui")
 SlotUIPrefab = ExtResource("2_slot")
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(380, 420)
+custom_minimum_size = Vector2(380, 500)
 layout_mode = 0
 offset_right = 380.0
-offset_bottom = 420.0
+offset_bottom = 500.0
 
 [node name="TitleBar" type="Panel" parent="Panel"]
 layout_mode = 0
@@ -42,9 +46,9 @@ vertical_alignment = 1
 
 [node name="CloseButton" type="Button" parent="Panel"]
 layout_mode = 0
-offset_left = 355.0
+offset_left = 352.0
 offset_top = 4.0
-offset_right = 375.0
+offset_right = 372.0
 offset_bottom = 24.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_red")
@@ -70,7 +74,7 @@ offset_top = 52.0
 offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 4
 
 [node name="ScrollGrade" type="ScrollContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
@@ -91,6 +95,7 @@ columns = 8
 layout_mode = 2
 text = "Bolsas do Banco (arraste bolsas aqui)"
 horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
 
 [node name="ContainerBolsas" type="HBoxContainer" parent="Panel/VBoxContainer"]
 unique_name_in_owner = true
@@ -115,3 +120,65 @@ layout_mode = 2
 
 [node name="SlotBolsaBanco_5" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_slot")]
 layout_mode = 2
+
+[node name="GoldSeparator" type="HSeparator" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="GoldTitle" type="CenterContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/GoldTitle"]
+layout_mode = 2
+text = "─── DEPÓSITO DE OURO ───"
+horizontal_alignment = 1
+
+[node name="GoldInfo" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="GoldOnHand" type="Label" parent="Panel/VBoxContainer/GoldInfo"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0, 1)
+text = "Mãos: 0"
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer/GoldInfo"]
+layout_mode = 2
+custom_minimum_size = Vector2(16, 0)
+size_flags_horizontal = 1
+
+[node name="GoldInBank" type="Label" parent="Panel/VBoxContainer/GoldInfo"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.7, 1, 1)
+text = "Banco: 0"
+
+[node name="GoldControls" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="GoldAmount" type="SpinBox" parent="Panel/VBoxContainer/GoldControls"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+min_value = 1.0
+max_value = 999999.0
+value = 10.0
+
+[node name="DepositButton" type="Button" parent="Panel/VBoxContainer/GoldControls"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 0, 1)
+text = "DEPOSITAR"
+
+[node name="WithdrawButton" type="Button" parent="Panel/VBoxContainer/GoldControls"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 1, 1)
+text = "SACAR"
+
+[node name="GoldResult" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+horizontal_alignment = 1

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "mago_mana_shield"
+Nome = "Escudo de Mana"
+Descricao = "Cria um escudo que absorve dano usando mana. +30% de vida máxima."
+Requisitos = PackedStringArray("mago_base_vit")
+CustoPontos = 2
+NivelMinimo = 4
+BonusVidaPercent = 0.3
+BonusManaPercent = 0.25

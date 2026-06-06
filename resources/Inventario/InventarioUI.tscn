@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://4n32wneynhk"]
+[gd_scene load_steps=7 format=3 uid="uid://4n32wneynhk"]
 
 [ext_resource type="Script" uid="uid://b0qhj8f2ca5yg" path="res://resources/Inventario/InventarioUI.cs" id="1_x6jdb"]
 [ext_resource type="PackedScene" uid="uid://blo3yab0lyoi3" path="res://resources/Inventario/SlotUI.tscn" id="2_ygxso"]
@@ -11,63 +11,131 @@ bg_color = Color(1, 0, 0, 0.8)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
 bg_color = Color(0.7, 0, 0, 0.9)
 
+[sub_resource type="Theme" id="Theme_inv"]
+default_font_size = 14
+
 [node name="InventarioUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
+theme = SubResource("Theme_inv")
 script = ExtResource("1_x6jdb")
 SlotUIPrefab = ExtResource("2_ygxso")
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(320, 380)
+custom_minimum_size = Vector2(300, 420)
 layout_mode = 1
-offset_right = 245.0
-offset_bottom = 397.0
+offset_right = 300.0
+offset_bottom = 420.0
 
-[node name="Label" type="Label" parent="Panel"]
+[node name="TitleBar" type="Panel" parent="Panel"]
 layout_mode = 0
-offset_top = 1.0
-offset_right = 320.0
-offset_bottom = 24.0
-text = "Inventario"
-label_settings = SubResource("LabelSettings_x6jdb")
-horizontal_alignment = 1
+offset_right = 300.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 13
 
-[node name="CloseButton" type="Button" parent="Panel"]
-layout_mode = 0
-offset_left = 295.0
-offset_top = 5.0
-offset_right = 315.0
-offset_bottom = 23.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_red")
-theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
-text = "X"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="TitleLabel" type="Label" parent="Panel/TitleBar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 15
+text = "Inventario"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="CenterContainer" type="CenterContainer" parent="Panel/VBoxContainer"]
-custom_minimum_size = Vector2(100, 300)
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 272.0
+offset_top = 4.0
+offset_right = 292.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="InfoCapacidade" type="Label" parent="Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 8.0
+offset_top = 28.0
+offset_right = 292.0
+offset_bottom = 44.0
+text = "Capacidade: 0 slots"
+horizontal_alignment = 1
+
+[node name="Currencies" type="HBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 44.0
+offset_right = 288.0
+offset_bottom = 64.0
+
+[node name="GoldIcon" type="TextureRect" parent="Panel/Currencies"]
+layout_mode = 2
+custom_minimum_size = Vector2(16, 16)
+size_flags_horizontal = 0
+stretch_mode = 0
+
+[node name="GoldLabel" type="Label" parent="Panel/Currencies"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Ouro: 0"
+theme_override_colors/font_color = Color(1, 0.8, 0, 1)
+theme_override_font_sizes/font_size = 12
+size_flags_horizontal = 3
+
+[node name="DiamondIcon" type="TextureRect" parent="Panel/Currencies"]
+layout_mode = 2
+custom_minimum_size = Vector2(16, 16)
+size_flags_horizontal = 0
+stretch_mode = 0
+
+[node name="DiamondLabel" type="Label" parent="Panel/Currencies"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Diamantes: 0"
+theme_override_colors/font_color = Color(0.3, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 12
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 68.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 5
+
+[node name="ScrollGrade" type="ScrollContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 5.15
+horizontal_scroll_mode = 0
 
-[node name="GridContainer" type="GridContainer" parent="Panel/VBoxContainer/CenterContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="Panel/VBoxContainer/ScrollGrade"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="Panel/VBoxContainer/ScrollGrade/CenterContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 columns = 6
+
+[node name="LabelBolsas" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Bolsas do Inventario (arraste bolsas aqui)"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
 
 [node name="ContainerBolsas" type="HBoxContainer" parent="Panel/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(288, 48)
 layout_mode = 2
-size_flags_vertical = 3
 alignment = 1
 
 [node name="SlotBolsa_0" parent="Panel/VBoxContainer/ContainerBolsas" instance=ExtResource("2_ygxso")]

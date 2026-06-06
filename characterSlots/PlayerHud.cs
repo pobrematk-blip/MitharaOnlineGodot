@@ -1,20 +1,26 @@
-using Godot;
-using System;
+﻿using Godot;
 
 public partial class PlayerHud : Control
 {
     private ProgressBar _healthBar;
     private ProgressBar _manaBar;
+    private ProgressBar _staminaBar;
     private Label _healthLabel;
     private Label _manaLabel;
+    private Label _staminaLabel;
+    private Label _nameLevelLabel;
     private Player _player;
+    private LevelProgressionComponent _levelComp;
 
     public override void _Ready()
     {
         _healthBar = GetNode<ProgressBar>("Background/VBox/HealthBar");
         _manaBar = GetNode<ProgressBar>("Background/VBox/ManaBar");
-        _healthLabel = GetNode<Label>("Background/VBox/HealthBarLabel");
-        _manaLabel = GetNode<Label>("Background/VBox/ManaBarLabel");
+        _staminaBar = GetNode<ProgressBar>("Background/VBox/StaminaBar");
+        _healthLabel = GetNode<Label>("Background/VBox/HealthBar/HealthBarLabel");
+        _manaLabel = GetNode<Label>("Background/VBox/ManaBar/ManaBarLabel");
+        _staminaLabel = GetNode<Label>("Background/VBox/StaminaBar/StaminaBarLabel");
+        _nameLevelLabel = GetNode<Label>("Background/VBox/NameLevelLabel");
 
         CallDeferred(nameof(ConnectPlayer));
     }
@@ -24,13 +30,35 @@ public partial class PlayerHud : Control
         _player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (_player == null)
         {
-            GD.PrintErr("[PLAYER HUD] Player não encontrado para conectar a barra de vida!");
+            GD.PrintErr("[PLAYER HUD] Player n\u00e3o encontrado!");
             return;
         }
 
         _player.StatusAtualizado += UpdateHud;
+
+        ConectarProgressao();
+        AtualizarInfoNivel();
         UpdateHud();
-        GD.Print("[PLAYER HUD] ✅ Barra de vida/mana conectada ao Player.");
+        GD.Print("[PLAYER HUD] Conectado ao Player.");
+    }
+
+    private void ConectarProgressao()
+    {
+        _levelComp = _player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+        if (_levelComp != null)
+        {
+            _levelComp.ProgressaoAtualizada += AtualizarInfoNivel;
+        }
+    }
+
+    private void AtualizarInfoNivel()
+    {
+        if (_player == null) return;
+
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        string nome = escolhido?.NomePersonagem ?? "Aventureiro";
+        int nivel = _levelComp?.Nivel ?? 1;
+        _nameLevelLabel.Text = $"{nome} | Nv. {nivel}";
     }
 
     private void UpdateHud()
@@ -41,8 +69,11 @@ public partial class PlayerHud : Control
         _healthBar.Value = _player.CurrentHealth;
         _manaBar.MaxValue = _player.MaxMana;
         _manaBar.Value = _player.CurrentMana;
+        _staminaBar.MaxValue = _player.MaxStamina;
+        _staminaBar.Value = _player.CurrentStamina;
 
         _healthLabel.Text = $"Vida: {_player.CurrentHealth}/{_player.MaxHealth}";
         _manaLabel.Text = $"Mana: {_player.CurrentMana}/{_player.MaxMana}";
+        _staminaLabel.Text = $"Stamina: {_player.CurrentStamina}/{_player.MaxStamina}";
     }
 }

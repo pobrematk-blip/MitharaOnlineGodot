@@ -1,0 +1,614 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+
+[sub_resource type="Resource" id="arq_n0"]
+script = ExtResource("2")
+NodeId = "arq_01"
+Nome = "Arqueiro Base"
+Descricao = "Nó de talento nível 0 (Arqueiro)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusDestreza = 6
+BonusAgilidade = 4
+BonusDanoPercent = 0.6
+
+[sub_resource type="Resource" id="arq_n1"]
+script = ExtResource("2")
+NodeId = "arq_02"
+Nome = "Arqueiro Essencial"
+Descricao = "Nó de talento nível 0 (Arqueiro)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusDestreza = 6
+BonusAgilidade = 4
+
+[sub_resource type="Resource" id="arq_n2"]
+script = ExtResource("2")
+NodeId = "arq_03"
+Nome = "Arqueiro Primordial"
+Descricao = "Nó de talento nível 0 (Arqueiro)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusDestreza = 6
+BonusAgilidade = 4
+
+[sub_resource type="Resource" id="arq_n3"]
+script = ExtResource("2")
+NodeId = "arq_04"
+Nome = "Arqueiro Fundamental"
+Descricao = "Nó de talento nível 1 (Arqueiro)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusDestreza = 5
+BonusAgilidade = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("arq_01", "arq_02")
+
+[sub_resource type="Resource" id="arq_n4"]
+script = ExtResource("2")
+NodeId = "arq_05"
+Nome = "Arqueiro Natural"
+Descricao = "Nó de talento nível 1 (Arqueiro)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusDestreza = 5
+BonusAgilidade = 3
+Requisitos = PackedStringArray("arq_02")
+
+[sub_resource type="Resource" id="arq_n5"]
+script = ExtResource("2")
+NodeId = "arq_06"
+Nome = "Arqueiro Básico"
+Descricao = "Nó de talento nível 1 (Arqueiro)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusDestreza = 5
+BonusAgilidade = 3
+Requisitos = PackedStringArray("arq_03", "arq_01")
+
+[sub_resource type="Resource" id="arq_n6"]
+script = ExtResource("2")
+NodeId = "arq_07"
+Nome = "Arqueiro Inicial"
+Descricao = "Nó de talento nível 1 (Arqueiro)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusDestreza = 5
+BonusAgilidade = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("arq_01")
+
+[sub_resource type="Resource" id="arq_n7"]
+script = ExtResource("2")
+NodeId = "arq_08"
+Nome = "Arqueiro Concentração"
+Descricao = "Nó de talento nível 1 (Arqueiro)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusDestreza = 5
+BonusAgilidade = 3
+Requisitos = PackedStringArray("arq_02", "arq_03")
+
+[sub_resource type="Resource" id="arq_n8"]
+script = ExtResource("2")
+NodeId = "arq_09"
+Nome = "Arqueiro Foco"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+Requisitos = PackedStringArray("arq_04", "arq_05")
+
+[sub_resource type="Resource" id="arq_n9"]
+script = ExtResource("2")
+NodeId = "arq_10"
+Nome = "Arqueiro Potencial"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("arq_05")
+
+[sub_resource type="Resource" id="arq_n10"]
+script = ExtResource("2")
+NodeId = "arq_11"
+Nome = "Arqueiro Expansão"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+Requisitos = PackedStringArray("arq_06", "arq_07")
+
+[sub_resource type="Resource" id="arq_n11"]
+script = ExtResource("2")
+NodeId = "arq_12"
+Nome = "Arqueiro Crescimento"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+Requisitos = PackedStringArray("arq_07")
+
+[sub_resource type="Resource" id="arq_n12"]
+script = ExtResource("2")
+NodeId = "arq_13"
+Nome = "Arqueiro Despertar"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("arq_08", "arq_04")
+
+[sub_resource type="Resource" id="arq_n13"]
+script = ExtResource("2")
+NodeId = "arq_14"
+Nome = "Arqueiro Evolução"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+Requisitos = PackedStringArray("arq_04")
+
+[sub_resource type="Resource" id="arq_n14"]
+script = ExtResource("2")
+NodeId = "arq_15"
+Nome = "Arqueiro Progresso"
+Descricao = "Nó de talento nível 2 (Arqueiro)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusDestreza = 4
+BonusAgilidade = 2
+Requisitos = PackedStringArray("arq_05", "arq_06")
+
+[sub_resource type="Resource" id="arq_n15"]
+script = ExtResource("2")
+NodeId = "arq_16"
+Nome = "Arqueiro Aprimoramento"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_09", "arq_10")
+
+[sub_resource type="Resource" id="arq_n16"]
+script = ExtResource("2")
+NodeId = "arq_17"
+Nome = "Arqueiro Avanço"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_10")
+
+[sub_resource type="Resource" id="arq_n17"]
+script = ExtResource("2")
+NodeId = "arq_18"
+Nome = "Arqueiro Superior"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_11", "arq_12")
+
+[sub_resource type="Resource" id="arq_n18"]
+script = ExtResource("2")
+NodeId = "arq_19"
+Nome = "Arqueiro Elevado"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_12")
+
+[sub_resource type="Resource" id="arq_n19"]
+script = ExtResource("2")
+NodeId = "arq_20"
+Nome = "Arqueiro Mestre"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_13", "arq_14")
+
+[sub_resource type="Resource" id="arq_n20"]
+script = ExtResource("2")
+NodeId = "arq_21"
+Nome = "Arqueiro Supremo"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_14")
+
+[sub_resource type="Resource" id="arq_n21"]
+script = ExtResource("2")
+NodeId = "arq_22"
+Nome = "Arqueiro Lendário"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_15", "arq_09")
+
+[sub_resource type="Resource" id="arq_n22"]
+script = ExtResource("2")
+NodeId = "arq_23"
+Nome = "Arqueiro Mítico"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_09")
+
+[sub_resource type="Resource" id="arq_n23"]
+script = ExtResource("2")
+NodeId = "arq_24"
+Nome = "Arqueiro Divino"
+Descricao = "Nó de talento nível 3 (Arqueiro)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusDestreza = 3
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_10", "arq_11")
+
+[sub_resource type="Resource" id="arq_n24"]
+script = ExtResource("2")
+NodeId = "arq_25"
+Nome = "Arqueiro Épico"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_16", "arq_17")
+
+[sub_resource type="Resource" id="arq_n25"]
+script = ExtResource("2")
+NodeId = "arq_26"
+Nome = "Arqueiro Guerreiro"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_17")
+
+[sub_resource type="Resource" id="arq_n26"]
+script = ExtResource("2")
+NodeId = "arq_27"
+Nome = "Arqueiro Sábio"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_18", "arq_19")
+
+[sub_resource type="Resource" id="arq_n27"]
+script = ExtResource("2")
+NodeId = "arq_28"
+Nome = "Arqueiro Destemido"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_19")
+
+[sub_resource type="Resource" id="arq_n28"]
+script = ExtResource("2")
+NodeId = "arq_29"
+Nome = "Arqueiro Poderoso"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_20", "arq_21")
+
+[sub_resource type="Resource" id="arq_n29"]
+script = ExtResource("2")
+NodeId = "arq_30"
+Nome = "Arqueiro Ágil"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_21")
+
+[sub_resource type="Resource" id="arq_n30"]
+script = ExtResource("2")
+NodeId = "arq_31"
+Nome = "Arqueiro Feroz"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_22", "arq_23")
+
+[sub_resource type="Resource" id="arq_n31"]
+script = ExtResource("2")
+NodeId = "arq_32"
+Nome = "Arqueiro Sombrio"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_23")
+
+[sub_resource type="Resource" id="arq_n32"]
+script = ExtResource("2")
+NodeId = "arq_33"
+Nome = "Arqueiro Sagrado"
+Descricao = "Nó de talento nível 4 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusDestreza = 2
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_24", "arq_16")
+
+[sub_resource type="Resource" id="arq_n33"]
+script = ExtResource("2")
+NodeId = "arq_34"
+Nome = "Arqueiro Arcana"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_25", "arq_26")
+
+[sub_resource type="Resource" id="arq_n34"]
+script = ExtResource("2")
+NodeId = "arq_35"
+Nome = "Arqueiro Rápido"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_26")
+
+[sub_resource type="Resource" id="arq_n35"]
+script = ExtResource("2")
+NodeId = "arq_36"
+Nome = "Arqueiro Resistente"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_27", "arq_28")
+
+[sub_resource type="Resource" id="arq_n36"]
+script = ExtResource("2")
+NodeId = "arq_37"
+Nome = "Arqueiro Letal"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_28")
+
+[sub_resource type="Resource" id="arq_n37"]
+script = ExtResource("2")
+NodeId = "arq_38"
+Nome = "Arqueiro Preciso"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_29", "arq_30")
+
+[sub_resource type="Resource" id="arq_n38"]
+script = ExtResource("2")
+NodeId = "arq_39"
+Nome = "Arqueiro Brutal"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_30")
+
+[sub_resource type="Resource" id="arq_n39"]
+script = ExtResource("2")
+NodeId = "arq_40"
+Nome = "Arqueiro Sutil"
+Descricao = "Nó de talento nível 5 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_31", "arq_32")
+
+[sub_resource type="Resource" id="arq_n40"]
+script = ExtResource("2")
+NodeId = "arq_41"
+Nome = "Arqueiro Gélido"
+Descricao = "Nó de talento nível 6 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_34", "arq_35")
+
+[sub_resource type="Resource" id="arq_n41"]
+script = ExtResource("2")
+NodeId = "arq_42"
+Nome = "Arqueiro Flamejante"
+Descricao = "Nó de talento nível 6 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_35")
+
+[sub_resource type="Resource" id="arq_n42"]
+script = ExtResource("2")
+NodeId = "arq_43"
+Nome = "Arqueiro Tempestuoso"
+Descricao = "Nó de talento nível 6 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_36", "arq_37")
+
+[sub_resource type="Resource" id="arq_n43"]
+script = ExtResource("2")
+NodeId = "arq_44"
+Nome = "Arqueiro Venenoso"
+Descricao = "Nó de talento nível 6 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_37")
+
+[sub_resource type="Resource" id="arq_n44"]
+script = ExtResource("2")
+NodeId = "arq_45"
+Nome = "Arqueiro Sangrento"
+Descricao = "Nó de talento nível 6 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_38", "arq_39")
+
+[sub_resource type="Resource" id="arq_n45"]
+script = ExtResource("2")
+NodeId = "arq_46"
+Nome = "Arqueiro Eterno"
+Descricao = "Nó de talento nível 7 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_41", "arq_42")
+
+[sub_resource type="Resource" id="arq_n46"]
+script = ExtResource("2")
+NodeId = "arq_47"
+Nome = "Arqueiro Celestial"
+Descricao = "Nó de talento nível 7 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_42")
+
+[sub_resource type="Resource" id="arq_n47"]
+script = ExtResource("2")
+NodeId = "arq_48"
+Nome = "Arqueiro Abissal"
+Descricao = "Nó de talento nível 7 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_43", "arq_44")
+
+[sub_resource type="Resource" id="arq_n48"]
+script = ExtResource("2")
+NodeId = "arq_49"
+Nome = "Arqueiro Primordial"
+Descricao = "Nó de talento nível 8 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_46", "arq_47")
+
+[sub_resource type="Resource" id="arq_n49"]
+script = ExtResource("2")
+NodeId = "arq_50"
+Nome = "Arqueiro Final"
+Descricao = "Nó de talento nível 8 (Arqueiro)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusDestreza = 1
+BonusAgilidade = 1
+Requisitos = PackedStringArray("arq_47")
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore Arqueiro"
+RootNodeIds = PackedStringArray("arq_01", "arq_02", "arq_03")
+
+Nodes = Array[Resource]([
+	SubResource("arq_n0"),
+	SubResource("arq_n1"),
+	SubResource("arq_n2"),
+	SubResource("arq_n3"),
+	SubResource("arq_n4"),
+	SubResource("arq_n5"),
+	SubResource("arq_n6"),
+	SubResource("arq_n7"),
+	SubResource("arq_n8"),
+	SubResource("arq_n9"),
+	SubResource("arq_n10"),
+	SubResource("arq_n11"),
+	SubResource("arq_n12"),
+	SubResource("arq_n13"),
+	SubResource("arq_n14"),
+	SubResource("arq_n15"),
+	SubResource("arq_n16"),
+	SubResource("arq_n17"),
+	SubResource("arq_n18"),
+	SubResource("arq_n19"),
+	SubResource("arq_n20"),
+	SubResource("arq_n21"),
+	SubResource("arq_n22"),
+	SubResource("arq_n23"),
+	SubResource("arq_n24"),
+	SubResource("arq_n25"),
+	SubResource("arq_n26"),
+	SubResource("arq_n27"),
+	SubResource("arq_n28"),
+	SubResource("arq_n29"),
+	SubResource("arq_n30"),
+	SubResource("arq_n31"),
+	SubResource("arq_n32"),
+	SubResource("arq_n33"),
+	SubResource("arq_n34"),
+	SubResource("arq_n35"),
+	SubResource("arq_n36"),
+	SubResource("arq_n37"),
+	SubResource("arq_n38"),
+	SubResource("arq_n39"),
+	SubResource("arq_n40"),
+	SubResource("arq_n41"),
+	SubResource("arq_n42"),
+	SubResource("arq_n43"),
+	SubResource("arq_n44"),
+	SubResource("arq_n45"),
+	SubResource("arq_n46"),
+	SubResource("arq_n47"),
+	SubResource("arq_n48"),
+	SubResource("arq_n49")
+])

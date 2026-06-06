@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RacaResource" load_steps=4 format=3 uid="uid://b8eyobokqhiu3"]
+
+[ext_resource type="Script" uid="uid://bsf1mcdp5yary" path="res://Editor/RacaResource.cs" id="1"]
+[ext_resource type="Texture2D" uid="uid://dufnmltbph5t0" path="res://characters/Player/SpritePlayer/DarkElfo.png" id="2"]
+[ext_resource type="Resource" path="res://Faccoes/Noctori.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+NomeRaca = "Dark Elfo"
+Descricao = "Inteligência sombria e precisão mortal. Facção Noctori."
+Faccao = ExtResource("3")
+BonusAgilidade = 1
+BonusDestreza = 2
+BonusInteligencia = 3
+BonusVidaMaxima = -5
+Spritesheet = ExtResource("2")

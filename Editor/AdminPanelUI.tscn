@@ -1,0 +1,373 @@
+[gd_scene load_steps=4 format=3 uid="uid://bq3ay4k1v0sfd"]
+
+[ext_resource type="Script" path="res://Editor/AdminPanelUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+
+[sub_resource type="Theme" id="Theme_editor"]
+default_font_size = 14
+
+[node name="AdminPanelUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+theme = SubResource("Theme_editor")
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(520, 440)
+layout_mode = 0
+offset_right = 520.0
+offset_bottom = 440.0
+
+[node name="Header" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_right = 520.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 13
+
+[node name="Title" type="Label" parent="Panel/Header"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Painel Admin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Header"]
+layout_mode = 0
+offset_left = 492.0
+offset_top = 4.0
+offset_right = 512.0
+offset_bottom = 24.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="Tabs" type="TabContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 30.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Player" type="VBoxContainer" parent="Panel/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StatusLabel" type="Label" parent="Panel/Tabs/Player"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "ATIVO"
+
+[node name="ToggleAdminBtn" type="Button" parent="Panel/Tabs/Player"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Desativar Admin"
+
+[node name="HSeparator1" type="HSeparator" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="HBoxGod" type="HBoxContainer" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="GodModeBtn" type="Button" parent="Panel/Tabs/Player/HBoxGod"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ativar God Mode"
+
+[node name="HealBtn" type="Button" parent="Panel/Tabs/Player/HBoxGod"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Curar HP + MP"
+
+[node name="HBoxNoclip" type="HBoxContainer" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="NoclipBtn" type="Button" parent="Panel/Tabs/Player/HBoxNoclip"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ativar Noclip"
+
+[node name="HSeparator2" type="HSeparator" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="HBoxLevel" type="HBoxContainer" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="Panel/Tabs/Player/HBoxLevel"]
+layout_mode = 2
+text = "Nível:"
+
+[node name="LevelSpin" type="SpinBox" parent="Panel/Tabs/Player/HBoxLevel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1
+max_value = 999
+value = 1
+step = 1
+
+[node name="SetLevelBtn" type="Button" parent="Panel/Tabs/Player/HBoxLevel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Definir"
+
+[node name="HBoxXp" type="HBoxContainer" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="XpLabel" type="Label" parent="Panel/Tabs/Player/HBoxXp"]
+layout_mode = 2
+text = "XP:"
+
+[node name="XpSpin" type="SpinBox" parent="Panel/Tabs/Player/HBoxXp"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0
+max_value = 999999999
+value = 0
+step = 100
+
+[node name="SetXpBtn" type="Button" parent="Panel/Tabs/Player/HBoxXp"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Definir"
+
+[node name="HBoxSpeed" type="HBoxContainer" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="SpeedLabel" type="Label" parent="Panel/Tabs/Player/HBoxSpeed"]
+layout_mode = 2
+text = "Speed:"
+
+[node name="SpeedSpin" type="SpinBox" parent="Panel/Tabs/Player/HBoxSpeed"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10
+max_value = 5000
+value = 200
+step = 10
+
+[node name="SetSpeedBtn" type="Button" parent="Panel/Tabs/Player/HBoxSpeed"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Definir"
+
+[node name="HSeparator3" type="HSeparator" parent="Panel/Tabs/Player"]
+layout_mode = 2
+
+[node name="PlayerInfoLabel" type="Label" parent="Panel/Tabs/Player"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player: ---"
+
+[node name="Teleport" type="VBoxContainer" parent="Panel/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBoxTp" type="HBoxContainer" parent="Panel/Tabs/Teleport"]
+layout_mode = 2
+
+[node name="TpXLabel" type="Label" parent="Panel/Tabs/Teleport/HBoxTp"]
+layout_mode = 2
+text = "X:"
+
+[node name="TpXSpin" type="SpinBox" parent="Panel/Tabs/Teleport/HBoxTp"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+value = 0
+step = 10
+
+[node name="TpYLabel" type="Label" parent="Panel/Tabs/Teleport/HBoxTp"]
+layout_mode = 2
+text = "Y:"
+
+[node name="TpYSpin" type="SpinBox" parent="Panel/Tabs/Teleport/HBoxTp"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -99999
+max_value = 99999
+value = 0
+step = 10
+
+[node name="TpBtn" type="Button" parent="Panel/Tabs/Teleport/HBoxTp"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Teleportar"
+
+[node name="TpToCenterBtn" type="Button" parent="Panel/Tabs/Teleport"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Teleportar para o centro da tela"
+
+[node name="Spawn" type="VBoxContainer" parent="Panel/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBoxItem" type="HBoxContainer" parent="Panel/Tabs/Spawn"]
+layout_mode = 2
+
+[node name="ItemIdLabel" type="Label" parent="Panel/Tabs/Spawn/HBoxItem"]
+layout_mode = 2
+text = "Item ID:"
+
+[node name="SpawnItemIdSpin" type="SpinBox" parent="Panel/Tabs/Spawn/HBoxItem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1
+max_value = 9999
+value = 1
+step = 1
+
+[node name="ItemQtyLabel" type="Label" parent="Panel/Tabs/Spawn/HBoxItem"]
+layout_mode = 2
+text = "Qtd:"
+
+[node name="SpawnItemQtySpin" type="SpinBox" parent="Panel/Tabs/Spawn/HBoxItem"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 999
+value = 1
+step = 1
+
+[node name="SpawnItemBtn" type="Button" parent="Panel/Tabs/Spawn/HBoxItem"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Spawnar Item"
+
+[node name="HBoxMob" type="HBoxContainer" parent="Panel/Tabs/Spawn"]
+layout_mode = 2
+
+[node name="MobLabel" type="Label" parent="Panel/Tabs/Spawn/HBoxMob"]
+layout_mode = 2
+text = "Prefab:"
+
+[node name="SpawnMobInput" type="LineEdit" parent="Panel/Tabs/Spawn/HBoxMob"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "slime, goblin, wolf..."
+
+[node name="SpawnMobBtn" type="Button" parent="Panel/Tabs/Spawn/HBoxMob"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Invocar"
+
+[node name="Server" type="VBoxContainer" parent="Panel/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBoxBroadcast" type="HBoxContainer" parent="Panel/Tabs/Server"]
+layout_mode = 2
+
+[node name="BroadcastInput" type="LineEdit" parent="Panel/Tabs/Server/HBoxBroadcast"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Mensagem para todos..."
+
+[node name="BroadcastBtn" type="Button" parent="Panel/Tabs/Server/HBoxBroadcast"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Broadcast"
+
+[node name="HBoxKick" type="HBoxContainer" parent="Panel/Tabs/Server"]
+layout_mode = 2
+
+[node name="KickInput" type="LineEdit" parent="Panel/Tabs/Server/HBoxKick"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nome do jogador..."
+
+[node name="KickBtn" type="Button" parent="Panel/Tabs/Server/HBoxKick"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Kickar"
+
+[node name="HSeparatorAdminTitle" type="HSeparator" parent="Panel/Tabs/Server"]
+layout_mode = 2
+
+[node name="AdminAccountsLabel" type="Label" parent="Panel/Tabs/Server"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+text = "ADMIN ACCOUNTS"
+
+[node name="HBoxAdminAdd" type="HBoxContainer" parent="Panel/Tabs/Server"]
+layout_mode = 2
+
+[node name="AdminAccountInput" type="LineEdit" parent="Panel/Tabs/Server/HBoxAdminAdd"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "ID da conta..."
+
+[node name="AdminAccountAddBtn" type="Button" parent="Panel/Tabs/Server/HBoxAdminAdd"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Adicionar"
+
+[node name="AdminAccountList" type="ItemList" parent="Panel/Tabs/Server"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_height = 60.0
+size_flags_vertical = 2
+
+[node name="HBoxAdminRemove" type="HBoxContainer" parent="Panel/Tabs/Server"]
+layout_mode = 2
+
+[node name="AdminAccountRemoveBtn" type="Button" parent="Panel/Tabs/Server/HBoxAdminRemove"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Remover Selecionado"
+
+[node name="HSeparator4" type="HSeparator" parent="Panel/Tabs/Server"]
+layout_mode = 2
+
+[node name="RefreshPlayersBtn" type="Button" parent="Panel/Tabs/Server"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Atualizar Lista de Jogadores"
+
+[node name="EntityCountLabel" type="Label" parent="Panel/Tabs/Server"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Entidades: 0"
+
+[node name="EntityList" type="ItemList" parent="Panel/Tabs/Server"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+allow_reselect = false
+allow_search = false
+
+[node name="Log" type="VBoxContainer" parent="Panel/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ServerLog" type="RichTextLabel" parent="Panel/Tabs/Log"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Console do admin iniciado."

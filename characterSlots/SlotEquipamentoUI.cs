@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 
 public partial class SlotEquipamentoUI : Control
@@ -22,6 +22,28 @@ public partial class SlotEquipamentoUI : Control
 
         // Adiciona ao grupo para fácil localização
         AddToGroup("SlotEquipamentoUI");
+
+        // Tooltip com o nome do slot
+        TooltipText = TipoDeSlot switch
+        {
+            TipoEquipamento.Capacete => "Capacete",
+            TipoEquipamento.Peitoral => "Peitoral",
+            TipoEquipamento.Cinto => "Cinto",
+            TipoEquipamento.Luvas => "Luvas",
+            TipoEquipamento.Calca => "Calças",
+            TipoEquipamento.Botas => "Botas",
+            TipoEquipamento.Arma => "Arma",
+            TipoEquipamento.Escudo => "Escudo",
+            TipoEquipamento.Colar => "Colar",
+            TipoEquipamento.Anel => "Anel",
+            TipoEquipamento.Brinco => "Brinco",
+            TipoEquipamento.Runa => "Runa",
+            TipoEquipamento.Asa => "Asa",
+            TipoEquipamento.Montaria => "Montaria",
+            TipoEquipamento.Pet => "Pet",
+            TipoEquipamento.Skin => "Skin",
+            _ => "",
+        };
     }
 
     // Atualiza o visual do slot (chamado pela UI principal do personagem)
@@ -60,7 +82,7 @@ public partial class SlotEquipamentoUI : Control
         return this; // Passa a si mesmo como dado do arrasto
     }
 
-    // CAN DROP: Só aceita se o item que está vindo for do mesmo tipo do slot!
+    // CAN DROP: Só aceita se o item que está vindo for do mesmo tipo do slot e respeitar restrições de classe!
     public override bool _CanDropData(Vector2 position, Variant data)
     {
         // Se o item estiver vindo de um slot de inventário comum
@@ -69,7 +91,17 @@ public partial class SlotEquipamentoUI : Control
             if (slotOrigem.SlotInterno == null || slotOrigem.SlotInterno.Item == null) return false;
 
             // REGRA CRÍTICA: O tipo do item precisa bater EXATAMENTE com o tipo deste slot do corpo
-            return slotOrigem.SlotInterno.Item.Tipo == this.TipoDeSlot;
+            if (slotOrigem.SlotInterno.Item.Tipo != this.TipoDeSlot) return false;
+
+            // Verifica restrição de classe
+            var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
+            if (player != null && !EquipamentoComponent.PodeEquipar(slotOrigem.SlotInterno.Item, player.NomeDaClasse))
+            {
+                GD.Print($"[SLOT] Classe {player.NomeDaClasse} não pode equipar {slotOrigem.SlotInterno.Item.Nome} (drag barrado)");
+                return false;
+            }
+
+            return true;
         }
         return false;
     }
@@ -81,14 +113,27 @@ public partial class SlotEquipamentoUI : Control
         {
             if (slotOrigem.SlotInterno == null || slotOrigem.SlotInterno.Item == null) return;
 
-            var player = GetTree().CurrentScene.FindChild("Player", true, false);
+            // Verifica restrição de classe antes de equipar
+            var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
+            if (player != null && !EquipamentoComponent.PodeEquipar(slotOrigem.SlotInterno.Item, player.NomeDaClasse))
+            {
+                GD.Print($"[SLOT] Classe {player.NomeDaClasse} não pode equipar {slotOrigem.SlotInterno.Item.Nome}");
+                return;
+            }
+
             var equipamentos = player?.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
 
             if (equipamentos != null)
             {
-                // Manda o componente lógico equipar o item e resolver a troca
                 equipamentos.Equipar(this.TipoDeSlot, slotOrigem.SlotInterno);
+
+                var inventario = player?.FindChild("InventarioComponent", true, false) as InventarioComponent;
+                inventario?.NotificarMudancaExterna();
             }
+
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected)
+                gameNet.SendEquipItem(slotOrigem.SlotIndex, (int)TipoDeSlot);
         }
     }
 }

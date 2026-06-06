@@ -5,7 +5,7 @@
 [ext_resource type="Resource" uid="uid://du717ibioj6gi" path="res://Itens/BolsaDeCouro.tres" id="2_0j0sb"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85bdg"]
-radius = 13.0
+radius = 26.0
 
 [node name="ItemColetavel" type="Area2D"]
 script = ExtResource("1_85bdg")
@@ -13,6 +13,7 @@ ItemContido = ExtResource("2_0j0sb")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_arote")
+scale = Vector2(2, 2)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_85bdg")

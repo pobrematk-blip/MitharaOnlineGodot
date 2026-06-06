@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public partial class CharacterUI : Control
 {
     private Panel _panel;
-    private Control _titleBar;
+    private Panel _titleBar;
     private Button _closeButton;
 
     private bool _arrastando;
@@ -13,6 +13,8 @@ public partial class CharacterUI : Control
     private EquipamentoComponent _equipamento;
     private Player _player;
     private Label _pontosDisponiveisLabel;
+    private TextureRect _standeePersonagem;
+
     private readonly Dictionary<string, Label> _atributosValores = new();
     private readonly Dictionary<string, Button> _atributosBotoes = new();
     private readonly List<SlotEquipamentoUI> _todosOsSlots = new();
@@ -22,7 +24,7 @@ public partial class CharacterUI : Control
     public override void _Ready()
     {
         _panel = GetNode<Panel>("Panel");
-        _titleBar = _panel.GetNode<Control>("TitleBar");
+        _titleBar = _panel.GetNode<Panel>("TitleBar");
         _closeButton = _panel.GetNode<Button>("CloseButton");
 
         if (HasNode("%ForcaValorLabel")) _atributosValores["Forca"] = GetNode<Label>("%ForcaValorLabel");
@@ -37,6 +39,12 @@ public partial class CharacterUI : Control
 
         if (HasNode("%PontosDisponiveisLabel"))
             _pontosDisponiveisLabel = GetNode<Label>("%PontosDisponiveisLabel");
+
+        // Initialize standee character texture
+        _standeePersonagem = GetNode<TextureRect>("Panel/ContentHBox/ColunaCentro/StandeePersonagem");
+        
+        // Set default character texture (will be updated when player is connected)
+        AtualizarTexturaPersonagem();
 
 
         foreach (var kvp in _atributosBotoes)
@@ -56,6 +64,7 @@ public partial class CharacterUI : Control
         CallDeferred(MethodName.CentralizarPainelNaTela);
         CallDeferred(MethodName.ConectarEquipamento);
         CallDeferred(MethodName.ConectarPlayerStatus);
+        CallDeferred(MethodName.CriarBotaoToggle);
     }
 
     private void OnCloseButtonPressed()
@@ -144,9 +153,40 @@ public partial class CharacterUI : Control
             GD.PrintErr("[CHARACTER UI] ❌ Player não encontrado para status de vida/mana!");
             return;
         }
-
+        
         _player.StatusAtualizado += AtualizarTela;
         GD.Print("[CHARACTER UI] ✅ Conectado ao Player para status de vida/mana!");
+        
+        // Update character texture
+        AtualizarTexturaPersonagem();
+    }
+
+    private void AtualizarTexturaPersonagem()
+    {
+        if (_standeePersonagem == null || _player == null) return;
+
+        // Try to get the AnimatedSprite from the player node
+        AnimatedSprite2D playerAnimatedSprite = _player.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite");
+        if (playerAnimatedSprite != null && playerAnimatedSprite.SpriteFrames != null)
+        {
+            // Get the current animation and frame
+            string currentAnimation = playerAnimatedSprite.Animation;
+            int currentFrame = playerAnimatedSprite.Frame;
+            
+            // Get the texture from the sprite frames
+            Texture2D frameTexture = playerAnimatedSprite.SpriteFrames.GetFrameTexture(currentAnimation, currentFrame);
+            
+            if (frameTexture != null)
+            {
+                _standeePersonagem.Texture = frameTexture;
+                //GD.Print("[CHARACTER UI] ✅ Textura do personagem atualizada do AnimatedSprite!");
+                return;
+            }
+        }
+
+        // Last resort: clear the texture
+        _standeePersonagem.Texture = null;
+        GD.Print("[CHARACTER UI] ⚠️ Nenhuma textura do personagem encontrada!");
     }
 
     private void AtualizarTela()
@@ -170,6 +210,9 @@ public partial class CharacterUI : Control
             kvp.Value.Text = valor.ToString();
         }
 
+        // Update character texture
+        AtualizarTexturaPersonagem();
+        
         BuscarEAtualizarTodosOsStatus();
         AtualizarSlotsDaTela();
     }
@@ -185,11 +228,13 @@ public partial class CharacterUI : Control
         {
             AtualizarStatusLabel("Hp", $"Vida: {_player.CurrentHealth}/{_player.MaxHealth}");
             AtualizarStatusLabel("Mana", $"Mana: {_player.CurrentMana}/{_player.MaxMana}");
+            AtualizarStatusLabel("Stamina", $"Stamina: {_player.CurrentStamina}/{_player.MaxStamina}");
         }
         else
         {
             AtualizarStatusLabel("Hp", $"Vida: {_equipamento.Hp}");
             AtualizarStatusLabel("Mana", $"Mana: {_equipamento.Mana}");
+            AtualizarStatusLabel("Stamina", "Stamina: --/--");
         }
         AtualizarStatusLabel("ChanceCritica", $"Chance Crítica: {_equipamento.ChanceCritica:F1}%");
         AtualizarStatusLabel("DanoCritico", $"Dano Crítico: {_equipamento.DanoCritico:F2}x");
@@ -202,7 +247,7 @@ public partial class CharacterUI : Control
         AtualizarStatusLabel("Tenacidade", $"Tenacidade: {_equipamento.Tenacidade}");
         AtualizarStatusLabel("DanoPvp", $"Dano PvP: {_equipamento.DanoPvp}");
         AtualizarStatusLabel("DefesaPvp", $"Defesa PvP: {_equipamento.DefesaPvp}");
-        AtualizarStatusLabel("PenetracacaoArmadura", $"Pen. Armadura: {_equipamento.PenetracacaoArmadura}");
+        AtualizarStatusLabel("PenetracaoArmadura", $"Pen. Armadura: {_equipamento.PenetracaoArmadura}");
         AtualizarStatusLabel("RegeneracaoVida", $"Regen Vida: {_equipamento.RegeneracaoVida}/s");
         AtualizarStatusLabel("RegeneracaoMana", $"Regen Mana: {_equipamento.RegeneracaoMana}/s");
         AtualizarStatusLabel("RouboVida", $"Roubo Vida: {_equipamento.RouboVida:F2}%");
@@ -241,9 +286,39 @@ public partial class CharacterUI : Control
         AtualizarTela();
     }
 
+    private void CriarBotaoToggle()
+    {
+        var btn = new TextureButton();
+        btn.Name = "CharacterToggleButton";
+        btn.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Character.png");
+        btn.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Character Selecionado.png");
+        btn.CustomMinimumSize = new Vector2(36, 36);
+        btn.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
+        btn.Pressed += () =>
+        {
+            _panel.Visible = !_panel.Visible;
+            _arrastando = false;
+            if (_panel.Visible)
+            {
+                CentralizarPainelNaTela();
+                AtualizarTela();
+            }
+        };
+        AddChild(btn);
+        AtualizarPosicaoBotao(btn);
+        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+    }
+
+    private void AtualizarPosicaoBotao(Control btn)
+    {
+        Vector2 tela = GetViewportRect().Size;
+        btn.Position = new Vector2(tela.X - 44, tela.Y - 264);
+    }
+
     public override void _Input(InputEvent @event)
     {
         if (_panel == null) return;
+        if (GetViewport().GuiGetFocusOwner() is LineEdit) return;
 
         if (@event.IsActionPressed("equipamento"))
         {

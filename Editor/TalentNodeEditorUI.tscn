@@ -1,0 +1,441 @@
+[gd_scene load_steps=4 format=3 uid="uid://c5ny01c1n6o3d"]
+
+[ext_resource type="Script" path="res://Editor/TalentNodeEditorUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+
+[sub_resource type="Theme" id="Theme_editor"]
+default_font_size = 14
+
+[node name="TalentNodeEditorUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+theme = SubResource("Theme_editor")
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(640, 480)
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 480.0
+
+[node name="Header" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_right = 820.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 13
+
+[node name="Title" type="Label" parent="Panel/Header"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Editor de Nos de Talento"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Header"]
+layout_mode = 0
+offset_left = 612.0
+offset_top = 4.0
+offset_right = 632.0
+offset_bottom = 24.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="LeftPanel" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+
+[node name="LabelArvores" type="Label" parent="Panel/HBox/LeftPanel"]
+layout_mode = 2
+text = "Arvores de Talentos"
+
+[node name="TreeList" type="ItemList" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 2
+custom_minimum_size = Vector2(0, 80)
+
+[node name="BtnReloadTrees" type="Button" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Recarregar lista"
+
+[node name="Separador" type="HSeparator" parent="Panel/HBox/LeftPanel"]
+layout_mode = 2
+
+[node name="LabelNos" type="Label" parent="Panel/HBox/LeftPanel"]
+layout_mode = 2
+text = "Nos da Arvore"
+
+[node name="NodeList" type="ItemList" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AddRemoveHBox" type="HBoxContainer" parent="Panel/HBox/LeftPanel"]
+layout_mode = 2
+
+[node name="BtnAddNode" type="Button" parent="Panel/HBox/LeftPanel/AddRemoveHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+ Adicionar"
+
+[node name="BtnRemoveNode" type="Button" parent="Panel/HBox/LeftPanel/AddRemoveHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "- Remover"
+
+[node name="ScrollForm" type="ScrollContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Form" type="VBoxContainer" parent="Panel/HBox/ScrollForm"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 0)
+
+[node name="PreviewStatus" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.8, 1, 1)
+
+[node name="InfoHeader" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "Dados do No"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+
+[node name="NodeTypeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="NodeTypeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/NodeTypeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "Tipo do No"
+
+[node name="NodeTypeOpcao" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/NodeTypeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NodeIdRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="NodeIdLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/NodeIdRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "Node ID"
+
+[node name="NodeIdEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/NodeIdRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ex: mago_01"
+
+[node name="NomeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="NomeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/NomeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "Nome"
+
+[node name="NomeEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/NomeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ex: Mago Base"
+
+[node name="DescricaoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "Descricao"
+
+[node name="DescricaoEdit" type="TextEdit" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+placeholder_text = "Descricao do talento..."
+
+[node name="IconeRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="IconeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/IconeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "Icone"
+
+[node name="IconePreview" type="TextureRect" parent="Panel/HBox/ScrollForm/Form/IconeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+expand_mode = 1
+stretch_mode = 4
+
+[node name="BtnBrowseIcone" type="Button" parent="Panel/HBox/ScrollForm/Form/IconeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Procurar..."
+
+[node name="SkillSection" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SkillLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/SkillSection"]
+layout_mode = 2
+text = "HABILIDADE ATIVA"
+theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
+
+[node name="SkillRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form/SkillSection"]
+layout_mode = 2
+
+[node name="SkillNomeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/SkillSection/SkillRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "(nenhuma)"
+
+[node name="SkillIcone" type="TextureRect" parent="Panel/HBox/ScrollForm/Form/SkillSection/SkillRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(32, 32)
+expand_mode = 1
+stretch_mode = 4
+
+[node name="BtnBrowseSkill" type="Button" parent="Panel/HBox/ScrollForm/Form/SkillSection/SkillRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Procurar..."
+
+[node name="BtnClearSkill" type="Button" parent="Panel/HBox/ScrollForm/Form/SkillSection/SkillRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Limpar"
+
+[node name="SkillSep" type="HSeparator" parent="Panel/HBox/ScrollForm/Form/SkillSection"]
+layout_mode = 2
+
+[node name="RequisitosRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="RequisitosLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/RequisitosRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(100, 0)
+text = "Requisitos"
+
+[node name="RequisitosEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form/RequisitosRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ex: mago_01, mago_02 (separados por virgula)"
+
+[node name="CustoNivelRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="CustoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/CustoNivelRow"]
+layout_mode = 2
+text = "Custo"
+
+[node name="CustoSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/CustoNivelRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0
+max_value = 100
+value = 1
+step = 1
+
+[node name="NivelLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/CustoNivelRow"]
+layout_mode = 2
+text = "Nivel Minimo"
+
+[node name="NivelSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/CustoNivelRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1
+max_value = 100
+value = 1
+step = 1
+
+[node name="AtributosSection" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BonusAtributos" type="HSeparator" parent="Panel/HBox/ScrollForm/Form/AtributosSection"]
+layout_mode = 2
+
+[node name="BonusAtributosLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AtributosSection"]
+layout_mode = 2
+text = "Bonus de Atributos"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+
+[node name="AtributosGrid" type="GridContainer" parent="Panel/HBox/ScrollForm/Form/AtributosSection"]
+layout_mode = 2
+columns = 4
+
+[node name="ForcaRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid"]
+layout_mode = 2
+
+[node name="ForcaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/ForcaRow"]
+layout_mode = 2
+text = "Forca"
+
+[node name="ForcaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/ForcaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -100
+max_value = 100
+value = 0
+step = 1
+
+[node name="AgilidadeRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid"]
+layout_mode = 2
+
+[node name="AgilidadeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/AgilidadeRow"]
+layout_mode = 2
+text = "Agilidade"
+
+[node name="AgilidadeSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/AgilidadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -100
+max_value = 100
+value = 0
+step = 1
+
+[node name="DestrezaRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid"]
+layout_mode = 2
+
+[node name="DestrezaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/DestrezaRow"]
+layout_mode = 2
+text = "Destreza"
+
+[node name="DestrezaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/DestrezaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -100
+max_value = 100
+value = 0
+step = 1
+
+[node name="InteligenciaRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid"]
+layout_mode = 2
+
+[node name="InteligenciaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/InteligenciaRow"]
+layout_mode = 2
+text = "Inteligencia"
+
+[node name="InteligenciaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/AtributosSection/AtributosGrid/InteligenciaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -100
+max_value = 100
+value = 0
+step = 1
+
+[node name="PercentuaisSection" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BonusPercentuais" type="HSeparator" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection"]
+layout_mode = 2
+
+[node name="BonusPercentuaisLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection"]
+layout_mode = 2
+text = "Bonus Percentuais"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+
+[node name="PercentuaisGrid" type="GridContainer" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection"]
+layout_mode = 2
+columns = 4
+
+[node name="DanoRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid"]
+layout_mode = 2
+
+[node name="DanoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/DanoRow"]
+layout_mode = 2
+text = "Dano %"
+
+[node name="DanoSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/DanoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -10000
+max_value = 10000
+value = 0
+step = 1
+suffix = "%"
+
+[node name="VelocidadeRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid"]
+layout_mode = 2
+
+[node name="VelocidadeLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/VelocidadeRow"]
+layout_mode = 2
+text = "Velocidade %"
+
+[node name="VelocidadeSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/VelocidadeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -10000
+max_value = 10000
+value = 0
+step = 1
+suffix = "%"
+
+[node name="VidaRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid"]
+layout_mode = 2
+
+[node name="VidaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/VidaRow"]
+layout_mode = 2
+text = "Vida %"
+
+[node name="VidaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/VidaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -10000
+max_value = 10000
+value = 0
+step = 1
+suffix = "%"
+
+[node name="ManaRow" type="VBoxContainer" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid"]
+layout_mode = 2
+
+[node name="ManaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/ManaRow"]
+layout_mode = 2
+text = "Mana %"
+
+[node name="ManaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/PercentuaisSection/PercentuaisGrid/ManaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -10000
+max_value = 10000
+value = 0
+step = 1
+suffix = "%"
+
+[node name="BonusPreview" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 1, 0.5, 1)
+autowrap_mode = 2
+
+[node name="BtnSalvar" type="Button" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Salvar Arvore"

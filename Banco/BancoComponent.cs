@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System.Collections.Generic;
 
 public partial class BancoComponent : Node
@@ -26,11 +26,11 @@ public partial class BancoComponent : Node
         _inventarioDoPlayer = player?.FindChild("InventarioComponent", true, false) as InventarioComponent;
 
         if (_inventarioDoPlayer != null)
-            GD.Print("[BANCO] ✅ Conectado ao Inventário do Player!");
+            GD.Print("[BANCO] ✓ Conectado ao Inventário do Player!");
         else
-            GD.PrintErr("[BANCO] ⚠️ InventarioComponent não encontrado no Player!");
+            GD.PrintErr("[BANCO] ✘ InventarioComponent não encontrado no Player!");
 
-        GD.Print($"[BANCO] 🏦 Banco inicializado com {TamanhoDoBanco} slots e 6 slots de bolsa!");
+        GD.Print($"[BANCO] ðŸ¦ Banco inicializado com {TamanhoDoBanco} slots e 6 slots de bolsa!");
     }
 
     public void RecalcularTamanhoDoBanco(bool dispararSinal = true)
@@ -152,7 +152,7 @@ public partial class BancoComponent : Node
         }
 
         _inventarioDoPlayer.NotificarMudancaExterna();
-        GD.Print($"[BANCO] ↪️ {qtd}x {item.Nome} depositado do inventário.");
+        GD.Print($"[BANCO] ↑ {qtd}x {item.Nome} depositado do inventário.");
         return true;
     }
 
@@ -176,7 +176,7 @@ public partial class BancoComponent : Node
         }
 
         EmitSignal(SignalName.BancoAtualizado);
-        GD.Print($"[BANCO] ↩️ {qtd}x {item.Nome} sacado para o inventário.");
+        GD.Print($"[BANCO] ↓ {qtd}x {item.Nome} sacado para o inventário.");
         return true;
     }
 }

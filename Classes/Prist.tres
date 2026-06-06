@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Editor/ClasseCustomResource.cs" id="1"]
+[ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvorePrist.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+NomeClasse = "Prist"
+Descricao = "Suporte à distância com projétil sagrado (animação mago)."
+PrefixoAnimacao = "mago"
+PrefixoAnimacaoAtaque = "mago"
+AttackAnimSpeedScale = 2.8
+PontosDisponiveis = 10
+Forca = 8
+Agilidade = 10
+Destreza = 10
+Inteligencia = 16
+VidaMaxima = 100
+ManaMaxima = 90
+VelocidadeMovimento = 170.0
+UsaProjetil = true
+ArvoreTalentos = ExtResource("2")
+DanoProjetilMin = 12
+DanoProjetilMax = 18
+ProjetilDanoMagico = true
+VelocidadeDoProjetil = 280.0

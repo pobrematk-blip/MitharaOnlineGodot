@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "ber_escudo"
+Nome = "Escudo de Ferro"
+Descricao = "Levante um escudo poderoso reduzindo dano. +40% vida."
+Requisitos = PackedStringArray("ber_base_vit")
+CustoPontos = 2
+NivelMinimo = 4
+BonusVidaPercent = 0.4
+BonusForca = 5

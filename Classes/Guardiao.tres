@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Editor/ClasseCustomResource.cs" id="1"]
+[ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvoreGuardiao.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+NomeClasse = "Guardiao"
+Descricao = "Tanque corpo a corpo. Animações guerreiro (escudo/espada)."
+PrefixoAnimacao = "guerreiro"
+PrefixoAnimacaoAtaque = "guerreiro"
+AttackAnimSpeedScale = 2.2
+PontosDisponiveis = 8
+Forca = 16
+Agilidade = 8
+Destreza = 8
+Inteligencia = 8
+VidaMaxima = 150
+ManaMaxima = 40
+VelocidadeMovimento = 160.0
+UsaProjetil = false
+ArvoreTalentos = ExtResource("2")
+AlcanceAtaqueMelee = 50.0
+BonusDanoCritico = 0.0

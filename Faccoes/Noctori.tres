@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="FaccaoResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Editor/FaccaoResource.cs" id="1"]
+[ext_resource type="Texture2D" path="res://Faccoes/Noctori.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+IdFaccao = "noctori"
+NomeFaccao = "Noctori"
+Descricao = "Filhos da sombra de Nyzareth. Dark elfos, mortos-vivos e orcs juraram lealdade ao Senhor do Abismo em Umbrath, o Reino da Lua Negra."
+CorTema = Color(0.55, 0.32, 0.78, 1)
+Emblema = ExtResource("2")

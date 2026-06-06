@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 
 public partial class Projetil : Area2D
@@ -45,38 +45,38 @@ public partial class Projetil : Area2D
 
     private void OnBodyEntered(Node2D body)
     {
-        // Ignora colisão com o próprio player e com outros projéteis do player
         if (body is Player)
+        {
+            QueueFree();
             return;
+        }
 
-        // Se acertou um inimigo
         if (body.IsInGroup("Inimigos"))
         {
             int danoFinal = CalcularDanoComCritico();
-            
-            // Detecta se foi crítico checando se o dano foi amplificado
             bool ehCritico = danoFinal > DanoMax;
-            
-            // Chama o método LevarDano do inimigo
-            body.Call("LevarDano", danoFinal);
-            
-            // Feedback visual
-            if (ehCritico)
-            {
-                GD.Print($"⚡ GOLPE CRÍTICO! {danoFinal} de dano em {body.Name}!");
-                // Aqui você pode adicionar efeitos visuais especiais, sons diferentes, etc.
-            }
+            if (body is Inimigo inimigo)
+                inimigo.LevarDano(danoFinal);
             else
-            {
-                GD.Print($"💥 Projétil acertou {body.Name}! {danoFinal} de dano (entre {DanoMin}-{DanoMax}).");
-            }
+                body.Call("LevarDano", danoFinal);
+
+            if (ehCritico)
+                GD.Print($"Critico! {danoFinal} de dano em {body.Name}!");
+            else
+                GD.Print($"Projetil acertou {body.Name}! {danoFinal} de dano.");
         }
-        else
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet.IsConnected)
         {
-            GD.Print($"💫 Projétil acertou: {body.Name}");
+            ulong? targetId = null;
+            if (body.HasMeta("network_id"))
+                targetId = (ulong)body.GetMeta("network_id");
+
+            if (targetId.HasValue)
+                gameNet.SendAttack(targetId.Value);
         }
-        
-        // Destrói o projétil ao impactar
+
         QueueFree();
     }
 

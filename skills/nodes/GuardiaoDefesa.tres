@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "gua_base_defesa"
+Nome = "Defesa Base"
+Descricao = "Aumenta sua defesa em +15 permanentemente. Protetor nascido."
+CustoPontos = 1
+NivelMinimo = 1
+BonusForca = 8
+BonusVidaPercent = 0.2

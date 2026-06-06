@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://arco_basico"]
+
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1"]
+[ext_resource type="Texture2D" uid="uid://cdpriduedd2il" path="res://Itens/Incones/Arco de Madeira.png" id="2_icone"]
+
+[resource]
+script = ExtResource("1")
+Icone = ExtResource("2_icone")
+ItemID = 30
+Nome = "Arco"
+Descricao = "Um arco básico para arqueiros."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 1
+Valor = 500
+DanoFisicoMin = 8
+DanoFisicoMax = 16
+Agilidade = 3
+Destreza = 2
+ClassesPermitidas = "Arqueiro"
+CategoriaPeso = 1

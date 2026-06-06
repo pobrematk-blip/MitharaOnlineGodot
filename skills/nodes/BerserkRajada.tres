@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "ber_rajada"
+Nome = "Rajada de Ataques"
+Descricao = "Perform multiple quick strikes. +30% damage."
+Requisitos = PackedStringArray("ber_base_forca")
+CustoPontos = 2
+NivelMinimo = 3
+BonusDanoPercent = 0.3
+BonusVelocidadePercent = 0.2

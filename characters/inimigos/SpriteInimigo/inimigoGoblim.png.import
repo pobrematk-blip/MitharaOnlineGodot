@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwhpc6k61pdnn"
-path="res://.godot/imported/inimigoGoblim.png-5e0e76ff4621b8a9c6a654234e990d12.ctex"
+uid="uid://upsbludks544"
+path="res://.godot/imported/inimigoGoblim.png-4da8d1a171693bb6ea9b321b5ae8ef5d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://characters/inimigos/SpriteInimigo/inimigoGoblim.png"
-dest_files=["res://.godot/imported/inimigoGoblim.png-5e0e76ff4621b8a9c6a654234e990d12.ctex"]
+source_file="res://characters/Inimigos/SpriteInimigo/inimigoGoblim.png"
+dest_files=["res://.godot/imported/inimigoGoblim.png-4da8d1a171693bb6ea9b321b5ae8ef5d.ctex"]
 
 [params]
 

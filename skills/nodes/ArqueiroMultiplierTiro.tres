@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "arq_multi_tiro"
+Nome = "Tiro Múltiplo"
+Descricao = "Lança 3 flechas por tiro. +15% dano por flecha."
+Requisitos = PackedStringArray("arq_base_destreza")
+CustoPontos = 3
+NivelMinimo = 5
+BonusDanoPercent = 0.15

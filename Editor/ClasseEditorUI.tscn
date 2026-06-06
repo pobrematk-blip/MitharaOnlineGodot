@@ -1,0 +1,391 @@
+[gd_scene load_steps=4 format=3 uid="uid://0qa3uk1qnxpo"]
+
+[ext_resource type="Script" path="res://Editor/ClasseEditorUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+
+[sub_resource type="Theme" id="Theme_editor"]
+default_font_size = 14
+
+[node name="ClasseEditorUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+theme = SubResource("Theme_editor")
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(560, 440)
+layout_mode = 0
+offset_right = 560.0
+offset_bottom = 440.0
+
+[node name="Header" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_right = 720.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 13
+
+[node name="Title" type="Label" parent="Panel/Header"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Editor de Classes"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Header"]
+layout_mode = 0
+offset_left = 532.0
+offset_top = 4.0
+offset_right = 552.0
+offset_bottom = 24.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="ColunaLista" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+
+[node name="LabelLista" type="Label" parent="Panel/HBox/ColunaLista"]
+layout_mode = 2
+text = "Classes salvas"
+
+[node name="ListaClasses" type="ItemList" parent="Panel/HBox/ColunaLista"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BtnRecarregar" type="Button" parent="Panel/HBox/ColunaLista"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Recarregar lista"
+
+[node name="ScrollForm" type="ScrollContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Form" type="VBoxContainer" parent="Panel/HBox/ScrollForm"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="LblInfo" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "F9 | 6 classes: Mago, Arqueiro, Ladino, Berseker, Prist, Guardiao | 6 raças na pasta Racas/"
+
+[node name="NomeEdit" type="LineEdit" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Nome da classe"
+
+[node name="DescricaoEdit" type="TextEdit" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+placeholder_text = "Descrição"
+
+[node name="HBoxSprite" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBox/ScrollForm/Form/HBoxSprite"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Sprite:"
+
+[node name="SpriteOpcao" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/HBoxSprite"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SepAnim" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TituloAnim" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "ANIMAÇÃO DE ATAQUE"
+
+[node name="AtaqueIgualSpriteCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Mesmo tipo do sprite (walk/idle compartilhados)"
+
+[node name="HBoxAtaque" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBox/ScrollForm/Form/HBoxAtaque"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Tipo ataque:"
+
+[node name="AtaqueOpcao" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/HBoxAtaque"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxVelAtaque" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBox/ScrollForm/Form/HBoxVelAtaque"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Vel. anim. ataque:"
+
+[node name="VelAtaqueSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/HBoxVelAtaque"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.5
+max_value = 10.0
+step = 0.1
+value = 3.0
+
+[node name="LabelAtaqueInfo" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
+text = "Ataque: mago, arqueiro, ladino, guerreiro (Berseker/Guardiao). Prist usa mago; Ladino usa ladino."
+
+[node name="HBoxRaca" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBox/ScrollForm/Form/HBoxRaca"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Raça:"
+
+[node name="RacaOpcao" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/HBoxRaca"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxArvore" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBox/ScrollForm/Form/HBoxArvore"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Árvore:"
+
+[node name="ArvoreOpcao" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/HBoxArvore"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SepAttr" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TituloAttr" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "ATRIBUTOS BASE"
+
+[node name="GridAttr" type="GridContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 2
+
+[node name="L1" type="Label" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+layout_mode = 2
+text = "Força"
+
+[node name="ForcaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 999.0
+value = 10.0
+
+[node name="L2" type="Label" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+layout_mode = 2
+text = "Agilidade"
+
+[node name="AgilidadeSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 999.0
+value = 10.0
+
+[node name="L3" type="Label" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+layout_mode = 2
+text = "Destreza"
+
+[node name="DestrezaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 999.0
+value = 10.0
+
+[node name="L4" type="Label" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+layout_mode = 2
+text = "Inteligência"
+
+[node name="InteligenciaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 999.0
+value = 10.0
+
+[node name="L5" type="Label" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+layout_mode = 2
+text = "Pontos livres"
+
+[node name="PontosSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridAttr"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 999.0
+value = 10.0
+
+[node name="SepVida" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TituloVida" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "VIDA / MANA / MOVIMENTO"
+
+[node name="GridVida" type="GridContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+columns = 2
+
+[node name="LV1" type="Label" parent="Panel/HBox/ScrollForm/Form/GridVida"]
+layout_mode = 2
+text = "Vida máx"
+
+[node name="VidaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridVida"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 99999.0
+value = 100.0
+
+[node name="LV2" type="Label" parent="Panel/HBox/ScrollForm/Form/GridVida"]
+layout_mode = 2
+text = "Mana máx"
+
+[node name="ManaSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridVida"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 99999.0
+value = 50.0
+
+[node name="LV3" type="Label" parent="Panel/HBox/ScrollForm/Form/GridVida"]
+layout_mode = 2
+text = "Vel. movimento"
+
+[node name="VelMovSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridVida"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 50.0
+max_value = 500.0
+value = 185.0
+
+[node name="SepCombate" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TituloCombate" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "COMBATE"
+
+[node name="UsaProjetilCheck" type="CheckBox" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Usa projétil (mago/arqueiro)"
+
+[node name="GridCombate" type="GridContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+columns = 2
+
+[node name="LC1" type="Label" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+layout_mode = 2
+text = "Dano proj. mín"
+
+[node name="DanoMinSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 9999.0
+value = 15.0
+
+[node name="LC2" type="Label" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+layout_mode = 2
+text = "Dano proj. máx"
+
+[node name="DanoMaxSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 9999.0
+value = 22.0
+
+[node name="LC3" type="Label" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+layout_mode = 2
+text = "Vel. projétil"
+
+[node name="VelProjSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 2000.0
+value = 220.0
+
+[node name="LC4" type="Label" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+layout_mode = 2
+text = "Bônus dano crítico"
+
+[node name="BonusCritSpin" type="SpinBox" parent="Panel/HBox/ScrollForm/Form/GridCombate"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+step = 0.1
+value = 0.0
+
+[node name="PreviewStatus" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="HBoxBotoes" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="BtnNova" type="Button" parent="Panel/HBox/ScrollForm/Form/HBoxBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Nova"
+
+[node name="BtnSalvar" type="Button" parent="Panel/HBox/ScrollForm/Form/HBoxBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Salvar .tres"
+
+[node name="BtnExcluir" type="Button" parent="Panel/HBox/ScrollForm/Form/HBoxBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Excluir"
+
+[node name="BtnTestar" type="Button" parent="Panel/HBox/ScrollForm/Form/HBoxBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Testar no Player"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "gua_vindanca"
+Nome = "Vingança do Protetor"
+Descricao = "Retorno dano recebido aos inimigos. +30% dano, +35% vida."
+Requisitos = PackedStringArray("gua_base_forca")
+CustoPontos = 2
+NivelMinimo = 4
+BonusDanoPercent = 0.3
+BonusVidaPercent = 0.35

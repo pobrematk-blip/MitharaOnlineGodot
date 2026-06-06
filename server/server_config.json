@@ -1,0 +1,8 @@
+{
+  "Port": 7777,
+  "BindAddress": "0.0.0.0",
+  "MaxConnections": 500,
+  "ChannelCount": 4,
+  "TickRate": 20,
+  "AoiRadius": 600
+}

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://du717ibioj6gi"]
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://nihiw7og2qv7"]
 
 [ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_4cfvj"]
 [ext_resource type="Texture2D" uid="uid://e4ktg64uwj4i" path="res://Itens/Incones/Bag (3).png" id="1_puljv"]

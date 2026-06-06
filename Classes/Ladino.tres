@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Editor/ClasseCustomResource.cs" id="1"]
+[ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvoreLadino.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+NomeClasse = "Ladino"
+Descricao = "Ataques rápidos corpo a corpo. Visual de arqueiro, animação ladino."
+PrefixoAnimacao = "arqueiro"
+PrefixoAnimacaoAtaque = "ladino"
+AttackAnimSpeedScale = 4.0
+PontosDisponiveis = 10
+Forca = 10
+Agilidade = 18
+Destreza = 16
+Inteligencia = 8
+VidaMaxima = 95
+ManaMaxima = 35
+VelocidadeMovimento = 200.0
+UsaProjetil = false
+ArvoreTalentos = ExtResource("2")
+AlcanceAtaqueMelee = 44.0

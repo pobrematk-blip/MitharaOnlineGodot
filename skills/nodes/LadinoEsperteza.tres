@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "lad_esperteza"
+Nome = "Esperteza Mortal"
+Descricao = "Você é sagaz e rápido nos seus golpes. +25 Agilidade, +45% dano."
+Requisitos = PackedStringArray("lad_base_agilidade")
+CustoPontos = 3
+NivelMinimo = 5
+BonusAgilidade = 25
+BonusDanoPercent = 0.45
+BonusVelocidadePercent = 0.35

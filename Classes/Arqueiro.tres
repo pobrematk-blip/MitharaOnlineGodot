@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3 uid="uid://d11gi4qwhxvpo"]
+
+[ext_resource type="Script" uid="uid://cjmxq1pkd1o3w" path="res://Editor/ClasseCustomResource.cs" id="1"]
+[ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvoreArqueiro.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+NomeClasse = "Arqueiro"
+Descricao = "Ataques rápidos com flechas."
+PrefixoAnimacao = "arqueiro"
+Forca = 12
+Agilidade = 16
+Destreza = 14
+Inteligencia = 8
+ManaMaxima = 40
+VelocidadeMovimento = 195.0
+PrefixoAnimacaoAtaque = "arqueiro"
+AttackAnimSpeedScale = 3.5
+UsaProjetil = true
+DanoProjetilMax = 16
+ProjetilDanoMagico = false
+ArvoreTalentos = ExtResource("2")
+VelocidadeDoProjetil = 450.0

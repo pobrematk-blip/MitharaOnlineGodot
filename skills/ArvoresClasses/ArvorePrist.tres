@@ -1,0 +1,614 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+
+[sub_resource type="Resource" id="pri_n0"]
+script = ExtResource("2")
+NodeId = "pri_01"
+Nome = "Prist Base"
+Descricao = "Nó de talento nível 0 (Prist)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusInteligencia = 6
+BonusManaPercent = 4
+BonusDanoPercent = 0.6
+
+[sub_resource type="Resource" id="pri_n1"]
+script = ExtResource("2")
+NodeId = "pri_02"
+Nome = "Prist Essencial"
+Descricao = "Nó de talento nível 0 (Prist)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusInteligencia = 6
+BonusManaPercent = 4
+
+[sub_resource type="Resource" id="pri_n2"]
+script = ExtResource("2")
+NodeId = "pri_03"
+Nome = "Prist Primordial"
+Descricao = "Nó de talento nível 0 (Prist)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusInteligencia = 6
+BonusManaPercent = 4
+
+[sub_resource type="Resource" id="pri_n3"]
+script = ExtResource("2")
+NodeId = "pri_04"
+Nome = "Prist Fundamental"
+Descricao = "Nó de talento nível 1 (Prist)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("pri_01", "pri_02")
+
+[sub_resource type="Resource" id="pri_n4"]
+script = ExtResource("2")
+NodeId = "pri_05"
+Nome = "Prist Natural"
+Descricao = "Nó de talento nível 1 (Prist)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+Requisitos = PackedStringArray("pri_02")
+
+[sub_resource type="Resource" id="pri_n5"]
+script = ExtResource("2")
+NodeId = "pri_06"
+Nome = "Prist Básico"
+Descricao = "Nó de talento nível 1 (Prist)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+Requisitos = PackedStringArray("pri_03", "pri_01")
+
+[sub_resource type="Resource" id="pri_n6"]
+script = ExtResource("2")
+NodeId = "pri_07"
+Nome = "Prist Inicial"
+Descricao = "Nó de talento nível 1 (Prist)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("pri_01")
+
+[sub_resource type="Resource" id="pri_n7"]
+script = ExtResource("2")
+NodeId = "pri_08"
+Nome = "Prist Concentração"
+Descricao = "Nó de talento nível 1 (Prist)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusInteligencia = 5
+BonusManaPercent = 3
+Requisitos = PackedStringArray("pri_02", "pri_03")
+
+[sub_resource type="Resource" id="pri_n8"]
+script = ExtResource("2")
+NodeId = "pri_09"
+Nome = "Prist Foco"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("pri_04", "pri_05")
+
+[sub_resource type="Resource" id="pri_n9"]
+script = ExtResource("2")
+NodeId = "pri_10"
+Nome = "Prist Potencial"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("pri_05")
+
+[sub_resource type="Resource" id="pri_n10"]
+script = ExtResource("2")
+NodeId = "pri_11"
+Nome = "Prist Expansão"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("pri_06", "pri_07")
+
+[sub_resource type="Resource" id="pri_n11"]
+script = ExtResource("2")
+NodeId = "pri_12"
+Nome = "Prist Crescimento"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("pri_07")
+
+[sub_resource type="Resource" id="pri_n12"]
+script = ExtResource("2")
+NodeId = "pri_13"
+Nome = "Prist Despertar"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("pri_08", "pri_04")
+
+[sub_resource type="Resource" id="pri_n13"]
+script = ExtResource("2")
+NodeId = "pri_14"
+Nome = "Prist Evolução"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("pri_04")
+
+[sub_resource type="Resource" id="pri_n14"]
+script = ExtResource("2")
+NodeId = "pri_15"
+Nome = "Prist Progresso"
+Descricao = "Nó de talento nível 2 (Prist)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusInteligencia = 4
+BonusManaPercent = 2
+Requisitos = PackedStringArray("pri_05", "pri_06")
+
+[sub_resource type="Resource" id="pri_n15"]
+script = ExtResource("2")
+NodeId = "pri_16"
+Nome = "Prist Aprimoramento"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_09", "pri_10")
+
+[sub_resource type="Resource" id="pri_n16"]
+script = ExtResource("2")
+NodeId = "pri_17"
+Nome = "Prist Avanço"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_10")
+
+[sub_resource type="Resource" id="pri_n17"]
+script = ExtResource("2")
+NodeId = "pri_18"
+Nome = "Prist Superior"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_11", "pri_12")
+
+[sub_resource type="Resource" id="pri_n18"]
+script = ExtResource("2")
+NodeId = "pri_19"
+Nome = "Prist Elevado"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_12")
+
+[sub_resource type="Resource" id="pri_n19"]
+script = ExtResource("2")
+NodeId = "pri_20"
+Nome = "Prist Mestre"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_13", "pri_14")
+
+[sub_resource type="Resource" id="pri_n20"]
+script = ExtResource("2")
+NodeId = "pri_21"
+Nome = "Prist Supremo"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_14")
+
+[sub_resource type="Resource" id="pri_n21"]
+script = ExtResource("2")
+NodeId = "pri_22"
+Nome = "Prist Lendário"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_15", "pri_09")
+
+[sub_resource type="Resource" id="pri_n22"]
+script = ExtResource("2")
+NodeId = "pri_23"
+Nome = "Prist Mítico"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_09")
+
+[sub_resource type="Resource" id="pri_n23"]
+script = ExtResource("2")
+NodeId = "pri_24"
+Nome = "Prist Divino"
+Descricao = "Nó de talento nível 3 (Prist)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusInteligencia = 3
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_10", "pri_11")
+
+[sub_resource type="Resource" id="pri_n24"]
+script = ExtResource("2")
+NodeId = "pri_25"
+Nome = "Prist Épico"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_16", "pri_17")
+
+[sub_resource type="Resource" id="pri_n25"]
+script = ExtResource("2")
+NodeId = "pri_26"
+Nome = "Prist Guerreiro"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_17")
+
+[sub_resource type="Resource" id="pri_n26"]
+script = ExtResource("2")
+NodeId = "pri_27"
+Nome = "Prist Sábio"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_18", "pri_19")
+
+[sub_resource type="Resource" id="pri_n27"]
+script = ExtResource("2")
+NodeId = "pri_28"
+Nome = "Prist Destemido"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_19")
+
+[sub_resource type="Resource" id="pri_n28"]
+script = ExtResource("2")
+NodeId = "pri_29"
+Nome = "Prist Poderoso"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_20", "pri_21")
+
+[sub_resource type="Resource" id="pri_n29"]
+script = ExtResource("2")
+NodeId = "pri_30"
+Nome = "Prist Ágil"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_21")
+
+[sub_resource type="Resource" id="pri_n30"]
+script = ExtResource("2")
+NodeId = "pri_31"
+Nome = "Prist Feroz"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_22", "pri_23")
+
+[sub_resource type="Resource" id="pri_n31"]
+script = ExtResource("2")
+NodeId = "pri_32"
+Nome = "Prist Sombrio"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_23")
+
+[sub_resource type="Resource" id="pri_n32"]
+script = ExtResource("2")
+NodeId = "pri_33"
+Nome = "Prist Sagrado"
+Descricao = "Nó de talento nível 4 (Prist)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusInteligencia = 2
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_24", "pri_16")
+
+[sub_resource type="Resource" id="pri_n33"]
+script = ExtResource("2")
+NodeId = "pri_34"
+Nome = "Prist Arcana"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_25", "pri_26")
+
+[sub_resource type="Resource" id="pri_n34"]
+script = ExtResource("2")
+NodeId = "pri_35"
+Nome = "Prist Rápido"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_26")
+
+[sub_resource type="Resource" id="pri_n35"]
+script = ExtResource("2")
+NodeId = "pri_36"
+Nome = "Prist Resistente"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_27", "pri_28")
+
+[sub_resource type="Resource" id="pri_n36"]
+script = ExtResource("2")
+NodeId = "pri_37"
+Nome = "Prist Letal"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_28")
+
+[sub_resource type="Resource" id="pri_n37"]
+script = ExtResource("2")
+NodeId = "pri_38"
+Nome = "Prist Preciso"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_29", "pri_30")
+
+[sub_resource type="Resource" id="pri_n38"]
+script = ExtResource("2")
+NodeId = "pri_39"
+Nome = "Prist Brutal"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_30")
+
+[sub_resource type="Resource" id="pri_n39"]
+script = ExtResource("2")
+NodeId = "pri_40"
+Nome = "Prist Sutil"
+Descricao = "Nó de talento nível 5 (Prist)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_31", "pri_32")
+
+[sub_resource type="Resource" id="pri_n40"]
+script = ExtResource("2")
+NodeId = "pri_41"
+Nome = "Prist Gélido"
+Descricao = "Nó de talento nível 6 (Prist)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_34", "pri_35")
+
+[sub_resource type="Resource" id="pri_n41"]
+script = ExtResource("2")
+NodeId = "pri_42"
+Nome = "Prist Flamejante"
+Descricao = "Nó de talento nível 6 (Prist)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_35")
+
+[sub_resource type="Resource" id="pri_n42"]
+script = ExtResource("2")
+NodeId = "pri_43"
+Nome = "Prist Tempestuoso"
+Descricao = "Nó de talento nível 6 (Prist)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_36", "pri_37")
+
+[sub_resource type="Resource" id="pri_n43"]
+script = ExtResource("2")
+NodeId = "pri_44"
+Nome = "Prist Venenoso"
+Descricao = "Nó de talento nível 6 (Prist)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_37")
+
+[sub_resource type="Resource" id="pri_n44"]
+script = ExtResource("2")
+NodeId = "pri_45"
+Nome = "Prist Sangrento"
+Descricao = "Nó de talento nível 6 (Prist)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_38", "pri_39")
+
+[sub_resource type="Resource" id="pri_n45"]
+script = ExtResource("2")
+NodeId = "pri_46"
+Nome = "Prist Eterno"
+Descricao = "Nó de talento nível 7 (Prist)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_41", "pri_42")
+
+[sub_resource type="Resource" id="pri_n46"]
+script = ExtResource("2")
+NodeId = "pri_47"
+Nome = "Prist Celestial"
+Descricao = "Nó de talento nível 7 (Prist)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_42")
+
+[sub_resource type="Resource" id="pri_n47"]
+script = ExtResource("2")
+NodeId = "pri_48"
+Nome = "Prist Abissal"
+Descricao = "Nó de talento nível 7 (Prist)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_43", "pri_44")
+
+[sub_resource type="Resource" id="pri_n48"]
+script = ExtResource("2")
+NodeId = "pri_49"
+Nome = "Prist Primordial"
+Descricao = "Nó de talento nível 8 (Prist)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_46", "pri_47")
+
+[sub_resource type="Resource" id="pri_n49"]
+script = ExtResource("2")
+NodeId = "pri_50"
+Nome = "Prist Final"
+Descricao = "Nó de talento nível 8 (Prist)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusInteligencia = 1
+BonusManaPercent = 1
+Requisitos = PackedStringArray("pri_47")
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore Prist"
+RootNodeIds = PackedStringArray("pri_01", "pri_02", "pri_03")
+
+Nodes = Array[Resource]([
+	SubResource("pri_n0"),
+	SubResource("pri_n1"),
+	SubResource("pri_n2"),
+	SubResource("pri_n3"),
+	SubResource("pri_n4"),
+	SubResource("pri_n5"),
+	SubResource("pri_n6"),
+	SubResource("pri_n7"),
+	SubResource("pri_n8"),
+	SubResource("pri_n9"),
+	SubResource("pri_n10"),
+	SubResource("pri_n11"),
+	SubResource("pri_n12"),
+	SubResource("pri_n13"),
+	SubResource("pri_n14"),
+	SubResource("pri_n15"),
+	SubResource("pri_n16"),
+	SubResource("pri_n17"),
+	SubResource("pri_n18"),
+	SubResource("pri_n19"),
+	SubResource("pri_n20"),
+	SubResource("pri_n21"),
+	SubResource("pri_n22"),
+	SubResource("pri_n23"),
+	SubResource("pri_n24"),
+	SubResource("pri_n25"),
+	SubResource("pri_n26"),
+	SubResource("pri_n27"),
+	SubResource("pri_n28"),
+	SubResource("pri_n29"),
+	SubResource("pri_n30"),
+	SubResource("pri_n31"),
+	SubResource("pri_n32"),
+	SubResource("pri_n33"),
+	SubResource("pri_n34"),
+	SubResource("pri_n35"),
+	SubResource("pri_n36"),
+	SubResource("pri_n37"),
+	SubResource("pri_n38"),
+	SubResource("pri_n39"),
+	SubResource("pri_n40"),
+	SubResource("pri_n41"),
+	SubResource("pri_n42"),
+	SubResource("pri_n43"),
+	SubResource("pri_n44"),
+	SubResource("pri_n45"),
+	SubResource("pri_n46"),
+	SubResource("pri_n47"),
+	SubResource("pri_n48"),
+	SubResource("pri_n49")
+])

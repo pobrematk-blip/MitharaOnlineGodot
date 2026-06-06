@@ -1,0 +1,125 @@
+[gd_scene load_steps=5 format=3 uid="uid://cq17nprtsqem4"]
+
+[ext_resource type="Script" uid="uid://b8afhwn8ut8lc" path="res://skills/TalentTreeUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+
+[sub_resource type="Theme" id="Theme_tree"]
+default_font_size = 14
+
+[node name="TalentTreeUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme = SubResource("Theme_tree")
+script = ExtResource("1")
+
+[node name="BgPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -330
+offset_top = -250
+offset_right = 330
+offset_bottom = 250
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TitleBar" type="Panel" parent="BgPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+mouse_default_cursor_shape = 13
+
+[node name="TitleLabel" type="Label" parent="BgPanel/TitleBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "ÁRVORE DE TALENTOS"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 14
+
+[node name="PointsLabel" type="Label" parent="BgPanel/TitleBar"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 100.0
+offset_bottom = 26.0
+theme_override_colors/font_color = Color(0.95, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 12
+text = "Pontos: 0"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="BgPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -28.0
+offset_top = 4.0
+offset_right = -8.0
+offset_bottom = 24.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
+text = "X"
+
+[node name="VBox" type="VBoxContainer" parent="BgPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 40.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scroll" type="ScrollContainer" parent="BgPanel/VBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Board" type="Control" parent="BgPanel/VBox/Scroll"]
+custom_minimum_size = Vector2(600, 600)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="SlotTemplate" type="PanelContainer" parent="BgPanel/VBox/Scroll/Board"]
+visible = false
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 0
+mouse_filter = 1
+
+[node name="Icon" type="TextureRect" parent="BgPanel/VBox/Scroll/Board/SlotTemplate"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6
+offset_top = 6
+offset_right = -6
+offset_bottom = -6
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2

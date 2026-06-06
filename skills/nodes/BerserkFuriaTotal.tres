@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "ber_furia"
+Nome = "Fúria Total"
+Descricao = "Você entra em fúria extrema. +50% dano, +60% velocidade."
+Requisitos = PackedStringArray("ber_base_forca")
+CustoPontos = 3
+NivelMinimo = 5
+BonusDanoPercent = 0.5
+BonusVelocidadePercent = 0.6
+BonusForca = 8

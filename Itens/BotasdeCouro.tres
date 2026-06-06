@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_xi5sb"]
+
+[resource]
+script = ExtResource("1_xi5sb")
+ItemID = 23
+Nome = "Botas de Couro"
+QuantidadeMaximaPorSlot = 1
+SlotsAdicionais = 0
+Tipo = 6
+Agilidade = 2
+DefesaFisica = 2
+ClassesPermitidas = "Arqueiro,Ladino"

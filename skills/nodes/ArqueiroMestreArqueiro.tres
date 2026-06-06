@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "arq_master"
+Nome = "Mestre Arqueiro"
+Descricao = "Você domina completamente a arte do arco. +15 Destreza, +15 Agilidade, +60% dano."
+Requisitos = PackedStringArray("arq_precisao", "arq_multi_tiro", "arq_reflexos")
+CustoPontos = 5
+NivelMinimo = 10
+BonusDestreza = 15
+BonusAgilidade = 15
+BonusDanoPercent = 0.6
+BonusVelocidadePercent = 0.5

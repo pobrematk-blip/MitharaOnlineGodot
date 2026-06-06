@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TalentNodeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NodeId = "gua_master"
+Nome = "Mestre Guardião"
+Descricao = "Você é o guardião supremo. +20 Força, +100% vida, +40% dano."
+Requisitos = PackedStringArray("gua_protecao", "gua_santuario", "gua_vindanca")
+CustoPontos = 5
+NivelMinimo = 10
+BonusForca = 20
+BonusVidaPercent = 1.0
+BonusDanoPercent = 0.4

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Editor/ClasseCustomResource.cs" id="1"]
+[ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvoreBerseker.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+NomeClasse = "Berseker"
+Descricao = "Fúria corpo a corpo. Usa animações guerreiro até ter sprites próprios."
+PrefixoAnimacao = "guerreiro"
+PrefixoAnimacaoAtaque = "guerreiro"
+AttackAnimSpeedScale = 2.8
+PontosDisponiveis = 8
+Forca = 20
+Agilidade = 12
+Destreza = 8
+Inteligencia = 6
+VidaMaxima = 140
+ManaMaxima = 25
+VelocidadeMovimento = 180.0
+UsaProjetil = false
+ArvoreTalentos = ExtResource("2")
+AlcanceAtaqueMelee = 52.0

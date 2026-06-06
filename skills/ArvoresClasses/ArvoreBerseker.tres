@@ -1,0 +1,614 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+
+[sub_resource type="Resource" id="ber_n0"]
+script = ExtResource("2")
+NodeId = "ber_01"
+Nome = "Berseker Base"
+Descricao = "Nó de talento nível 0 (Berseker)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusForca = 6
+BonusVitalidade = 4
+BonusDanoPercent = 0.6
+
+[sub_resource type="Resource" id="ber_n1"]
+script = ExtResource("2")
+NodeId = "ber_02"
+Nome = "Berseker Essencial"
+Descricao = "Nó de talento nível 0 (Berseker)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusForca = 6
+BonusVitalidade = 4
+
+[sub_resource type="Resource" id="ber_n2"]
+script = ExtResource("2")
+NodeId = "ber_03"
+Nome = "Berseker Primordial"
+Descricao = "Nó de talento nível 0 (Berseker)."
+CustoPontos = 5
+NivelMinimo = 1
+BonusForca = 6
+BonusVitalidade = 4
+
+[sub_resource type="Resource" id="ber_n3"]
+script = ExtResource("2")
+NodeId = "ber_04"
+Nome = "Berseker Fundamental"
+Descricao = "Nó de talento nível 1 (Berseker)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusForca = 5
+BonusVitalidade = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("ber_01", "ber_02")
+
+[sub_resource type="Resource" id="ber_n4"]
+script = ExtResource("2")
+NodeId = "ber_05"
+Nome = "Berseker Natural"
+Descricao = "Nó de talento nível 1 (Berseker)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusForca = 5
+BonusVitalidade = 3
+Requisitos = PackedStringArray("ber_02")
+
+[sub_resource type="Resource" id="ber_n5"]
+script = ExtResource("2")
+NodeId = "ber_06"
+Nome = "Berseker Básico"
+Descricao = "Nó de talento nível 1 (Berseker)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusForca = 5
+BonusVitalidade = 3
+Requisitos = PackedStringArray("ber_03", "ber_01")
+
+[sub_resource type="Resource" id="ber_n6"]
+script = ExtResource("2")
+NodeId = "ber_07"
+Nome = "Berseker Inicial"
+Descricao = "Nó de talento nível 1 (Berseker)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusForca = 5
+BonusVitalidade = 3
+BonusDanoPercent = 0.4
+Requisitos = PackedStringArray("ber_01")
+
+[sub_resource type="Resource" id="ber_n7"]
+script = ExtResource("2")
+NodeId = "ber_08"
+Nome = "Berseker Concentração"
+Descricao = "Nó de talento nível 1 (Berseker)."
+CustoPontos = 4
+NivelMinimo = 2
+BonusForca = 5
+BonusVitalidade = 3
+Requisitos = PackedStringArray("ber_02", "ber_03")
+
+[sub_resource type="Resource" id="ber_n8"]
+script = ExtResource("2")
+NodeId = "ber_09"
+Nome = "Berseker Foco"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+Requisitos = PackedStringArray("ber_04", "ber_05")
+
+[sub_resource type="Resource" id="ber_n9"]
+script = ExtResource("2")
+NodeId = "ber_10"
+Nome = "Berseker Potencial"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("ber_05")
+
+[sub_resource type="Resource" id="ber_n10"]
+script = ExtResource("2")
+NodeId = "ber_11"
+Nome = "Berseker Expansão"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+Requisitos = PackedStringArray("ber_06", "ber_07")
+
+[sub_resource type="Resource" id="ber_n11"]
+script = ExtResource("2")
+NodeId = "ber_12"
+Nome = "Berseker Crescimento"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+Requisitos = PackedStringArray("ber_07")
+
+[sub_resource type="Resource" id="ber_n12"]
+script = ExtResource("2")
+NodeId = "ber_13"
+Nome = "Berseker Despertar"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+BonusDanoPercent = 0.2
+Requisitos = PackedStringArray("ber_08", "ber_04")
+
+[sub_resource type="Resource" id="ber_n13"]
+script = ExtResource("2")
+NodeId = "ber_14"
+Nome = "Berseker Evolução"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+Requisitos = PackedStringArray("ber_04")
+
+[sub_resource type="Resource" id="ber_n14"]
+script = ExtResource("2")
+NodeId = "ber_15"
+Nome = "Berseker Progresso"
+Descricao = "Nó de talento nível 2 (Berseker)."
+CustoPontos = 3
+NivelMinimo = 4
+BonusForca = 4
+BonusVitalidade = 2
+Requisitos = PackedStringArray("ber_05", "ber_06")
+
+[sub_resource type="Resource" id="ber_n15"]
+script = ExtResource("2")
+NodeId = "ber_16"
+Nome = "Berseker Aprimoramento"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_09", "ber_10")
+
+[sub_resource type="Resource" id="ber_n16"]
+script = ExtResource("2")
+NodeId = "ber_17"
+Nome = "Berseker Avanço"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_10")
+
+[sub_resource type="Resource" id="ber_n17"]
+script = ExtResource("2")
+NodeId = "ber_18"
+Nome = "Berseker Superior"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_11", "ber_12")
+
+[sub_resource type="Resource" id="ber_n18"]
+script = ExtResource("2")
+NodeId = "ber_19"
+Nome = "Berseker Elevado"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_12")
+
+[sub_resource type="Resource" id="ber_n19"]
+script = ExtResource("2")
+NodeId = "ber_20"
+Nome = "Berseker Mestre"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_13", "ber_14")
+
+[sub_resource type="Resource" id="ber_n20"]
+script = ExtResource("2")
+NodeId = "ber_21"
+Nome = "Berseker Supremo"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_14")
+
+[sub_resource type="Resource" id="ber_n21"]
+script = ExtResource("2")
+NodeId = "ber_22"
+Nome = "Berseker Lendário"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_15", "ber_09")
+
+[sub_resource type="Resource" id="ber_n22"]
+script = ExtResource("2")
+NodeId = "ber_23"
+Nome = "Berseker Mítico"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_09")
+
+[sub_resource type="Resource" id="ber_n23"]
+script = ExtResource("2")
+NodeId = "ber_24"
+Nome = "Berseker Divino"
+Descricao = "Nó de talento nível 3 (Berseker)."
+CustoPontos = 2
+NivelMinimo = 6
+BonusForca = 3
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_10", "ber_11")
+
+[sub_resource type="Resource" id="ber_n24"]
+script = ExtResource("2")
+NodeId = "ber_25"
+Nome = "Berseker Épico"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_16", "ber_17")
+
+[sub_resource type="Resource" id="ber_n25"]
+script = ExtResource("2")
+NodeId = "ber_26"
+Nome = "Berseker Guerreiro"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_17")
+
+[sub_resource type="Resource" id="ber_n26"]
+script = ExtResource("2")
+NodeId = "ber_27"
+Nome = "Berseker Sábio"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_18", "ber_19")
+
+[sub_resource type="Resource" id="ber_n27"]
+script = ExtResource("2")
+NodeId = "ber_28"
+Nome = "Berseker Destemido"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_19")
+
+[sub_resource type="Resource" id="ber_n28"]
+script = ExtResource("2")
+NodeId = "ber_29"
+Nome = "Berseker Poderoso"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_20", "ber_21")
+
+[sub_resource type="Resource" id="ber_n29"]
+script = ExtResource("2")
+NodeId = "ber_30"
+Nome = "Berseker Ágil"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_21")
+
+[sub_resource type="Resource" id="ber_n30"]
+script = ExtResource("2")
+NodeId = "ber_31"
+Nome = "Berseker Feroz"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_22", "ber_23")
+
+[sub_resource type="Resource" id="ber_n31"]
+script = ExtResource("2")
+NodeId = "ber_32"
+Nome = "Berseker Sombrio"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_23")
+
+[sub_resource type="Resource" id="ber_n32"]
+script = ExtResource("2")
+NodeId = "ber_33"
+Nome = "Berseker Sagrado"
+Descricao = "Nó de talento nível 4 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 8
+BonusForca = 2
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_24", "ber_16")
+
+[sub_resource type="Resource" id="ber_n33"]
+script = ExtResource("2")
+NodeId = "ber_34"
+Nome = "Berseker Arcana"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_25", "ber_26")
+
+[sub_resource type="Resource" id="ber_n34"]
+script = ExtResource("2")
+NodeId = "ber_35"
+Nome = "Berseker Rápido"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_26")
+
+[sub_resource type="Resource" id="ber_n35"]
+script = ExtResource("2")
+NodeId = "ber_36"
+Nome = "Berseker Resistente"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_27", "ber_28")
+
+[sub_resource type="Resource" id="ber_n36"]
+script = ExtResource("2")
+NodeId = "ber_37"
+Nome = "Berseker Letal"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_28")
+
+[sub_resource type="Resource" id="ber_n37"]
+script = ExtResource("2")
+NodeId = "ber_38"
+Nome = "Berseker Preciso"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_29", "ber_30")
+
+[sub_resource type="Resource" id="ber_n38"]
+script = ExtResource("2")
+NodeId = "ber_39"
+Nome = "Berseker Brutal"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_30")
+
+[sub_resource type="Resource" id="ber_n39"]
+script = ExtResource("2")
+NodeId = "ber_40"
+Nome = "Berseker Sutil"
+Descricao = "Nó de talento nível 5 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 10
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_31", "ber_32")
+
+[sub_resource type="Resource" id="ber_n40"]
+script = ExtResource("2")
+NodeId = "ber_41"
+Nome = "Berseker Gélido"
+Descricao = "Nó de talento nível 6 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_34", "ber_35")
+
+[sub_resource type="Resource" id="ber_n41"]
+script = ExtResource("2")
+NodeId = "ber_42"
+Nome = "Berseker Flamejante"
+Descricao = "Nó de talento nível 6 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_35")
+
+[sub_resource type="Resource" id="ber_n42"]
+script = ExtResource("2")
+NodeId = "ber_43"
+Nome = "Berseker Tempestuoso"
+Descricao = "Nó de talento nível 6 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_36", "ber_37")
+
+[sub_resource type="Resource" id="ber_n43"]
+script = ExtResource("2")
+NodeId = "ber_44"
+Nome = "Berseker Venenoso"
+Descricao = "Nó de talento nível 6 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_37")
+
+[sub_resource type="Resource" id="ber_n44"]
+script = ExtResource("2")
+NodeId = "ber_45"
+Nome = "Berseker Sangrento"
+Descricao = "Nó de talento nível 6 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 12
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_38", "ber_39")
+
+[sub_resource type="Resource" id="ber_n45"]
+script = ExtResource("2")
+NodeId = "ber_46"
+Nome = "Berseker Eterno"
+Descricao = "Nó de talento nível 7 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_41", "ber_42")
+
+[sub_resource type="Resource" id="ber_n46"]
+script = ExtResource("2")
+NodeId = "ber_47"
+Nome = "Berseker Celestial"
+Descricao = "Nó de talento nível 7 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_42")
+
+[sub_resource type="Resource" id="ber_n47"]
+script = ExtResource("2")
+NodeId = "ber_48"
+Nome = "Berseker Abissal"
+Descricao = "Nó de talento nível 7 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 14
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_43", "ber_44")
+
+[sub_resource type="Resource" id="ber_n48"]
+script = ExtResource("2")
+NodeId = "ber_49"
+Nome = "Berseker Primordial"
+Descricao = "Nó de talento nível 8 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_46", "ber_47")
+
+[sub_resource type="Resource" id="ber_n49"]
+script = ExtResource("2")
+NodeId = "ber_50"
+Nome = "Berseker Final"
+Descricao = "Nó de talento nível 8 (Berseker)."
+CustoPontos = 1
+NivelMinimo = 16
+BonusForca = 1
+BonusVitalidade = 1
+Requisitos = PackedStringArray("ber_47")
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore Berseker"
+RootNodeIds = PackedStringArray("ber_01", "ber_02", "ber_03")
+
+Nodes = Array[Resource]([
+	SubResource("ber_n0"),
+	SubResource("ber_n1"),
+	SubResource("ber_n2"),
+	SubResource("ber_n3"),
+	SubResource("ber_n4"),
+	SubResource("ber_n5"),
+	SubResource("ber_n6"),
+	SubResource("ber_n7"),
+	SubResource("ber_n8"),
+	SubResource("ber_n9"),
+	SubResource("ber_n10"),
+	SubResource("ber_n11"),
+	SubResource("ber_n12"),
+	SubResource("ber_n13"),
+	SubResource("ber_n14"),
+	SubResource("ber_n15"),
+	SubResource("ber_n16"),
+	SubResource("ber_n17"),
+	SubResource("ber_n18"),
+	SubResource("ber_n19"),
+	SubResource("ber_n20"),
+	SubResource("ber_n21"),
+	SubResource("ber_n22"),
+	SubResource("ber_n23"),
+	SubResource("ber_n24"),
+	SubResource("ber_n25"),
+	SubResource("ber_n26"),
+	SubResource("ber_n27"),
+	SubResource("ber_n28"),
+	SubResource("ber_n29"),
+	SubResource("ber_n30"),
+	SubResource("ber_n31"),
+	SubResource("ber_n32"),
+	SubResource("ber_n33"),
+	SubResource("ber_n34"),
+	SubResource("ber_n35"),
+	SubResource("ber_n36"),
+	SubResource("ber_n37"),
+	SubResource("ber_n38"),
+	SubResource("ber_n39"),
+	SubResource("ber_n40"),
+	SubResource("ber_n41"),
+	SubResource("ber_n42"),
+	SubResource("ber_n43"),
+	SubResource("ber_n44"),
+	SubResource("ber_n45"),
+	SubResource("ber_n46"),
+	SubResource("ber_n47"),
+	SubResource("ber_n48"),
+	SubResource("ber_n49")
+])

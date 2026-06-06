@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+NomeArvore = "Árvore da Cura Sagrada"
+RootNodeIds = PackedStringArray("sac_base_intel", "sac_base_vit")
+
+Nodes = Array[Resource]([
+	Resource("res://skills/nodes/SacerdoteInteligencia.tres"),
+	Resource("res://skills/nodes/SacerdoteVitalidade.tres"),
+	Resource("res://skills/nodes/SacerdoteCura.tres"),
+	Resource("res://skills/nodes/SacerdoteResurreccao.tres"),
+	Resource("res://skills/nodes/SacerdotePurificacao.tres"),
+	Resource("res://skills/nodes/SacerdoteMestreSacerdote.tres")
+])
