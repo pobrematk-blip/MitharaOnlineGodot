@@ -96,19 +96,60 @@ public partial class DialogUI : Control
 
     public void MostrarDialogoLocal(string npcNome, string dialogId)
     {
-        _npcText.Text = $"[{npcNome}]\n(DialogId: {dialogId})\n\n— Modo offline —";
-
         foreach (var child in _optionsContainer.GetChildren())
             child.QueueFree();
 
-        var btn = new Button();
-        btn.Text = "Fechar";
-        btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        btn.Pressed += Fechar;
-        _optionsContainer.AddChild(btn);
+        switch (dialogId?.ToLower())
+        {
+            case "banco":
+                _npcText.Text = $"[{npcNome}]\nPrecisa guardar seus tesouros? Estou aqui para ajudar!";
+                AdicionarOpcaoLocal("📦 Abrir Banco", () => AbrirBanco());
+                break;
+
+            case "guilda":
+                _npcText.Text = $"[{npcNome}]\nQuer fundar ou gerenciar sua guilda? Fale comigo!";
+                AdicionarOpcaoLocal("⚔ Criar Guilda", () => AbrirGuilda());
+                break;
+
+            default:
+                _npcText.Text = $"[{npcNome}]\nOlá, aventureiro! Em breve terei mais opções para você.";
+                break;
+        }
+
+        AdicionarOpcaoLocal("Sair", Fechar);
 
         _panel.Visible = true;
         CallDeferred(MethodName.Centralizar);
+    }
+
+    private void AdicionarOpcaoLocal(string texto, System.Action acao)
+    {
+        var btn = new Button();
+        btn.Text = texto;
+        btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        btn.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
+        btn.AddThemeStyleboxOverride("normal", CriarBotaoEstilo(new Color(0.15f, 0.15f, 0.22f, 0.95f)));
+        btn.AddThemeStyleboxOverride("hover", CriarBotaoEstilo(new Color(0.25f, 0.25f, 0.35f, 0.95f)));
+        btn.Pressed += acao;
+        _optionsContainer.AddChild(btn);
+    }
+
+    private void AbrirBanco()
+    {
+        Fechar();
+        var bancoScene = ResourceLoader.Load<PackedScene>("res://Banco/BancoUI.tscn");
+        if (bancoScene == null) return;
+        var banco = bancoScene.Instantiate<BancoUI>();
+        GetTree().CurrentScene.AddChild(banco);
+    }
+
+    private void AbrirGuilda()
+    {
+        Fechar();
+        var guildScene = ResourceLoader.Load<PackedScene>("res://ui/GuildUI.tscn");
+        if (guildScene == null) return;
+        var guild = guildScene.Instantiate<GuildUI>();
+        GetTree().CurrentScene.AddChild(guild);
     }
 
     private void Fechar()

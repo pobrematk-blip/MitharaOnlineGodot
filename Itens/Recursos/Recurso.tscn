@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://recurso01"]
+
+[ext_resource type="Script" path="res://Itens/Recursos/RecursoNode.cs" id="1"]
+
+[node name="Recurso" type="StaticBody2D"]
+script = ExtResource("1")

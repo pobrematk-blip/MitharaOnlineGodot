@@ -55,6 +55,8 @@ public partial class GameEditorUI : Control
         CarregarEditor("Talentos", "res://Editor/TalentNodeEditorUI.tscn");
         CarregarEditor("Itens", "res://Editor/ItemEditorUI.tscn");
         CarregarEditor("Pets", "res://Editor/PetEditorUI.tscn");
+        CarregarEditor("Recursos", "res://Editor/EditorRecursosUI.tscn");
+        CarregarEditor("Loja Cash", "res://Editor/EditorLojaCashUI.tscn");
         CarregarEditor("Admin", "res://Editor/AdminPanelUI.tscn");
 
         if (_pendingEditors.Count > 0)
