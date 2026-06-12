@@ -1,0 +1,102 @@
+using Godot;
+using System;
+
+public partial class WorldNPC : CharacterBody2D
+{
+    [Export] public string NpcName { get; set; } = "";
+    [Export] public string NpcRace { get; set; } = "Humano";
+    [Export] public string AnimPrefix { get; set; } = "padrao";
+    [Export] public string DialogId { get; set; } = "";
+    [Export] public string PrefabId { get; set; } = "";
+
+    public override void _Ready()
+    {
+        AddToGroup("NPC");
+        CharacterBody2DDefaultSetup();
+
+        string sheetPath = ConstruirPathSprite();
+        if (!string.IsNullOrEmpty(sheetPath) && ResourceLoader.Exists(sheetPath))
+        {
+            CriarSprite(sheetPath);
+        }
+        else
+        {
+            GD.PrintErr($"[WorldNPC] Sprite sheet não encontrada: {sheetPath}");
+        }
+
+        CriarLabels();
+    }
+
+    private void CharacterBody2DDefaultSetup()
+    {
+        var col = new CollisionShape2D();
+        col.Shape = new CircleShape2D { Radius = 40f };
+        AddChild(col);
+
+        CollisionLayer = 2u;
+        CollisionMask = 1u;
+    }
+
+    private string ConstruirPathSprite()
+    {
+        string race = string.IsNullOrWhiteSpace(NpcRace) ? "Humano" : NpcRace.Trim();
+        string npcPath = LpcSpriteFramesBuilder.PastaSpritesNpc + race + ".png";
+        if (ResourceLoader.Exists(npcPath))
+            return npcPath;
+        string raceFile = race.Replace(" ", "");
+        string fallbackPath = LpcSpriteFramesBuilder.PastaSpritesRaca + raceFile + ".png";
+        if (ResourceLoader.Exists(fallbackPath))
+            return fallbackPath;
+        return null;
+    }
+
+    private void CriarSprite(string sheetPath)
+    {
+        var sheet = ResourceLoader.Load<Texture2D>(sheetPath);
+        if (sheet == null) return;
+
+        string prefix = string.IsNullOrWhiteSpace(AnimPrefix) ? "padrao" : AnimPrefix;
+        var frames = LpcSpriteFramesBuilder.Construir(sheet, prefix);
+        if (frames == null || frames.GetAnimationNames().Length == 0) return;
+
+        var sprite = new AnimatedSprite2D();
+        sprite.Name = "AnimatedSprite";
+        sprite.Position = new Vector2(0, -5);
+        sprite.Scale = Vector2.One * 2f;
+        sprite.SpriteFrames = frames;
+
+        if (frames.HasAnimation("idle_down"))
+            sprite.Play("idle_down");
+        else
+            sprite.Play(frames.GetAnimationNames()[0]);
+
+        AddChild(sprite);
+    }
+
+    private void CriarLabels()
+    {
+        var labelName = new Label
+        {
+            Text = NpcName,
+            Position = new Vector2(-30, -60),
+            ZIndex = 2,
+        };
+        labelName.AddThemeFontSizeOverride("font_size", 14);
+        labelName.AddThemeColorOverride("font_color", Colors.White);
+        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+        labelName.AddThemeConstantOverride("outline_size", 2);
+        AddChild(labelName);
+
+        var prompt = new Label();
+        prompt.Text = "[F] Falar";
+        prompt.Name = "InteractPrompt";
+        prompt.Position = new Vector2(-20, -45);
+        prompt.ZIndex = 2;
+        prompt.AddThemeFontSizeOverride("font_size", 18);
+        prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
+        prompt.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+        prompt.AddThemeConstantOverride("outline_size", 2);
+        prompt.Visible = false;
+        AddChild(prompt);
+    }
+}

@@ -28,3 +28,4 @@ AttackRange = 45.0
 AttackCooldown = 1.2
 ColetaRange = 100.0
 GuardRange = 200.0
+AnimPrefix = "Goblin"

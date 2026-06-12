@@ -6,6 +6,31 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private static bool CheckRateLimit(Dictionary<string, int> attempts, Dictionary<string, double> cooldowns, string key, double currentTime, out string message)
+    {
+        if (cooldowns.TryGetValue(key, out var until) && currentTime < until)
+        {
+            int secs = (int)(until - currentTime) + 1;
+            message = $"Aguarde {secs}s antes de tentar novamente.";
+            return false;
+        }
+
+        attempts.TryGetValue(key, out var count);
+        count++;
+        attempts[key] = count;
+
+        if (count > 5)
+        {
+            cooldowns[key] = currentTime + 30.0;
+            attempts[key] = 0;
+            message = "Muitas tentativas. Aguarde 30s.";
+            return false;
+        }
+
+        message = "";
+        return true;
+    }
+
     private void HandleRegister(NetPeer peer, NetDataReader reader)
     {
         string username = reader.GetString();
@@ -14,6 +39,14 @@ partial class GameServer
         string securityAnswer = reader.GetString();
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_RegisterResult);
+
+        if (!CheckRateLimit(_loginAttempts, _loginCooldowns, peer.Address.ToString(), _gameTime, out var limitMsg))
+        {
+            writer.Put(false);
+            writer.Put(limitMsg);
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+            return;
+        }
 
         if (username.Length < 3 || password.Length < 3)
         {
@@ -31,9 +64,10 @@ partial class GameServer
         }
         else
         {
+            _loginAttempts.Remove(peer.Address.ToString());
             writer.Put(true);
             writer.Put("Conta criada com sucesso!");
-            Console.WriteLine($"[SERVER] Conta registrada: {username} (id={accountId})");
+            Logger.Info($"Conta registrada: {username} (id={accountId})");
         }
 
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
@@ -80,7 +114,7 @@ partial class GameServer
         {
             writer.Put(true);
             writer.Put("Senha redefinida com sucesso!");
-            Console.WriteLine($"[SERVER] Senha recuperada: {username}");
+            Logger.Info($"Senha recuperada: {username}");
         }
         else
         {
@@ -95,9 +129,17 @@ partial class GameServer
         string username = reader.GetString();
         string password = reader.GetString();
 
-        int? accountId = _db.LoginAccount(username, password);
-
         var writer = PacketSerializer.WritePacket(PacketId.S2C_LoginResult);
+
+        if (!CheckRateLimit(_loginAttempts, _loginCooldowns, peer.Address.ToString(), _gameTime, out var limitMsg))
+        {
+            writer.Put(false);
+            writer.Put(limitMsg);
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+            return;
+        }
+
+        int? accountId = _db.LoginAccount(username, password);
 
         if (accountId == null)
         {
@@ -107,8 +149,22 @@ partial class GameServer
             return;
         }
 
+        _loginAttempts.Remove(peer.Address.ToString());
+
+        if (_activeAccounts.TryGetValue(accountId.Value, out var existingPeer) && existingPeer != peer)
+        {
+            if (_sessions.TryGetValue(existingPeer, out var oldSession))
+            {
+                Logger.Info($"Conta {accountId.Value} já logada em outro cliente. Desconectando anterior.");
+                _activeAccounts.Remove(accountId.Value);
+                oldSession.AccountId = 0;
+                existingPeer.Disconnect();
+            }
+        }
+
         if (_sessions.TryGetValue(peer, out var session))
             session.AccountId = accountId.Value;
+        _activeAccounts[accountId.Value] = peer;
 
         var chars = _db.GetCharacters(accountId.Value);
 
@@ -125,6 +181,6 @@ partial class GameServer
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
-        Console.WriteLine($"[SERVER] Login: {username} (id={accountId}) chars={chars.Count}");
+        Logger.Info($"Login: {username} (id={accountId}) chars={chars.Count}");
     }
 }

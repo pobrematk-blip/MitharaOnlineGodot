@@ -320,4 +320,11 @@ public partial class InventarioUI : Control
             ForçarAtualizacaoDosDadosDosSlots();
         }
     }
+
+    public override void _ExitTree()
+    {
+        base._ExitTree();
+        if (_gameNet != null)
+            _gameNet.OnGoldUpdate -= OnGoldUpdate;
+    }
 }

@@ -13,7 +13,7 @@ public partial class QuestUI : Control
 
     private const string QuestPath = "user://quests.cfg";
 
-    public bool IsVisible => _panel != null && _panel.Visible;
+    public bool EstaAberto => _panel != null && _panel.Visible;
 
     public override void _Ready()
     {

@@ -94,6 +94,23 @@ public partial class DialogUI : Control
         _panel.Position = (tela / 2) - (_panel.Size / 2);
     }
 
+    public void MostrarDialogoLocal(string npcNome, string dialogId)
+    {
+        _npcText.Text = $"[{npcNome}]\n(DialogId: {dialogId})\n\n— Modo offline —";
+
+        foreach (var child in _optionsContainer.GetChildren())
+            child.QueueFree();
+
+        var btn = new Button();
+        btn.Text = "Fechar";
+        btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        btn.Pressed += Fechar;
+        _optionsContainer.AddChild(btn);
+
+        _panel.Visible = true;
+        CallDeferred(MethodName.Centralizar);
+    }
+
     private void Fechar()
     {
         _panel.Visible = false;

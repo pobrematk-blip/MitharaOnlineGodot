@@ -35,6 +35,8 @@ public partial class SettingsUI : Control
         new Vector2I(2560, 1440),
     };
 
+    private Button _btnVoltarSelecao;
+
     private const string SettingsPath = "user://settings.cfg";
     private const string SectionVideo = "Video";
     private const string SectionAudio = "Audio";
@@ -42,7 +44,7 @@ public partial class SettingsUI : Control
     private const string SectionTeclas = "Teclas";
     private const string SectionUI = "UI";
 
-    public bool IsVisible => _panel != null && _panel.Visible;
+    public bool EstaAberto => _panel != null && _panel.Visible;
 
     public override void _Ready()
     {
@@ -83,6 +85,9 @@ public partial class SettingsUI : Control
 
         _closeButton.Pressed += OnClose;
         _titleBar.GuiInput += OnTitleBarGuiInput;
+
+        _btnVoltarSelecao = _panel.GetNode<Button>("BtnVoltarSelecao");
+        _btnVoltarSelecao.Pressed += OnVoltarSelecao;
 
         _fullscreenCheck.Toggled += OnFullscreenToggled;
         _resolutionOption.ItemSelected += OnResolutionSelected;
@@ -181,6 +186,14 @@ public partial class SettingsUI : Control
             SelecionarResolucaoAtual();
         }
         _arrastando = false;
+    }
+
+    private void OnVoltarSelecao()
+    {
+        SaveSettings();
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        net?.DisconnectFromServer();
+        GetTree().ChangeSceneToFile("res://scenes/SelecaoPersonagem.tscn");
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)

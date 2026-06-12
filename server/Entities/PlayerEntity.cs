@@ -17,6 +17,12 @@ public class PlayerEntity : Entity
     public int BaseAttack { get; set; }
     public int Defense { get; set; }
 
+    // Base stats (before equipment bonuses) - used by RecalculatePlayerStats
+    public int BaseForca { get; set; }
+    public int BaseAgilidade { get; set; }
+    public int BaseDestreza { get; set; }
+    public int BaseInteligencia { get; set; }
+
     public List<ItemInstance> Items { get; set; } = new();
     public Dictionary<int, ItemInstance> Equipment { get; set; } = new();
     public int Gold { get; set; }

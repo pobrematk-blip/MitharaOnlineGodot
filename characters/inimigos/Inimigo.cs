@@ -1,13 +1,29 @@
-﻿using Godot;
+using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class Inimigo : CharacterBody2D
 {
+    public enum TipoComportamento
+    {
+        Passivo,
+        Agressivo,
+        Boss
+    }
+
+    public enum EstadoInimigo
+    {
+        Idle,
+        Patrol,
+        Chase,
+        Attack,
+        Dead
+    }
+
     [Export] public string NomeDoInimigo = "Goblin";
     [Export] public int VidaMaxima = 30;
     [Export] public float Velocidade = 100.0f;
     
-    // Configurações do Ataque (Valores calibrados para MMOs 2D)
     [Export] public float DistanciaAtaque = 45.0f;
     [Export] public int DanoDoAtaque = 10;
     [Export] public float TempoEntreAtaques = 1.2f;
@@ -15,39 +31,67 @@ public partial class Inimigo : CharacterBody2D
     [Export] public bool IsBoss = false;
     [Export] public int ExperienciaDropada = 20;
 
-    // Passive / Aggressive mode
-    [Export] public bool EhAgressivo = false;
+    [Export] public TipoComportamento Comportamento = TipoComportamento.Passivo;
     [Export] public float RaioPatrulha = 80.0f;
     [Export] public float RaioDetectarPlayer = 200.0f;
+    [Export] public float RaioBoss = 300.0f;
     [Export] public float TempoAggroAposDano = 8.0f;
 
-    // Drop configuration
-    [Export] public int DropItemID = 0;
-    [Export] public float DropChance = 0.0f;
+    [Export] public Godot.Collections.Array<DropEntry> DropTable = new();
+
+    [Export] public int PetID = 0;
+
+    [Export] public string AnimPrefix = "goblin_";
+
+    [Export] public string MobType = "goblin";
+
+    private bool _mostrouBarraBoss = false;
+    private Label _bossNameLabel = null;
+    private ProgressBar _bossHealthBar = null;
+
+    private string RemapearDirecao(string cardinal)
+    {
+        return cardinal;
+    }
+
+    private string VectorToCardinal4(Vector2 dir)
+    {
+        if (dir.LengthSquared() < 0.001f) return "down";
+        dir = dir.Normalized();
+        float angle = Mathf.RadToDeg(Mathf.Atan2(dir.Y, dir.X));
+        if (angle < 0) angle += 360f;
+
+        if (angle >= 315f || angle < 45f) return "right";
+        if (angle >= 45f && angle < 135f) return "down";
+        if (angle >= 135f && angle < 225f) return "left";
+        return "up";
+    }
 
     private int _vidaAtual;
+    private bool _vidaInicializada;
     private CharacterBody2D _player;
     private AnimatedSprite2D _sprite;
-    private bool _estaAtacando = false;
-    private float _cronometroAtaque = 0f;
-
-    // Patrol state
+    private Vector2 _facingDirection = Vector2.Down;
     private Vector2 _pontoSpawn;
     private Vector2 _pontoPatrulha;
-    private float _tempoEsperaPatrulha = 0f;
-    private bool _patrulhando = false;
     private bool _posicaoInicializada = false;
-
-    // Aggro state
     private bool _foiAtacado = false;
     private float _tempoAggro = 0f;
 
-    private readonly Vector2 _healthBarSize = new Vector2(50, 6);
-    private readonly Vector2 _healthBarOffset = new Vector2(0, -48);
-    private readonly Color _healthBarBackground = new Color(0, 0, 0, 0.55f);
-    private readonly Color _healthBarForeground = new Color(0.85f, 0.15f, 0.15f, 1);
+    private EstadoInimigo _estado = EstadoInimigo.Idle;
+    private float _patrolTimer = 0f;
+    private const float PatrolDurationMin = 15f;
+    private const float PatrolDurationMax = 20f;
+    private float _idleTimer = 0f;
+    private const float IdleDuration = 3f;
+    private float _attackCooldown = 0f;
 
-    // Expose current HP for pet scroll check
+    private readonly Vector2 _healthBarSize = new Vector2(80, 6);
+    private readonly Vector2 _healthBarOffset = new Vector2(0, -48);
+    private readonly Color _healthBarBackground = new Color(0, 0, 0, 0.35f);
+    private readonly Color _healthBarForeground = new Color(0.85f, 0.15f, 0.15f, 1);
+    private const int HealthBarRaio = 3;
+
     public int VidaAtual => _vidaAtual;
     public int VidaMax => VidaMaxima;
 
@@ -55,15 +99,27 @@ public partial class Inimigo : CharacterBody2D
     {
         _pontoSpawn = posicao;
         _posicaoInicializada = true;
+        _estado = EstadoInimigo.Patrol;
+        _patrolTimer = (float)GD.RandRange(PatrolDurationMin, PatrolDurationMax);
         EscolherNovoPontoPatrulha();
+    }
+
+    public bool IsNetworked => HasMeta("network_id");
+
+    private void EscolherNovoPontoPatrulha()
+    {
+        float angulo = (float)(GD.Randf() * Math.PI * 2);
+        float distancia = (float)GD.RandRange(100, 400);
+        _pontoPatrulha = GlobalPosition + new Vector2(
+            (float)Math.Cos(angulo) * distancia,
+            (float)Math.Sin(angulo) * distancia
+        );
     }
 
     public override void _Ready()
     {
-        GD.Print("[INIMIGO] Inicializando...");
-        _vidaAtual = VidaMaxima;
+        GD.Print($"[INIMIGO] Inicializando... MobType={MobType}");
 
-        // PROTEÇÃO 1: Garante o nó do sprite
         if (HasNode("AnimatedSprite2D"))
         {
             _sprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
@@ -72,40 +128,174 @@ public partial class Inimigo : CharacterBody2D
 
             if (_sprite.SpriteFrames != null)
             {
-                try
+                string idleDown = $"{AnimPrefix}idle_down";
+                if (_sprite.SpriteFrames.HasAnimation(idleDown))
+                    _sprite.Play(idleDown);
+                else
                 {
-                    var names = _sprite.SpriteFrames.GetAnimationNames();
-                    if (!string.IsNullOrEmpty(_sprite.Animation) && _sprite.SpriteFrames.HasAnimation(_sprite.Animation))
-                    {
-                        _sprite.Play(_sprite.Animation);
-                    }
-                    else if (_sprite.SpriteFrames.HasAnimation("goblim_idle_down"))
-                    {
-                        _sprite.Play("goblim_idle_down");
-                    }
+                    string[] anims = _sprite.SpriteFrames.GetAnimationNames();
+                    if (anims.Length > 0)
+                        _sprite.Play(anims[0]);
                 }
-                catch (Exception e)
-                {
-                    GD.PrintErr($"[INIMIGO] Erro ao listar animações: {e.Message}");
-                }
+                _sprite.AnimationFinished += OnAnimationFinished;
             }
         }
         else
         {
             GD.PrintErr("[INIMIGO] ERRO CRÍTICO: O nó filho chamado 'AnimatedSprite2D' não foi encontrado!");
         }
-        
-        // PROTEÇÃO 2: Busca robusta para encontrar o Player
+
         if (GetTree() != null && GetTree().CurrentScene != null)
         {
             _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
         }
 
-        // CORREÇÃO DO SPAWNER: O próprio monstro se adiciona ao grupo assim que nasce!
+        if (IsBoss && Comportamento != TipoComportamento.Boss)
+            Comportamento = TipoComportamento.Boss;
+
+        if (Comportamento == TipoComportamento.Boss)
+        {
+            CriarBarraBoss();
+        }
+
         AddToGroup("Inimigos");
         int totalInimigos = GetTree()?.GetNodesInGroup("Inimigos").Count ?? 0;
         GD.Print($"[INIMIGO] ✓ ADICIONADO ao grupo 'Inimigos'. Total no mapa AGORA: {totalInimigos}");
+
+        if (!_vidaInicializada)
+            _vidaAtual = VidaMaxima;
+
+        InicializarDropPadrao();
+
         QueueRedraw();
+    }
+
+    private void OnAnimationFinished()
+    {
+        if (_sprite == null) return;
+
+        string currentAnim = _sprite.Animation.ToString();
+
+        if (currentAnim.Contains("attack"))
+        {
+            if (_estado == EstadoInimigo.Attack)
+            {
+                _estado = EstadoInimigo.Chase;
+                AtualizarAnimacaoDoEstado();
+            }
+        }
+    }
+
+    private void CriarBarraBoss()
+    {
+        var canvas = new CanvasLayer();
+        canvas.Name = "BossHUD";
+        canvas.Layer = 100;
+
+        var vbox = new VBoxContainer();
+        vbox.SizeFlagsHorizontal = Control.SizeFlags.Fill;
+        vbox.SizeFlagsVertical = Control.SizeFlags.ShrinkEnd;
+        vbox.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+        vbox.OffsetBottom = 80;
+
+        _bossNameLabel = new Label
+        {
+            Text = NomeDoInimigo,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        };
+        _bossNameLabel.AddThemeFontSizeOverride("font_size", 24);
+        _bossNameLabel.AddThemeColorOverride("font_color", Colors.White);
+        _bossNameLabel.AddThemeColorOverride("font_outline_color", Colors.Black);
+        _bossNameLabel.AddThemeConstantOverride("outline_size", 2);
+
+        _bossHealthBar = new ProgressBar
+        {
+            MinValue = 0,
+            MaxValue = VidaMaxima,
+            Value = VidaAtual,
+            SizeFlagsHorizontal = Control.SizeFlags.Fill,
+            CustomMinimumSize = new Vector2(0, 24),
+        };
+        _bossHealthBar.AddThemeStyleboxOverride("progress", new StyleBoxFlat
+        {
+            BgColor = new Color(0.9f, 0.1f, 0.1f, 1f),
+            CornerRadiusTopLeft = 12,
+            CornerRadiusTopRight = 12,
+            CornerRadiusBottomLeft = 12,
+            CornerRadiusBottomRight = 12,
+        });
+        _bossHealthBar.AddThemeStyleboxOverride("background", new StyleBoxFlat
+        {
+            BgColor = new Color(0.2f, 0.0f, 0.0f, 0.8f),
+            CornerRadiusTopLeft = 12,
+            CornerRadiusTopRight = 12,
+            CornerRadiusBottomLeft = 12,
+            CornerRadiusBottomRight = 12,
+        });
+
+        vbox.AddChild(_bossNameLabel);
+        vbox.AddChild(_bossHealthBar);
+
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left", 200);
+        margin.AddThemeConstantOverride("margin_right", 200);
+        margin.AddThemeConstantOverride("margin_top", 20);
+        margin.AddChild(vbox);
+
+        canvas.AddChild(margin);
+        AddChild(canvas);
+        _mostrouBarraBoss = true;
+    }
+
+    private void AtualizarBarraBoss()
+    {
+        if (!_mostrouBarraBoss || _bossHealthBar == null) return;
+        _bossHealthBar.MaxValue = VidaMaxima;
+        _bossHealthBar.Value = _vidaAtual;
+        if (_bossNameLabel != null)
+            _bossNameLabel.Text = $"{NomeDoInimigo}  [{_vidaAtual}/{VidaMaxima}]";
+    }
+
+    private void InicializarDropPadrao()
+    {
+        if (DropTable.Count > 0) return;
+        PreencherDropTable(MobType, DropTable);
+
+        if (PetID <= 0)
+        {
+            PetID = MobType switch
+            {
+                "goblin" => 3,
+                "lobo" => 2,
+                _ => 0,
+            };
+        }
+    }
+
+    public static void PreencherDropTable(string mobType, Godot.Collections.Array<DropEntry> table)
+    {
+        if (table.Count > 0) return;
+
+        switch (mobType)
+        {
+            case "goblin":
+                table.Add(new DropEntry { ItemId = 1, Chance = 0.05, MinQty = 1, MaxQty = 2 });
+                table.Add(new DropEntry { ItemId = 2, Chance = 0.05 });
+                break;
+            case "lobo":
+                table.Add(new DropEntry { ItemId = 1, Chance = 0.05 });
+                table.Add(new DropEntry { ItemId = 2, Chance = 0.05, MinQty = 1, MaxQty = 2 });
+                break;
+            case "porco":
+                table.Add(new DropEntry { ItemId = 1, Chance = 0.05 });
+                table.Add(new DropEntry { ItemId = 2, Chance = 0.05 });
+                break;
+            case "minotauro":
+                table.Add(new DropEntry { ItemId = 1, Chance = 0.05, MinQty = 2, MaxQty = 4 });
+                table.Add(new DropEntry { ItemId = 2, Chance = 0.05, MinQty = 1, MaxQty = 3 });
+                break;
+        }
     }
 
     public override void _PhysicsProcess(double delta)
@@ -116,24 +306,23 @@ public partial class Inimigo : CharacterBody2D
             {
                 _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
             }
+        }
+
+        if (IsNetworked)
+        {
+            if (_sprite != null && _sprite.SpriteFrames != null)
+            {
+                string currentAnim = _sprite.Animation.ToString();
+                if (currentAnim.Contains("attack") && !_sprite.IsPlaying())
+                {
+                    string idleAnim = currentAnim.Replace("attack", "idle");
+                    if (_sprite.SpriteFrames.HasAnimation(idleAnim))
+                        _sprite.Play(idleAnim);
+                }
+            }
             return;
         }
 
-        if (_estaAtacando)
-        {
-            _cronometroAtaque -= (float)delta;
-            if (_cronometroAtaque <= 0f)
-                _estaAtacando = false;
-            else if (_sprite != null && !_sprite.IsPlaying())
-            {
-                // Animação de ataque terminou: volta para idle
-                string idleAnim = _sprite.Animation.ToString().Replace("attack", "idle");
-                if (!string.IsNullOrEmpty(idleAnim) && _sprite.SpriteFrames.HasAnimation(idleAnim))
-                    _sprite.Play(idleAnim);
-            }
-        }
-
-        // Aggro timeout — volta a ser passivo após algum tempo
         if (_foiAtacado)
         {
             _tempoAggro -= (float)delta;
@@ -141,68 +330,96 @@ public partial class Inimigo : CharacterBody2D
                 _foiAtacado = false;
         }
 
-        float distanciaAoPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
-        Vector2 direcaoPlayer = (_player.GlobalPosition - GlobalPosition).Normalized();
+        if (_player == null) return;
 
-        bool deveAtacar = EhAgressivo || _foiAtacado;
+        _attackCooldown -= (float)delta;
 
-        if (deveAtacar && distanciaAoPlayer <= DistanciaAtaque)
-        {
-            Velocity = Velocity.MoveToward(Vector2.Zero, Velocidade * 0.2f);
-            MoveAndSlide();
+        Vector2 dirToPlayer = (_player.GlobalPosition - GlobalPosition).Normalized();
+        if (dirToPlayer.LengthSquared() > 0.001f)
+            _facingDirection = dirToPlayer;
 
-            if (!_estaAtacando)
-                IniciarAtaque(direcaoPlayer);
-        }
-        else if (deveAtacar && distanciaAoPlayer <= RaioDetectarPlayer)
+        switch (_estado)
         {
-            Velocity = direcaoPlayer * Velocidade;
-            MoveAndSlide();
-            AtualizarDirecaoDoSprite(direcaoPlayer, false);
-        }
-        else if (_foiAtacado && distanciaAoPlayer > RaioDetectarPlayer)
-        {
-            // Perdeu o player de vista, volta a patrulhar
-            _foiAtacado = false;
-        }
-        else
-        {
-            // Comportamento passivo / patrulha
-            AtualizarPatrulha((float)delta);
+            case EstadoInimigo.Idle:
+                AtualizarIdle((float)delta);
+                break;
+            case EstadoInimigo.Patrol:
+                AtualizarPatrulha((float)delta);
+                break;
+            case EstadoInimigo.Chase:
+                AtualizarChase(dirToPlayer);
+                break;
+            case EstadoInimigo.Attack:
+                AtualizarAtaque(dirToPlayer);
+                break;
         }
     }
 
-    private void EscolherNovoPontoPatrulha()
+    private bool DeveIniciarChase()
     {
-        float angulo = (float)(GD.Randf() * Math.PI * 2);
-        float distancia = (float)GD.RandRange(20, RaioPatrulha);
-        _pontoPatrulha = _pontoSpawn + new Vector2(
-            (float)Math.Cos(angulo) * distancia,
-            (float)Math.Sin(angulo) * distancia
-        );
-        _patrulhando = true;
-        _tempoEsperaPatrulha = 0f;
+        if (_player == null) return false;
+
+        switch (Comportamento)
+        {
+            case TipoComportamento.Agressivo:
+                float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
+                return dist <= RaioDetectarPlayer;
+            case TipoComportamento.Passivo:
+            case TipoComportamento.Boss:
+                return _foiAtacado;
+        }
+        return false;
+    }
+
+    private void AtualizarIdle(float delta)
+    {
+        if (DeveIniciarChase())
+        {
+            _estado = EstadoInimigo.Chase;
+            return;
+        }
+
+        _idleTimer -= delta;
+
+        if (_idleTimer <= 0f)
+        {
+            _estado = EstadoInimigo.Patrol;
+            _patrolTimer = (float)GD.RandRange(PatrolDurationMin, PatrolDurationMax);
+            EscolherNovoPontoPatrulha();
+        }
+
+        Velocity = Velocity.MoveToward(Vector2.Zero, Velocidade * 2f);
+        MoveAndSlide();
+
+        string idleAnim = $"{AnimPrefix}idle_{CardinalDirection(_facingDirection)}";
+        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(idleAnim) && _sprite.Animation != idleAnim)
+            _sprite.Play(idleAnim);
     }
 
     private void AtualizarPatrulha(float delta)
     {
+        if (DeveIniciarChase())
+        {
+            _estado = EstadoInimigo.Chase;
+            return;
+        }
+
         if (!_posicaoInicializada)
         {
             _pontoSpawn = GlobalPosition;
             _posicaoInicializada = true;
+            _patrolTimer = (float)GD.RandRange(PatrolDurationMin, PatrolDurationMax);
             EscolherNovoPontoPatrulha();
         }
 
-        if (_tempoEsperaPatrulha > 0f)
+        _patrolTimer -= delta;
+
+        if (_patrolTimer <= 0f)
         {
-            _tempoEsperaPatrulha -= delta;
-            if (_tempoEsperaPatrulha <= 0f)
-                EscolherNovoPontoPatrulha();
-            else
-            {
-                Velocity = Velocity.MoveToward(Vector2.Zero, Velocidade * 2f);
-                MoveAndSlide();
-            }
+            _estado = EstadoInimigo.Idle;
+            _idleTimer = IdleDuration;
+            Velocity = Vector2.Zero;
+            MoveAndSlide();
             return;
         }
 
@@ -210,96 +427,185 @@ public partial class Inimigo : CharacterBody2D
 
         if (distAoPonto < 10f)
         {
-            _tempoEsperaPatrulha = (float)GD.RandRange(2.0, 5.0);
-            _patrulhando = false;
-            AtualizarDirecaoDoSprite(Vector2.Zero, true);
+            _estado = EstadoInimigo.Idle;
+            _idleTimer = IdleDuration;
             Velocity = Vector2.Zero;
             MoveAndSlide();
             return;
         }
 
         Vector2 direcao = (_pontoPatrulha - GlobalPosition).Normalized();
-        Velocity = direcao * Velocidade * 0.5f;
+        _facingDirection = direcao;
+        Velocity = direcao * Velocidade;
         MoveAndSlide();
-        AtualizarDirecaoDoSprite(direcao, false);
+
+        string walkAnim = $"{AnimPrefix}walk_{CardinalDirection(_facingDirection)}";
+        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(walkAnim) && _sprite.Animation != walkAnim)
+            _sprite.Play(walkAnim);
     }
 
-    private void IniciarAtaque(Vector2 direcaoDoPlayer)
+    private void AtualizarChase(Vector2 dirPlayer)
     {
-        _estaAtacando = true;
-        _cronometroAtaque = TempoEntreAtaques;
+        float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
 
-        // Define a animação baseada para onde o jogador está em relação ao monstro
-        string animacaoAtaque = "goblim_idle_down"; // Fallback seguro
+        bool devePerseguir = false;
 
-        if (Math.Abs(direcaoDoPlayer.X) > Math.Abs(direcaoDoPlayer.Y))
+        switch (Comportamento)
         {
-            animacaoAtaque = direcaoDoPlayer.X < 0 ? "goblim_attack_left" : "goblim_attack_right";
-        }
-        else
-        {
-            // CORRIGIDO: Agora verifica corretamente Y < 0 para "up" e Y > 0 para "down"
-            animacaoAtaque = direcaoDoPlayer.Y < 0 ? "goblim_attack_up" : "goblim_attack_down";
+            case TipoComportamento.Agressivo:
+                devePerseguir = dist <= RaioDetectarPlayer;
+                break;
+            case TipoComportamento.Passivo:
+            case TipoComportamento.Boss:
+                devePerseguir = _foiAtacado;
+                break;
         }
 
-        // Toca a animação de combate
+        if (!devePerseguir)
+        {
+            _estado = EstadoInimigo.Idle;
+            _idleTimer = IdleDuration;
+            Velocity = Vector2.Zero;
+            MoveAndSlide();
+            return;
+        }
+
+        if (dist <= DistanciaAtaque && _attackCooldown <= 0f)
+        {
+            _estado = EstadoInimigo.Attack;
+            IniciarAtaque();
+            return;
+        }
+
+        _facingDirection = dirPlayer;
+        Velocity = dirPlayer * Velocidade;
+        MoveAndSlide();
+
+        string walkAnim = $"{AnimPrefix}walk_{CardinalDirection(_facingDirection)}";
+        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(walkAnim) && _sprite.Animation != walkAnim)
+            _sprite.Play(walkAnim);
+    }
+
+    private void AtualizarAtaque(Vector2 dirPlayer)
+    {
+        if (_sprite != null && !_sprite.IsPlaying())
+        {
+            string currentAnim = _sprite.Animation.ToString();
+            if (!currentAnim.Contains("attack"))
+            {
+                _estado = EstadoInimigo.Chase;
+                return;
+            }
+        }
+    }
+
+    private void IniciarAtaque()
+    {
+        _attackCooldown = TempoEntreAtaques;
+
+        string cardinal = CardinalDirection(_facingDirection);
+        string animacaoAtaque = $"{AnimPrefix}attack_{cardinal}";
+
         if (_sprite != null && _sprite.SpriteFrames.HasAnimation(animacaoAtaque))
         {
             _sprite.Play(animacaoAtaque);
-            GD.Print($"[ATAQUE] {NomeDoInimigo} atacou na direção: {animacaoAtaque}!");
         }
         else
         {
-            GD.PrintErr($"[INIMIGO] ✘ Animação de ataque '{animacaoAtaque}' não encontrada no AnimatedSprite2D.");
+            string fallback = $"{AnimPrefix}idle_down";
+            if (_sprite != null && _sprite.SpriteFrames.HasAnimation(fallback))
+                _sprite.Play(fallback);
         }
 
-        // APLICAR DANO NO PLAYER
         if (_player is Player player)
         {
             player.LevarDano(DanoDoAtaque);
-            GD.Print($"[INIMIGO] {NomeDoInimigo} causou {DanoDoAtaque} de dano ao Player.");
         }
         else if (_player != null && _player.HasMethod("LevarDano"))
         {
             _player.Call("LevarDano", DanoDoAtaque);
-            GD.Print($"[INIMIGO] {NomeDoInimigo} causou {DanoDoAtaque} de dano ao Player via Call.");
         }
     }
 
-    private void AtualizarDirecaoDoSprite(Vector2 direcao, bool forcarIdle = false)
+    private string CardinalDirection(Vector2 dir)
+    {
+        return VectorToCardinal4(dir);
+    }
+
+    private void AtualizarAnimacaoDoEstado()
+    {
+        string anim = "";
+
+        switch (_estado)
+        {
+            case EstadoInimigo.Idle:
+                anim = $"{AnimPrefix}idle_{CardinalDirection(_facingDirection)}";
+                break;
+            case EstadoInimigo.Patrol:
+                anim = $"{AnimPrefix}walk_{CardinalDirection(_facingDirection)}";
+                break;
+            case EstadoInimigo.Chase:
+                anim = $"{AnimPrefix}walk_{CardinalDirection(_facingDirection)}";
+                break;
+            case EstadoInimigo.Attack:
+                anim = $"{AnimPrefix}attack_{CardinalDirection(_facingDirection)}";
+                break;
+        }
+
+        if (_sprite != null && !string.IsNullOrEmpty(anim) && _sprite.SpriteFrames.HasAnimation(anim))
+            _sprite.Play(anim);
+    }
+
+    public void TriggerAttackAnimation(Vector2 direction)
     {
         if (_sprite == null || _sprite.SpriteFrames == null) return;
 
-        string desejada = null;
-        float velocidadeMagnitude = Velocity.Length();
+        string cardinal = VectorToCardinal4(direction);
+        string attackAnim = $"{AnimPrefix}attack_{cardinal}";
 
-        if (forcarIdle || velocidadeMagnitude < 5f)
+        if (_sprite.SpriteFrames.HasAnimation(attackAnim))
+            _sprite.Play(attackAnim);
+    }
+
+    public void AtualizarAnimacaoDeRede(Vector2 direcao, bool moving)
+    {
+        if (_sprite == null || _sprite.SpriteFrames == null) return;
+
+        string currentAnim = _sprite.Animation.ToString();
+        if (currentAnim.Contains("attack")) return;
+
+        string cardinal = VectorToCardinal4(direcao);
+        cardinal = RemapearDirecao(cardinal);
+
+        if (!moving && _player != null)
         {
-            if (Math.Abs(Velocity.X) > Math.Abs(Velocity.Y))
+            float distToPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
+            if (distToPlayer <= DistanciaAtaque + 10f)
             {
-                desejada = Velocity.X < 0 ? "goblim_idle_left" : "goblim_idle_right";
-            }
-            else
-            {
-                desejada = Velocity.Y < 0 ? "goblim_idle_up" : "goblim_idle_down";
+                Vector2 dirToPlayer = (_player.GlobalPosition - GlobalPosition).Normalized();
+                string atkCardinal = VectorToCardinal4(dirToPlayer);
+                string atkAnim = $"{AnimPrefix}attack_{atkCardinal}";
+                if (_sprite.SpriteFrames.HasAnimation(atkAnim))
+                {
+                    _sprite.Play(atkAnim);
+                    return;
+                }
             }
         }
-        else
-        {
-            if (Math.Abs(direcao.X) > Math.Abs(direcao.Y))
-            {
-                desejada = direcao.X < 0 ? "goblim_walk_left" : "goblim_walk_right";
-            }
-            else
-            {
-                desejada = direcao.Y < 0 ? "goblim_walk_up" : "goblim_walk_down";
-            }
-        }
 
+        string state = moving && direcao.LengthSquared() > 0.01f ? "walk" : "idle";
+        string desejada = $"{AnimPrefix}{state}_{cardinal}";
+
+        TocarAnimacao(desejada);
+    }
+
+    private void TocarAnimacao(string desejada)
+    {
         if (!string.IsNullOrEmpty(desejada) && _sprite.SpriteFrames.HasAnimation(desejada))
         {
-            if (_sprite.Animation != desejada)
+            if (_sprite.Animation != desejada || !_sprite.IsPlaying())
                 _sprite.Play(desejada);
+            _sprite.SpeedScale = 1.5f;
         }
     }
 
@@ -308,24 +614,51 @@ public partial class Inimigo : CharacterBody2D
         if (VidaMaxima <= 0) return;
         if (_vidaAtual <= 0) return;
 
-        var barTopLeft = _healthBarOffset - new Vector2(_healthBarSize.X / 2.0f, 0);
-        var fillWidth = Math.Max(0, Math.Min(_healthBarSize.X, (_vidaAtual / (float)VidaMaxima) * _healthBarSize.X));
-        var foregroundWidth = Math.Max(0, fillWidth - 2);
+        float w = _healthBarSize.X;
+        float h = _healthBarSize.Y;
+        float r = HealthBarRaio;
+        var topLeft = _healthBarOffset - new Vector2(w / 2f, 0);
+        float pct = Mathf.Clamp(_vidaAtual / (float)VidaMaxima, 0, 1);
+        float fillW = w * pct;
 
-        DrawRect(new Rect2(barTopLeft, _healthBarSize), _healthBarBackground);
-        DrawRect(new Rect2(barTopLeft + new Vector2(1, 1), new Vector2(foregroundWidth, _healthBarSize.Y - 2)), _healthBarForeground);
+        DesenharBarraArredondada(topLeft, w, h, r, _healthBarBackground);
+        if (fillW > 0)
+            DesenharBarraArredondada(topLeft, fillW, h, r, _healthBarForeground);
+    }
+
+    private void DesenharBarraArredondada(Vector2 topLeft, float width, float height, float radius, Color color)
+    {
+        float r = Mathf.Min(Mathf.Min(radius, width / 2f), height / 2f);
+        Vector2 tl = topLeft;
+        Vector2 br = topLeft + new Vector2(width, height);
+
+        DrawRect(new Rect2(tl + new Vector2(r, 0), new Vector2(width - r * 2, height)), color);
+        DrawRect(new Rect2(tl + new Vector2(0, r), new Vector2(width, height - r * 2)), color);
+        DrawCircle(tl + new Vector2(r, r), r, color);
+        DrawCircle(new Vector2(br.X - r, tl.Y + r), r, color);
+        DrawCircle(new Vector2(tl.X + r, br.Y - r), r, color);
+        DrawCircle(br - new Vector2(r, r), r, color);
+    }
+
+    public void SetVidaAtual(int health, int maxHealth)
+    {
+        VidaMaxima = maxHealth;
+        _vidaAtual = Mathf.Clamp(health, 0, maxHealth);
+        _vidaInicializada = true;
+        AtualizarBarraBoss();
+        QueueRedraw();
     }
 
     public void LevarDano(int quantidade)
     {
         _vidaAtual -= quantidade;
 
-        // Ao levar dano, fica agressivo por um tempo
-        if (!EhAgressivo)
+        _foiAtacado = true;
+        _tempoAggro = TempoAggroAposDano;
+
+        if (_estado != EstadoInimigo.Attack)
         {
-            _foiAtacado = true;
-            _tempoAggro = TempoAggroAposDano;
-            GD.Print($"[INIMIGO] {NomeDoInimigo} aggro! Player atacou, vai retaliar por {TempoAggroAposDano}s.");
+            _estado = EstadoInimigo.Chase;
         }
 
         Modulate = Color.FromHtml("ff6666");
@@ -334,11 +667,14 @@ public partial class Inimigo : CharacterBody2D
             GetTree().CreateTimer(0.15f).Timeout += () => Modulate = Color.FromHtml("ffffff");
         }
 
+        AtualizarBarraBoss();
         QueueRedraw();
 
         if (_vidaAtual <= 0)
         {
-            if (GetTree()?.CurrentScene != null)
+            _estado = EstadoInimigo.Dead;
+
+            if (!IsNetworked && GetTree()?.CurrentScene != null)
             {
                 var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
                 if (player != null)
@@ -357,37 +693,51 @@ public partial class Inimigo : CharacterBody2D
 
     private void TentarDrop()
     {
-        if (DropItemID <= 0) return;
-        if (GD.Randf() > DropChance) return;
-
-        string[] caminhos =
-        {
-            $"res://Itens/ItemNovo.tres",
-            $"res://Itens/Capacete.tres",
-            $"res://Itens/Peitoral.tres",
-        };
-
-        string caminho = $"res://Itens/ItemNovo.tres";
-        if (DropItemID == 20) caminho = "res://Itens/Capacete.tres";
-        else if (DropItemID == 21) caminho = "res://Itens/Peitoral.tres";
-        else if (DropItemID == 100) caminho = "res://Itens/PergaminhoDoPet.tres";
-
-        if (!ResourceLoader.Exists(caminho)) return;
-
-        var item = ResourceLoader.Load<ItemResource>(caminho);
-        if (item == null) return;
+        if (DropTable.Count == 0) return;
 
         var cenaDrop = GD.Load<PackedScene>("res://Itens/ItemColetavel.tscn");
-        if (cenaDrop == null) return;
+        if (cenaDrop == null)
+        {
+            GD.PrintErr("[INIMIGO] Cena de drop nao encontrada: res://Itens/ItemColetavel.tscn");
+            return;
+        }
 
-        var drop = cenaDrop.Instantiate<ItemColetavel>();
-        drop.ItemContido = item;
-        drop.GlobalPosition = GlobalPosition;
-        GetParent().AddChild(drop);
+        int droppedCount = 0;
+        foreach (var entry in DropTable)
+        {
+            if (entry.ItemId <= 0) continue;
+            if (entry.Chance <= 0.0) continue;
+            if (GD.RandRange(0.0, 1.0) > entry.Chance) continue;
+
+            ItemResource item = CarregarItem(entry.ItemId);
+            if (item == null) continue;
+
+            var drop = cenaDrop.Instantiate<ItemColetavel>();
+            drop.ItemContido = item;
+            drop.GlobalPosition = GlobalPosition;
+            GetParent().AddChild(drop);
+            droppedCount++;
+            GD.Print($"[INIMIGO] Drop: {item.Nome} (ID={entry.ItemId})");
+        }
+
+        if (droppedCount > 0)
+            GD.Print($"[INIMIGO] Total drops: {droppedCount}");
     }
 
-    public override void _ExitTree()
+    private static ItemResource CarregarItem(int itemId)
     {
-        base._ExitTree();
+        string caminho = itemId switch
+        {
+            21 => "res://Itens/Peitoral.tres",
+            100 => "res://Itens/PergaminhoDoPet.tres",
+            _ => $"res://Itens/Item_{itemId}.tres",
+        };
+
+        if (ResourceLoader.Exists(caminho))
+            return ResourceLoader.Load<ItemResource>(caminho);
+
+        GD.PrintErr($"[INIMIGO] Item resource nao encontrado: {caminho} (ID={itemId})");
+        return null;
     }
+
 }

@@ -62,6 +62,18 @@ public partial class PlayerSkillComponent
             }
         }
 
+        // Enviar uso de skill para o servidor
+        if (_player != null)
+        {
+            var gameNet = _player.GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected)
+            {
+                string dir = _player.CurrentDirection ?? "down";
+                Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
+                gameNet.SendSkillUse(slotIndex, _player.GlobalPosition + dirVec * 50f);
+            }
+        }
+
         // Aplicar cooldown
         EnsureCooldownTimer();
         _cooldownTimers[skill.SkillName] = skill.Cooldown;
@@ -254,10 +266,25 @@ public partial class PlayerSkillComponent
         var item = ItemSlots[slotIndex];
         if (item == null) return;
 
-        // Encontra o jogador e o inventário
         if (_player == null)
         {
             GD.Print("[SKILLCOMP] Player não encontrado para usar item.");
+            return;
+        }
+
+        if (item.ItemID == 101)
+        {
+            TentarReviverAliado(_player);
+            ItemSlots[slotIndex] = null;
+            NotificarSkillBarSlotLimpo(slotIndex);
+            return;
+        }
+
+        if (item.ItemID == 100 || (item.Nome != null && item.Nome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
+        {
+            TentarCapturarPet(_player, item);
+            ItemSlots[slotIndex] = null;
+            NotificarSkillBarSlotLimpo(slotIndex);
             return;
         }
 
@@ -268,7 +295,7 @@ public partial class PlayerSkillComponent
             return;
         }
 
-        // Procura o item no inventário
+        // Procura o item no inventário (para poções etc.)
         for (int i = 0; i < inv.Slots.Count; i++)
         {
             var slot = inv.Slots[i];
@@ -276,16 +303,7 @@ public partial class PlayerSkillComponent
             {
                 GD.Print($"[SKILLCOMP] Usando item '{item.Nome}' do inventário (slot {i}).");
 
-                if (item.ItemID == 100 || (item.Nome != null && item.Nome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
-                {
-                    TentarCapturarPet(_player, inv, slot);
-                    // Limpa o slot da skill bar
-                    ItemSlots[slotIndex] = null;
-                    NotificarSkillBarSlotLimpo(slotIndex);
-                    return;
-                }
-
-                // Consome uma unidade (poções etc.)
+                // Consome uma unidade
                 slot.Quantidade--;
                 if (slot.Quantidade <= 0)
                 {
@@ -295,16 +313,10 @@ public partial class PlayerSkillComponent
 
                 inv.NotificarMudancaExterna();
 
-                // Se for poção de vida (ItemID 1), cura o jogador
                 if (item.ItemID == 1)
-                {
                     _player.CallDeferred("Heal", 50);
-                }
-                // Se for poção de mana (ItemID 2), restaura mana
                 else if (item.ItemID == 2)
-                {
                     _player.CallDeferred("RestoreMana", 30);
-                }
 
                 return;
             }
@@ -313,7 +325,7 @@ public partial class PlayerSkillComponent
         GD.Print($"[SKILLCOMP] Item '{item.Nome}' não encontrado no inventário.");
     }
 
-    private void TentarCapturarPet(Player player, InventarioComponent inv, SlotInventario slot)
+    private void TentarCapturarPet(Player player, ItemResource item)
     {
         var inimigos = GetTree().GetNodesInGroup("Inimigos");
         Inimigo alvo = null;
@@ -338,40 +350,47 @@ public partial class PlayerSkillComponent
             return;
         }
 
-        // Consome o pergaminho AGORA (antes do minigame)
-        slot.Quantidade--;
-        if (slot.Quantidade <= 0)
+        if (alvo.PetID <= 0)
         {
-            slot.Item = null;
-            slot.Quantidade = 0;
+            GD.Print("[SKILLCOMP] Este inimigo não pode ser capturado.");
+            return;
         }
-        inv.NotificarMudancaExterna();
 
         string petNome = alvo.NomeDoInimigo;
-        int petId = 3;
+        int petId = alvo.PetID;
 
         var miniGame = GD.Load<PackedScene>("res://ui/Pets/PetScrollMiniGame.tscn").Instantiate<PetScrollMiniGame>();
-        var root = GetTree().CurrentScene;
-        if (root != null)
-            root.AddChild(miniGame);
+        var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
+        if (hud == null)
+        {
+            var root = GetTree()?.Root;
+            if (root != null)
+            {
+                for (int i = 0; i < root.GetChildCount(); i++)
+                {
+                    var h = root.GetChild(i).FindChild("HUD", true, false) as CanvasLayer;
+                    if (h != null)
+                    {
+                        hud = h;
+                        break;
+                    }
+                }
+            }
+        }
+        if (hud != null)
+            hud.AddChild(miniGame);
 
         miniGame.Connect(PetScrollMiniGame.SignalName.MiniGameConcluido, Callable.From((int capturedPetId, string capturedPetNome, bool sucesso) =>
         {
             if (sucesso && IsInstanceValid(alvo))
             {
-                var itemPet = new ItemResource
-                {
-                    ItemID = 200 + capturedPetId,
-                    Nome = capturedPetNome,
-                    Descricao = $"Pet capturado: {capturedPetNome}",
-                    Tipo = TipoEquipamento.Pet,
-                    Acumulavel = false,
-                    QuantidadeMaximaPorSlot = 1,
-                };
-                inv.AdicionarItem(itemPet, 1);
-                inv.NotificarMudancaExterna();
+                var colecao = _player?.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
+                if (colecao != null)
+                    colecao.RegistrarCaptura(capturedPetId, capturedPetNome);
 
                 alvo.QueueFree();
+                var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+                chat?.AddSystemMessage($"Pet '{capturedPetNome}' capturado com sucesso!");
                 GD.Print($"[SKILLCOMP] Pet {capturedPetNome} capturado!");
             }
 
@@ -380,6 +399,48 @@ public partial class PlayerSkillComponent
         }));
 
         miniGame.IniciarMiniGame(petId, petNome);
+    }
+
+    private void TentarReviverAliado(Player player)
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.Print("[SKILLCOMP] Sem conexão para reviver.");
+            return;
+        }
+
+        var downedNodes = GetTree()?.GetNodesInGroup("PlayersDowned");
+        if (downedNodes == null || downedNodes.Count == 0)
+        {
+            GD.Print("[SKILLCOMP] Nenhum aliado caído por perto.");
+            return;
+        }
+
+        Node2D? nearest = null;
+        float nearestDist = 200f;
+        foreach (Node node in downedNodes)
+        {
+            if (node is Node2D n2d)
+            {
+                float d = player.GlobalPosition.DistanceTo(n2d.GlobalPosition);
+                if (d < nearestDist)
+                {
+                    nearestDist = d;
+                    nearest = n2d;
+                }
+            }
+        }
+
+        if (nearest == null || !nearest.HasMeta("network_id"))
+        {
+            GD.Print("[SKILLCOMP] Nenhum aliado caído válido encontrado.");
+            return;
+        }
+
+        ulong targetId = (ulong)nearest.GetMeta("network_id").AsInt64();
+        GD.Print($"[SKILLCOMP] Revivendo aliado {targetId} (dist={nearestDist:F1})");
+        gameNet.SendRevivePlayer(targetId);
     }
 
     private void NotificarSkillBarSlotLimpo(int slotIndex)

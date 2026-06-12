@@ -6,6 +6,9 @@ public partial class CharacterUI : Control
     private Panel _panel;
     private Panel _titleBar;
     private Button _closeButton;
+    private Button[] _tabBotoes;
+    private ScrollContainer _petTabContent;
+    private ScrollContainer _mountTabContent;
 
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
@@ -18,6 +21,16 @@ public partial class CharacterUI : Control
     private readonly Dictionary<string, Label> _atributosValores = new();
     private readonly Dictionary<string, Button> _atributosBotoes = new();
     private readonly List<SlotEquipamentoUI> _todosOsSlots = new();
+
+    // Pet collection UI
+    private PetColecaoComponent _petColecao;
+    private GridContainer _petGrid;
+    private Control _petDetalhesPanel;
+    private TextureRect _petDetalhesIcone;
+    private Label _petDetalhesNome;
+    private Label _petDetalhesDescricao;
+    private Label _petDetalhesStats;
+    private int _petSelecionadoId = -1;
 
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
@@ -40,12 +53,8 @@ public partial class CharacterUI : Control
         if (HasNode("%PontosDisponiveisLabel"))
             _pontosDisponiveisLabel = GetNode<Label>("%PontosDisponiveisLabel");
 
-        // Initialize standee character texture
         _standeePersonagem = GetNode<TextureRect>("Panel/ContentHBox/ColunaCentro/StandeePersonagem");
-        
-        // Set default character texture (will be updated when player is connected)
         AtualizarTexturaPersonagem();
-
 
         foreach (var kvp in _atributosBotoes)
         {
@@ -65,6 +74,349 @@ public partial class CharacterUI : Control
         CallDeferred(MethodName.ConectarEquipamento);
         CallDeferred(MethodName.ConectarPlayerStatus);
         CallDeferred(MethodName.CriarBotaoToggle);
+
+        CallDeferred(MethodName.ConfigurarAbas);
+    }
+
+    private void ConfigurarAbas()
+    {
+        var contentHBox = _panel.GetNodeOrNull<Control>("ContentHBox");
+        if (contentHBox == null) return;
+
+        _panel.CustomMinimumSize = new Vector2(560, 510);
+
+        var tabBar = new HBoxContainer();
+        tabBar.Name = "TabBar";
+        tabBar.AnchorTop = 0;
+        tabBar.AnchorBottom = 0;
+        tabBar.OffsetLeft = 0;
+        tabBar.OffsetTop = 28;
+        tabBar.OffsetRight = 0;
+        tabBar.OffsetBottom = 52;
+        tabBar.Alignment = BoxContainer.AlignmentMode.Center;
+        _panel.AddChild(tabBar);
+
+        string[] tabNames = { "Equipamento", "Pets", "Montarias" };
+        _tabBotoes = new Button[3];
+        for (int i = 0; i < 3; i++)
+        {
+            var btn = new Button();
+            btn.Text = tabNames[i];
+            btn.ToggleMode = true;
+            btn.ButtonPressed = i == 0;
+            btn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            int captured = i;
+            btn.Pressed += () => OnTabSelected(captured);
+            tabBar.AddChild(btn);
+            _tabBotoes[i] = btn;
+        }
+
+        contentHBox.OffsetTop = 54;
+
+        _petTabContent = new ScrollContainer();
+        _petTabContent.Name = "PetTabContent";
+        _petTabContent.AnchorLeft = 0;
+        _petTabContent.AnchorTop = 0;
+        _petTabContent.AnchorRight = 1;
+        _petTabContent.AnchorBottom = 1;
+        _petTabContent.OffsetLeft = 0;
+        _petTabContent.OffsetTop = 54;
+        _petTabContent.OffsetRight = 0;
+        _petTabContent.OffsetBottom = -8;
+        _petTabContent.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
+        _petTabContent.Visible = false;
+        _panel.AddChild(_petTabContent);
+
+        _mountTabContent = new ScrollContainer();
+        _mountTabContent.Name = "MountTabContent";
+        _mountTabContent.AnchorLeft = 0;
+        _mountTabContent.AnchorTop = 0;
+        _mountTabContent.AnchorRight = 1;
+        _mountTabContent.AnchorBottom = 1;
+        _mountTabContent.OffsetLeft = 0;
+        _mountTabContent.OffsetTop = 54;
+        _mountTabContent.OffsetRight = 0;
+        _mountTabContent.OffsetBottom = -8;
+        _mountTabContent.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
+        _mountTabContent.Visible = false;
+        _panel.AddChild(_mountTabContent);
+
+        CriarConteudoPets();
+        CriarConteudoMontarias();
+
+        CallDeferred(MethodName.ConectarPetColecao);
+    }
+
+    private void OnTabSelected(int index)
+    {
+        for (int i = 0; i < _tabBotoes.Length; i++)
+            _tabBotoes[i].ButtonPressed = i == index;
+
+        var hbox = _panel.GetNodeOrNull<Control>("ContentHBox");
+        if (hbox != null) hbox.Visible = index == 0;
+        if (_petTabContent != null) _petTabContent.Visible = index == 1;
+        if (_mountTabContent != null) _mountTabContent.Visible = index == 2;
+    }
+
+    private void CriarConteudoPets()
+    {
+        var vbox = new VBoxContainer();
+        vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        vbox.SizeFlagsVertical = SizeFlags.ExpandFill;
+
+        var gridWrapper = new Control();
+        gridWrapper.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        gridWrapper.SizeFlagsVertical = SizeFlags.ExpandFill;
+
+        _petGrid = new GridContainer();
+        _petGrid.Name = "PetGrid";
+        _petGrid.Columns = 3;
+        _petGrid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _petGrid.SizeFlagsVertical = SizeFlags.ExpandFill;
+
+        var gridLabel = new Label();
+        gridLabel.Text = "Selecione um pet para ver os detalhes";
+        gridLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        gridLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        gridLabel.SizeFlagsVertical = SizeFlags.ExpandFill;
+        gridLabel.Modulate = new Color(0.6f, 0.6f, 0.6f);
+        _petGrid.AddChild(gridLabel);
+
+        gridWrapper.AddChild(_petGrid);
+        vbox.AddChild(gridWrapper);
+
+        var separator = new HSeparator();
+        vbox.AddChild(separator);
+
+        _petDetalhesPanel = new Control();
+        _petDetalhesPanel.Name = "PetDetalhes";
+        _petDetalhesPanel.CustomMinimumSize = new Vector2(0, 160);
+        _petDetalhesPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+
+        var detalhesScroll = new ScrollContainer();
+        detalhesScroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        detalhesScroll.SizeFlagsVertical = SizeFlags.ExpandFill;
+        _petDetalhesPanel.AddChild(detalhesScroll);
+
+        var detalhesHBox = new HBoxContainer();
+        detalhesHBox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        detalhesScroll.AddChild(detalhesHBox);
+
+        _petDetalhesIcone = new TextureRect();
+        _petDetalhesIcone.CustomMinimumSize = new Vector2(64, 64);
+        _petDetalhesIcone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        detalhesHBox.AddChild(_petDetalhesIcone);
+
+        var detalhesVBox = new VBoxContainer();
+        detalhesVBox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        detalhesHBox.AddChild(detalhesVBox);
+
+        _petDetalhesNome = new Label();
+        _petDetalhesNome.AddThemeFontSizeOverride("font_size", 18);
+        detalhesVBox.AddChild(_petDetalhesNome);
+
+        _petDetalhesDescricao = new Label();
+        _petDetalhesDescricao.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _petDetalhesDescricao.SizeFlagsVertical = SizeFlags.ExpandFill;
+        detalhesVBox.AddChild(_petDetalhesDescricao);
+
+        _petDetalhesStats = new Label();
+        _petDetalhesStats.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        detalhesVBox.AddChild(_petDetalhesStats);
+
+        _petDetalhesPanel.Visible = false;
+        vbox.AddChild(_petDetalhesPanel);
+
+        _petTabContent.AddChild(vbox);
+    }
+
+    private void CriarConteudoMontarias()
+    {
+        var vbox = new VBoxContainer();
+        vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        vbox.SizeFlagsVertical = SizeFlags.ExpandFill;
+
+        var label = new Label();
+        label.Text = "Montarias\n\nEm breve...";
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.VerticalAlignment = VerticalAlignment.Center;
+        label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        label.SizeFlagsVertical = SizeFlags.ExpandFill;
+        label.Modulate = new Color(0.5f, 0.5f, 0.5f);
+        vbox.AddChild(label);
+
+        _mountTabContent.AddChild(vbox);
+    }
+
+    private void ConectarPetColecao()
+    {
+        _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
+        if (_player == null) return;
+
+        _petColecao = _player.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
+        if (_petColecao == null) return;
+
+        _petColecao.ColecaoAtualizada += AtualizarGradePets;
+        AtualizarGradePets();
+    }
+
+    private void AtualizarGradePets()
+    {
+        if (_petGrid == null || _petColecao == null) return;
+
+        foreach (var child in _petGrid.GetChildren())
+            child.QueueFree();
+
+        var pets = _petColecao.GetPets();
+        if (pets.Count == 0)
+        {
+            var vazio = new Label();
+            vazio.Text = "Nenhum pet capturado ainda.\nCapture pets usando o Pergaminho do Pet!";
+            vazio.HorizontalAlignment = HorizontalAlignment.Center;
+            vazio.VerticalAlignment = VerticalAlignment.Center;
+            vazio.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            vazio.SizeFlagsVertical = SizeFlags.ExpandFill;
+            vazio.Modulate = new Color(0.6f, 0.6f, 0.6f);
+            _petGrid.AddChild(vazio);
+            _petDetalhesPanel.Visible = false;
+            _petSelecionadoId = -1;
+            return;
+        }
+
+        foreach (var entry in pets)
+        {
+            var petBtn = new Button();
+            petBtn.CustomMinimumSize = new Vector2(80, 80);
+            petBtn.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+
+            var vbox = new VBoxContainer();
+            vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+
+            var icon = new TextureRect();
+            icon.CustomMinimumSize = new Vector2(48, 48);
+            icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+            icon.Texture = entry.Recurso?.Icone;
+
+            var nome = new Label();
+            nome.Text = entry.Nome;
+            nome.HorizontalAlignment = HorizontalAlignment.Center;
+            nome.AddThemeFontSizeOverride("font_size", 10);
+            nome.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+
+            vbox.AddChild(icon);
+            vbox.AddChild(nome);
+            petBtn.AddChild(vbox);
+
+            int capturedId = entry.PetID;
+            petBtn.Pressed += () => TogglePet(capturedId);
+            _petGrid.AddChild(petBtn);
+        }
+
+        if (_petSelecionadoId > 0)
+            MostrarDetalhesPet(_petSelecionadoId);
+    }
+
+    private void MostrarDetalhesPet(int petId)
+    {
+        _petSelecionadoId = petId;
+
+        var pets = _petColecao.GetPets();
+        PetColecaoComponent.PetColecaoEntry entry = null;
+        for (int i = 0; i < pets.Count; i++)
+        {
+            if (pets[i].PetID == petId)
+            {
+                entry = pets[i];
+                break;
+            }
+        }
+
+        if (entry == null) return;
+
+        _petDetalhesIcone.Texture = entry.Recurso?.Icone;
+        _petDetalhesNome.Text = entry.Nome;
+        _petDetalhesDescricao.Text = entry.Recurso?.Descricao ?? "Sem descricao";
+
+        if (entry.Recurso != null)
+        {
+            var r = entry.Recurso;
+            _petDetalhesStats.Text = $"Tipo: {(r.Tipo == TipoPet.Combate ? "Combate" : "Coleta")}\n" +
+                $"HP: {r.HP}  |  Dano: {r.AttackDamage}\n" +
+                $"Forca: {r.Forca}  Agilidade: {r.Agilidade}  Destreza: {r.Destreza}  Intel: {r.Inteligencia}\n" +
+                $"Velocidade: {r.Speed}  Alcance: {r.AttackRange}";
+        }
+        else
+        {
+            _petDetalhesStats.Text = "";
+        }
+
+        _petDetalhesPanel.Visible = true;
+    }
+
+    private bool PetEstaAtivo(int petId)
+    {
+        if (_equipamento == null) return false;
+        var slot = _equipamento.ObterSlot(TipoEquipamento.Pet);
+        return slot != null && slot.Item != null && (slot.Item.ItemID - 200) == petId;
+    }
+
+    private void TogglePet(int petId)
+    {
+        MostrarDetalhesPet(petId);
+
+        if (_equipamento == null) return;
+
+        if (PetEstaAtivo(petId))
+        {
+            var slot = _equipamento.ObterSlot(TipoEquipamento.Pet);
+            if (slot != null)
+            {
+                slot.Item = null;
+                slot.Quantidade = 0;
+                _equipamento.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
+            }
+            GD.Print($"[CHARACTER] Pet removido!");
+            return;
+        }
+
+        var slotAtual = _equipamento.ObterSlot(TipoEquipamento.Pet);
+        if (slotAtual != null && slotAtual.Item != null)
+        {
+            GD.Print("[CHARACTER] Ja existe um pet ativo. Remova-o primeiro.");
+            return;
+        }
+
+        var pets = _petColecao.GetPets();
+        PetColecaoComponent.PetColecaoEntry entry = null;
+        for (int i = 0; i < pets.Count; i++)
+        {
+            if (pets[i].PetID == petId)
+            {
+                entry = pets[i];
+                break;
+            }
+        }
+
+        if (entry == null) return;
+
+        var itemPet = new ItemResource
+        {
+            ItemID = 200 + entry.PetID,
+            Nome = entry.Nome,
+            Descricao = entry.Recurso?.Descricao ?? $"Pet: {entry.Nome}",
+            Tipo = TipoEquipamento.Pet,
+            Acumulavel = false,
+            QuantidadeMaximaPorSlot = 1,
+        };
+
+        if (slotAtual != null)
+        {
+            slotAtual.Item = itemPet;
+            slotAtual.Quantidade = 1;
+            _equipamento.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
+        }
+
+        GD.Print($"[CHARACTER] Pet '{entry.Nome}' spawnado!");
     }
 
     private void OnCloseButtonPressed()
@@ -78,7 +430,7 @@ public partial class CharacterUI : Control
 
         _panel.Visible = false;
         _arrastando = false;
-        GD.Print("[CHARACTER UI] ❌ Tela de equipamentos fechada!");
+        GD.Print("[CHARACTER UI] Tela de equipamentos fechada!");
     }
 
     private void CentralizarPainelNaTela()
@@ -121,7 +473,7 @@ public partial class CharacterUI : Control
                 _todosOsSlots.Add(slot);
         }
 
-        GD.Print($"[CHARACTER UI] 📦 {_todosOsSlots.Count} slots de equipamento encontrados nesta cena!");
+        GD.Print($"[CHARACTER UI] {_todosOsSlots.Count} slots de equipamento encontrados nesta cena!");
     }
 
     private void ConectarEquipamento()
@@ -129,18 +481,18 @@ public partial class CharacterUI : Control
         var player = GetTree().CurrentScene.FindChild("Player", true, false);
         if (player == null)
         {
-            GD.PrintErr("[CHARACTER UI] ❌ Player não encontrado!");
+            GD.PrintErr("[CHARACTER UI] Player nao encontrado!");
             return;
         }
 
         _equipamento = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (_equipamento == null)
         {
-            GD.PrintErr("[CHARACTER UI] ❌ Player não tem EquipamentoComponent!");
+            GD.PrintErr("[CHARACTER UI] Player nao tem EquipamentoComponent!");
             return;
         }
 
-        GD.Print("[CHARACTER UI] ✅ Conectado ao EquipamentoComponent!");
+        GD.Print("[CHARACTER UI] Conectado ao EquipamentoComponent!");
         _equipamento.EquipamentoAtualizado += AtualizarTela;
         AtualizarTela();
     }
@@ -150,14 +502,13 @@ public partial class CharacterUI : Control
         _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
         if (_player == null)
         {
-            GD.PrintErr("[CHARACTER UI] ❌ Player não encontrado para status de vida/mana!");
+            GD.PrintErr("[CHARACTER UI] Player nao encontrado para status de vida/mana!");
             return;
         }
-        
+
         _player.StatusAtualizado += AtualizarTela;
-        GD.Print("[CHARACTER UI] ✅ Conectado ao Player para status de vida/mana!");
-        
-        // Update character texture
+        GD.Print("[CHARACTER UI] Conectado ao Player para status de vida/mana!");
+
         AtualizarTexturaPersonagem();
     }
 
@@ -165,28 +516,22 @@ public partial class CharacterUI : Control
     {
         if (_standeePersonagem == null || _player == null) return;
 
-        // Try to get the AnimatedSprite from the player node
         AnimatedSprite2D playerAnimatedSprite = _player.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite");
         if (playerAnimatedSprite != null && playerAnimatedSprite.SpriteFrames != null)
         {
-            // Get the current animation and frame
             string currentAnimation = playerAnimatedSprite.Animation;
             int currentFrame = playerAnimatedSprite.Frame;
-            
-            // Get the texture from the sprite frames
             Texture2D frameTexture = playerAnimatedSprite.SpriteFrames.GetFrameTexture(currentAnimation, currentFrame);
-            
+
             if (frameTexture != null)
             {
                 _standeePersonagem.Texture = frameTexture;
-                //GD.Print("[CHARACTER UI] ✅ Textura do personagem atualizada do AnimatedSprite!");
                 return;
             }
         }
 
-        // Last resort: clear the texture
         _standeePersonagem.Texture = null;
-        GD.Print("[CHARACTER UI] ⚠️ Nenhuma textura do personagem encontrada!");
+        GD.Print("[CHARACTER UI] Nenhuma textura do personagem encontrada!");
     }
 
     private void AtualizarTela()
@@ -194,7 +539,7 @@ public partial class CharacterUI : Control
         if (_equipamento == null) return;
 
         if (_pontosDisponiveisLabel != null)
-            _pontosDisponiveisLabel.Text = $"Pontos Disponíveis: {_equipamento.PontosDisponiveis}";
+            _pontosDisponiveisLabel.Text = $"Pontos Disponiveis: {_equipamento.PontosDisponiveis}";
 
         foreach (var kvp in _atributosValores)
         {
@@ -210,9 +555,7 @@ public partial class CharacterUI : Control
             kvp.Value.Text = valor.ToString();
         }
 
-        // Update character texture
         AtualizarTexturaPersonagem();
-        
         BuscarEAtualizarTodosOsStatus();
         AtualizarSlotsDaTela();
     }
@@ -221,14 +564,14 @@ public partial class CharacterUI : Control
     {
         if (_equipamento == null) return;
 
-        AtualizarStatusLabel("DanoFisico", $"Dano Físico: {_equipamento.DanoFisico}");
-        AtualizarStatusLabel("DanoMagico", $"Dano Mágico: {_equipamento.DanoMagico}");
+        AtualizarStatusLabel("DanoFisico", $"Dano Fisico: {_equipamento.DanoFisico}");
+        AtualizarStatusLabel("DanoMagico", $"Dano Magico: {_equipamento.DanoMagico}");
 
         if (_player != null)
         {
-            AtualizarStatusLabel("Hp", $"Vida: {_player.CurrentHealth}/{_player.MaxHealth}");
-            AtualizarStatusLabel("Mana", $"Mana: {_player.CurrentMana}/{_player.MaxMana}");
-            AtualizarStatusLabel("Stamina", $"Stamina: {_player.CurrentStamina}/{_player.MaxStamina}");
+            AtualizarStatusLabel("Hp", $"Vida: {_player.CurrentHealth}/{_equipamento.Hp}");
+            AtualizarStatusLabel("Mana", $"Mana: {_player.CurrentMana}/{_equipamento.Mana}");
+            AtualizarStatusLabel("Stamina", $"Stamina: {_player.CurrentStamina}/{_equipamento.Stamina}");
         }
         else
         {
@@ -236,14 +579,14 @@ public partial class CharacterUI : Control
             AtualizarStatusLabel("Mana", $"Mana: {_equipamento.Mana}");
             AtualizarStatusLabel("Stamina", "Stamina: --/--");
         }
-        AtualizarStatusLabel("ChanceCritica", $"Chance Crítica: {_equipamento.ChanceCritica:F1}%");
-        AtualizarStatusLabel("DanoCritico", $"Dano Crítico: {_equipamento.DanoCritico:F2}x");
-        AtualizarStatusLabel("Evasao", $"Evasão: {_equipamento.Evasao:F1}%");
+        AtualizarStatusLabel("ChanceCritica", $"Chance Critica: {_equipamento.ChanceCritica:F1}%");
+        AtualizarStatusLabel("DanoCritico", $"Dano Critico: {_equipamento.DanoCritico:F2}x");
+        AtualizarStatusLabel("Evasao", $"Evasao: {_equipamento.Evasao:F1}%");
         AtualizarStatusLabel("VelocidadeMovimento", $"Vel. Movimento: {_equipamento.VelocidadeMovimento:F2}x");
         AtualizarStatusLabel("VelocidadeAtaque", $"Vel. Ataque: {_equipamento.VelocidadeAtaque:F2}x");
-        AtualizarStatusLabel("DefesaFisica", $"Defesa Física: {_equipamento.DefesaFisica}");
-        AtualizarStatusLabel("DefesaMagica", $"Defesa Mágica: {_equipamento.DefesaMagica}");
-        AtualizarStatusLabel("Precisao", $"Precisão: {_equipamento.Precisao}");
+        AtualizarStatusLabel("DefesaFisica", $"Defesa Fisica: {_equipamento.DefesaFisica}");
+        AtualizarStatusLabel("DefesaMagica", $"Defesa Magica: {_equipamento.DefesaMagica}");
+        AtualizarStatusLabel("Precisao", $"Precisao: {_equipamento.Precisao}");
         AtualizarStatusLabel("Tenacidade", $"Tenacidade: {_equipamento.Tenacidade}");
         AtualizarStatusLabel("DanoPvp", $"Dano PvP: {_equipamento.DanoPvp}");
         AtualizarStatusLabel("DefesaPvp", $"Defesa PvP: {_equipamento.DefesaPvp}");
@@ -253,7 +596,7 @@ public partial class CharacterUI : Control
         AtualizarStatusLabel("RouboVida", $"Roubo Vida: {_equipamento.RouboVida:F2}%");
         AtualizarStatusLabel("RouboMana", $"Roubo Mana: {_equipamento.RouboMana:F2}%");
         AtualizarStatusLabel("ReducaoCooldown", $"Red. Cooldown: {_equipamento.ReducaoCooldown:F2}%");
-        AtualizarStatusLabel("BonusExperiencia", $"Bônus XP: {_equipamento.BonusExperiencia}%");
+        AtualizarStatusLabel("BonusExperiencia", $"Bonus XP: {_equipamento.BonusExperiencia}%");
     }
 
     private void AtualizarStatusLabel(string nomeStatus, string texto)
@@ -328,12 +671,12 @@ public partial class CharacterUI : Control
 
             if (_panel.Visible)
             {
-                GD.Print("[CHARACTER UI] 🎒 Tela de equipamentos aberta!");
+                GD.Print("[CHARACTER UI] Tela de equipamentos aberta!");
                 AtualizarTela();
             }
             else
             {
-                GD.Print("[CHARACTER UI] ❌ Tela de equipamentos fechada!");
+                GD.Print("[CHARACTER UI] Tela de equipamentos fechada!");
             }
         }
 

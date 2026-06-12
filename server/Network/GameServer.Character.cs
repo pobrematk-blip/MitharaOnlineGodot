@@ -20,6 +20,10 @@ partial class GameServer
         int charId = _db.CreateCharacter(session.AccountId, name, className, race);
         var chars = _db.GetCharacters(session.AccountId);
 
+        var created = chars.FirstOrDefault(c => c.Id == charId);
+        if (created != null)
+            session.SelectedCharacter = created;
+
         var writer = PacketSerializer.WritePacket(PacketId.S2C_LoginResult);
         writer.Put(true);
         writer.Put(session.AccountId);
@@ -34,7 +38,7 @@ partial class GameServer
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
-        Console.WriteLine($"[SERVER] Personagem criado: {name} (id={charId})");
+        Logger.Info($"Personagem criado: {name} (id={charId})");
     }
 
     private void HandleSelectCharacter(NetPeer peer, NetDataReader reader)
@@ -50,55 +54,113 @@ partial class GameServer
         session.SelectedCharacter = selected;
     }
 
+    private void HandleDeleteCharacter(NetPeer peer, NetDataReader reader)
+    {
+        int slotIndex = reader.GetInt();
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+
+        var chars = _db.GetCharacters(session.AccountId);
+        var toDelete = chars.FirstOrDefault(c => c.SlotIndex == slotIndex);
+        if (toDelete == null)
+        {
+            Logger.Info($"[DELETE] Personagem slot {slotIndex} não encontrado para account {session.AccountId}");
+            return;
+        }
+
+        _db.DeleteCharacter(toDelete.Id);
+
+        var updated = _db.GetCharacters(session.AccountId);
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CharacterDeleted);
+        writer.Put(updated.Count);
+        foreach (var ch in updated)
+        {
+            writer.Put(ch.SlotIndex);
+            writer.Put(ch.Name);
+            writer.Put(ch.Class);
+            writer.Put(ch.Race);
+            writer.Put(ch.Level);
+        }
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+
+        if (session.SelectedCharacter?.SlotIndex == slotIndex)
+            session.SelectedCharacter = null;
+
+        Logger.Info($"Personagem deletado: {toDelete.Name} (slot {slotIndex})");
+    }
+
     private void HandleEnterWorld(NetPeer peer, NetDataReader reader)
     {
         int channelId = reader.GetInt();
+        string inlineName = reader.GetString();
+        string inlineClass = reader.GetString();
+        string inlineRace = reader.GetString();
+        float inlineX = reader.GetFloat();
+        float inlineY = reader.GetFloat();
 
         if (!_sessions.TryGetValue(peer, out var session)) return;
-        if (session.SelectedCharacter == null) return;
 
+        // Use character from DB if available, otherwise use inline data (quick test mode)
+        bool useInline = session.SelectedCharacter == null;
         var ch = session.SelectedCharacter;
-        int baseAttack = ch.Class.ToLowerInvariant() switch
+
+        string name = useInline ? inlineName : ch!.Name;
+        string charClass = useInline ? inlineClass : ch!.Class;
+        string race = useInline ? inlineRace : ch!.Race;
+        float posX = useInline ? inlineX : ch!.PosX;
+        float posY = useInline ? inlineY : ch!.PosY;
+        int level = useInline ? 1 : ch!.Level;
+        long xp = useInline ? 0 : ch!.Xp;
+        int forca = Math.Max(5, useInline ? 5 : ch!.Forca);
+        int agilidade = Math.Max(5, useInline ? 5 : ch!.Agilidade);
+        int destreza = Math.Max(5, useInline ? 5 : ch!.Destreza);
+        int inteligencia = Math.Max(5, useInline ? 5 : ch!.Inteligencia);
+        int gold = useInline ? 100 : ch!.Gold;
+
+        int baseAttack = charClass.ToLowerInvariant() switch
         {
             "guerreiro" => 10,
             "arqueiro" => 7,
             "mago" => 5,
             _ => 6,
         };
-        int baseDefense = ch.Class.ToLowerInvariant() switch
+        int baseDefense = charClass.ToLowerInvariant() switch
         {
             "guerreiro" => 8,
             "arqueiro" => 4,
             "mago" => 2,
             _ => 4,
         };
-        int maxHp = 80 + ch.Forca * 5 + ch.Level * 10;
-        int maxMana = 30 + ch.Inteligencia * 5 + ch.Level * 5;
+        int maxHp = 80 + forca * 5 + level * 10;
+        int maxMana = 30 + inteligencia * 5 + level * 5;
 
         var player = new PlayerEntity
         {
             AccountId = session.AccountId,
-            SlotIndex = ch.SlotIndex,
-            Name = ch.Name,
-            CharacterClass = ch.Class,
-            Race = ch.Race,
-            Level = ch.Level,
-            X = ch.PosX,
-            Y = ch.PosY,
+            SlotIndex = ch?.SlotIndex ?? 0,
+            Name = name,
+            CharacterClass = charClass,
+            Race = race,
+            Level = level,
+            X = posX,
+            Y = posY,
             Speed = 185f,
             Health = maxHp,
             MaxHealth = maxHp,
             Mana = maxMana,
             MaxMana = maxMana,
-            Forca = ch.Forca,
-            Agilidade = ch.Agilidade,
-            Destreza = ch.Destreza,
-            Inteligencia = ch.Inteligencia,
-            Experience = ch.Xp,
+            Forca = forca,
+            Agilidade = agilidade,
+            Destreza = destreza,
+            Inteligencia = inteligencia,
+            BaseForca = forca,
+            BaseAgilidade = agilidade,
+            BaseDestreza = destreza,
+            BaseInteligencia = inteligencia,
+            Experience = xp,
             BaseAttack = baseAttack,
             Defense = baseDefense,
-            FactionId = GetFactionForRace(ch.Race),
-            Gold = ch.Gold,
+            FactionId = GetFactionForRace(race),
+            Gold = gold,
         };
 
         ulong entityId = _world.SpawnPlayerInChannel(channelId, player, peer);
@@ -126,55 +188,77 @@ partial class GameServer
         writer.Put(player.Defense);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
-        var dbQuests = _db.GetPlayerQuests(ch.Id);
-        foreach (var (questId, progressJson, completed, claimed) in dbQuests)
+        if (!useInline && ch != null)
         {
-            try
+            var dbQuests = _db.GetPlayerQuests(ch.Id);
+            foreach (var (questId, progressJson, completed, claimed) in dbQuests)
             {
-                var progress = System.Text.Json.JsonSerializer.Deserialize<List<int>>(progressJson) ?? new List<int>();
-                player.Quests[questId] = new PlayerQuest
+                try
                 {
-                    QuestId = questId,
-                    Progress = progress,
-                    Completed = completed,
-                    Claimed = claimed,
-                };
+                    var progress = System.Text.Json.JsonSerializer.Deserialize<List<int>>(progressJson) ?? new List<int>();
+                    player.Quests[questId] = new PlayerQuest
+                    {
+                        QuestId = questId,
+                        Progress = progress,
+                        Completed = completed,
+                        Claimed = claimed,
+                    };
+                }
+                catch { }
             }
-            catch { }
-        }
 
-        var items = _db.LoadItems(ch.Id);
-        foreach (var item in items)
-        {
-            if (item.Slot >= 100 && item.Slot <= 116)
-                player.Equipment[item.Slot - 100] = item;
-            else
-                player.Items.Add(item);
+            var items = _db.LoadItems(ch.Id);
+            foreach (var item in items)
+            {
+                if (item.Slot >= 100 && item.Slot <= 116)
+                    player.Equipment[item.Slot - 100] = item;
+                else
+                    player.Items.Add(item);
+            }
+
+            RecalculatePlayerStats(player);
         }
 
         SendInventoryData(peer, player);
         SendGoldUpdate(peer, player.Gold);
 
-        if (channel != null)
-        {
-            var writerSpawn = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
-            WriteEntityPacket(writerSpawn, player);
-            peer.Send(writerSpawn, DeliveryMethod.ReliableOrdered);
-
-            var aoi = channel.GetEntitiesInAoi(player.X, player.Y);
-            foreach (var eid in aoi)
+            if (channel != null)
             {
-                if (eid == entityId) continue;
-                var existing = channel.GetEntity(eid);
-                if (existing == null) continue;
-                var existingWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
-                WriteEntityPacket(existingWriter, existing);
-                peer.Send(existingWriter, DeliveryMethod.ReliableOrdered);
+                var writerSpawn = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
+                WriteEntityPacket(writerSpawn, player);
+                peer.Send(writerSpawn, DeliveryMethod.ReliableOrdered);
+
+                var aoi = channel.GetEntitiesInAoi(player.X, player.Y);
+                Logger.Info($"HandleEnterWorld({player.Name}): AOI contem {aoi.Count} entidades (incluindo self)");
+
+                int sentNearby = 0;
+                foreach (var eid in aoi)
+                {
+                    if (eid == entityId) continue;
+                    var existing = channel.GetEntity(eid);
+                    if (existing == null) continue;
+                    var existingWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
+                    WriteEntityPacket(existingWriter, existing);
+                    peer.Send(existingWriter, DeliveryMethod.ReliableOrdered);
+                    sentNearby++;
+                }
+
+                // Also send all player entities in the channel (regardless of AOI distance)
+                int sentPlayers = 0;
+                foreach (var kv in channel.GetAllEntities())
+                {
+                    if (kv.Value.Type != EntityType.Player) continue;
+                    if (kv.Key == entityId) continue;
+                    var playerWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
+                    WriteEntityPacket(playerWriter, kv.Value);
+                    peer.Send(playerWriter, DeliveryMethod.ReliableOrdered);
+                    sentPlayers++;
+                }
+                Logger.Info($"HandleEnterWorld({player.Name}): enviou {sentNearby} spawn(s) de entidades (AOI) + {sentPlayers} player(s) no canal");
+
+                BroadcastSpawnToNearby(channel, player, player.X, player.Y);
             }
 
-            BroadcastSpawnToNearby(channel, player, player.X, player.Y);
-        }
-
-        Console.WriteLine($"[SERVER] {ch.Name} entrou no mundo (canal {channelId})");
+        Logger.Info($"{player.Name} entrou no mundo (canal {channelId})");
     }
 }

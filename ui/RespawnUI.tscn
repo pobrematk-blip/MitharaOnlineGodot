@@ -1,0 +1,109 @@
+[gd_scene load_steps=6 format=3 uid="uid://respawnui"]
+
+[ext_resource type="Script" path="res://ui/RespawnUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.05, 0.05, 0.1, 0.92)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+border_color = Color(0.4, 0.1, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.6, 0.1, 0.1, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.8, 0.15, 0.15, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wait"]
+bg_color = Color(0.2, 0.2, 0.3, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dark"]
+bg_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[node name="RespawnUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(320, 220)
+layout_mode = 0
+offset_right = 320.0
+offset_bottom = 220.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 300.0
+offset_bottom = 56.0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+text = "Voce Morreu!"
+
+[node name="MessageLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 300.0
+offset_bottom = 100.0
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+text = "Deseja reviver agora ou aguardar ajuda?"
+
+[node name="TimerLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 100.0
+offset_right = 300.0
+offset_bottom = 130.0
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+visible = false
+text = ""
+
+[node name="RespawnButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 140.0
+offset_right = 150.0
+offset_bottom = 175.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button")
+text = "Reviver Agora"
+
+[node name="WaitButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 140.0
+offset_right = 290.0
+offset_bottom = 175.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_wait")
+theme_override_styles/hover = SubResource("StyleBoxFlat_dark")
+text = "Aguardar (5:00)"

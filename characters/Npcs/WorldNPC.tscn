@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=4 uid="uid://c4dxtlwj5ntb2"]
+
+[ext_resource type="Script" path="res://characters/Npcs/WorldNPC.cs" id="1_npc"]
+
+[node name="WorldNPC" type="CharacterBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_npc")

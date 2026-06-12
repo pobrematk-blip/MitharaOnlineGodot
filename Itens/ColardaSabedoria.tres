@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_wfhru")
-ItemID = 30
+ItemID = 32
 Nome = "Colar da Sabedoria"
 QuantidadeMaximaPorSlot = 1
 SlotsAdicionais = 0

@@ -75,7 +75,7 @@ public class SpawnerManager
             GoldMax = 5,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.5 },
+                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.05 },
                 new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.3 },
             },
         });
@@ -96,10 +96,11 @@ public class SpawnerManager
             GoldMax = 10,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.4 },
+                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.05 },
+                new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
                 new() { ItemId = 10, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.15 },
-                new() { ItemId = 20, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.08 },
                 new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.08 },
+                new() { ItemId = 30, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.10 },
                 new() { ItemId = 100, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
             },
         });
@@ -120,6 +121,7 @@ public class SpawnerManager
             GoldMax = 15,
             LootTable = new List<LootEntry>
             {
+                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
                 new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.5 },
                 new() { ItemId = 13, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.12 },
                 new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.1 },
@@ -142,7 +144,8 @@ public class SpawnerManager
             GoldMax = 25,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 2, MaxQuantity = 3, DropChance = 0.6 },
+                new() { ItemId = 1, MinQuantity = 2, MaxQuantity = 3, DropChance = 0.05 },
+                new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.05 },
                 new() { ItemId = 11, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.2 },
                 new() { ItemId = 22, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.15 },
                 new() { ItemId = 24, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.12 },
@@ -168,7 +171,7 @@ public class SpawnerManager
             GoldMax = 200,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 5, MaxQuantity = 10, DropChance = 1.0 },
+                new() { ItemId = 1, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.05 },
                 new() { ItemId = 2, MinQuantity = 3, MaxQuantity = 8, DropChance = 1.0 },
                 new() { ItemId = 11, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.8 },
                 new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.7 },
@@ -190,15 +193,15 @@ public class SpawnerManager
         return template;
     }
 
+    public void UpdateDropTable(string prefabId, List<LootEntry> drops)
+    {
+        if (_templates.TryGetValue(prefabId, out var template))
+            template.LootTable = drops;
+    }
+
     private void RegisterDefaultSpawnPoints()
     {
-        _spawnPoints.Add(new SpawnPoint { X = 1200, Y = 1100, Radius = 150f, PrefabId = "slime", MaxCount = 5 });
-        _spawnPoints.Add(new SpawnPoint { X = 1400, Y = 1300, Radius = 150f, PrefabId = "slime", MaxCount = 4 });
-        _spawnPoints.Add(new SpawnPoint { X = 800, Y = 900, Radius = 120f, PrefabId = "goblin", MaxCount = 4 });
-        _spawnPoints.Add(new SpawnPoint { X = 1600, Y = 800, Radius = 200f, PrefabId = "goblin", MaxCount = 5 });
-        _spawnPoints.Add(new SpawnPoint { X = 1800, Y = 1200, Radius = 180f, PrefabId = "wolf", MaxCount = 3 });
-        _spawnPoints.Add(new SpawnPoint { X = 600, Y = 1400, Radius = 150f, PrefabId = "skeleton", MaxCount = 3 });
-        _spawnPoints.Add(new SpawnPoint { X = 2000, Y = 600, Radius = 100f, PrefabId = "boss_demon", MaxCount = 1, RespawnDelay = 60f });
+        _spawnPoints.Add(new SpawnPoint { X = 1200, Y = 1100, Radius = 250f, PrefabId = "goblin", MaxCount = 5 });
     }
 
     public List<SpawnPoint> GetSpawnPoints() => _spawnPoints;
@@ -228,6 +231,8 @@ public class SpawnerManager
             FactionId = template.FactionId,
             X = x,
             Y = y,
+            SpawnX = x,
+            SpawnY = y,
         };
     }
 
@@ -265,6 +270,8 @@ public class SpawnerManager
             FactionId = template.FactionId,
             X = spawnX,
             Y = spawnY,
+            SpawnX = spawnX,
+            SpawnY = spawnY,
         };
     }
 }

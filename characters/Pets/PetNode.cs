@@ -22,8 +22,11 @@ public partial class PetNode : Node2D
     public PetMode ModoAtual { get; private set; } = PetMode.Seguir;
     public int PetID { get; set; }
     public string NomePet { get; set; } = "";
+    public string AnimPrefix { get; set; } = "";
+    private string _animPrefixo => string.IsNullOrEmpty(AnimPrefix) ? NomePet : AnimPrefix;
     public TipoPet TipoPet { get; set; }
     public bool Ativo { get; set; } = true;
+    public bool ColetaAtiva { get; set; } = true;
 
     private Player _player;
     private AnimatedSprite2D _sprite;
@@ -39,6 +42,8 @@ public partial class PetNode : Node2D
     {
         _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+        if (_sprite != null)
+            _sprite.Scale = new Vector2(0.7f, 0.7f);
         _posicaoGuarda = GlobalPosition;
 
         _areaColeta = new Area2D();
@@ -248,11 +253,11 @@ public partial class PetNode : Node2D
         {
             string anim = _direcao switch
             {
-                Vector2 v when v.Y < -0.5f => $"{NomePet}_attack_up",
-                Vector2 v when v.Y > 0.5f => $"{NomePet}_attack_down",
-                Vector2 v when v.X < -0.5f => $"{NomePet}_attack_left",
-                Vector2 v when v.X > 0.5f => $"{NomePet}_attack_right",
-                _ => $"{NomePet}_attack_down"
+                Vector2 v when v.Y < -0.5f => $"{_animPrefixo}_attack_up",
+                Vector2 v when v.Y > 0.5f => $"{_animPrefixo}_attack_down",
+                Vector2 v when v.X < -0.5f => $"{_animPrefixo}_attack_left",
+                Vector2 v when v.X > 0.5f => $"{_animPrefixo}_attack_right",
+                _ => $"{_animPrefixo}_attack_down"
             };
             if (_sprite.SpriteFrames.HasAnimation(anim))
                 _sprite.Play(anim);
@@ -295,6 +300,7 @@ public partial class PetNode : Node2D
     {
         if (TipoPet != TipoPet.Loot) return;
         if (ModoAtual == PetMode.Atacar) return;
+        if (!ColetaAtiva) return;
 
         var itemColetavel = area.GetParentOrNull<ItemColetavel>();
         if (itemColetavel != null && IsInstanceValid(itemColetavel))
@@ -315,6 +321,7 @@ public partial class PetNode : Node2D
     {
         if (TipoPet != TipoPet.Loot || !Ativo || _player == null) return;
         if (ModoAtual == PetMode.Atacar) return;
+        if (!ColetaAtiva) return;
 
         float distPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
         if (distPlayer > SeguirDistancia * 3f) return;
@@ -351,15 +358,15 @@ public partial class PetNode : Node2D
 
     private void AtualizarAnimacao()
     {
-        if (_sprite == null || string.IsNullOrEmpty(NomePet)) return;
+        if (_sprite == null || string.IsNullOrEmpty(_animPrefixo)) return;
 
         string baseAnim = "";
         if (_direcao.Length() > 0.1f)
         {
             if (Mathf.Abs(_direcao.X) > Mathf.Abs(_direcao.Y))
-                baseAnim = _direcao.X > 0 ? $"{NomePet}_walk_right" : $"{NomePet}_walk_left";
+                baseAnim = _direcao.X > 0 ? $"{_animPrefixo}_walk_right" : $"{_animPrefixo}_walk_left";
             else
-                baseAnim = _direcao.Y > 0 ? $"{NomePet}_walk_down" : $"{NomePet}_walk_up";
+                baseAnim = _direcao.Y > 0 ? $"{_animPrefixo}_walk_down" : $"{_animPrefixo}_walk_up";
         }
         else
         {
@@ -368,12 +375,12 @@ public partial class PetNode : Node2D
             if (!string.IsNullOrEmpty(curAnim))
             {
                 lastDir = curAnim
-                    .Replace($"{NomePet}_walk_", "")
-                    .Replace($"{NomePet}_idle_", "")
-                    .Replace($"{NomePet}_attack_", "");
+                    .Replace($"{_animPrefixo}_walk_", "")
+                    .Replace($"{_animPrefixo}_idle_", "")
+                    .Replace($"{_animPrefixo}_attack_", "");
                 if (string.IsNullOrEmpty(lastDir)) lastDir = "down";
             }
-            baseAnim = $"{NomePet}_idle_{lastDir}";
+            baseAnim = $"{_animPrefixo}_idle_{lastDir}";
         }
 
         if (_sprite.SpriteFrames.HasAnimation(baseAnim))

@@ -8,17 +8,19 @@ public enum ChatChannel : byte
     Whisper = 1,
     Group = 2,
     Guild = 3,
+    System = 4,
 }
 
 public partial class ChatUI : Control
 {
-    private static readonly string[] ChannelNames = { "Global", "Sussurro", "Grupo", "Guilda" };
+    private static readonly string[] ChannelNames = { "Global", "Sussurro", "Grupo", "Guilda", "Sistema" };
     private static readonly Color[] ChannelColors =
     {
         new Color(0.9f, 0.9f, 1.0f),
         new Color(0.7f, 1.0f, 0.7f),
         new Color(1.0f, 0.85f, 0.5f),
         new Color(0.7f, 0.8f, 1.0f),
+        new Color(1.0f, 1.0f, 0.53f),
     };
 
     private PanelContainer _mainContainer;
@@ -51,6 +53,7 @@ public partial class ChatUI : Control
     private GameNetwork _net;
     private string _playerName = "Jogador";
 
+    private readonly List<(ChatChannel channel, string bbcode)> _allMessages = new();
     private readonly List<string> _pendingTranslations = new();
 
     public override void _Ready()
@@ -316,11 +319,20 @@ public partial class ChatUI : Control
         };
     }
 
+    public void AddSystemMessage(string message)
+    {
+        string bbcode = $"[color=#ffff88]{message}[/color]\n";
+        _allMessages.Add((ChatChannel.System, bbcode));
+        if (_currentChannel == ChatChannel.System || _currentChannel == ChatChannel.Global)
+            AppendToLog(bbcode);
+        TrimMessages();
+    }
+
     private void OnChatReceived(byte channel, string senderName, string message, string language)
     {
         if (string.Equals(senderName, "!Sistema", StringComparison.OrdinalIgnoreCase))
         {
-            AddMessage($"[color=#ffff88]{message}[/color]\n");
+            AddSystemMessage(message);
             return;
         }
 
@@ -335,7 +347,7 @@ public partial class ChatUI : Control
             : $"[b][color={color}]{senderName}[/color][/b]";
 
         string formatted = $"[color={color}][{tag}][/color] {displayName}: {message}";
-        AddMessage(formatted + "\n");
+        AddMessage(formatted + "\n", ch);
 
         if (_translator != null && _translator.Enabled && ch != ChatChannel.Whisper)
         {
@@ -363,28 +375,50 @@ public partial class ChatUI : Control
         });
     }
 
-    private void AddMessage(string bbcode)
+    private void AddMessage(string bbcode, ChatChannel channel)
     {
         if (_messageLog == null) return;
 
-        try
-        {
-            _messageLog.AppendText(bbcode);
-        }
-        catch (System.Exception ex)
-        {
-            GD.PrintErr($"[CHAT] ERROR: {ex.Message}");
-        }
-
-        if (_messageLog.GetLineCount() > 200)
-        {
-            _messageLog.Clear();
-        }
+        _allMessages.Add((channel, bbcode));
+        if (channel == _currentChannel || _currentChannel == ChatChannel.Global)
+            AppendToLog(bbcode);
+        TrimMessages();
 
         if (_autoScroll)
-        {
             CallDeferred(nameof(ScrollToBottom));
+    }
+
+    private void AddMessage(string bbcode)
+    {
+        AddMessage(bbcode, _currentChannel);
+    }
+
+    private void AppendToLog(string bbcode)
+    {
+        if (_messageLog == null) return;
+        try { _messageLog.AppendText(bbcode); }
+        catch (System.Exception ex) { GD.PrintErr($"[CHAT] ERROR: {ex.Message}"); }
+    }
+
+    private void TrimMessages()
+    {
+        while (_allMessages.Count > 200)
+        {
+            _allMessages.RemoveAt(0);
         }
+    }
+
+    private void RebuildLogForCurrentChannel()
+    {
+        if (_messageLog == null) return;
+        _messageLog.Clear();
+        foreach (var (channel, bbcode) in _allMessages)
+        {
+            if (channel == _currentChannel || _currentChannel == ChatChannel.Global)
+                AppendToLog(bbcode);
+        }
+        if (_autoScroll)
+            CallDeferred(nameof(ScrollToBottom));
     }
 
     private void ScrollToBottom()
@@ -501,6 +535,7 @@ public partial class ChatUI : Control
     {
         _currentChannel = channel;
         UpdateChannelUI();
+        RebuildLogForCurrentChannel();
     }
 
     private void UpdateChannelUI()
@@ -585,5 +620,12 @@ public partial class ChatUI : Control
         {
             _mainContainer.Position += mouseMotion.Position - _pontoCliqueOriginal;
         }
+    }
+
+    public override void _ExitTree()
+    {
+        base._ExitTree();
+        if (_net != null)
+            _net.OnChatMessage -= OnChatReceived;
     }
 }

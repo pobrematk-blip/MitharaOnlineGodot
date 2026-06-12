@@ -154,8 +154,9 @@ public partial class SlotUI : Control
         var preview = new TextureRect
         {
             Texture = SlotInterno.Item.Icone,
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
             CustomMinimumSize = new Vector2(40, 40),
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
             Modulate = new Color(1, 1, 1, 0.7f)
         };
 
@@ -265,7 +266,11 @@ public partial class SlotUI : Control
         int itemId = SlotInterno.Item.ItemID;
         string itemNome = SlotInterno.Item.Nome;
 
-        if (itemId == 100 || (itemNome != null && itemNome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
+        if (itemId == 101)
+        {
+            TentarReviverAliadoComPergaminho();
+        }
+        else if (itemId == 100 || (itemNome != null && itemNome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
         {
             TentarCapturarPetComPergaminho();
         }
@@ -299,43 +304,61 @@ public partial class SlotUI : Control
             return;
         }
 
-        // Consome o pergaminho AGORA (antes do minigame)
+        if (alvo.PetID <= 0)
+        {
+            GD.Print("[PERGAMINHO] Este inimigo não pode ser capturado.");
+            return;
+        }
+
         var inventario = ObterInventario();
         if (inventario == null) return;
 
-        SlotInterno.Quantidade--;
-        if (SlotInterno.Quantidade <= 0)
-        {
-            SlotInterno.Item = null;
-            SlotInterno.Quantidade = 0;
-        }
-        inventario.NotificarMudancaExterna();
-
         string petNome = alvo.NomeDoInimigo;
-        int petId = 3;
+        int petId = alvo.PetID;
 
         var miniGame = GD.Load<PackedScene>("res://ui/Pets/PetScrollMiniGame.tscn").Instantiate<PetScrollMiniGame>();
-        var root = GetTree().CurrentScene;
-        if (root != null)
-            root.AddChild(miniGame);
+        var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
+        if (hud == null)
+        {
+            var root = GetTree()?.Root;
+            if (root != null)
+            {
+                for (int i = 0; i < root.GetChildCount(); i++)
+                {
+                    var h = root.GetChild(i).FindChild("HUD", true, false) as CanvasLayer;
+                    if (h != null)
+                    {
+                        hud = h;
+                        break;
+                    }
+                }
+            }
+        }
+        if (hud != null)
+            hud.AddChild(miniGame);
 
         miniGame.Connect(PetScrollMiniGame.SignalName.MiniGameConcluido, Callable.From((int capturedPetId, string capturedPetNome, bool sucesso) =>
         {
+            // Consome o pergaminho (sucesso ou falha)
+            SlotInterno.Quantidade--;
+            if (SlotInterno.Quantidade <= 0)
+            {
+                SlotInterno.Item = null;
+                SlotInterno.Quantidade = 0;
+            }
+            inventario.NotificarMudancaExterna();
+
             if (sucesso && IsInstanceValid(alvo))
             {
-                var itemPet = new ItemResource
-                {
-                    ItemID = 200 + capturedPetId,
-                    Nome = capturedPetNome,
-                    Descricao = $"Pet capturado: {capturedPetNome}",
-                    Tipo = TipoEquipamento.Pet,
-                    Acumulavel = false,
-                    QuantidadeMaximaPorSlot = 1,
-                };
-                inventario.AdicionarItem(itemPet, 1);
-                inventario.NotificarMudancaExterna();
+                // Registra o pet na coleção
+                var player = GetTree().CurrentScene?.FindChild("Player", true, false);
+                var colecao = player?.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
+                if (colecao != null)
+                    colecao.RegistrarCaptura(capturedPetId, capturedPetNome);
 
                 alvo.QueueFree();
+                var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+                chat?.AddSystemMessage($"Pet '{capturedPetNome}' capturado com sucesso!");
                 GD.Print($"[PERGAMINHO] Pet {capturedPetNome} capturado!");
             }
 
@@ -346,17 +369,77 @@ public partial class SlotUI : Control
         miniGame.IniciarMiniGame(petId, petNome);
     }
 
+    private void TentarReviverAliadoComPergaminho()
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.Print("[PERGAMINHO] Sem conexão para reviver.");
+            return;
+        }
+
+        var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Node2D;
+        if (player == null) return;
+
+        var downedNodes = GetTree()?.GetNodesInGroup("PlayersDowned");
+        if (downedNodes == null || downedNodes.Count == 0)
+        {
+            GD.Print("[PERGAMINHO] Nenhum aliado caído por perto.");
+            return;
+        }
+
+        Node2D? nearest = null;
+        float nearestDist = 200f;
+        foreach (Node node in downedNodes)
+        {
+            if (node is Node2D n2d)
+            {
+                float d = player.GlobalPosition.DistanceTo(n2d.GlobalPosition);
+                if (d < nearestDist)
+                {
+                    nearestDist = d;
+                    nearest = n2d;
+                }
+            }
+        }
+
+        if (nearest == null || !nearest.HasMeta("network_id"))
+        {
+            GD.Print("[PERGAMINHO] Nenhum aliado caído válido encontrado.");
+            return;
+        }
+
+        ulong targetId = (ulong)nearest.GetMeta("network_id").AsInt64();
+        GD.Print($"[PERGAMINHO] Revivendo aliado {targetId} (dist={nearestDist:F1})");
+
+        var inventario = ObterInventario();
+        if (inventario == null) return;
+
+        // Consome o pergaminho do inventário
+        SlotInterno.Quantidade--;
+        if (SlotInterno.Quantidade <= 0)
+        {
+            SlotInterno.Item = null;
+            SlotInterno.Quantidade = 0;
+        }
+        inventario.NotificarMudancaExterna();
+
+        gameNet.SendRevivePlayer(targetId);
+    }
+
     private void RemoverBolsaParaInventario(int indexBolsa)
     {
         var inventario = ObterInventario();
         if (inventario == null) return;
+
+        if (!inventario.DesequiparBolsaNoSlot(indexBolsa))
+            return;
 
         foreach (var slot in inventario.Slots)
         {
             if (slot.Item != null) continue;
             slot.Item = SlotInterno.Item;
             slot.Quantidade = SlotInterno.Quantidade;
-            inventario.DesequiparBolsaNoSlot(indexBolsa);
             SlotInterno.Item = null;
             SlotInterno.Quantidade = 0;
             inventario.NotificarMudancaExterna();
@@ -371,12 +454,14 @@ public partial class SlotUI : Control
         var banco = ObterBanco();
         if (banco == null) return;
 
+        if (!banco.DesequiparBolsaNoSlot(indexBolsa))
+            return;
+
         foreach (var slot in banco.Slots)
         {
             if (slot.Item != null) continue;
             slot.Item = SlotInterno.Item;
             slot.Quantidade = SlotInterno.Quantidade;
-            banco.DesequiparBolsaNoSlot(indexBolsa);
             SlotInterno.Item = null;
             SlotInterno.Quantidade = 0;
             banco.NotificarMudancaExterna();
@@ -410,6 +495,38 @@ public partial class SlotUI : Control
     {
         if (data.AsGodotObject() is SkillBarSlotUI skillBarSlot)
         {
+            var item = skillBarSlot.AssignedItem;
+            if (item != null)
+            {
+                var inv = ObterInventario();
+                if (inv != null)
+                {
+                    for (int i = 0; i < inv.Slots.Count; i++)
+                    {
+                        var s = inv.Slots[i];
+                        if (s.Item != null && s.Item.ItemID == item.ItemID && s.Quantidade < item.QuantidadeMaximaPorSlot)
+                        {
+                            s.Quantidade++;
+                            skillBarSlot.Clear();
+                            inv.NotificarMudancaExterna();
+                            return;
+                        }
+                    }
+
+                    for (int i = 0; i < inv.Slots.Count; i++)
+                    {
+                        var s = inv.Slots[i];
+                        if (s.Item == null)
+                        {
+                            s.Item = item;
+                            s.Quantidade = 1;
+                            skillBarSlot.Clear();
+                            inv.NotificarMudancaExterna();
+                            return;
+                        }
+                    }
+                }
+            }
             skillBarSlot.Clear();
             return;
         }
@@ -482,15 +599,21 @@ public partial class SlotUI : Control
         {
             if (SlotInterno == null || SlotInterno.Item != null) return;
 
+            if (slotOrigem.EhSlotBolsaInventario)
+            {
+                if (!(ObterInventario()?.DesequiparBolsaNoSlot(slotOrigem.ObterIndiceBolsa()) ?? false))
+                    return;
+            }
+            else if (slotOrigem.EhSlotBolsaBanco)
+            {
+                if (!(ObterBanco()?.DesequiparBolsaNoSlot(slotOrigem.ObterIndiceBolsa()) ?? false))
+                    return;
+            }
+
             SlotInterno.Item = slotOrigem.SlotInterno.Item;
             SlotInterno.Quantidade = slotOrigem.SlotInterno.Quantidade;
             slotOrigem.SlotInterno.Item = null;
             slotOrigem.SlotInterno.Quantidade = 0;
-
-            if (slotOrigem.EhSlotBolsaInventario)
-                ObterInventario()?.DesequiparBolsaNoSlot(slotOrigem.ObterIndiceBolsa());
-            else if (slotOrigem.EhSlotBolsaBanco)
-                ObterBanco()?.DesequiparBolsaNoSlot(slotOrigem.ObterIndiceBolsa());
 
             ObterInventario()?.NotificarMudancaExterna();
             ObterBanco()?.NotificarMudancaExterna();
@@ -515,9 +638,10 @@ public partial class SlotUI : Control
 
             if (SlotInterno.Item == null)
             {
+                if (!inventario.DesequiparBolsaNoSlot(indexOrigem))
+                    return;
                 SlotInterno.Item = slotOrigem.SlotInterno.Item;
                 SlotInterno.Quantidade = slotOrigem.SlotInterno.Quantidade;
-                inventario.DesequiparBolsaNoSlot(indexOrigem);
                 slotOrigem.SlotInterno.Item = null;
                 slotOrigem.SlotInterno.Quantidade = 0;
             }
@@ -546,9 +670,10 @@ public partial class SlotUI : Control
 
             if (SlotInterno.Item == null)
             {
+                if (!banco.DesequiparBolsaNoSlot(indexOrigem))
+                    return;
                 SlotInterno.Item = slotOrigem.SlotInterno.Item;
                 SlotInterno.Quantidade = slotOrigem.SlotInterno.Quantidade;
-                banco.DesequiparBolsaNoSlot(indexOrigem);
                 slotOrigem.SlotInterno.Item = null;
                 slotOrigem.SlotInterno.Quantidade = 0;
             }

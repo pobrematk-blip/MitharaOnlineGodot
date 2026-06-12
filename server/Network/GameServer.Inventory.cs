@@ -205,14 +205,14 @@ partial class GameServer
                 toItem.Quantity = totalQty;
                 player.Items.Remove(fromItem);
                 _db.DeleteItem(session.SelectedCharacter!.Id, fromItem.DbId);
-                _db.SaveItem(session.SelectedCharacter.Id, toItem);
+                _db.SaveItem(session.SelectedCharacter!.Id, toItem);
             }
             else
             {
                 toItem.Quantity = maxStack;
                 fromItem.Quantity = totalQty - maxStack;
-                _db.SaveItem(session.SelectedCharacter.Id, toItem);
-                _db.SaveItem(session.SelectedCharacter.Id, fromItem);
+                _db.SaveItem(session.SelectedCharacter!.Id, toItem);
+                _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
             }
         }
         else
@@ -222,7 +222,7 @@ partial class GameServer
                 toItem.Slot = fromSlot;
             _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
             if (toItem != null)
-                _db.SaveItem(session.SelectedCharacter.Id, toItem);
+                _db.SaveItem(session.SelectedCharacter!.Id, toItem);
         }
 
         SendInventoryData(peer, player);
@@ -238,6 +238,8 @@ partial class GameServer
 
         int slot = reader.GetInt();
         int quantity = reader.GetInt();
+
+        if (quantity <= 0) return;
 
         var item = player.Items.FirstOrDefault(i => i.Slot == slot);
         if (item == null) return;
@@ -297,12 +299,27 @@ partial class GameServer
             bonusDes += def.Destreza;
             bonusInt += def.Inteligencia;
         }
-        player.BaseAttack = 6 + bonusAtk;
-        player.Defense = 4 + bonusDef;
-        player.Forca += bonusForca;
-        player.Agilidade += bonusAgi;
-        player.Destreza += bonusDes;
-        player.Inteligencia += bonusInt;
+        int baseAttack = player.CharacterClass.ToLowerInvariant() switch
+        {
+            "guerreiro" => 10,
+            "arqueiro" => 7,
+            "mago" => 5,
+            _ => 6,
+        };
+        int baseDefense = player.CharacterClass.ToLowerInvariant() switch
+        {
+            "guerreiro" => 8,
+            "arqueiro" => 4,
+            "mago" => 2,
+            _ => 4,
+        };
+
+        player.BaseAttack = baseAttack + bonusAtk;
+        player.Defense = baseDefense + bonusDef;
+        player.Forca = player.BaseForca + bonusForca;
+        player.Agilidade = player.BaseAgilidade + bonusAgi;
+        player.Destreza = player.BaseDestreza + bonusDes;
+        player.Inteligencia = player.BaseInteligencia + bonusInt;
         player.MaxHealth = 80 + player.Forca * 5 + player.Level * 10;
         player.MaxMana = 30 + player.Inteligencia * 5 + player.Level * 5;
     }

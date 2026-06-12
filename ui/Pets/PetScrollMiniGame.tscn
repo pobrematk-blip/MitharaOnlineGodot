@@ -54,6 +54,7 @@ horizontal_alignment = 1
 text = "Clique no momento certo!"
 
 [node name="ProgressContainer" type="HBoxContainer" parent="Panel/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 

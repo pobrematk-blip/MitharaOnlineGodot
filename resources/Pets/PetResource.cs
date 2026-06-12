@@ -25,6 +25,7 @@ public partial class PetResource : Resource
 
     [Export] public float ColetaRange { get; set; } = 150f;
     [Export] public float GuardRange { get; set; } = 200f;
+    [Export] public string AnimPrefix { get; set; } = "";
 }
 
 public enum TipoPet

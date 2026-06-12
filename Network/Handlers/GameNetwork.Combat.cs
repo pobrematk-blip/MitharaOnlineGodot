@@ -14,6 +14,19 @@ partial class GameNetwork
         });
     }
 
+    public void SendRespawn()
+    {
+        _client?.SendPacket(PacketId.C2S_Respawn, static w => { });
+    }
+
+    public void SendRevivePlayer(ulong targetId)
+    {
+        _client?.SendPacket(PacketId.C2S_RevivePlayer, w =>
+        {
+            w.Put(targetId);
+        });
+    }
+
     public void SendLootPickup(ulong lootId)
     {
         _client?.SendPacket(PacketId.C2S_LootPickup, w =>
@@ -53,6 +66,16 @@ partial class GameNetwork
         ulong entityId = r.GetULong();
         int newLevel = r.GetInt();
         EmitSignal(SignalName.OnLevelUp, entityId, newLevel);
+    }
+
+    private void HandleRespawn(NetDataReader r)
+    {
+        ulong entityId = r.GetULong();
+        float x = r.GetFloat();
+        float y = r.GetFloat();
+        int health = r.GetInt();
+        int maxHealth = r.GetInt();
+        EmitSignal(SignalName.OnRespawn, entityId, x, y, health, maxHealth);
     }
 
     private void HandleLootSpawn(NetDataReader r)

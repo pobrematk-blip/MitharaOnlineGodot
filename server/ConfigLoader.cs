@@ -17,7 +17,7 @@ public static class ConfigLoader
             }
             catch
             {
-                Console.WriteLine("[CONFIG] Falha ao ler config, usando padrão.");
+                Logger.Info("Falha ao ler config, usando padrão.");
             }
         }
         var config = new ServerConfig();

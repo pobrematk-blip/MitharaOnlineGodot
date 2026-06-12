@@ -197,14 +197,19 @@ partial class GameServer
                 if (parts.Length < 2)
                 { SendSystemMessage(peer, "Use: /summon <prefabId> (ex: slime, goblin, wolf, skeleton, boss_demon)"); return; }
                 var prefab = parts[1].ToLowerInvariant();
-                var template = channel.Spawner?.GetTemplate(prefab);
+                if (channel.Spawner == null)
+                { SendSystemMessage(peer, "Spawner não disponível neste canal."); return; }
+                var template = channel.Spawner.GetTemplate(prefab);
                 if (template == null)
                 { SendSystemMessage(peer, $"Prefab '{prefab}' não encontrado."); return; }
                 var offsetX = (float)(Random.Shared.NextDouble() - 0.5) * 80f;
                 var offsetY = (float)(Random.Shared.NextDouble() - 0.5) * 80f;
                 var mob = channel.Spawner.CriarMonstroEm(template, sender.X + offsetX, sender.Y + offsetY);
-                channel.AddEntity(mob);
-                SendSystemMessage(peer, $"{template.Name} invocado em ({mob.X:F0}, {mob.Y:F0}).");
+                if (mob != null)
+                {
+                    channel.AddEntity(mob);
+                    SendSystemMessage(peer, $"{template.Name} invocado em ({mob.X:F0}, {mob.Y:F0}).");
+                }
                 break;
 
             case "/item":

@@ -70,7 +70,7 @@ public partial class GuildUI : Control
         new("drop", "Fortuna", "Drop rate +{0}% para todos", 5, 5, "%"),
     };
 
-    public bool IsVisible => _panel != null && _panel.Visible;
+    public bool EstaAberto => _panel != null && _panel.Visible;
 
     public override void _Ready()
     {

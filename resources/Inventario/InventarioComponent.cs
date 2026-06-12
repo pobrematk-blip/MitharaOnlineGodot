@@ -100,15 +100,38 @@ public partial class InventarioComponent : Node
     }
 
     // Desequipar a bolsa de um slot específico (0 a 5) quando arrastada para fora
-    public void DesequiparBolsaNoSlot(int indexBolsa)
+    // Retorna true se conseguiu remover, false se os slots extras ainda têm itens
+    public bool DesequiparBolsaNoSlot(int indexBolsa)
     {
-        if (indexBolsa < 0 || indexBolsa >= SlotsDasBolsasEquipadas.Count) return;
+        if (indexBolsa < 0 || indexBolsa >= SlotsDasBolsasEquipadas.Count) return false;
+
+        var bolsa = SlotsDasBolsasEquipadas[indexBolsa]?.Item;
+        if (bolsa == null) return false;
+
+        int slotsDaBolsa = bolsa.SlotsAdicionais;
+        int novoLimite = Slots.Count - slotsDaBolsa;
+        for (int i = novoLimite; i < Slots.Count; i++)
+        {
+            if (Slots[i].Item != null)
+            {
+                NotificarSistema($"Não é possível remover a bolsa: slot extra contém '{Slots[i].Item.Nome}'. Esvazie-o primeiro.");
+                return false;
+            }
+        }
 
         SlotsDasBolsasEquipadas[indexBolsa].Item = null;
         SlotsDasBolsasEquipadas[indexBolsa].Quantidade = 0;
 
         RecalcularTamanhoDoInventario(false);
         GD.Print($"[INVENTÁRIO] Bolsa do slot {indexBolsa} removida da lógica! Capacidade recalculada.");
+        return true;
+    }
+
+    private void NotificarSistema(string message)
+    {
+        var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+        chat?.AddSystemMessage(message);
+        GD.Print($"[SISTEMA] {message}");
     }
 
     // Permite forçar o redesenho manual da interface no momento exato desejado

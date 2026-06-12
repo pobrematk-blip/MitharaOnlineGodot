@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://ressureicao"]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Bau surpresa.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1")
+Icone = ExtResource("2_icon")
+ItemID = 101
+Nome = "Pergaminho de Ressureicao"
+Descricao = "Um pergaminho sagrado capaz de trazer um aliado de volta a vida."
+Acumulavel = true
+QuantidadeMaximaPorSlot = 99
+EhBolsa = false
+SlotsAdicionais = 10
+Tipo = 17
+NivelRequerido = 1
+Valor = 500
+Forca = 0
+Agilidade = 0
+Destreza = 0
+Inteligencia = 0
+DanoFisico = 0
+DanoMagico = 0
+DefesaFisica = 0
+DefesaMagica = 0

@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_tkuvv")
-ItemID = 20
+ItemID = 120
 Nome = "Capacete de Ferro"
 QuantidadeMaximaPorSlot = 1
 SlotsAdicionais = 0

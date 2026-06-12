@@ -8,6 +8,210 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private bool HandleMonsterAIAttack(Channel channel, MonsterEntity mob, Entity target, double gameTime)
+    {
+        int targetDefense = target switch
+        {
+            PlayerEntity p => p.CalculateDefense(),
+            MonsterEntity m => m.CalculateDefense(),
+            _ => 0,
+        };
+        bool isCrit = Random.Shared.Next(100) < mob.Destreza;
+        int damage = Math.Max(1, mob.CalculateAttackDamage() - targetDefense);
+        if (isCrit) damage = (int)(damage * 1.5f);
+
+        target.Health -= damage;
+        if (target.Health < 0) target.Health = 0;
+
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
+        writer.Put(mob.Id);
+        writer.Put(target.Id);
+        writer.Put(damage);
+        writer.Put(isCrit);
+        writer.Put(target.Health);
+        writer.Put(target.MaxHealth);
+
+        var aoi = channel.GetEntitiesInAoi(mob.X, mob.Y);
+        foreach (var eid in aoi)
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p != null)
+            {
+                p.Send(writer, DeliveryMethod.ReliableOrdered);
+                writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
+                writer.Put(mob.Id);
+                writer.Put(target.Id);
+                writer.Put(damage);
+                writer.Put(isCrit);
+                writer.Put(target.Health);
+                writer.Put(target.MaxHealth);
+            }
+        }
+
+        if (target.Health <= 0 && target is PlayerEntity player)
+        {
+            var session = _sessions.Values.FirstOrDefault(s => s.EntityId == target.Id);
+            if (session != null)
+                SendSystemMessage(session.Peer, "Você morreu!");
+        }
+
+        return target.Health <= 0;
+    }
+
+    private void HandleRespawn(NetPeer peer)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel == null) return;
+        var player = channel.GetEntity(session.EntityId) as PlayerEntity;
+        if (player == null || player.Health > 0) return;
+
+        player.Health = player.MaxHealth;
+
+        var character = session.SelectedCharacter;
+        float spawnX = character?.PosX ?? 1000f;
+        float spawnY = character?.PosY ?? 1000f;
+
+        float oldX = player.X;
+        float oldY = player.Y;
+        channel.MoveEntity(player.Id, spawnX, spawnY);
+
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
+        writer.Put(player.Id);
+        writer.Put(spawnX);
+        writer.Put(spawnY);
+        writer.Put(player.Health);
+        writer.Put(player.MaxHealth);
+
+        var aoi = channel.GetEntitiesInAoi(spawnX, spawnY);
+        aoi.UnionWith(channel.GetEntitiesInAoi(oldX, oldY));
+        foreach (var eid in aoi)
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p != null)
+            {
+                p.Send(writer, DeliveryMethod.ReliableOrdered);
+                writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
+                writer.Put(player.Id);
+                writer.Put(spawnX);
+                writer.Put(spawnY);
+                writer.Put(player.Health);
+                writer.Put(player.MaxHealth);
+            }
+        }
+    }
+
+    private void HandleRevivePlayer(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel == null) return;
+        var healer = channel.GetEntity(session.EntityId) as PlayerEntity;
+        if (healer == null || healer.Health <= 0) return;
+
+        ulong targetId = reader.GetULong();
+        var target = channel.GetEntity(targetId) as PlayerEntity;
+        if (target == null || target.Health > 0) return;
+
+        float dx = healer.X - target.X;
+        float dy = healer.Y - target.Y;
+        if (MathF.Sqrt(dx * dx + dy * dy) > 80f) return;
+
+        var scroll = healer.Items.FirstOrDefault(i => i.ItemId == 101 && i.Quantity > 0);
+        if (scroll == null)
+        {
+            SendSystemMessage(peer, "Voce precisa de um Pergaminho de Ressureicao para reviver alguem!");
+            return;
+        }
+
+        scroll.Quantity--;
+        if (scroll.Quantity <= 0)
+        {
+            healer.Items.Remove(scroll);
+            var character = session.SelectedCharacter;
+            if (character != null)
+                _db.DeleteItem(character.Id, scroll.DbId);
+        }
+        else
+        {
+            var character = session.SelectedCharacter;
+            if (character != null)
+                _db.SaveItem(character.Id, scroll);
+        }
+
+        var wItemUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
+        wItemUpdate.Put(scroll.Slot);
+        wItemUpdate.Put(scroll.Quantity > 0 ? scroll.ItemId : 0);
+        wItemUpdate.Put(scroll.Quantity > 0 ? scroll.Quantity : 0);
+        peer.Send(wItemUpdate, DeliveryMethod.ReliableOrdered);
+
+        target.Health = target.MaxHealth;
+
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
+        writer.Put(target.Id);
+        writer.Put(target.X);
+        writer.Put(target.Y);
+        writer.Put(target.Health);
+        writer.Put(target.MaxHealth);
+
+        var aoi = channel.GetEntitiesInAoi(target.X, target.Y);
+        foreach (var eid in aoi)
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p != null)
+            {
+                p.Send(writer, DeliveryMethod.ReliableOrdered);
+                writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
+                writer.Put(target.Id);
+                writer.Put(target.X);
+                writer.Put(target.Y);
+                writer.Put(target.Health);
+                writer.Put(target.MaxHealth);
+            }
+        }
+    }
+
+    private void HandleSkillUse(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel == null) return;
+        var entity = channel.GetEntity(session.EntityId);
+        if (entity == null || entity.Health <= 0) return;
+
+        int skillSlot = reader.GetInt();
+        float targetX = reader.GetFloat();
+        float targetY = reader.GetFloat();
+
+        // For now, just validate and broadcast the skill use
+        // Full skill system implementation would look up skill data,
+        // validate cooldowns, mana costs, apply effects, etc.
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
+        writer.Put(session.EntityId);
+        writer.Put(0uL);
+        writer.Put(0);
+        writer.Put(false);
+        writer.Put(entity.Health);
+        writer.Put(entity.MaxHealth);
+
+        var aoi = channel.GetEntitiesInAoi(entity.X, entity.Y);
+        foreach (var eid in aoi)
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p != null)
+            {
+                p.Send(writer, DeliveryMethod.ReliableOrdered);
+                writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
+                writer.Put(session.EntityId);
+                writer.Put(0uL);
+                writer.Put(0);
+                writer.Put(false);
+                writer.Put(entity.Health);
+                writer.Put(entity.MaxHealth);
+            }
+        }
+    }
+
     private void HandleAttack(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
@@ -26,7 +230,7 @@ partial class GameServer
         float dx = target.X - attacker.X;
         float dy = target.Y - attacker.Y;
         float dist = MathF.Sqrt(dx * dx + dy * dy);
-        float attackRange = 50f;
+        float attackRange = 800f;
 
         if (dist > attackRange) return;
 
@@ -260,6 +464,7 @@ partial class GameServer
             if (existingItem != null)
             {
                 existingItem.Quantity += loot.Quantity;
+                _db.SaveItem(character.Id, existingItem);
                 var wUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
                 wUpdate.Put(existingItem.Slot);
                 wUpdate.Put(existingItem.ItemId);

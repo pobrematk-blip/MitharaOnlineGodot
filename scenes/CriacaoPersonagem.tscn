@@ -394,6 +394,16 @@ z_index = 4
 position = Vector2(640, 130)
 scale = Vector2(3, 3)
 
+[node name="BtnCancelar" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 160.0
+offset_bottom = 44.0
+theme_override_font_sizes/font_size = 14
+text = "← Cancelar"
+
 [node name="DicaClique" type="Label" parent="."]
 unique_name_in_owner = true
 visible = false

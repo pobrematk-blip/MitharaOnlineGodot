@@ -22,7 +22,7 @@ script = ExtResource("1_7x2o8")
 custom_minimum_size = Vector2(560, 480)
 layout_mode = 0
 offset_right = 560.0
-offset_bottom = 480.0
+offset_bottom = 510.0
 
 [node name="TitleBar" type="Panel" parent="Panel"]
 layout_mode = 0

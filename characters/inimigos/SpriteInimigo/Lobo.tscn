@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" uid="uid://bbrfqwprqqnh" path="res://characters/Inimigos/Inimigo.cs" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectShape"]
+size = Vector2(30, 48)
+
+[node name="Lobo" type="CharacterBody2D"]
+y_sort_enabled = true
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_script")
+MobType = "lobo"
+AnimPrefix = "lobo_"
+NomeDoInimigo = "Lobo"
+VidaMaxima = 80
+Velocidade = 120.0
+DistanciaAtaque = 50.0
+DanoDoAtaque = 10
+TempoEntreAtaques = 1.0
+ExperienciaDropada = 25
+EhAgressivo = true
+RaioPatrulha = 120.0
+RaioDetectarPlayer = 250.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(2, 2)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 5)
+shape = SubResource("RectShape")

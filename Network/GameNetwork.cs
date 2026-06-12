@@ -10,13 +10,36 @@ public partial class GameNetwork : Node
 
     private NetClient? _client;
     private readonly Dictionary<ulong, Node2D> _entities = new();
+    private static string? _logPath;
 
-    public int AccountId { get; private set; }
-    public bool LoggedIn { get; private set; }
+    private bool _enterWorldPending;
+
+    public static void Log(string msg)
+    {
+        try
+        {
+            _logPath ??= Godot.ProjectSettings.GlobalizePath("user://client.log");
+            var line = $"[{System.DateTime.Now:HH:mm:ss}] {msg}";
+            GD.Print(line);
+            System.IO.File.AppendAllText(_logPath, line + System.Environment.NewLine);
+        }
+        catch { }
+    }
+
+    public static void LogError(string msg, string? detail = null)
+    {
+        Log($"[ERRO] {msg}");
+        if (detail != null)
+            Log($"  -> {detail}");
+    }
+
+    public int AccountId { get; set; }
+    public bool LoggedIn { get; set; }
     public List<CharacterEntry> Characters { get; } = new();
     public ulong LocalPlayerId { get; private set; }
     public int LocalChannelId { get; private set; }
     public int Gold { get; set; }
+    public Vector2 PendingPlayerSpawn { get; private set; }
 
     [Signal] public delegate void OnConnectedEventHandler();
     [Signal] public delegate void OnDisconnectedEventHandler();
@@ -46,6 +69,8 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnGuildRankUpdateEventHandler(ulong entityId, int newRank);
     [Signal] public delegate void OnGuildSkillUpdateEventHandler(string skillId, int newLevel);
 
+    [Signal] public delegate void OnEntityHealthUpdateEventHandler(ulong entityId, int health, int maxHealth);
+    [Signal] public delegate void OnRespawnEventHandler(ulong entityId, float x, float y, int health, int maxHealth);
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
@@ -87,6 +112,59 @@ public partial class GameNetwork : Node
             CallDeferred(nameof(ConnectToServer));
     }
 
+    public override void _Process(double delta)
+    {
+        if (!_enterWorldPending) return;
+
+        _enterWorldPending = false;
+        try
+        {
+            Log("_Process: ChangeSceneToFile...");
+            var err = GetTree().ChangeSceneToFile(SceneConstants.MAIN);
+            if (err != Error.Ok)
+            {
+                LogError($"_Process: ChangeSceneToFile retornou erro {err}");
+                return;
+            }
+            Log("_Process: ChangeSceneToFile concluido!");
+
+            // Ativar HUD - busca robusta
+            var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
+            if (hud == null)
+            {
+                var root = GetTree()?.Root;
+                if (root != null)
+                {
+                    for (int i = 0; i < root.GetChildCount(); i++)
+                    {
+                        var h = root.GetChild(i).FindChild("HUD", true, false) as CanvasLayer;
+                        if (h != null)
+                        {
+                            hud = h;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (hud != null)
+            {
+                hud.Visible = true;
+                Log("HUD ativado de GameNetwork._Process");
+            }
+            else
+            {
+                Log("HUD nao encontrado");
+            }
+
+            EmitSignal(SignalName.OnEnterWorld);
+        }
+        catch (System.Exception ex)
+        {
+            LogError("_Process: ChangeSceneToFile falhou", ex.ToString());
+        }
+    }
+
     public void ConnectToServer(string host = "127.0.0.1", int port = 7777)
     {
         _client?.ConnectToServer(host, port);
@@ -99,7 +177,7 @@ public partial class GameNetwork : Node
 
     private void OnPacket(PacketId id, NetDataReader r)
     {
-        switch (id)
+        try { switch (id)
         {
             case PacketId.S2C_LoginResult:
                 HandleLoginResult(r);
@@ -155,8 +233,14 @@ public partial class GameNetwork : Node
             case PacketId.S2C_LevelUp:
                 HandleLevelUp(r);
                 break;
+            case PacketId.S2C_Respawn:
+                HandleRespawn(r);
+                break;
             case PacketId.S2C_RecoverResult:
                 HandleRecoverResult(r);
+                break;
+            case PacketId.S2C_CharacterDeleted:
+                HandleCharacterDeleted(r);
                 break;
             case PacketId.S2C_PartyData:
                 HandlePartyData(r);
@@ -206,6 +290,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_GoldUpdate:
                 HandleGoldUpdate(r);
                 break;
+        } } catch (System.Exception ex)
+        {
+            LogError($"Erro processando pacote {id}", ex.ToString());
         }
     }
 
@@ -250,6 +337,9 @@ public partial class GameNetwork : Node
             if (inv != null && ItemDB != null)
             {
                 inv.AplicarDadosServidor(PendingInventoryData, ItemDB);
+                var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
+                if (save != null)
+                    save.CarregarInventario(inv.Slots, ItemDB);
                 GD.Print("[GAME] Pending inventory applied");
             }
         }

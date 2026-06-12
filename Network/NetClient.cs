@@ -29,6 +29,7 @@ public partial class NetClient : Node
             IPv6Enabled = false,
             UpdateTime = 15,
             UnsyncedEvents = true,
+            DisconnectTimeout = 120000,
         };
         _netManager.Start();
 
@@ -86,7 +87,13 @@ public partial class NetClient : Node
         _netManager?.PollEvents();
 
         while (_pendingActions.TryDequeue(out var action))
-            action();
+        {
+            try { action(); }
+            catch (System.Exception ex)
+            {
+                GD.PrintErr($"[NetClient] Erro em pending action: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
     }
 
     public override void _ExitTree()

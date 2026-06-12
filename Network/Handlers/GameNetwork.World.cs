@@ -17,9 +17,23 @@ partial class GameNetwork
         });
     }
 
-    public void SendPlayerStop()
+    public void SendPlayerStop(Vector2 position)
     {
-        _client?.SendPacketUnreliable(PacketId.C2S_PlayerStop, w => { });
+        _client?.SendPacketUnreliable(PacketId.C2S_PlayerStop, w =>
+        {
+            w.Put(position.X);
+            w.Put(position.Y);
+        });
+    }
+
+    public void SendSkillUse(int skillSlot, Vector2 targetPosition)
+    {
+        _client?.SendPacket(PacketId.C2S_SkillUse, w =>
+        {
+            w.Put(skillSlot);
+            w.Put(targetPosition.X);
+            w.Put(targetPosition.Y);
+        });
     }
 
     public void SendChannelSwitch(int channelId)
@@ -27,6 +41,26 @@ partial class GameNetwork
         _client?.SendPacket(PacketId.C2S_ChannelSwitch, w =>
         {
             w.Put(channelId);
+        });
+    }
+
+    public void SendMobDropConfig(string[] prefabIds, int[][] itemIds, double[][] chances, int[][] minQtys, int[][] maxQtys)
+    {
+        _client?.SendPacket(PacketId.C2S_MobDropConfig, w =>
+        {
+            w.Put(prefabIds.Length);
+            for (int m = 0; m < prefabIds.Length; m++)
+            {
+                w.Put(prefabIds[m]);
+                w.Put(itemIds[m].Length);
+                for (int d = 0; d < itemIds[m].Length; d++)
+                {
+                    w.Put(itemIds[m][d]);
+                    w.Put(chances[m][d]);
+                    w.Put(minQtys[m][d]);
+                    w.Put(maxQtys[m][d]);
+                }
+            }
         });
     }
 
@@ -59,7 +93,8 @@ partial class GameNetwork
                 typeLabel = entityType == 2 ? "boss" : "monster";
                 bool isBoss = r.GetBool();
                 int expReward = r.GetInt();
-                extra1 = name; // Use name as the lookup key for monster scenes
+                extra1 = r.GetString(); // PrefabId for scene selection
+                extra2 = name; // Keep original name
                 break;
             case 3:
                 typeLabel = "npc";
@@ -92,15 +127,13 @@ partial class GameNetwork
         float dirY = r.GetFloat();
         bool moving = r.GetBool();
 
-        if (_entities.TryGetValue(entityId, out var node))
-        {
-            node.Position = new Vector2(x, y);
-            EntityManager.UpdateRemoteAnimation(node, new Vector2(dirX, dirY), moving);
-        }
+        var em = GetNodeOrNull<EntityManager>("EntityManager");
+        em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving);
     }
 
     private void HandleEntityUpdate(NetDataReader r)
     {
+        var em = GetNodeOrNull<EntityManager>("EntityManager");
         int count = r.GetInt();
         for (int i = 0; i < count; i++)
         {
@@ -118,11 +151,8 @@ partial class GameNetwork
             string name = r.GetString();
             string factionId = r.GetString();
 
-            if (_entities.TryGetValue(entityId, out var node))
-            {
-                node.Position = new Vector2(x, y);
-                EntityManager.UpdateRemoteAnimation(node, new Vector2(dirX, dirY), moving);
-            }
+            em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving);
+            EmitSignal(SignalName.OnEntityHealthUpdate, entityId, health, maxHealth);
         }
     }
 

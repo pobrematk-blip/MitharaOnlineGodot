@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿#nullable enable
+using Godot;
 using System.Collections.Generic;
 
 public partial class SelecaoPersonagem : Control
@@ -24,10 +25,14 @@ public partial class SelecaoPersonagem : Control
 
     private readonly List<CharacterCard> _cards = new();
     private int? _slotSelecionado;
+    private GameNetwork? _net;
+    private ClasseRegistry? _registry;
 
     private class CharacterCard
     {
         public int SlotIndex;
+        public string Nome;
+        public int Nivel;
         public PanelContainer Panel;
         public Label NomeLabel;
         public Label ClasseLabel;
@@ -57,6 +62,10 @@ public partial class SelecaoPersonagem : Control
         _previewEmblema = GetNode<TextureRect>("%PreviewEmblema");
         _areaSprite = GetNode<Control>("%AreaSprite");
 
+        _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        _registry = GetNodeOrNull<ClasseRegistry>("/root/ClasseRegistry");
+        _registry?.RecarregarTudo();
+
         _btnJogar.Pressed += OnJogar;
         _btnCriarNovo.Pressed += OnCriarNovo;
         _btnLoja.Pressed += OnAbrirLoja;
@@ -82,15 +91,70 @@ public partial class SelecaoPersonagem : Control
         _cards.Clear();
         _slotSelecionado = null;
 
-        var escolhido = GetNode<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        var save = GetNode<SaveManager>("/root/SaveManager");
+        bool online = _net != null && _net.IsConnected && _net.Characters.Count > 0;
 
-        int ocupados = 0;
+        if (online)
+            PopulatarDeDadosServidor(_net!.Characters);
+        else
+            PopulatarDeSlotsLocais();
+
+        var save = GetNode<SaveManager>("/root/SaveManager");
+        int total = save.SlotsDisponiveis;
+        _vazio.Visible = _cards.Count == 0;
+        _btnJogar.Disabled = true;
+        _btnExcluir.Disabled = true;
+        _btnCriarNovo.Disabled = _cards.Count >= total;
+        _btnCriarNovo.Text = _cards.Count >= total
+            ? "Slots cheios"
+            : "Criar novo personagem";
+        _subTitulo.Text = _cards.Count == 0
+            ? "Nenhum personagem"
+            : $"Selecione seu personagem ({_cards.Count}/{total})";
+
+        EsconderPreview();
+    }
+
+    private void PopulatarDeDadosServidor(List<CharacterEntry> characters)
+    {
+        foreach (var ch in characters)
+        {
+            string classePath = $"res://Classes/{ch.Class}.tres";
+            string racaFile = ch.Race.Replace(" ", "");
+            string racaPath = $"res://Racas/{racaFile}.tres";
+
+            var classe = ResourceLoader.Load<ClasseCustomResource>(classePath);
+            if (classe == null) continue;
+
+            string racaTexto = "?";
+            string faccaoTexto = "";
+            Color faccaoCor = new Color(0.7f, 0.75f, 0.85f);
+
+            if (ResourceLoader.Exists(racaPath))
+            {
+                var raca = ResourceLoader.Load<RacaResource>(racaPath);
+                if (raca != null)
+                {
+                    racaTexto = raca.NomeRaca;
+                    if (raca.Faccao != null)
+                    {
+                        faccaoTexto = raca.Faccao.NomeFaccao;
+                        faccaoCor = raca.Faccao.CorTema;
+                    }
+                }
+            }
+
+            var card = CriarCard(ch.SlotIndex, ch.Name, classe.NomeClasse, ch.Level, racaTexto, faccaoTexto, faccaoCor, classePath, racaPath);
+            _cards.Add(card);
+        }
+    }
+
+    private void PopulatarDeSlotsLocais()
+    {
+        var save = GetNode<SaveManager>("/root/SaveManager");
 
         for (int i = 0; i < save.SlotsDisponiveis; i++)
         {
             if (!save.SlotOcupado(i)) continue;
-            ocupados++;
 
             var cfg = new ConfigFile();
             if (cfg.Load(save.SlotPath(i)) != Error.Ok) continue;
@@ -124,20 +188,6 @@ public partial class SelecaoPersonagem : Control
             var card = CriarCard(i, nome, classe.NomeClasse, nivel, racaTexto, faccaoTexto, faccaoCor, pathClasse, pathRaca);
             _cards.Add(card);
         }
-
-        _vazio.Visible = ocupados == 0;
-        _btnJogar.Disabled = true;
-        _btnExcluir.Disabled = true;
-        _btnCriarNovo.Disabled = ocupados >= save.SlotsDisponiveis;
-        _btnCriarNovo.Text = ocupados >= save.SlotsDisponiveis
-            ? "Slots cheios"
-            : "Criar novo personagem";
-
-        _subTitulo.Text = ocupados == 0
-            ? "Nenhum personagem"
-            : $"Selecione seu personagem ({ocupados}/{save.SlotsDisponiveis})";
-
-        EsconderPreview();
     }
 
     private CharacterCard CriarCard(int slotIndex, string nome, string classe, int nivel, string raca, string faccao, Color corFaccao, string classePath, string racaPath)
@@ -202,6 +252,8 @@ public partial class SelecaoPersonagem : Control
         var card = new CharacterCard
         {
             SlotIndex = slotIndex,
+            Nome = nome,
+            Nivel = nivel,
             Panel = panel,
             NomeLabel = nomeLabel,
             ClasseLabel = classeLabel,
@@ -252,12 +304,24 @@ public partial class SelecaoPersonagem : Control
         _personagemPreview.Visible = true;
         _previewInfo.Visible = true;
 
-        var cfg = new ConfigFile();
-        var save = GetNode<SaveManager>("/root/SaveManager");
-        if (cfg.Load(save.SlotPath(card.SlotIndex)) != Error.Ok) return;
+        bool online = _net != null && _net.IsConnected && _net.Characters.Count > 0;
 
-        string nome = cfg.GetValue("personagem", "nome", "?").AsString();
-        int nivel = cfg.GetValue("progressao", "nivel", 1).AsInt32();
+        string nome;
+        int nivel;
+        if (online)
+        {
+            nome = card.Nome;
+            nivel = card.Nivel;
+        }
+        else
+        {
+            var cfg = new ConfigFile();
+            var save = GetNode<SaveManager>("/root/SaveManager");
+            if (cfg.Load(save.SlotPath(card.SlotIndex)) != Error.Ok) return;
+
+            nome = cfg.GetValue("personagem", "nome", "?").AsString();
+            nivel = cfg.GetValue("progressao", "nivel", 1).AsInt32();
+        }
 
         var classe = ResourceLoader.Load<ClasseCustomResource>(card.ClassePath);
         var raca = ResourceLoader.Load<RacaResource>(card.RacaPath);
@@ -334,13 +398,43 @@ public partial class SelecaoPersonagem : Control
         if (_slotSelecionado == null) return;
 
         var escolhido = GetNode<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        if (escolhido.CarregarSlot(_slotSelecionado.Value))
+
+        if (_net != null && _net.IsConnected)
+        {
+            var card = _cards.Find(c => c.SlotIndex == _slotSelecionado.Value);
+            if (card == null) { GD.PrintErr("[SELECAO] Card nao encontrado para slot " + _slotSelecionado); return; }
+
+            GD.Print($"[SELECAO] OnJogar: slot={card.SlotIndex} nome={card.Nome} classePath={card.ClassePath} racaPath={card.RacaPath}");
+
+            var classe = ResourceLoader.Load<ClasseCustomResource>(card.ClassePath);
+            var raca = ResourceLoader.Load<RacaResource>(card.RacaPath);
+            if (classe == null) { GD.PrintErr($"[SELECAO] Falha ao carregar classe: {card.ClassePath}"); return; }
+            if (raca == null) { GD.PrintErr($"[SELECAO] Falha ao carregar raca: {card.RacaPath}"); return; }
+
+            escolhido.ClasseBase = classe;
+            escolhido.Raca = raca;
+            escolhido.NomePersonagem = card.Nome;
+            escolhido.SlotAtivo = card.SlotIndex;
+            escolhido.ResetarProgressaoSalva();
+
+            _net.SendSelectCharacter(card.SlotIndex);
+            _net.SendEnterWorld(
+                card.Nome,
+                classe.NomeClasse,
+                raca.NomeRaca,
+                230f, 300f
+            );
+        }
+        else
+        {
+            if (!escolhido.CarregarSlot(_slotSelecionado.Value)) return;
             GetTree().ChangeSceneToFile(SceneConstants.MAIN);
+        }
     }
 
     private void OnCriarNovo()
     {
-        GetTree().ChangeSceneToFile(SceneConstants.INTRO_HISTORIA);
+        GetTree().ChangeSceneToFile(SceneConstants.CRIACAO_PERSONAGEM);
     }
 
     private void OnAbrirLoja()
@@ -363,10 +457,25 @@ public partial class SelecaoPersonagem : Control
     {
         if (_slotSelecionado == null) return;
 
-        var save = GetNode<SaveManager>("/root/SaveManager");
-        save.DeletarSlot(_slotSelecionado.Value);
-        _slotSelecionado = null;
+        if (_net != null && _net.IsConnected)
+        {
+            _net.SendDeleteCharacter(_slotSelecionado.Value);
+            _net.OnCharacterList += OnCharacterListRefreshed;
+            _slotSelecionado = null;
+        }
+        else
+        {
+            var save = GetNode<SaveManager>("/root/SaveManager");
+            save.DeletarSlot(_slotSelecionado.Value);
+            _slotSelecionado = null;
+            PopulatarLista();
+        }
+    }
 
+    private void OnCharacterListRefreshed(Godot.Collections.Array<Godot.Collections.Dictionary> characters)
+    {
+        if (GodotObject.IsInstanceValid(_net))
+            _net.OnCharacterList -= OnCharacterListRefreshed;
         PopulatarLista();
     }
 }

@@ -7,6 +7,9 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private const float MaxPlayerSpeed = 333f;
+    private const float MaxPlayerSpeedSq = MaxPlayerSpeed * MaxPlayerSpeed;
+
     private void HandlePlayerMove(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
@@ -21,9 +24,25 @@ partial class GameServer
         var entity = channel.GetEntity(session.EntityId);
         if (entity == null) return;
 
+        float dx = targetX - entity.X;
+        float dy = targetY - entity.Y;
+        float distSq = dx * dx + dy * dy;
+
+        float dt = MathF.Max((float)(_gameTime - entity.LastMoveTime), 0.001f);
+        float maxDistSq = MaxPlayerSpeedSq * dt * dt;
+
+        if (distSq > maxDistSq * 1.5f && distSq > 100f)
+        {
+            float scale = MathF.Sqrt(maxDistSq / distSq);
+            targetX = entity.X + dx * scale;
+            targetY = entity.Y + dy * scale;
+            Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {MaxPlayerSpeed})");
+        }
+
         entity.Moving = true;
         entity.DirX = dirX;
         entity.DirY = dirY;
+        entity.LastMoveTime = _gameTime;
         channel.MoveEntity(session.EntityId, targetX, targetY);
 
         var aoi = channel.GetEntitiesInAoi(targetX, targetY);
@@ -33,6 +52,7 @@ partial class GameServer
         writer.Put(targetY);
         writer.Put(dirX);
         writer.Put(dirY);
+        writer.Put(entity.Moving);
 
         foreach (var eid in aoi)
         {
@@ -48,15 +68,15 @@ partial class GameServer
         var channel = _world.GetChannel(session.ChannelId);
         if (channel == null) return;
 
-        float posX = reader.GetFloat();
-        float posY = reader.GetFloat();
-
         var entity = channel.GetEntity(session.EntityId);
         if (entity == null) return;
 
         entity.Moving = false;
-        entity.X = posX;
-        entity.Y = posY;
+        if (reader.AvailableBytes >= 8)
+        {
+            entity.X = reader.GetFloat();
+            entity.Y = reader.GetFloat();
+        }
     }
 
     private void HandleChannelSwitch(NetPeer peer, NetDataReader reader)

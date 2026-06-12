@@ -83,15 +83,38 @@ public partial class BancoComponent : Node
         RecalcularTamanhoDoBanco(false);
     }
 
-    public void DesequiparBolsaNoSlot(int indexBolsa)
+    // Retorna true se conseguiu remover, false se os slots extras ainda têm itens
+    public bool DesequiparBolsaNoSlot(int indexBolsa)
     {
-        if (indexBolsa < 0 || indexBolsa >= SlotsDasBolsasEquipadas.Count) return;
+        if (indexBolsa < 0 || indexBolsa >= SlotsDasBolsasEquipadas.Count) return false;
+
+        var bolsa = SlotsDasBolsasEquipadas[indexBolsa]?.Item;
+        if (bolsa == null) return false;
+
+        int slotsDaBolsa = bolsa.SlotsAdicionais;
+        int novoLimite = Slots.Count - slotsDaBolsa;
+        for (int i = novoLimite; i < Slots.Count; i++)
+        {
+            if (Slots[i].Item != null)
+            {
+                NotificarSistema($"Não é possível remover a bolsa: slot extra contém '{Slots[i].Item.Nome}'. Esvazie-o primeiro.");
+                return false;
+            }
+        }
 
         SlotsDasBolsasEquipadas[indexBolsa].Item = null;
         SlotsDasBolsasEquipadas[indexBolsa].Quantidade = 0;
 
         RecalcularTamanhoDoBanco(false);
         GD.Print($"[BANCO] Bolsa removida do slot {indexBolsa}. Capacidade recalculada.");
+        return true;
+    }
+
+    private void NotificarSistema(string message)
+    {
+        var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+        chat?.AddSystemMessage(message);
+        GD.Print($"[SISTEMA] {message}");
     }
 
     public void NotificarMudancaExterna()

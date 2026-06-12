@@ -16,6 +16,7 @@ public enum ChatChannel : byte
     Whisper = 1,
     Group = 2,
     Guild = 3,
+    System = 4,
 }
 
 public partial class GameServer : INetEventListener
@@ -25,10 +26,13 @@ public partial class GameServer : INetEventListener
     internal readonly WorldManager _world;
     internal readonly DatabaseManager _db;
     internal readonly Dictionary<NetPeer, PlayerSession> _sessions = new();
+    internal readonly Dictionary<int, NetPeer> _activeAccounts = new();
     internal readonly ConcurrentQueue<Action> _mainThreadActions = new();
     internal readonly Dictionary<ulong, ulong> _partyInvites = new();
     internal readonly Dictionary<ulong, ulong> _guildInvites = new();
     internal readonly QuestManager _questManager = new();
+    internal readonly Dictionary<string, int> _loginAttempts = new();
+    internal readonly Dictionary<string, double> _loginCooldowns = new();
 
     internal volatile bool _running;
     internal double _gameTime;
@@ -45,6 +49,7 @@ public partial class GameServer : INetEventListener
             IPv6Enabled = false,
             UnsyncedEvents = true,
             UpdateTime = 15,
+            DisconnectTimeout = 120000,
         };
         _world = new WorldManager(config.ChannelCount);
     }
@@ -55,13 +60,16 @@ public partial class GameServer : INetEventListener
         _running = true;
 
         foreach (var ch in _world.GetAllChannels())
+        {
             ch.EntitySpawned += OnChannelEntitySpawned;
+            ch.OnMonsterAttack += HandleMonsterAIAttack;
+        }
 
         LoadGuildsFromDb();
 
-        Console.WriteLine($"[SERVER] Iniciado na porta {_config.Port}");
-        Console.WriteLine($"[SERVER] Canais: {_config.ChannelCount}");
-        Console.WriteLine($"[SERVER] Tick rate: {_config.TickRate} Hz");
+        Logger.Info($"Iniciado na porta {_config.Port}");
+        Logger.Info($"Canais: {_config.ChannelCount}");
+        Logger.Info($"Tick rate: {_config.TickRate} Hz");
     }
 
     private void LoadGuildsFromDb()
@@ -85,14 +93,14 @@ public partial class GameServer : INetEventListener
                 _world.Guilds.LoadSkill(guildId, skillId, level);
             }
         );
-        Console.WriteLine("[SERVER] Guildas carregadas do banco.");
+        Logger.Info("Guildas carregadas do banco.");
     }
 
     public void Stop()
     {
         _running = false;
         _netManager.Stop();
-        Console.WriteLine("[SERVER] Parado.");
+        Logger.Info("Servidor parado.");
     }
 
     public void PollEvents()
@@ -114,51 +122,65 @@ public partial class GameServer : INetEventListener
 
     void INetEventListener.OnPeerConnected(NetPeer peer)
     {
-        Console.WriteLine($"[SERVER] Conexão: {peer.Address}:{peer.Port}");
-        _sessions[peer] = new PlayerSession { Peer = peer };
+        Logger.Info($"Conexão: {peer.Address}:{peer.Port}");
+        var session = new PlayerSession { Peer = peer };
+        _mainThreadActions.Enqueue(() => _sessions[peer] = session);
     }
 
     void INetEventListener.OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
     {
-        Console.WriteLine($"[SERVER] Desconexão: {peer.Address}:{peer.Port} motivo={disconnectInfo.Reason}");
+        Logger.Info($"Desconexão: {peer.Address}:{peer.Port} motivo={disconnectInfo.Reason}");
+        _mainThreadActions.Enqueue(() => HandleDisconnectCleanup(peer));
+    }
 
-        if (_sessions.Remove(peer, out var session))
+    private void HandleDisconnectCleanup(NetPeer peer)
+    {
+        try
         {
-            if (session.EntityId > 0 && session.ChannelId >= 0)
+            if (_sessions.Remove(peer, out var session))
             {
-                foreach (var ch in _world.GetAllChannels())
+                if (session.AccountId > 0)
+                    _activeAccounts.Remove(session.AccountId);
+                if (session.EntityId > 0 && session.ChannelId >= 0)
                 {
-                    var entity = ch.GetEntity(session.EntityId);
-                    if (entity is PlayerEntity player)
+                    foreach (var ch in _world.GetAllChannels())
                     {
-                        if (player.PartyId >= 0)
-                            _world.Parties.RemoveMember(session.EntityId);
-                        if (player.GuildId >= 0)
+                        var entity = ch.GetEntity(session.EntityId);
+                        if (entity is PlayerEntity player)
                         {
-                            int gid = player.GuildId;
-                            _world.Guilds.RemoveMember(session.EntityId);
-                            var remaining = _world.Guilds.GetGuild(gid);
-                            if (remaining == null)
-                                _db.DeleteGuild(gid);
-                            else
-                                _db.DeleteGuildMember(gid, session.EntityId);
+                            if (player.PartyId >= 0)
+                                _world.Parties.RemoveMember(session.EntityId);
+                            if (player.GuildId >= 0)
+                            {
+                                int gid = player.GuildId;
+                                _world.Guilds.RemoveMember(session.EntityId);
+                                var remaining = _world.Guilds.GetGuild(gid);
+                                if (remaining == null)
+                                    _db.DeleteGuild(gid);
+                                else
+                                    _db.DeleteGuildMember(gid, session.EntityId);
+                            }
                         }
                     }
-                }
 
-                _world.RemoveFromChannel(session.ChannelId, session.EntityId);
-                var channel = _world.GetChannel(session.ChannelId);
-                if (channel != null)
-                    BroadcastDespawn(channel, session.EntityId);
+                    _world.RemoveFromChannel(session.ChannelId, session.EntityId);
+                    var channel = _world.GetChannel(session.ChannelId);
+                    if (channel != null)
+                        BroadcastDespawn(channel, session.EntityId);
+                }
+                _partyInvites.Remove(session.EntityId);
+                _guildInvites.Remove(session.EntityId);
             }
-            _partyInvites.Remove(session.EntityId);
-            _guildInvites.Remove(session.EntityId);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error("HandleDisconnectCleanup", ex);
         }
     }
 
     void INetEventListener.OnNetworkError(System.Net.IPEndPoint endPoint, SocketError socketError)
     {
-        Console.WriteLine($"[SERVER] Erro de rede [{endPoint}]: {socketError}");
+        Logger.Info($"Erro de rede [{endPoint}]: {socketError}");
     }
 
     void INetEventListener.OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber, DeliveryMethod deliveryMethod)
@@ -184,10 +206,12 @@ public partial class GameServer : INetEventListener
 
     private void HandlePacket(NetPeer peer, PacketId packetId, byte[] data)
     {
-        var reader = new NetDataReader(data);
-
-        switch (packetId)
+        try
         {
+            var reader = new NetDataReader(data);
+
+            switch (packetId)
+            {
             case PacketId.C2S_Register:
                 HandleRegister(peer, reader);
                 break;
@@ -236,11 +260,23 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_Attack:
                 HandleAttack(peer, reader);
                 break;
+            case PacketId.C2S_SkillUse:
+                HandleSkillUse(peer, reader);
+                break;
+            case PacketId.C2S_Respawn:
+                HandleRespawn(peer);
+                break;
+            case PacketId.C2S_RevivePlayer:
+                HandleRevivePlayer(peer, reader);
+                break;
             case PacketId.C2S_GetSecurityQuestion:
                 HandleGetSecurityQuestion(peer, reader);
                 break;
             case PacketId.C2S_RecoverPassword:
                 HandleRecoverPassword(peer, reader);
+                break;
+            case PacketId.C2S_DeleteCharacter:
+                HandleDeleteCharacter(peer, reader);
                 break;
             case PacketId.C2S_PartyInvite:
                 HandlePartyInvitePacket(peer, reader);
@@ -311,6 +347,48 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_BankRequest:
                 HandleBankRequest(peer, reader);
                 break;
+            case PacketId.C2S_MobDropConfig:
+                HandleMobDropConfig(peer, reader);
+                break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"HandlePacket ({packetId})", ex);
+        }
+    }
+
+    private void HandleMobDropConfig(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+
+        int mobCount = reader.GetInt();
+        if (mobCount <= 0 || mobCount > 100) return;
+
+        var dropsByPrefab = new Dictionary<string, List<LootEntry>>();
+        for (int i = 0; i < mobCount; i++)
+        {
+            string prefabId = reader.GetString();
+            int dropCount = reader.GetInt();
+            var drops = new List<LootEntry>(dropCount);
+            for (int j = 0; j < dropCount; j++)
+            {
+                drops.Add(new LootEntry
+                {
+                    ItemId = reader.GetInt(),
+                    DropChance = reader.GetDouble(),
+                    MinQuantity = reader.GetInt(),
+                    MaxQuantity = reader.GetInt(),
+                });
+            }
+            dropsByPrefab[prefabId] = drops;
+        }
+
+        foreach (var channel in _world.GetAllChannels())
+        {
+            var spawner = channel.Spawner;
+            foreach (var kv in dropsByPrefab)
+                spawner.UpdateDropTable(kv.Key, kv.Value);
         }
     }
 }

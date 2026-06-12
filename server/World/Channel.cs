@@ -6,6 +6,8 @@ namespace Mithara.Server.World;
 
 public class Channel
 {
+    // Callback for monster attacks: (channel, monster, target, gameTime) -> true if target died
+    public Func<Channel, MonsterEntity, Entity, double, bool>? OnMonsterAttack;
     public int Id { get; }
     public string Name { get; }
 
@@ -19,6 +21,7 @@ public class Channel
     private readonly Dictionary<string, List<ulong>> _spawnedByPrefab = new();
     private readonly List<LootEntity> _lootItems = new();
     private ulong _nextEntityId = 1;
+    private bool _initialSpawned = false;
 
     public const float AoiRadius = 600f;
 
@@ -155,7 +158,7 @@ public class Channel
 
     private void UpdateMonsterAI(float dt, double gameTime)
     {
-        foreach (var kv in _entities)
+        foreach (var kv in _entities.ToList())
         {
             if (kv.Value is not MonsterEntity mob) continue;
             if (mob.Health <= 0) continue;
@@ -174,9 +177,18 @@ public class Channel
 
                 if (dist <= mob.AttackRange)
                 {
+                    mob.Moving = false;
+                    if (dist > 0.001f)
+                    {
+                        mob.DirX = dx / dist;
+                        mob.DirY = dy / dist;
+                    }
                     if (gameTime - mob.LastAttackTime >= mob.AttackCooldown)
                     {
-                        mob.TargetEntityId = null;
+                        mob.LastAttackTime = gameTime;
+                        bool targetDied = OnMonsterAttack?.Invoke(this, mob, target, gameTime) ?? false;
+                        if (targetDied)
+                            mob.TargetEntityId = null;
                     }
                 }
                 else
@@ -185,6 +197,9 @@ public class Channel
                     float ratio = Math.Min(moveDist / dist, 1f);
                     mob.X += dx * ratio;
                     mob.Y += dy * ratio;
+                    mob.DirX = dx / dist;
+                    mob.DirY = dy / dist;
+                    mob.Moving = true;
                     _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
                 }
             }
@@ -213,6 +228,48 @@ public class Channel
                 if (closestPlayer.HasValue)
                 {
                     mob.TargetEntityId = closestPlayer;
+                    mob.PatrolTargetX = null;
+                    mob.PatrolTargetY = null;
+                }
+                else
+                {
+                    // Patrol behavior when no player is nearby
+                    if (mob.PatrolTargetX.HasValue && mob.PatrolTargetY.HasValue)
+                    {
+                        float dx = mob.PatrolTargetX.Value - mob.X;
+                        float dy = mob.PatrolTargetY.Value - mob.Y;
+                        float dist = MathF.Sqrt(dx * dx + dy * dy);
+
+                        if (dist < 10f)
+                        {
+                            mob.PatrolTargetX = null;
+                            mob.PatrolTargetY = null;
+                            mob.PatrolTimer = gameTime + 3.0;
+                            mob.Moving = false;
+                        }
+                        else
+                        {
+                            float moveDist = mob.Speed * dt * 0.5f;
+                            float ratio = Math.Min(moveDist / dist, 1f);
+                            mob.X += dx * ratio;
+                            mob.Y += dy * ratio;
+                            mob.DirX = dx / dist;
+                            mob.DirY = dy / dist;
+                            mob.Moving = true;
+                            _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                        }
+                    }
+                    else if (gameTime >= mob.PatrolTimer)
+                    {
+                        float angle = Random.Shared.NextSingle() * MathF.PI * 2;
+                        float dist = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
+                        mob.PatrolTargetX = mob.SpawnX + MathF.Cos(angle) * dist;
+                        mob.PatrolTargetY = mob.SpawnY + MathF.Sin(angle) * dist;
+                    }
+                    else
+                    {
+                        mob.Moving = false;
+                    }
                 }
             }
         }
@@ -220,6 +277,21 @@ public class Channel
 
     private void UpdateSpawner(double gameTime)
     {
+        if (!_initialSpawned)
+        {
+            _initialSpawned = true;
+            foreach (var point in _spawner.GetSpawnPoints())
+            {
+                int current = CountMonstersByPrefab(point.PrefabId);
+                while (current < point.MaxCount)
+                {
+                    TrySpawnMonster(point, gameTime);
+                    current++;
+                }
+            }
+            return;
+        }
+
         for (int i = _pendingRespawns.Count - 1; i >= 0; i--)
         {
             var (point, respawnAt) = _pendingRespawns[i];
@@ -227,15 +299,6 @@ public class Channel
             {
                 TrySpawnMonster(point, gameTime);
                 _pendingRespawns.RemoveAt(i);
-            }
-        }
-
-        foreach (var point in _spawner.GetSpawnPoints())
-        {
-            int current = CountMonstersByPrefab(point.PrefabId);
-            if (current < point.MaxCount)
-            {
-                TrySpawnMonster(point, gameTime);
             }
         }
     }

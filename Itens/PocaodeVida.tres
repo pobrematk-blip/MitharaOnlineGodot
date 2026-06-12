@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_2yy6f")
-ItemID = 1
+ItemID = 1001
 Nome = "Pocao de Vida"
 Acumulavel = true
 SlotsAdicionais = 0

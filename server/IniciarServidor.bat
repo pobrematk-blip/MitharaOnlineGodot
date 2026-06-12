@@ -1,4 +1,4 @@
 @echo off
-pushd "%~dp0publish"
-Mithara.Server.exe
+cd /d "%~dp0"
+dotnet run --project "Mithara.Server.csproj"
 pause

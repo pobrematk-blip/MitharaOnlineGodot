@@ -4,6 +4,7 @@ public partial class SkillBarSlotUI : Panel
 {
     private TextureRect _icon;
     private Label _keyLabel;
+    private string _keyName;
     private SkillResource _assignedSkill;
     private ItemResource _assignedItem;
     private SkillBarUI _owner;
@@ -17,6 +18,7 @@ public partial class SkillBarSlotUI : Panel
 
     public void Initialize(string keyName, SkillBarUI owner)
     {
+        _keyName = keyName;
         _owner = owner;
         CustomMinimumSize = new Vector2(42, 42);
         AddThemeStyleboxOverride("panel", new StyleBoxFlat
@@ -92,7 +94,7 @@ public partial class SkillBarSlotUI : Panel
         else
         {
             _icon.Texture = null;
-            _keyLabel.Text = string.Empty;
+            _keyLabel.Text = _keyName ?? string.Empty;
             TooltipText = string.Empty;
         }
     }
@@ -128,6 +130,15 @@ public partial class SkillBarSlotUI : Panel
             if (item != null && item.Tipo == TipoEquipamento.Consumivel)
             {
                 _owner.AssignItem(Row, Col, item);
+                slot.SlotInterno.Quantidade--;
+                if (slot.SlotInterno.Quantidade <= 0)
+                {
+                    slot.SlotInterno.Item = null;
+                    slot.SlotInterno.Quantidade = 0;
+                }
+                var inv = slot.GetTree()?.CurrentScene?.FindChild("Player", true, false)
+                    ?.FindChild("InventarioComponent", true, false) as InventarioComponent;
+                inv?.NotificarMudancaExterna();
             }
         }
     }

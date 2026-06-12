@@ -1,11 +1,11 @@
-﻿using Godot;
+using Godot;
 using System;
 
 public partial class SpawnerInimigo : Timer
 {
     [Export] public PackedScene CenaDoInim;
     [Export] public int MaxEnemies = 5;
-    [Export] public int MaxTotalSpawns = 0; // 0 = infinito
+    [Export] public int MaxTotalSpawns = 0;
     [Export] public bool Pausado { get; set; } = true;
 
     private CharacterBody2D _player;
@@ -14,11 +14,19 @@ public partial class SpawnerInimigo : Timer
 
     public override void _Ready()
     {
-        GD.Print("=========================================");
+        GD.Print("========================================");
         GD.Print("[SISTEMA CRÍTICO] SPAWNER ACORDOU NA MEMÓRIA!");
-        GD.Print("=========================================");
+        GD.Print("========================================");
 
-        // Conecta o sinal nativo do Timer por código
+        var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (network != null && network.IsConnected)
+        {
+            Pausado = true;
+            Stop();
+            GD.Print("[SPAWNER] Servidor detectado! Spawner local desativado.");
+            return;
+        }
+
         Timeout += _OnTimeout;
 
         WaitTime = 3.0f;
@@ -45,14 +53,12 @@ public partial class SpawnerInimigo : Timer
 
     public override void _Process(double delta)
     {
-        // Mantemos desativado por padrão
     }
 
     public void _OnTimeout()
     {
         if (Pausado) return;
 
-        // Limite de spawn total
         if (MaxTotalSpawns > 0 && _totalSpawned >= MaxTotalSpawns)
         {
             Pausado = true;
@@ -67,14 +73,13 @@ public partial class SpawnerInimigo : Timer
             return;
         }
 
-        // Tenta remapear o Player caso ele tenha nascido atrasado
         if (_player == null)
         {
             if (GetTree()?.CurrentScene != null)
             {
                 _player = GetTree().CurrentScene.FindChild("Player", true, false) as CharacterBody2D;
             }
-            
+
             if (_player == null)
             {
                 GD.PrintErr("[SPAWNER] ERRO: Player não encontrado! Abortando ciclo.");
@@ -82,7 +87,6 @@ public partial class SpawnerInimigo : Timer
             }
         }
 
-        // ======== CONTAR INIMIGOS VIVOS (CHECK RIGOROSO) ========
         int inimigosVivos = 0;
         try
         {
@@ -96,14 +100,12 @@ public partial class SpawnerInimigo : Timer
 
         GD.Print($"[SPAWNER] TICK - Total de inimigos vivos: {inimigosVivos}/{MaxEnemies}");
 
-        // ======== VERIFICAÇÃO RIGOROSA: TRAVA NO LIMITE ========
         if (inimigosVivos >= MaxEnemies)
         {
-            GD.Print($"[SPAWNER] ✘ LIMITE JÁ ATINGIDO ({inimigosVivos}/{MaxEnemies}). MANTENDO APENAS OS 5.");
+            GD.Print($"[SPAWNER] ✘ LIMITE JÁ ATINGIDO ({inimigosVivos}/{MaxEnemies}). MANTENDO APENAS OS {MaxEnemies}.");
             return; 
         }
 
-        // ======== SPAWNAR 1 INIMIGO ========
         GD.Print($"[SPAWNER] ✓ Spawnando novo inimigo (Faltam {MaxEnemies - inimigosVivos} para o máximo)");
         SpawnarUmInimigo();
     }
@@ -112,7 +114,6 @@ public partial class SpawnerInimigo : Timer
     {
         try
         {
-            // Double check de segurança antes de instanciar
             int verificacaoFinal = 0;
             try
             {
@@ -141,16 +142,49 @@ public partial class SpawnerInimigo : Timer
                 return;
             }
 
-            // MELHORIA DE POSIÇÃO: Sorteia posições em X e Y ao redor do player
-            // POSICIONAR ANTES DO AddChild para que Inimigo._Ready() já veja a posição correta
-            float offsetX = (float)GD.RandRange(130, 200) * (GD.Randf() > 0.5f ? 1 : -1);
-            float offsetY = (float)GD.RandRange(130, 200) * (GD.Randf() > 0.5f ? 1 : -1);
-            novoInimigo.GlobalPosition = _player.GlobalPosition + new Vector2(offsetX, offsetY);
+            const int MAX_TENTATIVAS = 8;
+            const float DISTANCIA_MINIMA = 100f;
+            Vector2 posicaoFinal = Vector2.Zero;
+            bool posicaoValida = false;
 
-            // Adiciona à cena (o próprio Inimigo._Ready() se encarrega de AddToGroup)
+            var inimigosExistentes = GetTree()?.GetNodesInGroup("Inimigos");
+
+            for (int tentativa = 0; tentativa < MAX_TENTATIVAS; tentativa++)
+            {
+                float offsetX = (float)GD.RandRange(130, 280) * (GD.Randf() > 0.5f ? 1 : -1);
+                float offsetY = (float)GD.RandRange(130, 280) * (GD.Randf() > 0.5f ? 1 : -1);
+                posicaoFinal = _player.GlobalPosition + new Vector2(offsetX, offsetY);
+
+                if (inimigosExistentes == null || inimigosExistentes.Count == 0)
+                {
+                    posicaoValida = true;
+                    break;
+                }
+
+                bool muitoPerto = false;
+                foreach (Node e in inimigosExistentes)
+                {
+                    if (e is Node2D e2d && e != novoInimigo)
+                    {
+                        if (e2d.GlobalPosition.DistanceTo(posicaoFinal) < DISTANCIA_MINIMA)
+                        {
+                            muitoPerto = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!muitoPerto)
+                {
+                    posicaoValida = true;
+                    break;
+                }
+            }
+
+            novoInimigo.GlobalPosition = posicaoValida ? posicaoFinal : _player.GlobalPosition + new Vector2(300, 300);
+
             parent.AddChild(novoInimigo);
 
-            // Avisa o inimigo da posição final de spawn (para patrulha correta)
             if (novoInimigo is Inimigo inimigo)
                 inimigo.DefinirPosicaoInicial(novoInimigo.GlobalPosition);
             

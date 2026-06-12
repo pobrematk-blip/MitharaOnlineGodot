@@ -18,7 +18,7 @@ public partial class FriendsUI : Control
     private const string FriendsPath = "user://amigos.cfg";
     private const string SectionFriends = "Amigos";
 
-    public bool IsVisible => _panel != null && _panel.Visible;
+    public bool EstaAberto => _panel != null && _panel.Visible;
 
     private struct FriendData
     {

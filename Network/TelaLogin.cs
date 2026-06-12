@@ -408,6 +408,17 @@ public partial class TelaLogin : CanvasLayer
         cfg.Save(CredentialsPath);
     }
 
+    private static void ResetarLoginState(GameNetwork net)
+    {
+        if (net.LoggedIn)
+        {
+            GD.Print("[TELA LOGIN] Resetando estado de login anterior.");
+            net.LoggedIn = false;
+            net.AccountId = 0;
+            net.Characters.Clear();
+        }
+    }
+
     private void ConectarSinais()
     {
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -418,93 +429,16 @@ public partial class TelaLogin : CanvasLayer
             return;
         }
 
+        ResetarLoginState(net);
+
         AtualizarStatusConexao(net.IsConnected);
 
-        if (net.IsConnected && net.LoggedIn)
-        {
-            OnLoginSuccess();
-            return;
-        }
-
-        net.OnConnected += () =>
-        {
-            _status!.Text = "Conectado ao servidor.";
-            _regStatus!.Text = "Conectado ao servidor.";
-            _recStatus!.Text = "Conectado ao servidor.";
-            AtualizarStatusConexao(true);
-        };
-
-        net.OnLoginResult += (success, message) =>
-        {
-            if (success)
-            {
-                _status!.Text = "Login OK!";
-                SalvarCredenciais();
-                OnLoginSuccess();
-            }
-            else
-            {
-                _status!.Text = $"Erro: {message}";
-                _loginBtn!.Disabled = false;
-            }
-        };
-
-        net.OnRegisterResult += (success, message) =>
-        {
-            if (success)
-            {
-                _regStatus!.Text = "Conta criada! Faça login.";
-                _regStatus.AddThemeColorOverride("font_color", Colors.Green);
-                _registerBtn!.Disabled = false;
-            }
-            else
-            {
-                _regStatus!.Text = $"Erro: {message}";
-                _regStatus.AddThemeColorOverride("font_color", Colors.Red);
-                _registerBtn!.Disabled = false;
-            }
-        };
-
-        net.OnSecurityQuestion += (found, questionOrError) =>
-        {
-            if (found)
-            {
-                _recPerguntaLabel!.Text = questionOrError;
-                _recPerguntaLabel.AddThemeColorOverride("font_color", Colors.White);
-                _recStatus!.Text = "";
-            }
-            else
-            {
-                _recPerguntaLabel!.Text = "";
-                _recStatus!.Text = $"Erro: {questionOrError}";
-                _recStatus.AddThemeColorOverride("font_color", Colors.Red);
-            }
-        };
-
-        net.OnRecoverResult += (success, message) =>
-        {
-            if (success)
-            {
-                _recStatus!.Text = message;
-                _recStatus.AddThemeColorOverride("font_color", Colors.Green);
-                _recEnviarBtn!.Disabled = false;
-            }
-            else
-            {
-                _recStatus!.Text = $"Erro: {message}";
-                _recStatus.AddThemeColorOverride("font_color", Colors.Red);
-                _recEnviarBtn!.Disabled = false;
-            }
-        };
-
-        net.OnDisconnected += () =>
-        {
-            _status!.Text = "Desconectado do servidor.";
-            _loginBtn!.Disabled = false;
-            _regStatus!.Text = "Desconectado do servidor.";
-            _registerBtn!.Disabled = false;
-            AtualizarStatusConexao(false);
-        };
+        net.OnConnected += OnConnectedHandler;
+        net.OnLoginResult += OnLoginResultHandler;
+        net.OnRegisterResult += OnRegisterResultHandler;
+        net.OnSecurityQuestion += OnSecurityQuestionHandler;
+        net.OnRecoverResult += OnRecoverResultHandler;
+        net.OnDisconnected += OnDisconnectedHandler;
 
         if (!net.IsConnected)
         {
@@ -556,7 +490,20 @@ public partial class TelaLogin : CanvasLayer
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)
+        {
             net.SendLogin(_username.Text.Trim(), _password.Text);
+            
+            // Timeout de 10 segundos para re-habilitar o botão se não receber resposta
+            var timer = GetTree().CreateTimer(10.0f);
+            timer.Timeout += () =>
+            {
+                if (_loginBtn != null && _loginBtn.Disabled)
+                {
+                    _loginBtn.Disabled = false;
+                    _status.Text = "Timeout: Tente novamente.";
+                }
+            };
+        }
         else
         {
             _status.Text = "Não conectado ao servidor.";
@@ -591,7 +538,20 @@ public partial class TelaLogin : CanvasLayer
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)
+        {
             net.SendRegister(user, pass);
+            
+            // Timeout de 10 segundos para re-habilitar o botão
+            var timer = GetTree().CreateTimer(10.0f);
+            timer.Timeout += () =>
+            {
+                if (_registerBtn != null && _registerBtn.Disabled)
+                {
+                    _registerBtn.Disabled = false;
+                    _regStatus.Text = "Timeout: Tente novamente.";
+                }
+            };
+        }
         else
         {
             _regStatus.Text = "Não conectado ao servidor.";
@@ -636,6 +596,100 @@ public partial class TelaLogin : CanvasLayer
         {
             _recStatus.Text = "Não conectado ao servidor.";
             _recEnviarBtn.Disabled = false;
+        }
+    }
+
+    private void OnConnectedHandler()
+    {
+        _status!.Text = "Conectado ao servidor.";
+        _regStatus!.Text = "Conectado ao servidor.";
+        _recStatus!.Text = "Conectado ao servidor.";
+        AtualizarStatusConexao(true);
+    }
+
+    private void OnLoginResultHandler(bool success, string message)
+    {
+        if (success)
+        {
+            _status!.Text = "Login OK!";
+            SalvarCredenciais();
+            OnLoginSuccess();
+        }
+        else
+        {
+            _status!.Text = $"Erro: {message}";
+            _loginBtn!.Disabled = false;
+        }
+    }
+
+    private void OnRegisterResultHandler(bool success, string message)
+    {
+        if (success)
+        {
+            _regStatus!.Text = "Conta criada! Faça login.";
+            _regStatus.AddThemeColorOverride("font_color", Colors.Green);
+            _registerBtn!.Disabled = false;
+        }
+        else
+        {
+            _regStatus!.Text = $"Erro: {message}";
+            _regStatus.AddThemeColorOverride("font_color", Colors.Red);
+            _registerBtn!.Disabled = false;
+        }
+    }
+
+    private void OnSecurityQuestionHandler(bool found, string questionOrError)
+    {
+        if (found)
+        {
+            _recPerguntaLabel!.Text = questionOrError;
+            _recPerguntaLabel.AddThemeColorOverride("font_color", Colors.White);
+            _recStatus!.Text = "";
+        }
+        else
+        {
+            _recPerguntaLabel!.Text = "";
+            _recStatus!.Text = $"Erro: {questionOrError}";
+            _recStatus.AddThemeColorOverride("font_color", Colors.Red);
+        }
+    }
+
+    private void OnRecoverResultHandler(bool success, string message)
+    {
+        if (success)
+        {
+            _recStatus!.Text = message;
+            _recStatus.AddThemeColorOverride("font_color", Colors.Green);
+            _recEnviarBtn!.Disabled = false;
+        }
+        else
+        {
+            _recStatus!.Text = $"Erro: {message}";
+            _recStatus.AddThemeColorOverride("font_color", Colors.Red);
+            _recEnviarBtn!.Disabled = false;
+        }
+    }
+
+    private void OnDisconnectedHandler()
+    {
+        _status!.Text = "Desconectado do servidor.";
+        _loginBtn!.Disabled = false;
+        _regStatus!.Text = "Desconectado do servidor.";
+        _registerBtn!.Disabled = false;
+        AtualizarStatusConexao(false);
+    }
+
+    public override void _ExitTree()
+    {
+        GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+        {
+            net.OnConnected -= OnConnectedHandler;
+            net.OnDisconnected -= OnDisconnectedHandler;
+            net.OnLoginResult -= OnLoginResultHandler;
+            net.OnRegisterResult -= OnRegisterResultHandler;
+            net.OnSecurityQuestion -= OnSecurityQuestionHandler;
+            net.OnRecoverResult -= OnRecoverResultHandler;
         }
     }
 

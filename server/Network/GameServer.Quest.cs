@@ -88,8 +88,8 @@ partial class GameServer
             writer.Put(hasProgress);
             if (hasProgress)
             {
-                writer.Put(pq.Progress.Count);
-                foreach (var p in pq.Progress)
+                writer.Put(pq!.Progress.Count);
+                foreach (var p in pq!.Progress)
                     writer.Put(p);
                 writer.Put(pq.Completed);
                 writer.Put(pq.Claimed);

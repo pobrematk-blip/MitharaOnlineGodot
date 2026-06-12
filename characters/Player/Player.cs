@@ -24,13 +24,19 @@ public partial class Player : CharacterBody2D
     private AnimatedSprite2D _capaceteOverlay;
     private AnimatedSprite2D _luvasOverlay;
     private AnimatedSprite2D _botasOverlay;
-    protected string CurrentDirection = "down";
+    public string CurrentDirection { get; protected set; } = "down";
     protected bool IsAttacking = false;
     private float _attackTimeoutCounter = 0f;
     private float _maxAttackDuration = 0.8f;
     private bool _wasFPressed = false;
     private bool _projetilDisparado = false;
     private Sprite2D _shadowSprite;
+
+    private GameNetwork _network;
+    private float _moveSendTimer;
+    private Vector2 _lastSentPosition;
+    private bool _wasMoving;
+    private bool _isLyingDown;
 
     [Export] public int MaxStamina = 100;
     public int CurrentStamina { get; private set; }
@@ -54,6 +60,16 @@ public partial class Player : CharacterBody2D
         return false;
     }
 
+    public void SetHealthFromServer(int health, int maxHealth)
+    {
+        bool wasAlive = !IsDead;
+        MaxHealth = maxHealth;
+        CurrentHealth = Mathf.Clamp(health, 0, maxHealth);
+        if (CurrentHealth <= 0 && wasAlive)
+            Morrer();
+        EmitSignal(SignalName.StatusAtualizado);
+    }
+
     public void Heal(int amount)
     {
         if (amount <= 0) return;
@@ -69,13 +85,7 @@ public partial class Player : CharacterBody2D
 
     public void DoDash(int power)
     {
-        Vector2 impulse = CurrentDirection switch
-        {
-            "up" => Vector2.Up,
-            "left" => Vector2.Left,
-            "right" => Vector2.Right,
-            _ => Vector2.Down
-        };
+        Vector2 impulse = DirectionUtil.DirectionToVector(CurrentDirection);
         Velocity += impulse * power;
         GD.Print($"[PLAYER] Dash aplicado: power={power}");
     }
@@ -169,6 +179,17 @@ public partial class Player : CharacterBody2D
             AddChild(skillComp);
             skillComp.Owner = this;
         }
+
+        _network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (_network != null)
+            _network.OnRespawn += OnRespawnReceived;
+        _lastSentPosition = GlobalPosition;
+    }
+
+    private void OnRespawnReceived(ulong entityId, float x, float y, int health, int maxHealth)
+    {
+        if (entityId == _network?.LocalPlayerId)
+            Reviver(x, y, health, maxHealth);
     }
 
     public virtual void InitClass() { }
@@ -253,7 +274,14 @@ public partial class Player : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
     {
-        if (_isStunned) return;        if (_isSleeping || _isPrisoned || _isFrozen)
+        if (_isStunned) return;
+        if (_isLyingDown)
+        {
+            Velocity = Vector2.Zero;
+            MoveAndSlide();
+            return;
+        }
+        if (_isSleeping || _isPrisoned || _isFrozen)
         {
             Velocity = Vector2.Zero;
             MoveAndSlide();
@@ -327,6 +355,8 @@ public partial class Player : CharacterBody2D
         if (Input.IsKeyPressed(Key.F) && !_wasFPressed)
         {
             _wasFPressed = true;
+            GD.Print($"[PLAYER] F pressionado, lyingDown={_isLyingDown}");
+            if (_isLyingDown) return;
             if (!TryInteractNpc())
                 TryPickupLoot();
         }
@@ -348,6 +378,8 @@ public partial class Player : CharacterBody2D
         Vector2 velocity = Velocity;
 
         float effectiveMax = MaxSpeed * _speedMultiplier;
+        if (IsAttacking)
+            effectiveMax *= 0.15f;
         if (IsSprinting)
             effectiveMax *= 1.8f;
         if (_isFeared)
@@ -421,6 +453,33 @@ public partial class Player : CharacterBody2D
 
         UpdateAnimation(velocity);
         SincronizarOverlays();
+
+        // Enviar movimento para o servidor
+        if (_network != null && _network.IsConnected)
+        {
+            bool isMoving = velocity.LengthSquared() > 0.01f;
+            Vector2 pos = GlobalPosition;
+            Vector2 dir = velocity.Normalized();
+
+            _moveSendTimer += (float)delta;
+
+            if (isMoving)
+            {
+                if (_moveSendTimer >= 0.1f || pos.DistanceSquaredTo(_lastSentPosition) > 400f)
+                {
+                    _network.SendPlayerMove(pos, dir, true);
+                    _lastSentPosition = pos;
+                    _moveSendTimer = 0f;
+                }
+                _wasMoving = true;
+            }
+            else if (_wasMoving)
+            {
+                _network.SendPlayerStop(pos);
+                _wasMoving = false;
+                _moveSendTimer = 0f;
+            }
+        }
     }
 
     private void SincronizarOverlays()
@@ -555,25 +614,24 @@ public partial class Player : CharacterBody2D
 
         if (velocity.Length() > 10.0f)
         {
-            if (Mathf.Abs(velocity.X) > Mathf.Abs(velocity.Y))
-                CurrentDirection = velocity.X > 0 ? "right" : "left";
-            else
-                CurrentDirection = velocity.Y > 0 ? "down" : "up";
+            CurrentDirection = DirectionUtil.VectorToDirectionString(velocity);
+            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
 
             if (IsSprinting)
             {
-                AnimatedSprite.Play($"run_{CurrentDirection}");
-                AnimatedSprite.SpeedScale = velocity.Length() / (MaxSpeed * 1.8f);
+                AnimatedSprite.Play($"run_{cardinal}");
+                AnimatedSprite.SpeedScale = (velocity.Length() / (MaxSpeed * 1.8f)) * 1.5f;
             }
             else
             {
-                AnimatedSprite.Play($"walk_{CurrentDirection}");
-                AnimatedSprite.SpeedScale = velocity.Length() / MaxSpeed;
+                AnimatedSprite.Play($"walk_{cardinal}");
+                AnimatedSprite.SpeedScale = (velocity.Length() / MaxSpeed) * 1.5f;
             }
         }
         else
         {
-            AnimatedSprite.Play($"idle_{CurrentDirection}");
+            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+            AnimatedSprite.Play($"idle_{cardinal}");
             AnimatedSprite.SpeedScale = 1.0f; 
         }
     }
@@ -584,7 +642,13 @@ public partial class Player : CharacterBody2D
 
         string animacaoDeAtaque = $"{NomeDaClasse}_attack_{CurrentDirection}";
 
-        // SEGURANÇA: Só ataca se a animação customizada existir no seu AnimatedSprite
+        // Fallback para animação cardinal se a 8-dir não existir
+        if (AnimatedSprite.SpriteFrames != null && !AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
+        {
+            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+            animacaoDeAtaque = $"{NomeDaClasse}_attack_{cardinal}";
+        }
+
         if (AnimatedSprite.SpriteFrames != null && AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
         {
             IsAttacking = true;
@@ -593,32 +657,30 @@ public partial class Player : CharacterBody2D
             AnimatedSprite.SpeedScale = 2.0f;
             SincronizarOverlays();
             GD.Print($"[PLAYER] Iniciando ataque: '{animacaoDeAtaque}'");
-
-            if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase))
-            {
-                if (ProjetilScene != null)
-                    DispararProjetil();
-                else
-                    GD.PrintErr("[PLAYER] Erro: ProjetilScene não configurada para ataque à distância!");
-            }
-            else if (string.Equals(NomeDaClasse, "arqueiro", StringComparison.OrdinalIgnoreCase))
-            {
-                if (ProjetilScene != null)
-                    _projetilDisparado = false; // disparo no meio da animação
-                else
-                    GD.PrintErr("[PLAYER] Erro: ProjetilScene não configurada para ataque à distância!");
-            }
-            else
-            {
-                ExecutarAtaqueMelee();
-            }
         }
         else
         {
-            GD.PrintErr($"[PLAYER] Erro: Crie a animação '{animacaoDeAtaque}' no seu AnimatedSprite!");
-            
-            // Força a liberação do estado de ataque caso a animação falte, pro player não travar
-            IsAttacking = false; 
+            GD.Print($"[PLAYER] Animação '{animacaoDeAtaque}' não encontrada. Atacando sem animação.");
+        }
+
+        // Executa a lógica de ataque independente da animação
+        if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase))
+        {
+            if (ProjetilScene != null)
+                DispararProjetil();
+            else
+                GD.PrintErr("[PLAYER] Erro: ProjetilScene não configurada!");
+        }
+        else if (string.Equals(NomeDaClasse, "arqueiro", StringComparison.OrdinalIgnoreCase))
+        {
+            if (ProjetilScene != null)
+                _projetilDisparado = false;
+            else
+                GD.PrintErr("[PLAYER] Erro: ProjetilScene não configurada!");
+        }
+        else
+        {
+            ExecutarAtaqueMelee();
         }
     }
 
@@ -633,17 +695,11 @@ public partial class Player : CharacterBody2D
             return;
         }
 
-        Vector2 direcaoDoVetor = CurrentDirection switch
-        {
-            "up" => Vector2.Up,
-            "left" => Vector2.Left,
-            "right" => Vector2.Right,
-            _ => Vector2.Down
-        };
+        Vector2 direcaoDoVetor = DirectionUtil.DirectionToVector(CurrentDirection);
 
         // Posiciona o projétil na posição do arco (ou do player, como fallback)
         Vector2 origem = _armaOverlay?.GlobalPosition ?? GlobalPosition;
-        novoProjetil.GlobalPosition = origem + direcaoDoVetor * 12;
+        novoProjetil.GlobalPosition = origem + direcaoDoVetor * 50;
         GetParent().AddChild(novoProjetil);
 
         GD.Print($"[PLAYER] Projetil instanciado em {novoProjetil.GlobalPosition}, direcao: {direcaoDoVetor}");
@@ -702,14 +758,7 @@ public partial class Player : CharacterBody2D
         }
 
         int dano = CalcularDanoFisico();
-        Vector2 direcaoAtaque = CurrentDirection switch
-        {
-            "up" => Vector2.Up,
-            "down" => Vector2.Down,
-            "left" => Vector2.Left,
-            "right" => Vector2.Right,
-            _ => Vector2.Down
-        };
+        Vector2 direcaoAtaque = DirectionUtil.DirectionToVector(CurrentDirection);
 
         bool acertou = false;
         var inimigos = GetTree()?.GetNodesInGroup("Inimigos");
@@ -811,8 +860,10 @@ public partial class Player : CharacterBody2D
 
     private void Morrer()
     {
-        GD.Print("[PLAYER] 💀 O Player foi derrotado!");
+        GD.Print("[PLAYER] O Player foi derrotado!");
         IsAttacking = false;
+        _isLyingDown = true;
+        AddToGroup("PlayersDowned");
         Velocity = Vector2.Zero;
         SetPhysicsProcess(false);
         SetProcess(false);
@@ -821,7 +872,9 @@ public partial class Player : CharacterBody2D
         {
             if (AnimatedSprite.SpriteFrames.HasAnimation("death"))
             {
+                AnimatedSprite.SpriteFrames.SetAnimationLoop("death", false);
                 AnimatedSprite.Play("death");
+                AnimatedSprite.AnimationFinished += AoTerminarMorte;
                 SincronizarOverlays();
             }
             else
@@ -829,38 +882,111 @@ public partial class Player : CharacterBody2D
                 AnimatedSprite.Stop();
             }
         }
+
+        var respawnUI = GetNodeOrNull<RespawnUI>("/root/main/HUD/RespawnUI");
+        if (respawnUI != null)
+            respawnUI.ShowDeathScreen();
     }
 
-    public bool TryInteractNpc()
+    private void AoTerminarMorte()
+    {
+        if (AnimatedSprite == null) return;
+        string anim = AnimatedSprite.Animation.ToString();
+        if (string.Equals(anim, "death", StringComparison.Ordinal))
+        {
+            AnimatedSprite.Stop();
+            AnimatedSprite.AnimationFinished -= AoTerminarMorte;
+        }
+    }
+
+    public void Reviver(float x, float y, int health, int maxHealth)
+    {
+        _isLyingDown = false;
+        RemoveFromGroup("PlayersDowned");
+        GlobalPosition = new Vector2(x, y);
+        SetHealthFromServer(health, maxHealth);
+        SetPhysicsProcess(true);
+        SetProcess(true);
+
+        var respawnUI = GetNodeOrNull<RespawnUI>("/root/main/HUD/RespawnUI");
+        if (respawnUI != null)
+            respawnUI.HideDeathScreen();
+
+        GD.Print("[PLAYER] Reviveu!");
+    }
+
+    private bool TryReviveDownedPlayer()
     {
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (gameNet == null || !gameNet.IsConnected) return false;
 
+        var entities = GetTree()?.GetNodesInGroup("PlayersDowned");
+        if (entities == null) return false;
+
         Node2D? nearest = null;
         float nearestDist = 100f;
-
-        var npcNodes = GetTree()?.GetNodesInGroup("NPC");
-        if (npcNodes != null)
+        foreach (Node node in entities)
         {
-            foreach (Node node in npcNodes)
+            if (node is Node2D n2d)
             {
-                if (node is Node2D n2d)
+                float d = GlobalPosition.DistanceTo(n2d.GlobalPosition);
+                if (d < 60f && (nearest == null || d < nearestDist))
                 {
-                    float d = GlobalPosition.DistanceTo(n2d.GlobalPosition);
-                    if (d < 100f && (nearest == null || d < nearestDist))
-                    {
-                        nearestDist = d;
-                        nearest = n2d;
-                    }
+                    nearestDist = d;
+                    nearest = n2d;
                 }
             }
         }
 
         if (nearest != null && nearest.HasMeta("network_id"))
         {
+            ulong targetId = (ulong)nearest.GetMeta("network_id").AsInt64();
+            GD.Print($"[PLAYER] Revivendo jogador {targetId}");
+            gameNet.SendRevivePlayer(targetId);
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryInteractNpc()
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        bool online = gameNet != null && gameNet.IsConnected;
+
+        Node2D? nearest = null;
+        float nearestDist = 100f;
+
+        var npcNodes = GetTree()?.GetNodesInGroup("NPC");
+        if (npcNodes == null) return false;
+
+        foreach (Node node in npcNodes)
+        {
+            if (node is Node2D n2d)
+            {
+                float d = GlobalPosition.DistanceTo(n2d.GlobalPosition);
+                if (d < 100f && (nearest == null || d < nearestDist))
+                {
+                    nearestDist = d;
+                    nearest = n2d;
+                }
+            }
+        }
+
+        if (nearest == null) return false;
+
+        if (online && nearest.HasMeta("network_id"))
+        {
             ulong npcId = (ulong)nearest.GetMeta("network_id").AsInt64();
-            GD.Print($"[PLAYER] Interagindo com NPC {npcId}");
             gameNet.SendNpcInteract(npcId);
+            return true;
+        }
+
+        if (nearest is WorldNPC worldNpc)
+        {
+            var dialog = GetNodeOrNull<DialogUI>("/root/main/HUD/DialogUI");
+            if (dialog != null)
+                dialog.MostrarDialogoLocal(worldNpc.NpcName, worldNpc.DialogId);
             return true;
         }
 
@@ -1163,10 +1289,7 @@ public partial class Player : CharacterBody2D
             _attackTimeoutCounter = 0f;
             AnimatedSprite.SpeedScale = 1.0f;
         }
-        else if (string.Equals(anim, "death", StringComparison.Ordinal))
-        {
-            AnimatedSprite.Stop();
-        }
+        // death handled by AoTerminarMorte
     }
 
     private void CriarSombra()
@@ -1196,5 +1319,10 @@ public partial class Player : CharacterBody2D
         _shadowSprite.Owner = Owner;
     }
 
-
+    public override void _ExitTree()
+    {
+        base._ExitTree();
+        if (_network != null)
+            _network.OnRespawn -= OnRespawnReceived;
+    }
 }

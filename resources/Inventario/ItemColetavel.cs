@@ -123,6 +123,15 @@ public partial class ItemColetavel : Area2D
         if (inventario.AdicionarItem(ItemContido, 1))
         {
             GD.Print($"[MUNDO] Player coletou: {ItemContido.Nome}!");
+
+            var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
+            if (save != null)
+            {
+                var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+                if (net == null || !net.IsConnected)
+                    save.SalvarInventario(inventario.Slots);
+            }
+
             _tooltip?.Esconder();
             QueueFree();
         }

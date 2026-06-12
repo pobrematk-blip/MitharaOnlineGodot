@@ -44,6 +44,7 @@ public partial class ItemEditorUI : Control
     private SpinBox _defesaMagicaMaxSpin;
     private OptionButton _tipoItemDropdown;
     private OptionButton _raridadeDropdown;
+    private CheckBox _statsAleatoriosCheck;
     private SpinBox _chanceCriticaMinSpin;
     private SpinBox _chanceCriticaMaxSpin;
     private SpinBox _evasaoMinSpin;
@@ -227,6 +228,16 @@ public partial class ItemEditorUI : Control
         _tipoItemDropdown.AddItem("Elite");
         _tipoItemDropdown.ItemSelected += OnTipoItemChanged;
         AtualizarRaridades();
+
+        _statsAleatoriosCheck = new CheckBox();
+        _statsAleatoriosCheck.Name = "StatsAleatoriosCheck";
+        _statsAleatoriosCheck.Text = "Stats Aleatórios";
+        _statsAleatoriosCheck.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+        var statsHBox = _tipoItemDropdown.GetParent() as HBoxContainer;
+        if (statsHBox != null)
+            statsHBox.AddChild(_statsAleatoriosCheck);
+        else
+            _tipoItemDropdown.AddSibling(_statsAleatoriosCheck);
 
         var formFields = new Control[]
         {
@@ -812,6 +823,18 @@ public partial class ItemEditorUI : Control
         if (_currentItem == null) return;
         _ignorarEventosUi = true;
 
+        if (_statsAleatoriosCheck.ButtonPressed)
+        {
+            Raridade raridade = ItemGerador.SortearRaridade();
+            _raridadeDropdown.Select((int)raridade);
+            ItemGerador.GerarStatsAleatorios(_currentItem, raridade);
+            AtualizarSpinsDoItem();
+            _ignorarEventosUi = false;
+            AplicarFormularioAoItem();
+            _previewStatus.Text = $"Stats aleatorios gerados para {_currentItem.Nome} (Raridade: {raridade})";
+            return;
+        }
+
         var rng = new Random();
         int rarityIndex = _raridadeDropdown.Selected;
         string tipoStr = _tipoDropdown.Text;
@@ -974,6 +997,40 @@ public partial class ItemEditorUI : Control
         _ignorarEventosUi = false;
         AplicarFormularioAoItem();
         _previewStatus.Text = $"Valores gerados para {_currentItem.Nome} (Raridade: {_raridadeDropdown.GetItemText(_raridadeDropdown.Selected)})";
+    }
+
+    private void AtualizarSpinsDoItem()
+    {
+        if (_currentItem == null) return;
+
+        _forcaMinSpin.Value = _currentItem.Forca; _forcaMaxSpin.Value = _currentItem.Forca;
+        _agilidadeMinSpin.Value = _currentItem.Agilidade; _agilidadeMaxSpin.Value = _currentItem.Agilidade;
+        _destrezaMinSpin.Value = _currentItem.Destreza; _destrezaMaxSpin.Value = _currentItem.Destreza;
+        _inteligenciaMinSpin.Value = _currentItem.Inteligencia; _inteligenciaMaxSpin.Value = _currentItem.Inteligencia;
+        _danoFisicoMinSpin.Value = _currentItem.DanoFisico; _danoFisicoMaxSpin.Value = _currentItem.DanoFisico;
+        _danoMagicoMinSpin.Value = _currentItem.DanoMagico; _danoMagicoMaxSpin.Value = _currentItem.DanoMagico;
+        _defesaFisicaMinSpin.Value = _currentItem.DefesaFisica; _defesaFisicaMaxSpin.Value = _currentItem.DefesaFisica;
+        _defesaMagicaMinSpin.Value = _currentItem.DefesaMagica; _defesaMagicaMaxSpin.Value = _currentItem.DefesaMagica;
+        _chanceCriticaMinSpin.Value = (double)_currentItem.ChanceCritica; _chanceCriticaMaxSpin.Value = (double)_currentItem.ChanceCritica;
+        _evasaoMinSpin.Value = (double)_currentItem.Evasao; _evasaoMaxSpin.Value = (double)_currentItem.Evasao;
+        _danoCriticoBonusMinSpin.Value = (double)_currentItem.DanoCriticoBonus; _danoCriticoBonusMaxSpin.Value = (double)_currentItem.DanoCriticoBonus;
+        _rouboVidaMinSpin.Value = (double)_currentItem.RouboVida; _rouboVidaMaxSpin.Value = (double)_currentItem.RouboVida;
+        _rouboManaMinSpin.Value = (double)_currentItem.RouboMana; _rouboManaMaxSpin.Value = (double)_currentItem.RouboMana;
+        _regeneracaoVidaMinSpin.Value = (double)_currentItem.RegeneracaoVida; _regeneracaoVidaMaxSpin.Value = (double)_currentItem.RegeneracaoVida;
+        _regeneracaoManaMinSpin.Value = (double)_currentItem.RegeneracaoMana; _regeneracaoManaMaxSpin.Value = (double)_currentItem.RegeneracaoMana;
+        _hpMinSpin.Value = _currentItem.Hp; _hpMaxSpin.Value = _currentItem.Hp;
+        _manaMinSpin.Value = _currentItem.Mana; _manaMaxSpin.Value = _currentItem.Mana;
+        _staminaMinSpin.Value = _currentItem.Stamina; _staminaMaxSpin.Value = _currentItem.Stamina;
+        _velocidadeMovimentoMinSpin.Value = (double)_currentItem.VelocidadeMovimento; _velocidadeMovimentoMaxSpin.Value = (double)_currentItem.VelocidadeMovimento;
+        _velocidadeAtaqueMinSpin.Value = (double)_currentItem.VelocidadeAtaque; _velocidadeAtaqueMaxSpin.Value = (double)_currentItem.VelocidadeAtaque;
+        _precisaoMinSpin.Value = (double)_currentItem.Precisao; _precisaoMaxSpin.Value = (double)_currentItem.Precisao;
+        _tenacidadeMinSpin.Value = (double)_currentItem.Tenacidade; _tenacidadeMaxSpin.Value = (double)_currentItem.Tenacidade;
+        _danoPvpMinSpin.Value = _currentItem.DanoPvp; _danoPvpMaxSpin.Value = _currentItem.DanoPvp;
+        _defesaPvpMinSpin.Value = _currentItem.DefesaPvp; _defesaPvpMaxSpin.Value = _currentItem.DefesaPvp;
+        _penetracaoArmaduraMinSpin.Value = _currentItem.PenetracaoArmadura; _penetracaoArmaduraMaxSpin.Value = _currentItem.PenetracaoArmadura;
+        _reducaoCooldownMinSpin.Value = (double)_currentItem.ReducaoCooldown; _reducaoCooldownMaxSpin.Value = (double)_currentItem.ReducaoCooldown;
+        _bonusExperienciaMinSpin.Value = (double)_currentItem.BonusExperiencia; _bonusExperienciaMaxSpin.Value = (double)_currentItem.BonusExperiencia;
+        _chanceDropAumentadaMinSpin.Value = (double)_currentItem.ChanceDropAumentada; _chanceDropAumentadaMaxSpin.Value = (double)_currentItem.ChanceDropAumentada;
     }
 
     private void ResetAllStatSpins()

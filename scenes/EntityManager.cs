@@ -7,11 +7,121 @@ public partial class EntityManager : Node
 {
     private GameNetwork? _gameNet;
     private PackedScene? _inimigoScene;
+    private readonly Dictionary<string, PackedScene?> _mobScenes = new();
+    private readonly Dictionary<string, string> _mobNameToType = new()
+    {
+        ["goblin"] = "goblin",
+        ["Goblin"] = "goblin",
+        ["lobo"] = "lobo",
+        ["Lobo"] = "lobo",
+        ["wolf"] = "lobo",
+        ["Wolf"] = "lobo",
+        ["porco"] = "porco",
+        ["Porco"] = "porco",
+        ["minotauro"] = "minotauro",
+        ["Minotauro"] = "minotauro",
+        ["slime"] = "goblin",
+        ["Slime"] = "goblin",
+        ["skeleton"] = "goblin",
+        ["Esqueleto"] = "goblin",
+        ["Demon Lord"] = "minotauro",
+        ["boss_demon"] = "minotauro",
+    };
     private readonly Dictionary<ulong, Node2D> _networkNodes = new();
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
+    private Node2D? _worldNode;
+
+    private struct RemoteState
+    {
+        public Vector2 Position;
+        public Vector2 Direction;
+        public bool Moving;
+        public double Timestamp;
+    }
+
+    private readonly Dictionary<ulong, RemoteState> _remoteStates = new();
+    private readonly Dictionary<ulong, Vector2> _lastDirections = new();
+    private readonly Dictionary<ulong, Vector2> _previousPositions = new();
+    private const double InterpolationDelay = 0.08;
+
+    private Node2D? ObterMundo()
+    {
+        if (_worldNode == null || !IsInstanceValid(_worldNode))
+        {
+            var tree = GetTree();
+            if (tree == null)
+            {
+                GameNetwork.LogError("ObterMundo: GetTree() retornou null");
+                return null;
+            }
+            var root = tree.Root;
+            if (root == null)
+            {
+                GameNetwork.LogError("ObterMundo: Root e null");
+                return null;
+            }
+
+            // 1) Try from CurrentScene directly (most reliable)
+            var current = tree.CurrentScene;
+            if (current != null)
+            {
+                _worldNode = current.GetNodeOrNull<Node2D>("World");
+                if (_worldNode != null)
+                {
+                    GameNetwork.Log($"ObterMundo: encontrado via CurrentScene/{current.Name}");
+                    return _worldNode;
+                }
+            }
+
+            // 2) Try common paths under Root
+            string[] paths = new[] { "main/World", "Main/World", "world/World" };
+            foreach (var p in paths)
+            {
+                _worldNode = root.GetNodeOrNull<Node2D>(p);
+                if (_worldNode != null)
+                {
+                    GameNetwork.Log($"ObterMundo: encontrado via Root/{p}");
+                    return _worldNode;
+                }
+            }
+
+            // 3) Deep search all root children
+            for (int i = 0; i < root.GetChildCount(); i++)
+            {
+                var child = root.GetChild(i);
+                _worldNode = child.FindChild("World", true, false) as Node2D;
+                if (_worldNode != null)
+                {
+                    GameNetwork.Log($"ObterMundo: encontrado via FindChild em {child.Name}");
+                    return _worldNode;
+                }
+            }
+
+            if (_worldNode == null)
+            {
+                int rootChildCount = root.GetChildCount();
+                GameNetwork.LogError($"ObterMundo: 'World' nao encontrado (Root tem {rootChildCount} filhos)");
+            }
+        }
+        return _worldNode;
+    }
 
     private const string MetaAnimPrefix = "anim_prefix";
     private const string MetaSpritePath = "sprite_path";
+
+    private bool _sceneReady;
+    private readonly List<SpawnEvent> _pendingSpawns = new();
+    private int _flushRetryCount;
+
+    private struct SpawnEvent
+    {
+        public ulong EntityId;
+        public string EntityType;
+        public string Name;
+        public float X, Y;
+        public int Level, Health, MaxHealth;
+        public string Extra1, Extra2, Extra3;
+    }
 
     public override void _Ready()
     {
@@ -19,19 +129,203 @@ public partial class EntityManager : Node
         if (_gameNet == null) return;
 
         _gameNet.OnEntitySpawned += OnEntitySpawned;
+        _gameNet.OnEnterWorld += OnEnterWorldHandler;
         _gameNet.OnCombatResult += OnCombatResult;
         _gameNet.OnEntityDied += OnEntityDied;
         _gameNet.OnGainExp += OnGainExp;
         _gameNet.OnLevelUp += OnLevelUp;
+        _gameNet.OnEntityHealthUpdate += OnEntityHealthUpdateHandler;
+        _gameNet.OnRespawn += OnRespawnHandler;
         _gameNet.OnLootSpawn += OnLootSpawn;
         _gameNet.OnLootDespawn += OnLootDespawn;
 
-        _inimigoScene = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Inimigo.tscn");
+        CarregarCenasMob();
+    }
+
+    private void OnEnterWorldHandler()
+    {
+        CallDeferred(nameof(FlushPendingSpawns));
+        CallDeferred(nameof(EnviarDropsParaServidor));
+    }
+
+    private void EnviarDropsParaServidor()
+    {
+        if (_gameNet == null) return;
+
+        var mobTypes = new System.Collections.Generic.List<string>();
+        var itemIdsList = new System.Collections.Generic.List<int[]>();
+        var chancesList = new System.Collections.Generic.List<double[]>();
+        var minQtysList = new System.Collections.Generic.List<int[]>();
+        var maxQtysList = new System.Collections.Generic.List<int[]>();
+
+        foreach (var kv in _mobScenes)
+        {
+            if (kv.Value == null) continue;
+            var inst = kv.Value.Instantiate<Inimigo>();
+            Inimigo.PreencherDropTable(kv.Key, inst.DropTable);
+            var drops = inst.DropTable;
+            int count = drops.Count;
+            if (count == 0) { inst.QueueFree(); continue; }
+
+            var ids = new int[count];
+            var ch = new double[count];
+            var min = new int[count];
+            var max = new int[count];
+            for (int i = 0; i < count; i++)
+            {
+                ids[i] = drops[i].ItemId;
+                ch[i] = drops[i].Chance;
+                min[i] = drops[i].MinQty;
+                max[i] = drops[i].MaxQty;
+            }
+            mobTypes.Add(kv.Key);
+            itemIdsList.Add(ids);
+            chancesList.Add(ch);
+            minQtysList.Add(min);
+            maxQtysList.Add(max);
+            inst.QueueFree();
+        }
+
+        if (mobTypes.Count > 0)
+        {
+            _gameNet.SendMobDropConfig(
+                mobTypes.ToArray(),
+                itemIdsList.ToArray(),
+                chancesList.ToArray(),
+                minQtysList.ToArray(),
+                maxQtysList.ToArray()
+            );
+            GameNetwork.Log($"Enviados {mobTypes.Count} configs de drops para o servidor");
+        }
+    }
+
+    private void FlushPendingSpawns()
+    {
+        try
+        {
+            var world = ObterMundo();
+
+            // Se World nao encontrado, criar fallback
+            if (world == null)
+            {
+                var tree = GetTree();
+                if (tree?.CurrentScene != null)
+                {
+                    var fallback = new Node2D();
+                    fallback.Name = "World";
+                    tree.CurrentScene.AddChild(fallback);
+                    _worldNode = fallback;
+                    world = fallback;
+                    GameNetwork.Log("FlushPendingSpawns: World fallback criado em CurrentScene");
+                }
+                else
+                {
+                    var fallback = new Node2D();
+                    fallback.Name = "World";
+                    AddChild(fallback);
+                    _worldNode = fallback;
+                    world = fallback;
+                    GameNetwork.Log("FlushPendingSpawns: World fallback criado no EntityManager");
+                }
+            }
+
+            _sceneReady = true;
+
+            int playerCount = 0, monsterCount = 0, npcCount = 0;
+            foreach (var s in _pendingSpawns)
+            {
+                if (s.EntityType == "player") playerCount++;
+                else if (s.EntityType == "monster" || s.EntityType == "boss") monsterCount++;
+                else if (s.EntityType == "npc") npcCount++;
+            }
+            GameNetwork.Log($"FlushPendingSpawns: {_pendingSpawns.Count} spawns ({playerCount} players, {monsterCount} monsters, {npcCount} npcs)");
+
+            // Ativar HUD - busca robusta
+            var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
+            if (hud == null)
+            {
+                var root = GetTree()?.Root;
+                if (root != null)
+                {
+                    for (int i = 0; i < root.GetChildCount(); i++)
+                    {
+                        var h = root.GetChild(i).FindChild("HUD", true, false) as CanvasLayer;
+                        if (h != null)
+                        {
+                            hud = h;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (hud != null)
+            {
+                hud.Visible = true;
+                GameNetwork.Log("HUD ativado de FlushPendingSpawns");
+            }
+            else
+            {
+                GameNetwork.Log("HUD nao encontrado");
+            }
+
+            if (_gameNet != null)
+            {
+                var spawnPos = _gameNet.PendingPlayerSpawn;
+                GameNetwork.Log($"PendingPlayerSpawn = {spawnPos}");
+                if (spawnPos != Vector2.Zero)
+                {
+                    var player = world?.GetNodeOrNull<Node2D>("Player") as Player;
+                    if (player != null)
+                    {
+                        player.Position = spawnPos;
+                        GameNetwork.Log($"Player posicionado em {spawnPos}");
+                    }
+                    else
+                        GameNetwork.Log("Player nao encontrado no World para posicionar");
+                }
+            }
+
+            _gameNet?.ApplyPendingInventory();
+
+            foreach (var s in _pendingSpawns)
+                ProcessSpawn(s.EntityId, s.EntityType, s.Name, s.X, s.Y, s.Level, s.Health, s.MaxHealth, s.Extra1, s.Extra2, s.Extra3);
+            _pendingSpawns.Clear();
+        }
+        catch (System.Exception ex)
+        {
+            GameNetwork.LogError($"Erro em FlushPendingSpawns", ex.ToString());
+            CallDeferred(nameof(FlushPendingSpawns));
+        }
     }
 
     private void OnEntitySpawned(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3)
     {
-        if (_networkNodes.ContainsKey(entityId)) return;
+        if (_networkNodes.ContainsKey(entityId))
+        {
+            GameNetwork.Log($"OnEntitySpawned: ignorando duplicado {entityType} '{name}' ({entityId})");
+            return;
+        }
+
+        if (!_sceneReady)
+        {
+            GameNetwork.Log($"Cena nao pronta, buffering spawn {entityType} '{name}' ({entityId})");
+            _pendingSpawns.Add(new SpawnEvent
+            {
+                EntityId = entityId, EntityType = entityType, Name = name,
+                X = x, Y = y, Level = level, Health = health, MaxHealth = maxHealth,
+                Extra1 = extraData1, Extra2 = extraData2, Extra3 = extraData3,
+            });
+            return;
+        }
+
+        GameNetwork.Log($"Processando spawn {entityType} '{name}' ({entityId}) em tempo real");
+        ProcessSpawn(entityId, entityType, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3);
+    }
+
+    private void ProcessSpawn(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3)
+    {
+        GD.Print($"[EntityManager] ProcessSpawn: type={entityType} name={name} id={entityId}");
 
         Node2D? node = entityType switch
         {
@@ -50,7 +344,13 @@ public partial class EntityManager : Node
 
     private Node2D CreatePlayerEntity(ulong entityId, string name, float x, float y, int level, int health, int maxHealth, string characterClass, string race)
     {
-        if (entityId == _gameNet?.LocalPlayerId) return null!;
+        if (entityId == _gameNet?.LocalPlayerId)
+        {
+            GameNetwork.Log($"CreatePlayerEntity: pulando proprio jogador {name} (ID={entityId})");
+            return null!;
+        }
+
+        GD.Print($"[EntityManager] Criando entidade de jogador: {name} (ID={entityId}) em ({x:F1}, {y:F1}) classe={characterClass} raca={race}");
 
         var root = new Node2D();
         root.Position = new Vector2(x, y);
@@ -62,7 +362,6 @@ public partial class EntityManager : Node
 
         var sprite = new AnimatedSprite2D();
         sprite.Name = "AnimatedSprite";
-        sprite.ZIndex = 1;
         sprite.Scale = new Vector2(2f, 2f);
 
         string raceFile = (race ?? "Humano").Trim() switch
@@ -84,35 +383,86 @@ public partial class EntityManager : Node
                 {
                     sprite.SpriteFrames = frames;
                     sprite.Play("idle_down");
+                    GameNetwork.Log($"CreatePlayerEntity: sprite frames carregados para {name} ({raceFile})");
                 }
+                else
+                    GameNetwork.Log($"CreatePlayerEntity: frames vazios para {name} ({raceFile})");
             }
+            else
+                GameNetwork.Log($"CreatePlayerEntity: sheet nulo para {name} ({sheetPath})");
         }
+        else
+            GameNetwork.Log($"CreatePlayerEntity: sheet nao existe {sheetPath} para {name}");
 
         root.AddChild(sprite);
 
         var labelName = new Label
         {
             Text = name,
-            Position = new Vector2(-30, 10),
+            Position = new Vector2(-30, -60),
+            ZIndex = 2,
         };
+        labelName.AddThemeFontSizeOverride("font_size", 14);
+        labelName.AddThemeColorOverride("font_color", Colors.White);
+        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+        labelName.AddThemeConstantOverride("outline_size", 2);
         root.AddChild(labelName);
 
-        AddChild(root);
+        var parent = ObterMundo();
+        if (parent != null)
+        {
+            parent.AddChild(root);
+            GameNetwork.Log($"CreatePlayerEntity: {name} adicionado ao World (parent={parent.Name})");
+        }
+        else
+        {
+            AddChild(root);
+            GameNetwork.Log($"CreatePlayerEntity: {name} adicionado ao EntityManager (World null) - PODE ESTAR INVISIVEL");
+        }
         return root;
+    }
+
+    private void CarregarCenasMob()
+    {
+        _inimigoScene = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Inimigo.tscn");
+        _mobScenes["goblin"] = _inimigoScene;
+        _mobScenes["lobo"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Lobo.tscn");
+        _mobScenes["porco"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Porco.tscn");
+        _mobScenes["minotauro"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Minotauro.tscn");
+    }
+
+    private PackedScene? ObterCenaMob(string prefabId)
+    {
+        if (string.IsNullOrEmpty(prefabId))
+            return _inimigoScene;
+
+        string mobType = _mobNameToType.TryGetValue(prefabId, out var mapped) ? mapped : prefabId;
+
+        if (_mobScenes.TryGetValue(mobType, out var scene) && scene != null)
+            return scene;
+
+        return _inimigoScene;
     }
 
     private Node2D CreateMonsterEntity(ulong entityId, string name, float x, float y, int level, int health, int maxHealth, string prefabId, bool isBoss)
     {
-        if (_inimigoScene != null)
+        string mobType = _mobNameToType.TryGetValue(prefabId, out var mapped) ? mapped : prefabId;
+        var scene = ObterCenaMob(prefabId);
+
+        if (scene != null)
         {
-            var inimigo = _inimigoScene.Instantiate<Inimigo>();
+            var inimigo = scene.Instantiate<Inimigo>();
             inimigo.Position = new Vector2(x, y);
             inimigo.Name = $"Monster_{entityId}";
             inimigo.NomeDoInimigo = name;
             inimigo.VidaMaxima = maxHealth;
+            inimigo.SetVidaAtual(health, maxHealth);
             inimigo.IsBoss = isBoss;
+            inimigo.MobType = mobType;
+            inimigo.AnimPrefix = MobSpriteFramesBuilder.ObterPrefixo(mobType);
             inimigo.SetMeta("network_id", entityId);
-            AddChild(inimigo);
+            inimigo.SetMeta(MetaAnimPrefix, inimigo.AnimPrefix);
+            { var _p = ObterMundo(); if (_p != null) _p.AddChild(inimigo); else AddChild(inimigo); }
             return inimigo;
         }
 
@@ -132,17 +482,48 @@ public partial class EntityManager : Node
         var labelName = new Label
         {
             Text = $"{name} Lv.{level}",
-            Position = new Vector2(-30, 10),
+            Position = new Vector2(-30, -60),
+            ZIndex = 2,
         };
+        labelName.AddThemeFontSizeOverride("font_size", 14);
+        labelName.AddThemeColorOverride("font_color", Colors.White);
+        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+        labelName.AddThemeConstantOverride("outline_size", 2);
         placeholder.AddChild(labelName);
 
-        AddChild(placeholder);
+        var _p2 = ObterMundo();
+        if (_p2 != null)
+            _p2.AddChild(placeholder);
+        else
+            AddChild(placeholder);
         return placeholder;
     }
 
     private Node2D CreateNpcEntity(ulong entityId, string name, float x, float y, string dialogId, string race, string animPrefix)
     {
-        var root = new Area2D();
+        var existing = GetTree()?.GetNodesInGroup("NPC");
+        GD.Print($"[EntityManager] CreateNpcEntity({entityId}, {name}, {x}, {y}) — {existing?.Count ?? 0} NPCs no grupo");
+        if (existing != null)
+        {
+            var pos = new Vector2(x, y);
+            foreach (Node node in existing)
+            {
+                if (node is Node2D n2d && IsInstanceValid(n2d))
+                {
+                    float d = n2d.GlobalPosition.DistanceTo(pos);
+                    GD.Print($"[EntityManager]   Verificando '{n2d.Name}' em {n2d.GlobalPosition} dist={d:F1}");
+                    if (d < 50f)
+                    {
+                        n2d.SetMeta("network_id", (long)entityId);
+                        n2d.SetMeta("dialog_id", dialogId);
+                        GD.Print($"[EntityManager] NPC {name} (ID {entityId}) vinculado ao WorldNPC existente '{n2d.Name}'");
+                        return null;
+                    }
+                }
+            }
+        }
+
+        var root = new CharacterBody2D();
         root.Position = new Vector2(x, y);
         root.Name = $"NPC_{entityId}";
         root.SetMeta("network_id", entityId);
@@ -153,10 +534,12 @@ public partial class EntityManager : Node
         var col = new CollisionShape2D();
         col.Shape = new CircleShape2D { Radius = 40f };
         root.AddChild(col);
+        root.CollisionLayer = 2u;
 
         var sprite = new AnimatedSprite2D();
         sprite.Name = "AnimatedSprite";
-        sprite.ZIndex = 1;
+        sprite.Position = new Vector2(0, -5);
+        sprite.Scale = Vector2.One * 2f;
 
         string sheetPath = LpcSpriteFramesBuilder.PastaSpritesNpc + race + ".png";
         if (!ResourceLoader.Exists(sheetPath))
@@ -185,14 +568,20 @@ public partial class EntityManager : Node
         var labelName = new Label
         {
             Text = name,
-            Position = new Vector2(-30, 10),
+            Position = new Vector2(-30, -60),
+            ZIndex = 2,
         };
+        labelName.AddThemeFontSizeOverride("font_size", 14);
+        labelName.AddThemeColorOverride("font_color", Colors.White);
+        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+        labelName.AddThemeConstantOverride("outline_size", 2);
         root.AddChild(labelName);
 
         var prompt = new Label();
         prompt.Text = "[F] Falar";
         prompt.Name = "InteractPrompt";
-        prompt.Position = new Vector2(-20, -55);
+        prompt.Position = new Vector2(-20, -45);
+        prompt.ZIndex = 2;
         prompt.AddThemeFontSizeOverride("font_size", 18);
         prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
         prompt.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
@@ -200,24 +589,118 @@ public partial class EntityManager : Node
         prompt.Visible = false;
         root.AddChild(prompt);
 
-        AddChild(root);
+        var _p3 = ObterMundo();
+        if (_p3 != null)
+            _p3.AddChild(root);
+        else
+            AddChild(root);
         return root;
+    }
+
+    private void OnRespawnHandler(ulong entityId, float x, float y, int health, int maxHealth)
+    {
+        if (!_networkNodes.TryGetValue(entityId, out var node) || !IsInstanceValid(node))
+            return;
+
+        node.Position = new Vector2(x, y);
+
+        if (node is Player player)
+            player.SetHealthFromServer(health, maxHealth);
+        else if (node is Inimigo inimigo)
+            inimigo.SetVidaAtual(health, maxHealth);
+
+        if (node.IsInGroup("PlayersDowned"))
+        {
+            node.RemoveFromGroup("PlayersDowned");
+            var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+            if (sprite != null && sprite.SpriteFrames != null)
+                sprite.Play("idle_down");
+        }
+    }
+
+    private void OnEntityHealthUpdateHandler(ulong entityId, int health, int maxHealth)
+    {
+        if (_networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node))
+        {
+            if (node is Inimigo inimigo)
+                inimigo.SetVidaAtual(health, maxHealth);
+            else if (node is Player player && entityId != _gameNet?.LocalPlayerId)
+                player.SetHealthFromServer(health, maxHealth);
+        }
+        else if (entityId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            if (localPlayer != null && IsInstanceValid(localPlayer))
+                localPlayer.SetHealthFromServer(health, maxHealth);
+        }
     }
 
     private void OnCombatResult(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth)
     {
-        if (_networkNodes.TryGetValue(targetId, out var targetNode))
+        GameNetwork.Log($"[COMBAT] OnCombatResult: attacker={attackerId} target={targetId} damage={damage} isCrit={isCrit} targetHP={targetHealth}/{targetMaxHealth}");
+
+        if (attackerId == _gameNet?.LocalPlayerId)
         {
+            string msg = isCrit
+                ? $"[SISTEMA] Você causou {damage} de dano (CRÍTICO!) em #{targetId}."
+                : $"[SISTEMA] Você causou {damage} de dano em #{targetId}.";
+            GD.Print(msg);
+        }
+
+        // Trigger attack animation on the attacking mob
+        if (attackerId != _gameNet?.LocalPlayerId &&
+            _networkNodes.TryGetValue(attackerId, out var attackerNode) &&
+            IsInstanceValid(attackerNode) &&
+            attackerNode is Inimigo attackerMob &&
+            _networkNodes.TryGetValue(targetId, out var animTargetNode) &&
+            IsInstanceValid(animTargetNode))
+        {
+            Vector2 dirToTarget = (animTargetNode.Position - attackerNode.Position).Normalized();
+            attackerMob.TriggerAttackAnimation(dirToTarget);
+        }
+
+        // Update target health (including local player)
+        Node2D targetNode = null;
+        if (targetId == _gameNet?.LocalPlayerId)
+        {
+            targetNode = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        }
+        else if (_networkNodes.TryGetValue(targetId, out var netTargetNode) && IsInstanceValid(netTargetNode))
+        {
+            targetNode = netTargetNode;
+        }
+
+        if (targetNode != null && IsInstanceValid(targetNode))
+        {
+            if (targetNode is Inimigo inimigo)
+                inimigo.SetVidaAtual(targetHealth, targetMaxHealth);
+            else if (targetNode is Player player)
+                player.SetHealthFromServer(targetHealth, targetMaxHealth);
+            else if (targetHealth <= 0)
+                SetRemotePlayerDowned(targetNode);
+
             var damageLabel = new Label
             {
-                Text = isCrit ? $"{damage}! CRIT!" : damage.ToString(),
+                Text = damage.ToString(),
                 Position = new Vector2(-10, -20),
                 ZIndex = 10,
             };
+
             if (isCrit)
-                damageLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.8f, 0f));
+            {
+                damageLabel.Text = $"{damage}!";
+                damageLabel.AddThemeFontSizeOverride("font_size", 26);
+                damageLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.85f, 0.1f));
+                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.7f));
+                damageLabel.AddThemeConstantOverride("outline_size", 3);
+            }
             else
-                damageLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.3f, 0.1f));
+            {
+                damageLabel.AddThemeFontSizeOverride("font_size", 20);
+                damageLabel.AddThemeColorOverride("font_color", Colors.White);
+                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.6f));
+                damageLabel.AddThemeConstantOverride("outline_size", 2);
+            }
 
             targetNode.AddChild(damageLabel);
 
@@ -297,9 +780,26 @@ public partial class EntityManager : Node
         }
     }
 
+    private static void SetRemotePlayerDowned(Node2D node)
+    {
+        if (!node.IsInGroup("PlayersDowned"))
+        {
+            node.AddToGroup("PlayersDowned");
+            var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+            if (sprite != null)
+                sprite.Stop();
+        }
+    }
+
     public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving)
     {
         if (!IsInstanceValid(entity)) return;
+
+        if (entity is Inimigo inimigo)
+        {
+            inimigo.AtualizarAnimacaoDeRede(direction, moving);
+            return;
+        }
 
         var sprite = entity.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
         if (sprite == null || sprite.SpriteFrames == null) return;
@@ -307,17 +807,14 @@ public partial class EntityManager : Node
         string currentAnim = sprite.Animation.ToString();
         if (currentAnim.Contains("attack")) return;
 
-        string dirName;
-        if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
-            dirName = direction.X > 0 ? "right" : "left";
-        else
-            dirName = direction.Y > 0 ? "down" : "up";
+        string dirName = DirectionUtil.VectorToCardinal(direction);
 
-        string targetAnim;
-        if (moving && direction.LengthSquared() > 0.01f)
-            targetAnim = $"walk_{dirName}";
-        else
-            targetAnim = $"idle_{dirName}";
+        string prefix = "";
+        if (entity.HasMeta("anim_prefix"))
+            prefix = entity.GetMeta("anim_prefix").AsString();
+
+        string state = moving && direction.LengthSquared() > 0.01f ? "walk" : "idle";
+        string targetAnim = $"{prefix}{state}_{dirName}";
 
         if (sprite.SpriteFrames.HasAnimation(targetAnim) && currentAnim != targetAnim)
             sprite.Play(targetAnim);
@@ -389,7 +886,11 @@ public partial class EntityManager : Node
         root.MouseExited += () => tooltip?.Esconder();
 
         root.AddToGroup("Loot");
-        AddChild(root);
+        var _p4 = ObterMundo();
+        if (_p4 != null)
+            _p4.AddChild(root);
+        else
+            AddChild(root);
         _lootNodes[lootId] = root;
     }
 
@@ -400,6 +901,67 @@ public partial class EntityManager : Node
             node.QueueFree();
         }
         _lootNodes.Remove(lootId);
+    }
+
+    public void PushRemotePosition(ulong entityId, Vector2 position, Vector2 direction, bool moving)
+    {
+        _remoteStates[entityId] = new RemoteState
+        {
+            Position = position,
+            Direction = direction,
+            Moving = moving,
+            Timestamp = Time.GetTicksMsec() / 1000.0,
+        };
+    }
+
+    public override void _Process(double delta)
+    {
+        double now = Time.GetTicksMsec() / 1000.0;
+
+        foreach (var kvp in _remoteStates)
+        {
+            if (!_networkNodes.TryGetValue(kvp.Key, out var node))
+                continue;
+
+            // Nao sobrescrever posicao do proprio jogador local (colisao local e soberana)
+            if (kvp.Key == _gameNet?.LocalPlayerId)
+                continue;
+
+            RemoteState cur = kvp.Value;
+
+            // Computar direcao a partir do delta de posicao (fallback p/ servidores que nao enviam DirX/DirY)
+            Vector2 computedDir = cur.Direction;
+            if (_previousPositions.TryGetValue(kvp.Key, out var prevPos))
+            {
+                Vector2 posDelta = cur.Position - prevPos;
+                if (posDelta.LengthSquared() > 1.0f)
+                    computedDir = posDelta.Normalized();
+            }
+            _previousPositions[kvp.Key] = cur.Position;
+
+            // Track last non-zero direction for idle facing
+            if (computedDir.LengthSquared() > 0.001f)
+                _lastDirections[kvp.Key] = computedDir;
+
+            double elapsed = now - cur.Timestamp;
+
+            if (cur.Moving)
+            {
+                Vector2 predicted = cur.Position + computedDir * (185f * (float)elapsed);
+                node.Position = node.Position.Lerp(predicted, (float)Mathf.Min(delta * 10.0, 1.0));
+            }
+            else
+            {
+                node.Position = node.Position.Lerp(cur.Position, (float)Mathf.Min(delta * 15.0, 1.0));
+            }
+
+            // Use last direction for idle facing when current direction is zero
+            Vector2 animDir = computedDir;
+            if (animDir.LengthSquared() < 0.001f && _lastDirections.TryGetValue(kvp.Key, out var lastDir))
+                animDir = lastDir;
+
+            UpdateRemoteAnimation(node, animDir, cur.Moving);
+        }
     }
 
     public void ClearAll()
@@ -417,6 +979,10 @@ public partial class EntityManager : Node
                 kvp.Value.QueueFree();
         }
         _lootNodes.Clear();
+        _remoteStates.Clear();
+        _lastDirections.Clear();
+        _previousPositions.Clear();
+        _sceneReady = false;
     }
 
     public override void _ExitTree()
@@ -425,10 +991,13 @@ public partial class EntityManager : Node
         if (_gameNet != null)
         {
             _gameNet.OnEntitySpawned -= OnEntitySpawned;
+            _gameNet.OnEnterWorld -= OnEnterWorldHandler;
             _gameNet.OnCombatResult -= OnCombatResult;
             _gameNet.OnEntityDied -= OnEntityDied;
             _gameNet.OnGainExp -= OnGainExp;
             _gameNet.OnLevelUp -= OnLevelUp;
+            _gameNet.OnEntityHealthUpdate -= OnEntityHealthUpdateHandler;
+            _gameNet.OnRespawn -= OnRespawnHandler;
             _gameNet.OnLootSpawn -= OnLootSpawn;
             _gameNet.OnLootDespawn -= OnLootDespawn;
         }

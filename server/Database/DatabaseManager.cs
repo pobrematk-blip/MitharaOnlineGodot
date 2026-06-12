@@ -109,7 +109,7 @@ public class DatabaseManager
         TryAddColumn(conn, "characters", "bank_gold", "INTEGER NOT NULL DEFAULT 0");
         TryAddColumn(conn, "characters", "gold", "INTEGER NOT NULL DEFAULT 50");
 
-        Console.WriteLine("[DB] Banco de dados inicializado.");
+        Logger.Info("Banco de dados inicializado.");
     }
 
     private static void TryAddColumn(SqliteConnection conn, string table, string column, string type)
@@ -119,7 +119,7 @@ public class DatabaseManager
             using var cmd = conn.CreateCommand();
             cmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {column} {type}";
             cmd.ExecuteNonQuery();
-            Console.WriteLine($"[DB] Coluna '{column}' adicionada em '{table}'.");
+            Logger.Info($"Coluna '{column}' adicionada em '{table}'.");
         }
         catch
         {
@@ -506,6 +506,32 @@ public class DatabaseManager
         {
             onSkill(sreader.GetInt32(0), sreader.GetString(1), sreader.GetInt32(2));
         }
+    }
+
+    public void DeleteCharacter(int characterId)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var tx = conn.BeginTransaction();
+
+        using var delItems = conn.CreateCommand();
+        delItems.CommandText = "DELETE FROM items WHERE character_id = @c";
+        delItems.Parameters.AddWithValue("@c", characterId);
+        delItems.ExecuteNonQuery();
+
+        using var delQuests = conn.CreateCommand();
+        delQuests.CommandText = "DELETE FROM player_quests WHERE character_id = @c";
+        delQuests.Parameters.AddWithValue("@c", characterId);
+        delQuests.ExecuteNonQuery();
+
+        using var delChar = conn.CreateCommand();
+        delChar.CommandText = "DELETE FROM characters WHERE id = @c";
+        delChar.Parameters.AddWithValue("@c", characterId);
+        delChar.ExecuteNonQuery();
+
+        tx.Commit();
+        Logger.Info($"[DB] Personagem {characterId} deletado (itens+quests+char).");
     }
 
     public List<(int questId, string progress, bool completed, bool claimed)> GetPlayerQuests(int characterId)

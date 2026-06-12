@@ -40,27 +40,48 @@ public partial class OverheadUI : Control
     }
 
     private Label _nomeLabel;
-    private ColorRect _hpBg;
-    private ColorRect _hpFill;
-    private ColorRect _manaBg;
-    private ColorRect _manaFill;
+    private Panel _hpBg;
+    private Panel _hpFill;
+    private Panel _manaBg;
+    private Panel _manaFill;
     private Player _player;
     private Camera2D _camera;
 
-    private static ColorRect CriarBarra(Color cor, Vector2 pos)
+    private const float BarraLargura = 80f;
+    private const float BarraAltura = 6f;
+    private const int RaioCanto = 3;
+
+    private static StyleBoxFlat CriarEstilo(Color cor, bool bg)
     {
-        var bg = new ColorRect();
-        bg.Position = pos;
-        bg.Size = new Vector2(100, 10);
-        bg.Color = new Color(0, 0, 0, 0.35f);
+        var style = new StyleBoxFlat();
+        style.CornerRadiusTopLeft = RaioCanto;
+        style.CornerRadiusTopRight = RaioCanto;
+        style.CornerRadiusBottomLeft = RaioCanto;
+        style.CornerRadiusBottomRight = RaioCanto;
+        style.BgColor = bg ? new Color(cor.R, cor.G, cor.B, 0.35f) : cor;
+        return style;
+    }
 
-        var fill = new ColorRect();
+    private static Panel CriarPainelBarra(Vector2 pos)
+    {
+        var panel = new Panel();
+        panel.Position = pos;
+        panel.Size = new Vector2(BarraLargura, BarraAltura);
+        panel.MouseFilter = MouseFilterEnum.Ignore;
+        return panel;
+    }
+
+    private void CriarBarra(Color cor, Vector2 pos, out Panel bg, out Panel fill)
+    {
+        bg = CriarPainelBarra(pos);
+        bg.AddThemeStyleboxOverride("panel", CriarEstilo(cor, true));
+
+        fill = new Panel();
         fill.Position = Vector2.Zero;
-        fill.Size = new Vector2(100, 10);
-        fill.Color = cor;
+        fill.Size = new Vector2(BarraLargura, BarraAltura);
+        fill.MouseFilter = MouseFilterEnum.Ignore;
+        fill.AddThemeStyleboxOverride("panel", CriarEstilo(cor, false));
         bg.AddChild(fill);
-
-        return bg;
     }
 
     public override void _Ready()
@@ -70,20 +91,18 @@ public partial class OverheadUI : Control
         _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
 
         _nomeLabel = new Label();
-        _nomeLabel.Size = new Vector2(100, 20);
+        _nomeLabel.Size = new Vector2(100, 18);
         _nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        _nomeLabel.AddThemeFontSizeOverride("font_size", 14);
+        _nomeLabel.AddThemeFontSizeOverride("font_size", 13);
         _nomeLabel.AddThemeColorOverride("font_color", Colors.White);
         _nomeLabel.Visible = MostrarNome;
         AddChild(_nomeLabel);
 
-        _hpBg = CriarBarra(new Color(0.8f, 0.1f, 0.1f), new Vector2(0, 20));
-        _hpFill = _hpBg.GetChild<ColorRect>(0);
+        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(10, 20), out _hpBg, out _hpFill);
         _hpBg.Visible = MostrarBarraVida;
         AddChild(_hpBg);
 
-        _manaBg = CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(0, 31));
-        _manaFill = _manaBg.GetChild<ColorRect>(0);
+        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(10, 27), out _manaBg, out _manaFill);
         _manaBg.Visible = MostrarBarraMana;
         AddChild(_manaBg);
 
@@ -116,7 +135,7 @@ public partial class OverheadUI : Control
 
         float hpPct = Mathf.Clamp(_player.CurrentHealth / (float)_player.MaxHealth, 0, 1);
         float manaPct = Mathf.Clamp(_player.CurrentMana / (float)_player.MaxMana, 0, 1);
-        _hpFill.Size = new Vector2(100 * hpPct, 10);
-        _manaFill.Size = new Vector2(100 * manaPct, 10);
+        _hpFill.Size = new Vector2(BarraLargura * hpPct, BarraAltura);
+        _manaFill.Size = new Vector2(BarraLargura * manaPct, BarraAltura);
     }
 }

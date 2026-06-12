@@ -27,7 +27,7 @@ public partial class PartyUI : Control
         }
     }
 
-    public bool IsVisible => _panel != null && _panel.Visible;
+    public bool EstaAberto => _panel != null && _panel.Visible;
 
     public override void _Ready()
     {

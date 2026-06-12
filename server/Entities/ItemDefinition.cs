@@ -63,6 +63,7 @@ public static class ItemDefinitions
         Register(new ItemDefinition { Id = 30, Name = "Colar da Sabedoria", Type = ItemType.Necklace, Inteligencia = 5, BuyPrice = 1000 });
         Register(new ItemDefinition { Id = 31, Name = "Anel de Força", Type = ItemType.Ring, Forca = 3, BuyPrice = 1000 });
         Register(new ItemDefinition { Id = 100, Name = "Pergaminho do Pet", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 500 });
+        Register(new ItemDefinition { Id = 101, Name = "Pergaminho de Ressureicao", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 500 });
         Register(new ItemDefinition { Id = 200, Name = "Slime Pet", Type = ItemType.Pet, MaxStack = 1, BuyPrice = 2000 });
         Register(new ItemDefinition { Id = 201, Name = "Lobo Pet", Type = ItemType.Pet, MaxStack = 1, BuyPrice = 3000 });
     }

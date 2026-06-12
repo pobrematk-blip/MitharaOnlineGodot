@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Aprendizado"
+config/name="Mithara Online Conflito de Raças"
 run/main_scene="res://scenes/MenuInicial.tscn"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"

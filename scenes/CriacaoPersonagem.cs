@@ -48,8 +48,15 @@ public partial class CriacaoPersonagem : Control
     private Tween _tweenCaminhada;
     private bool _aguardandoFimAtaque;
 
+    private void OnCancelar()
+    {
+        GetTree().ChangeSceneToFile(SceneConstants.SELECAO_PERSONAGEM);
+    }
+
     public override void _Ready()
     {
+        GetNode<Button>("%BtnCancelar").Pressed += OnCancelar;
+
         _etapaFaccao = GetNode<Control>("%EtapaFaccao");
         _etapaRaca = GetNode<Control>("%EtapaRaca");
         _etapaClasse = GetNode<Control>("%EtapaClasse");
@@ -524,7 +531,18 @@ public partial class CriacaoPersonagem : Control
             return;
         }
 
-        GetTree().ChangeSceneToFile(SceneConstants.MAIN);
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null && net.IsConnected && net.LoggedIn)
+        {
+            string nomeClasse = _classeSelecionada.NomeClasse;
+            string nomeRaca = _racaSelecionada.NomeRaca;
+            net.SendCreateCharacter(escolhido.NomePersonagem, nomeClasse, nomeRaca);
+            net.SendEnterWorld(escolhido.NomePersonagem, nomeClasse, nomeRaca, 230f, 300f);
+        }
+        else
+        {
+            GetTree().ChangeSceneToFile(SceneConstants.MAIN);
+        }
     }
 
     private void IrParaEtapa(Etapa etapa)

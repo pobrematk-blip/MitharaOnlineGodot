@@ -13,30 +13,52 @@ partial class GameServer
 
     private void HandleNpcInteract(NetPeer peer, NetDataReader reader)
     {
-        if (!TryGetPlayer(peer, out var player, out var channel)) return;
+        if (!TryGetPlayer(peer, out var player, out var channel))
+        {
+            Logger.Info("HandleNpcInteract: TryGetPlayer falhou");
+            return;
+        }
 
         ulong npcEntityId = reader.GetULong();
+        Logger.Info($"HandleNpcInteract: npcEntityId={npcEntityId} player={player.Name} pos=({player.X},{player.Y})");
+
         var npcEntity = channel.GetEntity(npcEntityId) as NPCEntity;
-        if (npcEntity == null || npcEntity.Health <= 0) return;
+        if (npcEntity == null)
+        {
+            Logger.Info($"Entidade {npcEntityId} nao encontrada ou nao e NPCEntity");
+            return;
+        }
+        if (npcEntity.Health <= 0)
+        {
+            Logger.Info($"NPC {npcEntity.Name} esta morto");
+            return;
+        }
 
         float dx = npcEntity.X - player.X;
         float dy = npcEntity.Y - player.Y;
         float dist = MathF.Sqrt(dx * dx + dy * dy);
-        if (dist > NpcInteractionRange) return;
+        Logger.Info($"NPC pos=({npcEntity.X},{npcEntity.Y}) distancia={dist:F1} max={NpcInteractionRange}");
+        if (dist > NpcInteractionRange)
+        {
+            Logger.Info($"Distancia {dist:F1} > {NpcInteractionRange}, ignorando");
+            return;
+        }
 
-        // Find NPC template and dialog
         var template = _world.Npcs.GetTemplate(npcEntity.PrefabId);
         string dialogId = npcEntity.DialogId;
         if (!string.IsNullOrEmpty(template?.DialogId))
             dialogId = template.DialogId;
+        Logger.Info($"Template={npcEntity.PrefabId} dialogId={dialogId}");
 
         var dialog = _world.Npcs.GetDialog(dialogId);
         if (dialog == null)
         {
+            Logger.Info($"Dialogo '{dialogId}' nao encontrado, enviando mensagem padrao");
             SendNpcDialog(peer, "O NPC não responde...", new List<(string text, string action, string data)>());
             return;
         }
 
+        Logger.Info($"Dialogo encontrado: \"{dialog.Text}\" ({dialog.Options.Count} opcoes)");
         var options = dialog.Options.Select(o => (o.Text, o.Action, o.ActionData)).ToList();
         SendNpcDialog(peer, dialog.Text, options);
     }

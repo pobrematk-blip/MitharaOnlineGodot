@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" uid="uid://bbrfqwprqqnh" path="res://characters/Inimigos/Inimigo.cs" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectShape"]
+size = Vector2(34, 44)
+
+[node name="Porco" type="CharacterBody2D"]
+y_sort_enabled = true
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1_script")
+MobType = "porco"
+AnimPrefix = "porco_"
+NomeDoInimigo = "Porco"
+VidaMaxima = 60
+Velocidade = 90.0
+DistanciaAtaque = 40.0
+DanoDoAtaque = 8
+TempoEntreAtaques = 1.5
+ExperienciaDropada = 15
+EhAgressivo = false
+RaioPatrulha = 100.0
+RaioDetectarPlayer = 180.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(2, 2)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("RectShape")

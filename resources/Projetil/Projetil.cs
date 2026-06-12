@@ -43,38 +43,59 @@ public partial class Projetil : Area2D
         Rotation = _direcao.Angle();
     }
 
+    private double _tempoDeVida = 0;
+
+    public override void _Process(double delta)
+    {
+        _tempoDeVida += delta;
+    }
+
     private void OnBodyEntered(Node2D body)
     {
+        var collBody = body as CollisionObject2D;
+        GD.Print($"[PROJETIL] Colidiu com: {body.Name} (tipo={body.GetType().Name}, layer={(collBody?.CollisionLayer ?? 0)}, grupo Inimigos={body.IsInGroup("Inimigos")})");
+
         if (body is Player)
         {
+            if (_tempoDeVida < 0.15)
+                return;
             QueueFree();
             return;
         }
 
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        bool online = gameNet != null && gameNet.IsConnected;
+
         if (body.IsInGroup("Inimigos"))
         {
-            int danoFinal = CalcularDanoComCritico();
-            bool ehCritico = danoFinal > DanoMax;
-            if (body is Inimigo inimigo)
-                inimigo.LevarDano(danoFinal);
+            if (online)
+            {
+                ulong? targetId = null;
+                if (body.HasMeta("network_id"))
+                {
+                    targetId = (ulong)body.GetMeta("network_id");
+                    GD.Print($"[PROJETIL] Online - enviando C2S_Attack para target {targetId.Value}");
+                    gameNet.SendAttack(targetId.Value);
+                }
+                else
+                {
+                    GD.PrintErr("[PROJETIL] Inimigo sem network_id! Nao e possivel atacar online.");
+                }
+            }
             else
-                body.Call("LevarDano", danoFinal);
+            {
+                int danoFinal = CalcularDanoComCritico();
+                bool ehCritico = danoFinal > DanoMax;
+                if (body is Inimigo inimigo)
+                    inimigo.LevarDano(danoFinal);
+                else
+                    body.Call("LevarDano", danoFinal);
 
-            if (ehCritico)
-                GD.Print($"Critico! {danoFinal} de dano em {body.Name}!");
-            else
-                GD.Print($"Projetil acertou {body.Name}! {danoFinal} de dano.");
-        }
-
-        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (gameNet != null && gameNet.IsConnected)
-        {
-            ulong? targetId = null;
-            if (body.HasMeta("network_id"))
-                targetId = (ulong)body.GetMeta("network_id");
-
-            if (targetId.HasValue)
-                gameNet.SendAttack(targetId.Value);
+                if (ehCritico)
+                    GD.Print($"Critico! {danoFinal} de dano em {body.Name}!");
+                else
+                    GD.Print($"Projetil acertou {body.Name}! {danoFinal} de dano.");
+            }
         }
 
         QueueFree();

@@ -74,8 +74,9 @@ public partial class SlotEquipamentoUI : Control
 
         TextureRect preview = new TextureRect();
         preview.Texture = SlotLogico.Item.Icone;
-        preview.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        preview.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
         preview.CustomMinimumSize = new Vector2(40, 40);
+        preview.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         preview.Modulate = new Color(1, 1, 1, 0.7f);
         
         SetDragPreview(preview);

@@ -3,16 +3,16 @@ using Mithara.Server;
 using Mithara.Server.Database;
 using Mithara.Server.Network;
 
-Console.WriteLine("=== Mithara MMO Server ===");
-Console.WriteLine();
+Logger.Info("=== Mithara MMO Server ===");
+Logger.Info("");
 
 var config = ConfigLoader.Load();
-Console.WriteLine($"Porta: {config.Port}");
-Console.WriteLine($"Canais: {config.ChannelCount}");
-Console.WriteLine($"Tick Rate: {config.TickRate} Hz");
-Console.WriteLine($"Max Conexões: {config.MaxConnections}");
-Console.WriteLine($"DB: {config.DbPath}");
-Console.WriteLine();
+Logger.Info($"Porta: {config.Port}");
+Logger.Info($"Canais: {config.ChannelCount}");
+Logger.Info($"Tick Rate: {config.TickRate} Hz");
+Logger.Info($"Max Conexões: {config.MaxConnections}");
+Logger.Info($"DB: {config.DbPath}");
+Logger.Info("");
 
 var dbPath = Path.Combine(AppContext.BaseDirectory, config.DbPath);
 var db = new DatabaseManager(dbPath);
@@ -25,8 +25,8 @@ float tickInterval = 1f / config.TickRate;
 var stopwatch = Stopwatch.StartNew();
 double accumulator = 0;
 
-Console.WriteLine("Server rodando. Pressione Ctrl+C para parar.");
-Console.WriteLine();
+Logger.Info($"Server rodando. logs em: {AppContext.BaseDirectory}logs");
+Logger.Info("");
 
 Console.CancelKeyPress += (_, args) =>
 {
@@ -36,19 +36,26 @@ Console.CancelKeyPress += (_, args) =>
 
 while (server.IsRunning)
 {
-    double frameTime = stopwatch.Elapsed.TotalSeconds;
-    stopwatch.Restart();
-    accumulator += frameTime;
-
-    server.PollEvents();
-
-    while (accumulator >= tickInterval)
+    try
     {
-        server.Update((float)tickInterval);
-        accumulator -= tickInterval;
+        double frameTime = stopwatch.Elapsed.TotalSeconds;
+        stopwatch.Restart();
+        accumulator += frameTime;
+
+        server.PollEvents();
+
+        while (accumulator >= tickInterval)
+        {
+            server.Update((float)tickInterval);
+            accumulator -= tickInterval;
+        }
+    }
+    catch (Exception ex)
+    {
+        Logger.Error("Erro no loop principal do servidor", ex);
     }
 
     Thread.Sleep(1);
 }
 
-Console.WriteLine("Server finalizado.");
+Logger.Info("Server finalizado.");

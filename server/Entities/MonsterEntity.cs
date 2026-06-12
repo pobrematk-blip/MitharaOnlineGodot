@@ -12,6 +12,14 @@ public class MonsterEntity : Entity
     public double LastAttackTime { get; set; }
     public ulong? TargetEntityId { get; set; }
 
+    // Patrol
+    public float SpawnX { get; set; }
+    public float SpawnY { get; set; }
+    public float PatrolRadius { get; set; } = 250f;
+    public float? PatrolTargetX { get; set; }
+    public float? PatrolTargetY { get; set; }
+    public double PatrolTimer { get; set; }
+
     public MonsterEntity()
     {
         Type = EntityType.Monster;

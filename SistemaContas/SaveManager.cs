@@ -3,8 +3,20 @@ using System.Collections.Generic;
 
 public partial class SaveManager : Node
 {
-    public const string SaveDir = "user://characters/";
     public const string ContaPath = "user://conta.cfg";
+
+    private string SaveDir => AccountId == 0
+        ? "user://characters/"
+        : $"user://characters_{AccountId}/";
+
+    private int AccountId
+    {
+        get
+        {
+            var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            return net?.AccountId ?? 0;
+        }
+    }
     private const string PrefixoSlot = "slot_";
     private const string Extensao = ".cfg";
 
@@ -29,8 +41,16 @@ public partial class SaveManager : Node
 
     private void GarantirPasta()
     {
-        if (!DirAccess.DirExistsAbsolute(SaveDir))
-            DirAccess.MakeDirRecursiveAbsolute(SaveDir);
+        var userDir = DirAccess.Open("user://");
+        if (userDir == null) return;
+
+        string subPath = SaveDir.StartsWith("user://") ? SaveDir.Substring(7) : SaveDir;
+        if (!userDir.DirExists(subPath))
+        {
+            var err = userDir.MakeDirRecursive(subPath);
+            if (err != Error.Ok)
+                GD.PrintErr($"[SAVE] Erro ao criar pasta {SaveDir}: {err}");
+        }
     }
 
     public void CarregarConta()
@@ -229,6 +249,53 @@ public partial class SaveManager : Node
             return true;
         }
         return false;
+    }
+
+    public void SalvarInventario(System.Collections.Generic.List<SlotInventario> slots)
+    {
+        var path = SlotPath(Conta.UltimoSlotSelecionado).Replace(".cfg", "_inv.json");
+        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        if (file == null) return;
+        var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].Item == null) continue;
+            list.Add(new Godot.Collections.Dictionary
+            {
+                ["slot"] = i,
+                ["item_id"] = slots[i].Item.ItemID,
+                ["quantity"] = slots[i].Quantidade,
+            });
+        }
+        file.StoreString(Json.Stringify(list));
+    }
+
+    public void CarregarInventario(System.Collections.Generic.List<SlotInventario> slots, ItemDatabase itemDB)
+    {
+        var path = SlotPath(Conta.UltimoSlotSelecionado).Replace(".cfg", "_inv.json");
+        if (!FileAccess.FileExists(path)) return;
+        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+        if (file == null) return;
+        var json = file.GetAsText();
+        if (string.IsNullOrEmpty(json)) return;
+        try
+        {
+            var data = Json.ParseString(json).AsGodotArray<Godot.Collections.Dictionary>();
+            if (data == null) return;
+            foreach (var entry in data)
+            {
+                int slot = (int)entry["slot"];
+                int itemId = (int)entry["item_id"];
+                int qty = (int)entry["quantity"];
+                if (slot >= 0 && slot < slots.Count)
+                {
+                    var resource = itemDB.GetItem(itemId);
+                    if (resource != null)
+                        slots[slot] = new SlotInventario(resource, qty);
+                }
+            }
+        }
+        catch { }
     }
 
     public bool IsAdmin => Conta.AdminAtivado;

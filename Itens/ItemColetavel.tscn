@@ -8,12 +8,13 @@
 radius = 26.0
 
 [node name="ItemColetavel" type="Area2D"]
+collision_mask = 2
 script = ExtResource("1_85bdg")
 ItemContido = ExtResource("2_0j0sb")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_arote")
-scale = Vector2(2, 2)
+scale = Vector2(1, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_85bdg")

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Entities;
@@ -8,7 +9,7 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
-    private bool TryGetPlayer(NetPeer peer, out PlayerEntity? player, out Channel? channel)
+    private bool TryGetPlayer(NetPeer peer, [NotNullWhen(true)] out PlayerEntity? player, [NotNullWhen(true)] out Channel? channel)
     {
         player = null;
         channel = null;
@@ -78,6 +79,7 @@ partial class GameServer
 
     private void OnChannelEntitySpawned(Entity entity)
     {
+        int sent = 0;
         foreach (var ch in _world.GetAllChannels())
         {
             foreach (var kv in ch.GetAllEntities())
@@ -88,20 +90,25 @@ partial class GameServer
                 float dx = kv.Value.X - entity.X;
                 float dy = kv.Value.Y - entity.Y;
                 float dist = MathF.Sqrt(dx * dx + dy * dy);
-                if (dist > _config.AoiRadius) continue;
 
                 var peer = ch.GetPlayerPeer(kv.Key);
                 if (peer == null) continue;
 
+                // Send spawn regardless of distance — client handles visual culling
                 var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
                 WriteEntityPacket(writer, entity);
                 peer.Send(writer, DeliveryMethod.ReliableOrdered);
+                sent++;
             }
         }
+        if (entity.Type == EntityType.Player)
+            Logger.Info($"OnChannelEntitySpawned: {entity.Name} broadcast para {sent} jogador(es) no canal");
     }
 
     private void BroadcastEntityUpdates()
     {
+        const int maxPayload = 900;
+
         foreach (var channel in _world.GetAllChannels())
         {
             var entities = channel.GetAllEntities();
@@ -115,48 +122,83 @@ partial class GameServer
                 if (peer == null) continue;
 
                 var aoi = channel.GetEntitiesInAoi(playerEntity.X, playerEntity.Y);
-                var filteredWriter = PacketSerializer.WritePacket(PacketId.S2C_EntityUpdate);
-                int count = 0;
-                var tempWriter = new NetDataWriter();
-
-                foreach (var aoiEid in aoi)
-                {
-                    if (!entities.TryGetValue(aoiEid, out var aoiEntity)) continue;
-                    count++;
-                    tempWriter.Put(aoiEid);
-                    tempWriter.Put(aoiEntity.X);
-                    tempWriter.Put(aoiEntity.Y);
-                    tempWriter.Put(aoiEntity.DirX);
-                    tempWriter.Put(aoiEntity.DirY);
-                    tempWriter.Put(aoiEntity.Moving);
-                    tempWriter.Put(aoiEntity.Health);
-                    tempWriter.Put(aoiEntity.MaxHealth);
-                    tempWriter.Put(aoiEntity.Mana);
-                    tempWriter.Put(aoiEntity.MaxMana);
-                    tempWriter.Put(aoiEntity.Level);
-                    tempWriter.Put(aoiEntity.Name);
-                    tempWriter.Put(aoiEntity.FactionId);
-                }
-
-                filteredWriter.Put(count);
-                filteredWriter.Put(tempWriter.CopyData());
-                peer.Send(filteredWriter, DeliveryMethod.Unreliable);
+                FlushEntityUpdates(peer, entities, aoi, eid, maxPayload);
             }
         }
     }
 
+    private static void FlushEntityUpdates(NetPeer peer, Dictionary<ulong, Entity> entities, HashSet<ulong> aoi, ulong playerEntityId, int maxPayload)
+    {
+        var writer = new NetDataWriter();
+        int batchFrom = 0;
+        int index = 0;
+
+        foreach (var aoiEid in aoi)
+        {
+            if (aoiEid == playerEntityId) continue;
+            if (!entities.TryGetValue(aoiEid, out var aoiEntity)) continue;
+
+            if (index > batchFrom && writer.Length + EstimateEntitySize(aoiEntity) > maxPayload)
+            {
+                SendEntityBatch(peer, writer, index - batchFrom);
+                writer = new NetDataWriter();
+                batchFrom = index;
+            }
+
+            writer.Put(aoiEid);
+            writer.Put(aoiEntity.X);
+            writer.Put(aoiEntity.Y);
+            writer.Put(aoiEntity.DirX);
+            writer.Put(aoiEntity.DirY);
+            writer.Put(aoiEntity.Moving);
+            writer.Put(aoiEntity.Health);
+            writer.Put(aoiEntity.MaxHealth);
+            writer.Put(aoiEntity.Mana);
+            writer.Put(aoiEntity.MaxMana);
+            writer.Put(aoiEntity.Level);
+            writer.Put(aoiEntity.Name);
+            writer.Put(aoiEntity.FactionId);
+            index++;
+        }
+
+        if (index > batchFrom)
+            SendEntityBatch(peer, writer, index - batchFrom);
+    }
+
+    private static void SendEntityBatch(NetPeer peer, NetDataWriter writer, int count)
+    {
+        var packet = PacketSerializer.WritePacket(PacketId.S2C_EntityUpdate);
+        packet.Put(count);
+        packet.Put(writer.CopyData());
+        peer.Send(packet, DeliveryMethod.ReliableOrdered);
+    }
+
+    private static int EstimateEntitySize(Entity entity)
+    {
+        return 45 + (entity.Name.Length * 2) + (entity.FactionId.Length * 2);
+    }
+
     private void BroadcastSpawnToNearby(Channel channel, Entity entity, float x, float y)
     {
-        var aoi = channel.GetEntitiesInAoi(x, y);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
         WriteEntityPacket(writer, entity);
 
-        foreach (var eid in aoi)
+        int sent = 0;
+        int totalPlayers = 0;
+        foreach (var kv in channel.GetAllEntities())
         {
-            if (eid == entity.Id) continue;
-            var peer = channel.GetPlayerPeer(eid);
-            peer?.Send(writer, DeliveryMethod.ReliableOrdered);
+            if (kv.Value.Type != EntityType.Player) continue;
+            totalPlayers++;
+            if (kv.Key == entity.Id) continue;
+            var peer = channel.GetPlayerPeer(kv.Key);
+            if (peer != null)
+            {
+                peer.Send(writer, DeliveryMethod.ReliableOrdered);
+                sent++;
+            }
         }
+        if (entity.Type == EntityType.Player)
+            Logger.Info($"BroadcastSpawnToNearby: {entity.Name} enviado para {sent} de {totalPlayers} jogador(es) no canal");
     }
 
     private void BroadcastDespawn(Channel channel, ulong entityId)
@@ -194,6 +236,7 @@ partial class GameServer
         {
             writer.Put(mob.IsBoss);
             writer.Put(mob.ExperienceReward);
+            writer.Put(mob.PrefabId);
         }
         else if (entity is NPCEntity npc)
         {

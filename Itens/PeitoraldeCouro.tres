@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_fdm85")
-ItemID = 21
+ItemID = 121
 Nome = "Peitoral de Couro"
 QuantidadeMaximaPorSlot = 1
 SlotsAdicionais = 0

@@ -17,67 +17,100 @@ public partial class EquipamentoComponent : Node
     private int _destreza = 10;
     private int _inteligencia = 10;
 
+    // Bônus de equipamentos
+    private int _bonusForca;
+    private int _bonusAgilidade;
+    private int _bonusDestreza;
+    private int _bonusInteligencia;
+    private int _bonusDanoFisico;
+    private int _bonusDefesaFisica;
+    private int _bonusHp;
+    private int _bonusMana;
+    private float _bonusVelocidadeMovimento;
+    private float _bonusVelocidadeAtaque;
+    private float _bonusChanceCritica;
+    private float _bonusEvasao;
+    private int _bonusDanoFisicoMin;
+    private int _bonusDanoFisicoMax;
+    private int _bonusDanoMagico;
+    private int _bonusDanoMagicoMin;
+    private int _bonusDanoMagicoMax;
+    private int _bonusDefesaMagica;
+    private float _bonusPrecisao;
+    private float _bonusTenacidade;
+    private int _bonusDanoPvp;
+    private int _bonusDefesaPvp;
+    private int _bonusPenetracaoArmadura;
+    private float _bonusRegeneracaoVida;
+    private float _bonusRegeneracaoMana;
+    private float _bonusRouboVida;
+    private float _bonusRouboMana;
+    private float _bonusReducaoCooldown;
+    private float _bonusBonusExperiencia;
+    private int _bonusStamina;
+
     public int PontosDisponiveis => _pontosDisponiveis;
-    public int Forca => _forca;
-    public int Agilidade => _agilidade;
-    public int Destreza => _destreza;
-    public int Inteligencia => _inteligencia;
+    public int Forca => _forca + _bonusForca;
+    public int Agilidade => _agilidade + _bonusAgilidade;
+    public int Destreza => _destreza + _bonusDestreza;
+    public int Inteligencia => _inteligencia + _bonusInteligencia;
 
     // ============ STATUS DERIVADOS ============
     // Dano Físico com variação (por Força) - Base 8-12, aumenta com Força
-    public int DanoFisicoMin => 8 + (Forca / 2);
-    public int DanoFisicoMax => 12 + (Forca / 2);
-    public string DanoFisico => $"{DanoFisicoMin}-{DanoFisicoMax}";  // Exibição: "10-14"
+    public int DanoFisicoMin => 8 + (Forca / 2) + _bonusDanoFisico + _bonusDanoFisicoMin;
+    public int DanoFisicoMax => 12 + (Forca / 2) + _bonusDanoFisico + _bonusDanoFisicoMax;
+    public string DanoFisico => $"{DanoFisicoMin}-{DanoFisicoMax}";
     
     // Dano Mágico com variação (por Inteligência) - Base 8-12, aumenta com Inteligência
-    public int DanoMagicoMin => 8 + (Inteligencia / 2);
-    public int DanoMagicoMax => 12 + (Inteligencia / 2);
-    public string DanoMagico => $"{DanoMagicoMin}-{DanoMagicoMax}";  // Exibição: "10-14"
+    public int DanoMagicoMin => 8 + (Inteligencia / 2) + _bonusDanoMagico + _bonusDanoMagicoMin;
+    public int DanoMagicoMax => 12 + (Inteligencia / 2) + _bonusDanoMagico + _bonusDanoMagicoMax;
+    public string DanoMagico => $"{DanoMagicoMin}-{DanoMagicoMax}";
     
-    // HP (por Força)
-    public int Hp => 100 + (Forca * 5);
+    // HP (por Força + bônus de itens)
+    public int Hp => 100 + (Forca * 5) + _bonusHp;
     
-    // Mana (por Inteligência)
-    public int Mana => 50 + (Inteligencia * 3);
+    // Mana (por Inteligência + bônus de itens)
+    public int Mana => 50 + (Inteligencia * 3) + _bonusMana;
     
-    // Chance Crítica e Evasão (por Destreza)
-    public float ChanceCritica => Destreza * 0.5f;              // Percentual de chance de golpe crítico
-    public float Evasao => Destreza * 0.3f;                     // Percentual de chance de esquivar
+    // Chance Crítica e Evasão (por Destreza + bônus de itens)
+    public float ChanceCritica => (Destreza * 0.5f) + _bonusChanceCritica;
+    public float Evasao => (Destreza * 0.3f) + _bonusEvasao;
     
     // Dano Crítico - Base 1.5x, aumenta APENAS com itens
-    private float _bonusDanoCritico = 0f;                       // Bônus acumulado de items
-    public float DanoCritico => 1.5f + _bonusDanoCritico;       // Multiplicador de dano crítico (1.5x base + bônus de items)
+    private float _bonusDanoCritico = 0f;
+    public float DanoCritico => 1.5f + _bonusDanoCritico;
     
-    // Velocidades (por Agilidade)
-    public float VelocidadeMovimento => 1.0f + (Agilidade * 0.05f);
-    public float VelocidadeAtaque => 1.0f + (Agilidade * 0.03f);
+    // Velocidades (por Agilidade + bônus de itens)
+    public float VelocidadeMovimento => 1.0f + (Agilidade * 0.05f) + _bonusVelocidadeMovimento;
+    public float VelocidadeAtaque => 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque;
     
     // Defesas
-    public int DefesaFisica => Agilidade / 2;
-    public int DefesaMagica => Inteligencia / 3;
+    public int DefesaFisica => (Agilidade / 2) + _bonusDefesaFisica;
+    public int DefesaMagica => (Inteligencia / 3) + _bonusDefesaMagica;
     
     // Precisão (por Agilidade + Destreza) e Tenacidade
-    public int Precisao => (Agilidade / 2) + Destreza;
-    public int Tenacidade => Forca / 5;
+    public float Precisao => (Agilidade / 2f) + Destreza + _bonusPrecisao;
+    public float Tenacidade => (Forca / 5f) + _bonusTenacidade;
     
     // PvP
-    public int DanoPvp => (Forca + Inteligencia) / 2;
-    public int DefesaPvp => (Agilidade + Destreza) / 2;
+    public int DanoPvp => (Forca + Inteligencia) / 2 + _bonusDanoPvp;
+    public int DefesaPvp => (Agilidade + Destreza) / 2 + _bonusDefesaPvp;
     
     // Penetração e Absorção
-    public int PenetracaoArmadura => Forca / 10;
+    public int PenetracaoArmadura => Forca / 10 + _bonusPenetracaoArmadura;
     
     // Regeneração
-    public int RegeneracaoVida => Forca / 20;
-    public int RegeneracaoMana => Inteligencia / 10;
+    public float RegeneracaoVida => Forca / 20f + _bonusRegeneracaoVida;
+    public float RegeneracaoMana => Inteligencia / 10f + _bonusRegeneracaoMana;
     
     // Roubo
-    public float RouboVida => Destreza / 50f;
-    public float RouboMana => Inteligencia / 20f;
+    public float RouboVida => Destreza / 50f + _bonusRouboVida;
+    public float RouboMana => Inteligencia / 20f + _bonusRouboMana;
     
     // Redução e Bônus
-    public float ReducaoCooldown => Agilidade / 100f;
-    public float BonusExperiencia => Inteligencia / 100f;
+    public float ReducaoCooldown => Agilidade / 100f + _bonusReducaoCooldown;
+    public float BonusExperiencia => Inteligencia / 100f + _bonusBonusExperiencia;
+    public int Stamina => 100 + (Agilidade * 2) + _bonusStamina;
 
     public override void _Ready()
     {
@@ -91,18 +124,16 @@ public partial class EquipamentoComponent : Node
 
     public void Equipar(TipoEquipamento slot, SlotInventario slotVindoDoInventario)
     {
-        // Se já houver algo no slot, a gente troca (devolve pro inventário)
         ItemResource itemParaEquipar = slotVindoDoInventario.Item;
         ItemResource itemAntigo = ItensEquipados[slot].Item;
 
-        // Coloca o novo item no corpo
         ItensEquipados[slot].Item = itemParaEquipar;
         ItensEquipados[slot].Quantidade = 1;
 
-        // Devolve o antigo para o slot de onde veio a nova peça
         slotVindoDoInventario.Item = itemAntigo;
         slotVindoDoInventario.Quantidade = (itemAntigo != null) ? 1 : 0;
 
+        RecalcularBonusEquipamentos();
         EmitSignal(SignalName.EquipamentoAtualizado);
         GD.Print($"Equipado {itemParaEquipar.Nome} no slot {slot}");
     }
@@ -112,11 +143,11 @@ public partial class EquipamentoComponent : Node
         ItemResource itemRemovido = ItensEquipados[slot].Item;
         if (itemRemovido == null) return;
 
-        // Tenta colocar de volta no inventário
         if (inventario.AdicionarItem(itemRemovido, 1))
         {
             ItensEquipados[slot].Item = null;
             ItensEquipados[slot].Quantidade = 0;
+            RecalcularBonusEquipamentos();
             EmitSignal(SignalName.EquipamentoAtualizado);
         }
     }
@@ -145,6 +176,82 @@ public partial class EquipamentoComponent : Node
     public int CalcularDanoMagicoAleatorio()
     {
         return (int)(GD.Randi() % (DanoMagicoMax - DanoMagicoMin + 1)) + DanoMagicoMin;
+    }
+
+    /// <summary>
+    /// Recalcula todos os bônus de equipamentos ativos
+    /// </summary>
+    private void RecalcularBonusEquipamentos()
+    {
+        _bonusForca = 0;
+        _bonusAgilidade = 0;
+        _bonusDestreza = 0;
+        _bonusInteligencia = 0;
+        _bonusDanoFisico = 0;
+        _bonusDanoFisicoMin = 0;
+        _bonusDanoFisicoMax = 0;
+        _bonusDanoMagico = 0;
+        _bonusDanoMagicoMin = 0;
+        _bonusDanoMagicoMax = 0;
+        _bonusDefesaFisica = 0;
+        _bonusDefesaMagica = 0;
+        _bonusHp = 0;
+        _bonusMana = 0;
+        _bonusStamina = 0;
+        _bonusVelocidadeMovimento = 0f;
+        _bonusVelocidadeAtaque = 0f;
+        _bonusChanceCritica = 0f;
+        _bonusEvasao = 0f;
+        _bonusDanoCritico = 0f;
+        _bonusPrecisao = 0f;
+        _bonusTenacidade = 0f;
+        _bonusDanoPvp = 0;
+        _bonusDefesaPvp = 0;
+        _bonusPenetracaoArmadura = 0;
+        _bonusRegeneracaoVida = 0f;
+        _bonusRegeneracaoMana = 0f;
+        _bonusRouboVida = 0f;
+        _bonusRouboMana = 0f;
+        _bonusReducaoCooldown = 0f;
+        _bonusBonusExperiencia = 0f;
+
+        foreach (var kv in ItensEquipados)
+        {
+            var item = kv.Value?.Item;
+            if (item == null) continue;
+
+            _bonusForca += item.Forca;
+            _bonusAgilidade += item.Agilidade;
+            _bonusDestreza += item.Destreza;
+            _bonusInteligencia += item.Inteligencia;
+            _bonusDanoFisico += item.DanoFisico;
+            _bonusDanoFisicoMin += item.DanoFisicoMin;
+            _bonusDanoFisicoMax += item.DanoFisicoMax;
+            _bonusDanoMagico += item.DanoMagico;
+            _bonusDanoMagicoMin += item.DanoMagicoMin;
+            _bonusDanoMagicoMax += item.DanoMagicoMax;
+            _bonusDefesaFisica += item.DefesaFisica;
+            _bonusDefesaMagica += item.DefesaMagica;
+            _bonusHp += item.Hp;
+            _bonusMana += item.Mana;
+            _bonusStamina += item.Stamina;
+            _bonusVelocidadeMovimento += item.VelocidadeMovimento;
+            _bonusVelocidadeAtaque += item.VelocidadeAtaque;
+            _bonusChanceCritica += item.ChanceCritica;
+            _bonusEvasao += item.Evasao;
+            _bonusDanoCritico += item.DanoCriticoBonus;
+            _bonusPrecisao += item.Precisao;
+            _bonusTenacidade += item.Tenacidade;
+            _bonusDanoPvp += item.DanoPvp;
+            _bonusDefesaPvp += item.DefesaPvp;
+            _bonusPenetracaoArmadura += item.PenetracaoArmadura;
+            _bonusRegeneracaoVida += item.RegeneracaoVida;
+            _bonusRegeneracaoMana += item.RegeneracaoMana;
+            _bonusRouboVida += item.RouboVida;
+            _bonusRouboMana += item.RouboMana;
+            _bonusReducaoCooldown += item.ReducaoCooldown;
+            _bonusBonusExperiencia += item.BonusExperiencia;
+        }
     }
 
     /// <summary>
@@ -239,6 +346,7 @@ public partial class EquipamentoComponent : Node
         _destreza = destreza;
         _inteligencia = inteligencia;
         _pontosDisponiveis = pontosDisponiveis;
+        RecalcularBonusEquipamentos();
         EmitSignal(SignalName.EquipamentoAtualizado);
     }
 
