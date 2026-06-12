@@ -70756,41 +70756,20 @@ tile_set = SubResource("TileSet_5grtr")
 [node name="Player" parent="World" instance=ExtResource("1_rvslj")]
 position = Vector2(-52, 226)
 
-[node name="VelhoSabio" parent="World" instance=ExtResource("29_npc")]
-position = Vector2(1407, -350)
-NpcName = "Velho Sábio"
-NpcRace = "Cidadão"
-AnimPrefix = "mago"
-DialogId = "velho_sabio_inicio"
-PrefabId = "velho_sabio"
-
-[node name="MestreGuerreiro" parent="World" instance=ExtResource("29_npc")]
-position = Vector2(957, 310)
-NpcName = "Mestre Guerreiro"
-AnimPrefix = "berzerk"
-DialogId = "mestre_guerreiro_inicio"
-PrefabId = "mestre_guerreiro"
-
-[node name="Mercador" parent="World" instance=ExtResource("29_npc")]
-position = Vector2(-410, 94)
-NpcName = "Mercador Viajante"
-NpcRace = "Mercador Geral"
-DialogId = "mercador_inicio"
-PrefabId = "mercador"
-
-[node name="InstrutorTreino" parent="World" instance=ExtResource("29_npc")]
-position = Vector2(2035, -115)
-NpcName = "Instrutor de Treino"
-AnimPrefix = "ladino"
-DialogId = "mestre_treino_inicio"
-PrefabId = "mestre_treino"
-
 [node name="Banqueiro" parent="World" instance=ExtResource("29_npc")]
 position = Vector2(2175, 269)
 NpcName = "Banqueiro"
 NpcRace = "Secretaria"
-DialogId = "banqueiro_inicio"
+DialogId = "banco"
 PrefabId = "banqueiro"
+
+[node name="Guilda" parent="World" instance=ExtResource("29_npc")]
+position = Vector2(2175, 369)
+NpcName = "Guardião de Solareth"
+NpcRace = "Cidadão"
+AnimPrefix = "mago"
+DialogId = "guilda"
+PrefabId = "guarda_solareth"
 
 [node name="SpawnerInimigo" type="Timer" parent="World"]
 wait_time = 3.0

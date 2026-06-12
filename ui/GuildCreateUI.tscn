@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://guildcreateui"]
+[gd_scene load_steps=0 format=3 uid="uid://cy3prat4pmi3q"]
 
 [node name="GuildCreateUI" type="Control"]
 anchors_preset = 0

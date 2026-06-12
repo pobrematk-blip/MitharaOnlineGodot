@@ -1,0 +1,20 @@
+[17:04:43] === Mithara MMO Server ===
+[17:04:43] 
+[17:04:43] Porta: 7777
+[17:04:43] Canais: 4
+[17:04:43] Tick Rate: 20 Hz
+[17:04:43] Max Conexões: 500
+[17:04:43] DB: data/mithara.db
+[17:04:43] 
+[DB] Banco de dados inicializado.
+[B]Bind exception: System.Net.Sockets.SocketException (10048): Normalmente é permitida apenas uma utilização de cada endereço de soquete (protocolo/endereço de rede/porta).
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at LiteNetLib.LiteNetManager.BindSocket(Socket socket, IPEndPoint ep), errorCode: AddressAlreadyInUse
+[17:04:44] Guildas carregadas do banco.
+[17:04:44] Iniciado na porta 7777
+[17:04:44] Canais: 4
+[17:04:44] Tick rate: 20 Hz
+[17:04:44] Server rodando. logs em: C:\Users\Wesley\Documents\aprendizado\server\bin\Debug\net8.0\logs
+[17:04:44] 
