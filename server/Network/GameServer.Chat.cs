@@ -86,7 +86,7 @@ partial class GameServer
 
             case "/gcreate":
                 if (parts.Length < 2) { SendSystemMessage(peer, "Use: /gcreate <nome>"); return; }
-                HandleGuildCreate(peer, sender, parts[1]);
+                HandleGuildCreate(peer, sender, parts[1], "", -1);
                 break;
 
             case "/ginvite":

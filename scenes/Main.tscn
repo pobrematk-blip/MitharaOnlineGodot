@@ -70756,21 +70756,6 @@ tile_set = SubResource("TileSet_5grtr")
 [node name="Player" parent="World" instance=ExtResource("1_rvslj")]
 position = Vector2(-52, 226)
 
-[node name="Banqueiro" parent="World" instance=ExtResource("29_npc")]
-position = Vector2(2175, 269)
-NpcName = "Banqueiro"
-NpcRace = "Secretaria"
-DialogId = "banco"
-PrefabId = "banqueiro"
-
-[node name="Guilda" parent="World" instance=ExtResource("29_npc")]
-position = Vector2(2175, 369)
-NpcName = "Guardião de Solareth"
-NpcRace = "Cidadão"
-AnimPrefix = "mago"
-DialogId = "guilda"
-PrefabId = "guarda_solareth"
-
 [node name="SpawnerInimigo" type="Timer" parent="World"]
 wait_time = 3.0
 autostart = true

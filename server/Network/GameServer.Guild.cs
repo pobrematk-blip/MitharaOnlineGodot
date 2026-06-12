@@ -11,8 +11,10 @@ partial class GameServer
     private void HandleGuildCreatePacket(NetPeer peer, NetDataReader reader)
     {
         string name = reader.GetString();
+        string tag = reader.GetString();
+        int emblem = reader.GetInt();
         if (!TryGetPlayer(peer, out var sender, out _) || sender == null) return;
-        HandleGuildCreate(peer, sender, name);
+        HandleGuildCreate(peer, sender, name, tag, emblem);
         if (sender.GuildId >= 0)
         {
             var guild = _world.Guilds.GetGuild(sender.GuildId);
@@ -21,7 +23,12 @@ partial class GameServer
                 _db.SaveGuild(guild.Id, guild.Name, guild.Level, guild.Xp, guild.SkillPoints);
                 _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
                 BroadcastGuildData(sender);
+                SendGuildCreateResult(peer, true, $"Guilda '{name}' criada com sucesso!");
             }
+        }
+        else
+        {
+            SendGuildCreateResult(peer, false, "Não foi possível criar a guilda.");
         }
     }
 
@@ -149,7 +156,7 @@ partial class GameServer
         SendSystemMessage(peer, $"Skill '{skillId}' evoluída para nível {newLevel}!");
     }
 
-    private void HandleGuildCreate(NetPeer peer, Entity sender, string guildName)
+    private void HandleGuildCreate(NetPeer peer, Entity sender, string guildName, string tag = "", int emblem = -1)
     {
         if (sender is not PlayerEntity player) return;
 
@@ -165,7 +172,7 @@ partial class GameServer
             return;
         }
 
-        var guild = _world.Guilds.CreateGuild(guildName, sender.Id);
+        var guild = _world.Guilds.CreateGuild(guildName, sender.Id, tag, emblem);
         if (guild == null)
         {
             SendSystemMessage(peer, "Já existe uma guilda com este nome, ou você já está em uma.");
@@ -357,5 +364,13 @@ partial class GameServer
             w.Put(newLevel);
             peer.Send(w, DeliveryMethod.ReliableOrdered);
         }
+    }
+
+    private void SendGuildCreateResult(NetPeer peer, bool success, string message)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_GuildCreateResult);
+        writer.Put(success);
+        writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }

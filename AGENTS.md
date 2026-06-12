@@ -21,3 +21,14 @@
 - Não corrigir warnings/erros não solicitados.
 - Não otimizar ou refatorar sem pedido.
 - Não criar novos arquivos sem pedido.
+
+## Regra CRÍTICA: MMORPG Online
+
+- **TODO** sistema novo deve funcionar exclusivamente através do servidor (`server/`).
+- Nada pode ser feito apenas no cliente (local). Toda validação (gold, itens, criação de guilda, banco, etc.) deve passar pelo servidor.
+- O cliente envia um pacote → servidor valida → servidor executa → servidor responde.
+- **Não criar** sistemas locais `MostrarDialogoLocal` ou qualquer bypass que evite o servidor.
+- NPCs devem usar `network_id` e `SendNpcInteract` → servidor envia `OnNpcDialog` com opções.
+- Ações de NPC (comprar, vender, criar guilda, abrir banco) devem ser pacotes de rede, não chamadas diretas locais.
+- O arquivo `server/Network/GameServer.Npc.cs` (e outros `GameServer.*.cs`) é o lugar correto para handlers de NPC.
+- Sempre perguntar antes de criar novos arquivos no servidor (`server/`).

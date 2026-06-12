@@ -94,9 +94,19 @@ public class NpcManager
         {
             PrefabId = "banqueiro",
             Name = "Banqueiro",
-            DialogId = "banqueiro_inicio",
+            DialogId = "banco",
             Race = "Secretaria",
             AnimPrefix = "padrao",
+            FactionId = "solari",
+        });
+
+        RegisterTemplate(new NpcTemplate
+        {
+            PrefabId = "guarda_solareth",
+            Name = "Guardião de Solareth",
+            DialogId = "guilda",
+            Race = "Cidadão",
+            AnimPrefix = "mago",
             FactionId = "solari",
         });
 
@@ -105,6 +115,7 @@ public class NpcManager
         _spawnPoints.Add(new NpcSpawnPoint { X = 900, Y = 1050, PrefabId = "mercador" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 960, PrefabId = "mestre_treino" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1040, Y = 1050, PrefabId = "banqueiro" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1050, PrefabId = "guarda_solareth" });
     }
 
     private void RegisterDialogs()
@@ -264,6 +275,32 @@ public class NpcManager
             {
                 new() { Text = "Abrir Banco", Action = "bank", ActionData = "open" },
                 new() { Text = "Sair", Action = "close" },
+            },
+        };
+
+        _dialogs["banco"] = new DialogNode
+        {
+            Id = "banco",
+            Text = "Bem-vindo ao Banco! Aqui seus tesouros ficam seguros. Deseja acessar seu cofre?",
+            Options = new List<DialogOption>
+            {
+                new() { Text = "Sim, abrir banco", Action = "bank", ActionData = "open" },
+                new() { Text = "Não, depois", Action = "close" },
+            },
+        };
+
+        _dialogs["guilda"] = new DialogNode
+        {
+            Id = "guilda",
+            Text = "Bem-vindo, aventureiro! Já ouviu falar de Solareth? " +
+                   "Dizem que é uma terra próspera onde aventureiros audaciosos " +
+                   "fundaram sua própria guilda. Você tem coragem de começar essa jornada? " +
+                   "(Para fundar uma guilda é preciso ter 10.000 moedas de ouro " +
+                   "ou um Pergaminho de Criação de Clã.)",
+            Options = new List<DialogOption>
+            {
+                new() { Text = "Quero fundar uma guilda em Solareth!", Action = "guild_open_form", ActionData = "" },
+                new() { Text = "Ainda não estou pronto", Action = "close" },
             },
         };
     }

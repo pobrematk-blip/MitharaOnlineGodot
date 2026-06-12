@@ -5,6 +5,8 @@ public class Guild
     private static int _nextId;
     public int Id { get; set; }
     public string Name { get; }
+    public string Tag { get; set; } = "";
+    public int Emblem { get; set; } = -1;
     public ulong LeaderEntityId { get; set; }
     public HashSet<ulong> Members { get; } = new();
     public Dictionary<ulong, int> MemberRanks { get; } = new();
@@ -16,10 +18,12 @@ public class Guild
     private static readonly int[] XpPerLevel = { 0, 100, 250, 500, 1000 };
     public int XpForNextLevel => Level < XpPerLevel.Length ? XpPerLevel[Level] : 999999;
 
-    public Guild(string name, ulong leaderId)
+    public Guild(string name, ulong leaderId, string tag = "", int emblem = -1)
     {
         Id = Interlocked.Increment(ref _nextId);
         Name = name;
+        Tag = tag;
+        Emblem = emblem;
         LeaderEntityId = leaderId;
         Members.Add(leaderId);
         MemberRanks[leaderId] = 0; // Lider
@@ -81,7 +85,7 @@ public class GuildManager
         return id.HasValue ? GetGuild(id.Value) : null;
     }
 
-    public Guild? CreateGuild(string name, ulong leaderId)
+    public Guild? CreateGuild(string name, ulong leaderId, string tag = "", int emblem = -1)
     {
         lock (_lock)
         {
@@ -89,7 +93,7 @@ public class GuildManager
             if (_guilds.Values.Any(g => g.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 return null;
 
-            var guild = new Guild(name, leaderId);
+            var guild = new Guild(name, leaderId, tag, emblem);
             _guilds[guild.Id] = guild;
             _playerGuild[leaderId] = guild.Id;
             return guild;

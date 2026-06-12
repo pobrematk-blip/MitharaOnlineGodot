@@ -97,6 +97,8 @@ public enum PacketId : ushort
     S2C_BankData = 0x0284,
     S2C_BankResult = 0x0285,
     S2C_GoldUpdate = 0x0286,
+    S2C_OpenGuildForm = 0x0288,
+    S2C_GuildCreateResult = 0x0289,
     S2C_Pong = 0x02FF,
 }
 

@@ -19,6 +19,7 @@ public partial class GuildCreateUI : Control
 
     private int _emblemaSelecionado = -1;
     private TextureRect[] _emblemaRects;
+    private GameNetwork _gameNet;
 
     private static readonly Color[] EmblemCores = {
         Colors.Red, Colors.Blue, Colors.Green, Colors.Yellow,
@@ -27,9 +28,6 @@ public partial class GuildCreateUI : Control
     };
 
     private const int CUSTO_GOLD = 10000;
-    private const int SCROLL_ITEM_ID = 200;
-
-    private static readonly string GuildDataPath = "user://guild_data.cfg";
 
     public override void _Ready()
     {
@@ -45,6 +43,8 @@ public partial class GuildCreateUI : Control
         _criarBtn = _panel.GetNode<Button>("CriarBtn");
         _cancelarBtn = _panel.GetNode<Button>("CancelarBtn");
 
+        _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+
         _closeButton.Pressed += OnFechar;
         _cancelarBtn.Pressed += OnFechar;
         _criarBtn.Pressed += OnCriar;
@@ -55,6 +55,11 @@ public partial class GuildCreateUI : Control
 
         PopularEmblemas();
         AtualizarCusto();
+
+        if (_gameNet != null)
+        {
+            _gameNet.OnGuildCreateResult += OnGuildCreateResult;
+        }
 
         CallDeferred(MethodName.Centralizar);
     }
@@ -175,65 +180,32 @@ public partial class GuildCreateUI : Control
             return;
         }
 
-        if (!VerificarPagamento())
-            return;
+        _criarBtn.Disabled = true;
+        _statusLabel.Text = "Criando guilda...";
 
-        SalvarGuilda(nome, tag, _emblemaSelecionado);
+        if (_gameNet != null && _gameNet.IsConnected)
+        {
+            _gameNet.SendGuildCreateRequest(nome, tag, _emblemaSelecionado);
+        }
+        else
+        {
+            _statusLabel.Text = "Você precisa estar online para criar uma guilda.";
+            _criarBtn.Disabled = false;
+        }
     }
 
-    private bool VerificarPagamento()
+    private void OnGuildCreateResult(bool success, string message)
     {
-        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        int gold = net?.Gold ?? 0;
-
-        if (gold >= CUSTO_GOLD)
+        if (success)
         {
-            _statusLabel.Text = "Guilda criada! (modo offline - gold nao sera deduzido)";
-            return true;
-        }
-
-        var inventario = GetNodeOrNull<InventarioComponent>("/root/main/Player/InventarioComponent");
-        if (inventario != null)
-        {
-            foreach (var slot in inventario.Slots)
-            {
-                if (slot.Item != null && slot.Item.ItemID == SCROLL_ITEM_ID && slot.Quantidade > 0)
-                {
-                    _statusLabel.Text = "Guilda criada! Pergaminho consumido.";
-                    slot.Quantidade--;
-                    if (slot.Quantidade <= 0)
-                        slot.Item = null;
-                    return true;
-                }
-            }
-        }
-
-        _statusLabel.Text = $"Gold insuficiente! Voce tem {gold:N0}, precisa de {CUSTO_GOLD:N0} OU um Pergaminho de Criação de Clã.";
-        return false;
-    }
-
-    private void SalvarGuilda(string nome, string tag, int emblemIdx)
-    {
-        var cfg = new ConfigFile();
-        cfg.SetValue("Guild", "nome", nome);
-        cfg.SetValue("Guild", "tag", tag);
-        cfg.SetValue("Guild", "emblem_index", emblemIdx);
-        var err = cfg.Save(GuildDataPath);
-
-        if (err == Error.Ok)
-        {
-            _statusLabel.Text = $"Guilda '{nome}' ({tag}) fundada com sucesso!";
-            _criarBtn.Disabled = true;
-
-            var overhead = GetTree().CurrentScene?.FindChild("OverheadUI", true, false) as OverheadUI;
-            overhead?.RecarregarDadosGuild();
-
+            _statusLabel.Text = message;
             var timer = GetTree().CreateTimer(2.0);
             timer.Timeout += OnFechar;
         }
         else
         {
-            _statusLabel.Text = "Erro ao salvar dados da guilda.";
+            _statusLabel.Text = message;
+            _criarBtn.Disabled = false;
         }
     }
 
@@ -245,6 +217,8 @@ public partial class GuildCreateUI : Control
 
     private void OnFechar()
     {
+        if (_gameNet != null)
+            _gameNet.OnGuildCreateResult -= OnGuildCreateResult;
         QueueFree();
     }
 

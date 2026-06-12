@@ -24,6 +24,7 @@ public partial class DialogUI : Control
         if (_gameNet != null)
         {
             _gameNet.OnNpcDialog += OnNpcDialog;
+            _gameNet.OnOpenGuildForm += AbrirCriacaoGuilda;
         }
 
         _closeButton.Pressed += Fechar;
@@ -184,6 +185,9 @@ public partial class DialogUI : Control
     public override void _ExitTree()
     {
         if (_gameNet != null)
+        {
             _gameNet.OnNpcDialog -= OnNpcDialog;
+            _gameNet.OnOpenGuildForm -= AbrirCriacaoGuilda;
+        }
     }
 }

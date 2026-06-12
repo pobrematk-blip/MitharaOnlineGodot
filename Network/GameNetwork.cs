@@ -74,6 +74,8 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
+    [Signal] public delegate void OnOpenGuildFormEventHandler();
+    [Signal] public delegate void OnGuildCreateResultEventHandler(bool success, string message);
 
     public new bool IsConnected => _client?.IsConnected ?? false;
     public int ServerPing => _client?.Ping ?? 0;
@@ -289,6 +291,12 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_GoldUpdate:
                 HandleGoldUpdate(r);
+                break;
+            case PacketId.S2C_OpenGuildForm:
+                EmitSignal(SignalName.OnOpenGuildForm);
+                break;
+            case PacketId.S2C_GuildCreateResult:
+                HandleGuildCreateResult(r);
                 break;
         } } catch (System.Exception ex)
         {

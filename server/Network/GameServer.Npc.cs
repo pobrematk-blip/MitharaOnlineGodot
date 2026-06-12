@@ -105,6 +105,11 @@ partial class GameServer
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
 
+            case "guild_open_form":
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                SendOpenGuildForm(peer);
+                break;
+
             case "close":
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
@@ -240,6 +245,12 @@ partial class GameServer
         var writer = PacketSerializer.WritePacket(PacketId.S2C_NpcSellResult);
         writer.Put(success);
         writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void SendOpenGuildForm(NetPeer peer)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_OpenGuildForm);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }

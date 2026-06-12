@@ -7,7 +7,29 @@ partial class GameNetwork
 {
     public void SendGuildCreate(string name)
     {
-        _client?.SendPacket(PacketId.C2S_GuildCreate, w => w.Put(name));
+        _client?.SendPacket(PacketId.C2S_GuildCreate, w =>
+        {
+            w.Put(name);
+            w.Put("");
+            w.Put(-1);
+        });
+    }
+
+    public void SendGuildCreateRequest(string name, string tag, int emblemIdx)
+    {
+        _client?.SendPacket(PacketId.C2S_GuildCreate, w =>
+        {
+            w.Put(name);
+            w.Put(tag);
+            w.Put(emblemIdx);
+        });
+    }
+
+    private void HandleGuildCreateResult(NetDataReader r)
+    {
+        bool success = r.GetBool();
+        string message = r.GetString();
+        EmitSignal(SignalName.OnGuildCreateResult, success, message);
     }
 
     public void SendGuildInvite(string targetName)
