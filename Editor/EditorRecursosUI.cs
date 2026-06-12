@@ -9,15 +9,21 @@ public partial class EditorRecursosUI : Control
     private LineEdit _tipoEdit;
     private SpinBox _tempo1Spin;
     private SpinBox _tempo2Spin;
+    private SpinBox _tempo3Spin;
+    private SpinBox _tempo4Spin;
     private SpinBox _itemIdSpin;
     private SpinBox _qtdMinSpin;
     private SpinBox _qtdMaxSpin;
     private TextureRect _previewFase1;
     private TextureRect _previewFase2;
     private TextureRect _previewFase3;
+    private TextureRect _previewFase4;
+    private TextureRect _previewFase5;
     private Button _btnBrowse1;
     private Button _btnBrowse2;
     private Button _btnBrowse3;
+    private Button _btnBrowse4;
+    private Button _btnBrowse5;
     private Button _btnSalvar;
     private Button _btnNovo;
     private Button _btnExcluir;
@@ -27,6 +33,8 @@ public partial class EditorRecursosUI : Control
     private Texture2D _texFase1;
     private Texture2D _texFase2;
     private Texture2D _texFase3;
+    private Texture2D _texFase4;
+    private Texture2D _texFase5;
 
     private static readonly string DirRecursos = "res://Itens/Recursos/";
 
@@ -93,8 +101,12 @@ public partial class EditorRecursosUI : Control
         var tempoHbox = new HBoxContainer();
         _tempo1Spin = new SpinBox { MaxValue = 9999, Value = 30, Prefix = "Fase1->2 " };
         _tempo2Spin = new SpinBox { MaxValue = 9999, Value = 30, Prefix = "Fase2->3 " };
+        _tempo3Spin = new SpinBox { MaxValue = 9999, Value = 30, Prefix = "Fase3->4 " };
+        _tempo4Spin = new SpinBox { MaxValue = 9999, Value = 30, Prefix = "Fase4->5 " };
         tempoHbox.AddChild(_tempo1Spin);
         tempoHbox.AddChild(_tempo2Spin);
+        tempoHbox.AddChild(_tempo3Spin);
+        tempoHbox.AddChild(_tempo4Spin);
         form.AddChild(tempoHbox);
 
         AddLabel("Textura Fase 1 (Toco)");
@@ -105,7 +117,7 @@ public partial class EditorRecursosUI : Control
         hbox1.AddChild(_btnBrowse1);
         form.AddChild(hbox1);
 
-        AddLabel("Textura Fase 2 (Crescendo)");
+        AddLabel("Textura Fase 2 (Broto)");
         var hbox2 = new HBoxContainer();
         _previewFase2 = new TextureRect { CustomMinimumSize = new Vector2(64, 64), ExpandMode = TextureRect.ExpandModeEnum.FitWidth, StretchMode = TextureRect.StretchModeEnum.KeepAspect };
         _btnBrowse2 = new Button { Text = "Procurar..." };
@@ -113,13 +125,29 @@ public partial class EditorRecursosUI : Control
         hbox2.AddChild(_btnBrowse2);
         form.AddChild(hbox2);
 
-        AddLabel("Textura Fase 3 (Pronto)");
+        AddLabel("Textura Fase 3 (Crescendo)");
         var hbox3 = new HBoxContainer();
         _previewFase3 = new TextureRect { CustomMinimumSize = new Vector2(64, 64), ExpandMode = TextureRect.ExpandModeEnum.FitWidth, StretchMode = TextureRect.StretchModeEnum.KeepAspect };
         _btnBrowse3 = new Button { Text = "Procurar..." };
         hbox3.AddChild(_previewFase3);
         hbox3.AddChild(_btnBrowse3);
         form.AddChild(hbox3);
+
+        AddLabel("Textura Fase 4 (Quase Pronto)");
+        var hbox4 = new HBoxContainer();
+        _previewFase4 = new TextureRect { CustomMinimumSize = new Vector2(64, 64), ExpandMode = TextureRect.ExpandModeEnum.FitWidth, StretchMode = TextureRect.StretchModeEnum.KeepAspect };
+        _btnBrowse4 = new Button { Text = "Procurar..." };
+        hbox4.AddChild(_previewFase4);
+        hbox4.AddChild(_btnBrowse4);
+        form.AddChild(hbox4);
+
+        AddLabel("Textura Fase 5 (Pronto)");
+        var hbox5 = new HBoxContainer();
+        _previewFase5 = new TextureRect { CustomMinimumSize = new Vector2(64, 64), ExpandMode = TextureRect.ExpandModeEnum.FitWidth, StretchMode = TextureRect.StretchModeEnum.KeepAspect };
+        _btnBrowse5 = new Button { Text = "Procurar..." };
+        hbox5.AddChild(_previewFase5);
+        hbox5.AddChild(_btnBrowse5);
+        form.AddChild(hbox5);
 
         form.AddChild(new Control { CustomMinimumSize = new Vector2(0, 8) });
 
@@ -131,6 +159,8 @@ public partial class EditorRecursosUI : Control
         _btnBrowse1.Pressed += () => BrowseTexture(idx => _texFase1 = idx, _previewFase1);
         _btnBrowse2.Pressed += () => BrowseTexture(idx => _texFase2 = idx, _previewFase2);
         _btnBrowse3.Pressed += () => BrowseTexture(idx => _texFase3 = idx, _previewFase3);
+        _btnBrowse4.Pressed += () => BrowseTexture(idx => _texFase4 = idx, _previewFase4);
+        _btnBrowse5.Pressed += () => BrowseTexture(idx => _texFase5 = idx, _previewFase5);
 
         _btnNovo.Pressed += OnNovo;
         _btnExcluir.Pressed += OnExcluir;
@@ -217,6 +247,8 @@ public partial class EditorRecursosUI : Control
         _tipoEdit.Text = _atual.Tipo;
         _tempo1Spin.Value = _atual.TempoFase1Para2;
         _tempo2Spin.Value = _atual.TempoFase2Para3;
+        _tempo3Spin.Value = _atual.TempoFase3Para4;
+        _tempo4Spin.Value = _atual.TempoFase4Para5;
         _itemIdSpin.Value = _atual.ItemDropID;
         _qtdMinSpin.Value = _atual.QuantidadeMinima;
         _qtdMaxSpin.Value = _atual.QuantidadeMaxima;
@@ -224,9 +256,13 @@ public partial class EditorRecursosUI : Control
         _texFase1 = _atual.TexturaFase1;
         _texFase2 = _atual.TexturaFase2;
         _texFase3 = _atual.TexturaFase3;
+        _texFase4 = _atual.TexturaFase4;
+        _texFase5 = _atual.TexturaFase5;
         _previewFase1.Texture = _texFase1;
         _previewFase2.Texture = _texFase2;
         _previewFase3.Texture = _texFase3;
+        _previewFase4.Texture = _texFase4;
+        _previewFase5.Texture = _texFase5;
     }
 
     private void OnNovo()
@@ -238,6 +274,8 @@ public partial class EditorRecursosUI : Control
         _tipoEdit.Text = "";
         _tempo1Spin.Value = 30;
         _tempo2Spin.Value = 30;
+        _tempo3Spin.Value = 30;
+        _tempo4Spin.Value = 30;
         _itemIdSpin.Value = 0;
         _qtdMinSpin.Value = 1;
         _qtdMaxSpin.Value = 1;
@@ -245,9 +283,13 @@ public partial class EditorRecursosUI : Control
         _texFase1 = null;
         _texFase2 = null;
         _texFase3 = null;
+        _texFase4 = null;
+        _texFase5 = null;
         _previewFase1.Texture = null;
         _previewFase2.Texture = null;
         _previewFase3.Texture = null;
+        _previewFase4.Texture = null;
+        _previewFase5.Texture = null;
     }
 
     private void OnExcluir()
@@ -272,12 +314,16 @@ public partial class EditorRecursosUI : Control
         _atual.Tipo = _tipoEdit.Text;
         _atual.TempoFase1Para2 = (float)_tempo1Spin.Value;
         _atual.TempoFase2Para3 = (float)_tempo2Spin.Value;
+        _atual.TempoFase3Para4 = (float)_tempo3Spin.Value;
+        _atual.TempoFase4Para5 = (float)_tempo4Spin.Value;
         _atual.ItemDropID = (int)_itemIdSpin.Value;
         _atual.QuantidadeMinima = (int)_qtdMinSpin.Value;
         _atual.QuantidadeMaxima = (int)_qtdMaxSpin.Value;
         _atual.TexturaFase1 = _texFase1;
         _atual.TexturaFase2 = _texFase2;
         _atual.TexturaFase3 = _texFase3;
+        _atual.TexturaFase4 = _texFase4;
+        _atual.TexturaFase5 = _texFase5;
 
         if (string.IsNullOrEmpty(_atualPath))
         {

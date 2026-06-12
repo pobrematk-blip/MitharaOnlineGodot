@@ -10,10 +10,14 @@ public partial class RecursoResource : Resource
     [Export] public Texture2D TexturaFase1 { get; set; }
     [Export] public Texture2D TexturaFase2 { get; set; }
     [Export] public Texture2D TexturaFase3 { get; set; }
+    [Export] public Texture2D TexturaFase4 { get; set; }
+    [Export] public Texture2D TexturaFase5 { get; set; }
 
     [ExportGroup("Crescimento")]
     [Export] public float TempoFase1Para2 { get; set; } = 30f;
     [Export] public float TempoFase2Para3 { get; set; } = 30f;
+    [Export] public float TempoFase3Para4 { get; set; } = 30f;
+    [Export] public float TempoFase4Para5 { get; set; } = 30f;
 
     [ExportGroup("Drop")]
     [Export] public int ItemDropID { get; set; }

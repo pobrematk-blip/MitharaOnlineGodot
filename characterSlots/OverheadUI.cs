@@ -5,6 +5,8 @@ public partial class OverheadUI : Control
     private bool _mostrarNome = true;
     private bool _mostrarBarraVida = true;
     private bool _mostrarBarraMana = true;
+    private bool _mostrarTagGuild = true;
+    private bool _mostrarEmblemaGuild = true;
 
     [Export]
     public bool MostrarNome
@@ -39,6 +41,26 @@ public partial class OverheadUI : Control
         }
     }
 
+    public bool MostrarTagGuild
+    {
+        get => _mostrarTagGuild;
+        set
+        {
+            _mostrarTagGuild = value;
+            AtualizarNomeCompleto();
+        }
+    }
+
+    public bool MostrarEmblemaGuild
+    {
+        get => _mostrarEmblemaGuild;
+        set
+        {
+            _mostrarEmblemaGuild = value;
+            AtualizarNomeCompleto();
+        }
+    }
+
     private Label _nomeLabel;
     private Panel _hpBg;
     private Panel _hpFill;
@@ -47,9 +69,19 @@ public partial class OverheadUI : Control
     private Player _player;
     private Camera2D _camera;
 
+    private string _nomePersonagem;
+    private string _guildTag = "";
+    private int _guildEmblemIdx = -1;
+
     private const float BarraLargura = 80f;
     private const float BarraAltura = 6f;
     private const int RaioCanto = 3;
+
+    private static readonly Color[] EmblemCores = {
+        Colors.Red, Colors.Blue, Colors.Green, Colors.Yellow,
+        Colors.Purple, Colors.Orange, Colors.Cyan, Colors.Pink,
+        Colors.Brown, Colors.White
+    };
 
     private static StyleBoxFlat CriarEstilo(Color cor, bool bg)
     {
@@ -91,7 +123,7 @@ public partial class OverheadUI : Control
         _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
 
         _nomeLabel = new Label();
-        _nomeLabel.Size = new Vector2(100, 18);
+        _nomeLabel.Size = new Vector2(120, 20);
         _nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _nomeLabel.AddThemeFontSizeOverride("font_size", 13);
         _nomeLabel.AddThemeColorOverride("font_color", Colors.White);
@@ -107,13 +139,52 @@ public partial class OverheadUI : Control
         AddChild(_manaBg);
 
         var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        _nomeLabel.Text = escolhido?.NomePersonagem ?? "Aventureiro";
+        _nomePersonagem = escolhido?.NomePersonagem ?? "Aventureiro";
+
+        CarregarDadosGuild();
+        AtualizarNomeCompleto();
 
         if (_player != null)
         {
             _player.StatusAtualizado += Atualizar;
             Atualizar();
         }
+    }
+
+    public void RecarregarDadosGuild()
+    {
+        CarregarDadosGuild();
+        AtualizarNomeCompleto();
+    }
+
+    private void CarregarDadosGuild()
+    {
+        var cfg = new ConfigFile();
+        if (cfg.Load("user://guild_data.cfg") != Error.Ok) return;
+        _guildTag = cfg.GetValue("Guild", "tag", "").AsString();
+        _guildEmblemIdx = cfg.GetValue("Guild", "emblem_index", -1).AsInt32();
+    }
+
+    private void AtualizarNomeCompleto()
+    {
+        string nome = _nomePersonagem;
+
+        if (_mostrarTagGuild && !string.IsNullOrEmpty(_guildTag))
+            nome = $"[{_guildTag}] {nome}";
+
+        if (_mostrarEmblemaGuild && _guildEmblemIdx >= 0 && _guildEmblemIdx < EmblemCores.Length)
+        {
+            string simbolo = _guildEmblemIdx switch
+            {
+                0 => "🔴", 1 => "🔵", 2 => "🟢", 3 => "🟡",
+                4 => "🟣", 5 => "🟠", 6 => "🩵", 7 => "🩷",
+                8 => "🟤", 9 => "⬜",
+                _ => "⬛"
+            };
+            nome = $"{simbolo} {nome}";
+        }
+
+        _nomeLabel.Text = nome;
     }
 
     public override void _Process(double delta)

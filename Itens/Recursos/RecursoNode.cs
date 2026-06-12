@@ -4,7 +4,7 @@ public partial class RecursoNode : StaticBody2D
 {
     [Export] public RecursoResource RecursoData { get; set; }
 
-    private int _faseAtual = 3;
+    private int _faseAtual = 5;
     private Sprite2D _sprite;
     private Timer _timerCrescimento;
     private Label _labelNome;
@@ -17,7 +17,7 @@ public partial class RecursoNode : StaticBody2D
         get => _faseAtual;
         set
         {
-            _faseAtual = Mathf.Clamp(value, 1, 3);
+            _faseAtual = Mathf.Clamp(value, 1, 5);
             AtualizarAparencia();
         }
     }
@@ -71,7 +71,7 @@ public partial class RecursoNode : StaticBody2D
         _prompt.Visible = false;
         AddChild(_prompt);
 
-        FaseAtual = 3;
+        FaseAtual = 5;
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -79,7 +79,7 @@ public partial class RecursoNode : StaticBody2D
         if (!_playerPerto) return;
         if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.F)
         {
-            if (FaseAtual >= 3)
+            if (FaseAtual >= 5)
                 Interagir();
             GetViewport().SetInputAsHandled();
         }
@@ -90,7 +90,7 @@ public partial class RecursoNode : StaticBody2D
         if (body is Player || body.IsInGroup("player"))
         {
             _playerPerto = true;
-            _prompt.Visible = FaseAtual >= 3;
+            _prompt.Visible = FaseAtual >= 5;
         }
     }
 
@@ -105,7 +105,7 @@ public partial class RecursoNode : StaticBody2D
 
     private void Interagir()
     {
-        if (RecursoData == null || FaseAtual < 3) return;
+        if (RecursoData == null || FaseAtual < 5) return;
 
         SoltarItem();
 
@@ -141,12 +141,19 @@ public partial class RecursoNode : StaticBody2D
 
     private void AvancarFase()
     {
-        if (FaseAtual < 3)
+        if (FaseAtual < 5)
         {
             FaseAtual++;
-            if (FaseAtual < 3)
+            if (FaseAtual < 5)
             {
-                float tempo = FaseAtual == 1 ? RecursoData.TempoFase1Para2 : RecursoData.TempoFase2Para3;
+                float tempo = FaseAtual switch
+                {
+                    1 => RecursoData.TempoFase1Para2,
+                    2 => RecursoData.TempoFase2Para3,
+                    3 => RecursoData.TempoFase3Para4,
+                    4 => RecursoData.TempoFase4Para5,
+                    _ => 0f
+                };
                 _timerCrescimento.Start(tempo);
             }
         }
@@ -161,12 +168,14 @@ public partial class RecursoNode : StaticBody2D
             1 => RecursoData.TexturaFase1,
             2 => RecursoData.TexturaFase2,
             3 => RecursoData.TexturaFase3,
+            4 => RecursoData.TexturaFase4,
+            5 => RecursoData.TexturaFase5,
             _ => null
         };
 
         _sprite.Texture = tex;
 
         if (_playerPerto)
-            _prompt.Visible = _faseAtual >= 3;
+            _prompt.Visible = _faseAtual >= 5;
     }
 }

@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://guildcreateui"]
+
+[node name="GuildCreateUI" type="Control"]
+anchors_preset = 0
+size = Vector2i(1152, 648)
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 276.0
+offset_top = 74.0
+offset_right = 876.0
+offset_bottom = 574.0
+
+[node name="TitleBar" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_right = 600.0
+offset_bottom = 32.0
+mouse_filter = 0
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 564.0
+offset_right = 596.0
+offset_bottom = 28.0
+text = "X"
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+text = "FUNDAR GUILDA"
+theme_override_colors/font_color = Color(1, 0.84, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+
+[node name="NpcDialog" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 584.0
+offset_bottom = 148.0
+text = "[Guardiao de Solareth]\nEntao deseja fundar uma guilda nas terras de Solareth?\nMuito bem! Preencha os detalhes abaixo e prepare-se para a jornada."
+autowrap_mode = 0
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="EditGrid" type="GridContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 156.0
+offset_right = 584.0
+offset_bottom = 240.0
+columns = 2
+theme_override_constants/v_separation = 8
+theme_override_constants/h_separation = 8
+
+[node name="NomeLabel" type="Label" parent="Panel/EditGrid"]
+layout_mode = 2
+text = "Nome da Guilda:"
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+
+[node name="NomeEdit" type="LineEdit" parent="Panel/EditGrid"]
+custom_minimum_size = Vector2i(220, 0)
+layout_mode = 2
+placeholder_text = "Ex: Os Guardioes de Solareth"
+max_length = 20
+
+[node name="TagLabel" type="Label" parent="Panel/EditGrid"]
+layout_mode = 2
+text = "Sigla (3 letras):"
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+
+[node name="TagEdit" type="LineEdit" parent="Panel/EditGrid"]
+custom_minimum_size = Vector2i(60, 0)
+layout_mode = 2
+placeholder_text = "GDS"
+max_length = 3
+
+[node name="EmblemaLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 252.0
+text = "Emblema da Guilda:"
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+
+[node name="EmblemasGrid" type="GridContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 272.0
+offset_right = 584.0
+offset_bottom = 360.0
+columns = 5
+theme_override_constants/v_separation = 4
+theme_override_constants/h_separation = 4
+
+[node name="CustoLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 372.0
+text = "Custo: 10.000 moedas de ouro OU Pergaminho de Criacao de Cla"
+theme_override_colors/font_color = Color(0.91, 0.77, 0.28, 1)
+theme_override_font_sizes/font_size = 11
+
+[node name="StatusLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 396.0
+offset_right = 584.0
+offset_bottom = 424.0
+text = ""
+autowrap_mode = 0
+theme_override_colors/font_color = Color(0.3, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="CriarBtn" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 432.0
+offset_right = 320.0
+offset_bottom = 464.0
+text = "Criar Guilda"
+theme_override_font_sizes/font_size = 14
+
+[node name="CancelarBtn" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 340.0
+offset_top = 432.0
+offset_right = 460.0
+offset_bottom = 464.0
+text = "Cancelar"
+theme_override_font_sizes/font_size = 14

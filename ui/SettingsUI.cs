@@ -26,6 +26,8 @@ public partial class SettingsUI : Control
     private CheckBox _mostrarNomeCheck;
     private CheckBox _mostrarVidaCheck;
     private CheckBox _mostrarManaCheck;
+    private CheckBox _mostrarTagCheck;
+    private CheckBox _mostrarEmblemaCheck;
 
     private static readonly Vector2I[] Resolutions = {
         new Vector2I(1280, 720),
@@ -70,6 +72,8 @@ public partial class SettingsUI : Control
         _mostrarNomeCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarNomeCheck");
         _mostrarVidaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarVidaCheck");
         _mostrarManaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarManaCheck");
+        _mostrarTagCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarTagCheck");
+        _mostrarEmblemaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarEmblemaCheck");
 
         PopulateResolutions();
         SelecionarResolucaoAtual();
@@ -78,6 +82,8 @@ public partial class SettingsUI : Control
         _mostrarNomeCheck.Toggled += OnMostrarNomeToggled;
         _mostrarVidaCheck.Toggled += OnMostrarVidaToggled;
         _mostrarManaCheck.Toggled += OnMostrarManaToggled;
+        _mostrarTagCheck.Toggled += OnMostrarTagToggled;
+        _mostrarEmblemaCheck.Toggled += OnMostrarEmblemaToggled;
 
         AplicarOverheadUIDoCheckbox();
 
@@ -164,6 +170,8 @@ public partial class SettingsUI : Control
         overhead.MostrarNome = _mostrarNomeCheck.ButtonPressed;
         overhead.MostrarBarraVida = _mostrarVidaCheck.ButtonPressed;
         overhead.MostrarBarraMana = _mostrarManaCheck.ButtonPressed;
+        overhead.MostrarTagGuild = _mostrarTagCheck.ButtonPressed;
+        overhead.MostrarEmblemaGuild = _mostrarEmblemaCheck.ButtonPressed;
     }
 
     private void Centralizar()
@@ -278,6 +286,16 @@ public partial class SettingsUI : Control
         AplicarOverheadUI("MostrarBarraMana", pressed);
     }
 
+    private void OnMostrarTagToggled(bool pressed)
+    {
+        AplicarOverheadUI("MostrarTagGuild", pressed);
+    }
+
+    private void OnMostrarEmblemaToggled(bool pressed)
+    {
+        AplicarOverheadUI("MostrarEmblemaGuild", pressed);
+    }
+
     private static void AplicarOverheadUI(string propriedade, bool value)
     {
         if (Engine.GetMainLoop() is not SceneTree tree) return;
@@ -289,6 +307,8 @@ public partial class SettingsUI : Control
             case "MostrarNome": overhead.MostrarNome = value; break;
             case "MostrarBarraVida": overhead.MostrarBarraVida = value; break;
             case "MostrarBarraMana": overhead.MostrarBarraMana = value; break;
+            case "MostrarTagGuild": overhead.MostrarTagGuild = value; break;
+            case "MostrarEmblemaGuild": overhead.MostrarEmblemaGuild = value; break;
         }
     }
 
@@ -445,6 +465,8 @@ public partial class SettingsUI : Control
         cfg.SetValue(SectionUI, "mostrar_nome", _mostrarNomeCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_vida", _mostrarVidaCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_mana", _mostrarManaCheck.ButtonPressed);
+        cfg.SetValue(SectionUI, "mostrar_tag_guild", _mostrarTagCheck.ButtonPressed);
+        cfg.SetValue(SectionUI, "mostrar_emblema_guild", _mostrarEmblemaCheck.ButtonPressed);
 
         foreach (var nome in InputMap.GetActions())
         {
@@ -488,6 +510,8 @@ public partial class SettingsUI : Control
         _mostrarNomeCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_nome", true).AsBool();
         _mostrarVidaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_vida", true).AsBool();
         _mostrarManaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_mana", true).AsBool();
+        _mostrarTagCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_tag_guild", true).AsBool();
+        _mostrarEmblemaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_emblema_guild", true).AsBool();
 
         foreach (var nome in InputMap.GetActions())
         {

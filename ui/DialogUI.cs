@@ -102,13 +102,15 @@ public partial class DialogUI : Control
         switch (dialogId?.ToLower())
         {
             case "banco":
-                _npcText.Text = $"[{npcNome}]\nPrecisa guardar seus tesouros? Estou aqui para ajudar!";
-                AdicionarOpcaoLocal("📦 Abrir Banco", () => AbrirBanco());
+                _npcText.Text = $"[{npcNome}]\nPrecisa guardar seus tesouros em um local seguro?\nDeseja abrir o banco agora?";
+                AdicionarOpcaoLocal("Sim, abrir banco", () => AbrirBanco());
+                AdicionarOpcaoLocal("Não, depois", Fechar);
                 break;
 
             case "guilda":
-                _npcText.Text = $"[{npcNome}]\nQuer fundar ou gerenciar sua guilda? Fale comigo!";
-                AdicionarOpcaoLocal("⚔ Criar Guilda", () => AbrirGuilda());
+                _npcText.Text = $"[{npcNome}]\nBem-vindo, aventureiro! Já ouviu falar de Solareth?\n\nDizem que é uma terra próspera onde aventureiros audaciosos fundaram sua própria guilda.\nVocê tem coragem de começar essa jornada?\n\n(Para fundar uma guilda é preciso ter 10.000 moedas de ouro ou um Pergaminho de Criação de Clã.)";
+                AdicionarOpcaoLocal("Quero fundar uma guilda em Solareth!", () => AbrirCriacaoGuilda());
+                AdicionarOpcaoLocal("Ainda não estou pronto", Fechar);
                 break;
 
             default:
@@ -150,6 +152,15 @@ public partial class DialogUI : Control
         if (guildScene == null) return;
         var guild = guildScene.Instantiate<GuildUI>();
         GetTree().CurrentScene.AddChild(guild);
+    }
+
+    private void AbrirCriacaoGuilda()
+    {
+        Fechar();
+        var scene = ResourceLoader.Load<PackedScene>("res://ui/GuildCreateUI.tscn");
+        if (scene == null) return;
+        var ui = scene.Instantiate<GuildCreateUI>();
+        GetTree().CurrentScene.AddChild(ui);
     }
 
     private void Fechar()
