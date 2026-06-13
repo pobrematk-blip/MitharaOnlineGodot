@@ -5,6 +5,10 @@ public partial class Main : Node2D
     public override void _Ready()
     {
         AplicarTemaGlobal();
+
+        var world = GetNodeOrNull<Node2D>("World");
+        if (world != null)
+            world.YSortEnabled = true;
     }
 
     private void AplicarTemaGlobal()

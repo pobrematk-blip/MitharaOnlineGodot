@@ -148,6 +148,8 @@ public partial class GameServer : INetEventListener
                         var entity = ch.GetEntity(session.EntityId);
                         if (entity is PlayerEntity player)
                         {
+                            if (session.SelectedCharacter != null)
+                                _db.SaveCharacterPosition(session.SelectedCharacter.Id, player.X, player.Y);
                             if (player.PartyId >= 0)
                                 _world.Parties.RemoveMember(session.EntityId);
                             if (player.GuildId >= 0)
@@ -350,6 +352,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_MobDropConfig:
                 HandleMobDropConfig(peer, reader);
                 break;
+            case PacketId.C2S_PetCapture:
+                HandlePetCapture(peer, reader);
+                break;
             }
         }
         catch (Exception ex)
@@ -390,6 +395,33 @@ public partial class GameServer : INetEventListener
             foreach (var kv in dropsByPrefab)
                 spawner.UpdateDropTable(kv.Key, kv.Value);
         }
+    }
+
+    private void HandlePetCapture(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        if (session.SelectedCharacter == null) return;
+
+        int petId = reader.GetInt();
+        string petName = reader.GetString();
+
+        _db.SavePet(session.SelectedCharacter.Id, petId, petName);
+        SendPetData(peer, session.SelectedCharacter.Id);
+
+        Logger.Info($"[PET] {session.SelectedCharacter.Name} capturou pet '{petName}' (ID:{petId})");
+    }
+
+    private void SendPetData(NetPeer peer, int characterId)
+    {
+        var pets = _db.LoadPets(characterId);
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_PetData);
+        writer.Put(pets.Count);
+        foreach (var (petId, petName) in pets)
+        {
+            writer.Put(petId);
+            writer.Put(petName);
+        }
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }
 

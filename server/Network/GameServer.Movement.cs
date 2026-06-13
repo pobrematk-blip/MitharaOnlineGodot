@@ -77,6 +77,9 @@ partial class GameServer
             entity.X = reader.GetFloat();
             entity.Y = reader.GetFloat();
         }
+
+        if (session.SelectedCharacter != null)
+            _db.SaveCharacterPosition(session.SelectedCharacter.Id, entity.X, entity.Y);
     }
 
     private void HandleChannelSwitch(NetPeer peer, NetDataReader reader)

@@ -221,6 +221,8 @@ partial class GameServer
 
         SendInventoryData(peer, player);
         SendGoldUpdate(peer, player.Gold);
+        if (!useInline && ch != null)
+            SendPetData(peer, ch.Id);
 
             if (channel != null)
             {

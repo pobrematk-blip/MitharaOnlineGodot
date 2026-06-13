@@ -48,6 +48,11 @@ public partial class PetColecaoComponent : Node
         GD.Print($"[COLECAO] Pet '{petNome}' (ID:{petId}) registrado na colecao!");
     }
 
+    public void Limpar()
+    {
+        _pets.Clear();
+    }
+
     public void ProcurarERegistrarRecurso(int petId)
     {
         for (int i = 0; i < _pets.Count; i++)

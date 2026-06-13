@@ -43,8 +43,6 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Vector2> _lastDirections = new();
     private readonly Dictionary<ulong, Vector2> _previousPositions = new();
     private const double InterpolationDelay = 0.08;
-    private Node2D? _localPlayerNode;
-
     private Node2D? ObterMundo()
     {
         if (_worldNode == null || !IsInstanceValid(_worldNode))
@@ -518,9 +516,12 @@ public partial class EntityManager : Node
             {
                 if (node is Node2D n2d && IsInstanceValid(n2d))
                 {
+                    // Skip if already linked to another NPC
+                    if (n2d.HasMeta("network_id"))
+                        continue;
                     float d = n2d.GlobalPosition.DistanceTo(pos);
                     GD.Print($"[EntityManager]   Verificando '{n2d.Name}' em {n2d.GlobalPosition} dist={d:F1}");
-                    if (d < 50f)
+                    if (d < 5f)
                     {
                         n2d.SetMeta("network_id", (long)entityId);
                         n2d.SetMeta("dialog_id", dialogId);
@@ -949,8 +950,6 @@ public partial class EntityManager : Node
 
     public override void _Process(double delta)
     {
-        AtualizarProfundidade();
-
         double now = Time.GetTicksMsec() / 1000.0;
 
         foreach (var kvp in _remoteStates)
@@ -996,22 +995,6 @@ public partial class EntityManager : Node
                 animDir = lastDir;
 
             UpdateRemoteAnimation(node, animDir, cur.Moving);
-        }
-    }
-
-    private void AtualizarProfundidade()
-    {
-        // Local player
-        if (_localPlayerNode == null || !IsInstanceValid(_localPlayerNode))
-            _localPlayerNode = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
-        if (_localPlayerNode != null)
-            _localPlayerNode.ZIndex = 10_000_000 + (int)(_localPlayerNode.GlobalPosition.Y * 1000f);
-
-        // All networked entities (remote players, mobs, npcs)
-        foreach (var kvp in _networkNodes)
-        {
-            if (IsInstanceValid(kvp.Value))
-                kvp.Value.ZIndex = 10_000_000 + (int)(kvp.Value.GlobalPosition.Y * 1000f);
         }
     }
 

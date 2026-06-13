@@ -298,6 +298,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_GuildCreateResult:
                 HandleGuildCreateResult(r);
                 break;
+            case PacketId.S2C_PetData:
+                HandlePetData(r);
+                break;
         } } catch (System.Exception ex)
         {
             LogError($"Erro processando pacote {id}", ex.ToString());
@@ -347,7 +350,7 @@ public partial class GameNetwork : Node
                 inv.AplicarDadosServidor(PendingInventoryData, ItemDB);
                 var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
                 if (save != null)
-                    save.CarregarInventario(inv.Slots, ItemDB);
+                    save.SalvarInventario(inv.Slots);
                 GD.Print("[GAME] Pending inventory applied");
             }
         }
@@ -373,10 +376,28 @@ public partial class GameNetwork : Node
                 GD.Print("[GAME] Pending equipment applied");
             }
         }
+
+        if (PendingPetData != null)
+        {
+            var colecao = player.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
+            if (colecao != null)
+            {
+                colecao.Limpar();
+                foreach (var entry in PendingPetData)
+                {
+                    int petId = (int)entry["pet_id"];
+                    string petName = (string)entry["pet_name"];
+                    colecao.RegistrarCaptura(petId, petName);
+                }
+                GD.Print("[GAME] Pending pet data applied");
+            }
+            PendingPetData = null;
+        }
     }
 
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingInventoryData { get; private set; }
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingEquipmentData { get; private set; }
+    public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingPetData { get; private set; }
 
     public void ClearAllEntities()
     {
@@ -391,6 +412,34 @@ public partial class GameNetwork : Node
     public override void _ExitTree()
     {
         ClearAllEntities();
+    }
+
+    private void HandlePetData(NetDataReader r)
+    {
+        int count = r.GetInt();
+        var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        for (int i = 0; i < count; i++)
+        {
+            int petId = r.GetInt();
+            string petName = r.GetString();
+            list.Add(new Godot.Collections.Dictionary
+            {
+                ["pet_id"] = petId,
+                ["pet_name"] = petName,
+            });
+        }
+        PendingPetData = list;
+        GD.Print($"[GAME] Received pet data: {count} pets");
+    }
+
+    public void SendPetCapture(int petId, string petName)
+    {
+        _client?.SendPacket(PacketId.C2S_PetCapture, w =>
+        {
+            w.Put(petId);
+            w.Put(petName);
+        });
+        GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId})");
     }
 }
 

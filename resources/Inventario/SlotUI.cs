@@ -356,6 +356,10 @@ public partial class SlotUI : Control
                 if (colecao != null)
                     colecao.RegistrarCaptura(capturedPetId, capturedPetNome);
 
+                var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+                if (gameNet != null && gameNet.IsConnected)
+                    gameNet.SendPetCapture(capturedPetId, capturedPetNome);
+
                 alvo.QueueFree();
                 var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
                 chat?.AddSystemMessage($"Pet '{capturedPetNome}' capturado com sucesso!");

@@ -27,6 +27,7 @@ public partial class EditorRecursosUI : Control
     private Button _btnSalvar;
     private Button _btnNovo;
     private Button _btnExcluir;
+    private Label _feedback;
 
     private RecursoResource _atual;
     private string _atualPath;
@@ -41,15 +42,15 @@ public partial class EditorRecursosUI : Control
     public override void _Ready()
     {
         const int margin = 8;
-        var panel = new Panel();
-        panel.Visible = true;
-        AddChild(panel);
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = new Color(0.15f, 0.15f, 0.2f, 0.95f) });
 
         var hbox = new HBoxContainer();
-        panel.AddChild(hbox);
+        AddChild(hbox);
+        hbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 
         var leftPanel = new VBoxContainer();
         leftPanel.CustomMinimumSize = new Vector2(200, 0);
+        leftPanel.SizeFlagsVertical = SizeFlags.ExpandFill;
         hbox.AddChild(leftPanel);
 
         leftPanel.AddChild(new Label { Text = "Recursos" });
@@ -59,17 +60,21 @@ public partial class EditorRecursosUI : Control
         leftPanel.AddChild(_listaRecursos);
 
         _btnNovo = new Button { Text = "+ Novo Recurso" };
+        _btnNovo.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         leftPanel.AddChild(_btnNovo);
 
         _btnExcluir = new Button { Text = "- Excluir" };
+        _btnExcluir.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         leftPanel.AddChild(_btnExcluir);
 
         var scroll = new ScrollContainer();
         scroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        scroll.SizeFlagsVertical = SizeFlags.ExpandFill;
         hbox.AddChild(scroll);
 
         var form = new VBoxContainer();
         form.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        form.SizeFlagsVertical = SizeFlags.ExpandFill;
         scroll.AddChild(form);
 
         void AddLabel(string text)
@@ -152,9 +157,15 @@ public partial class EditorRecursosUI : Control
         form.AddChild(new Control { CustomMinimumSize = new Vector2(0, 8) });
 
         _btnSalvar = new Button { Text = "Salvar Recurso" };
+        _btnSalvar.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _btnSalvar.AddThemeColorOverride("font_color", new Color(0, 0, 0));
         _btnSalvar.AddThemeStyleboxOverride("normal", new StyleBoxFlat { BgColor = new Color(0.3f, 0.8f, 0.3f) });
         form.AddChild(_btnSalvar);
+
+        _feedback = new Label();
+        _feedback.HorizontalAlignment = HorizontalAlignment.Center;
+        _feedback.AddThemeFontSizeOverride("font_size", 12);
+        form.AddChild(_feedback);
 
         _btnBrowse1.Pressed += () => BrowseTexture(idx => _texFase1 = idx, _previewFase1);
         _btnBrowse2.Pressed += () => BrowseTexture(idx => _texFase2 = idx, _previewFase2);
@@ -168,6 +179,18 @@ public partial class EditorRecursosUI : Control
         _listaRecursos.ItemSelected += OnItemSelected;
 
         CallDeferred(nameof(CarregarLista));
+    }
+
+    private void MostrarFeedback(string texto, Color cor)
+    {
+        _feedback.Text = texto;
+        _feedback.AddThemeColorOverride("font_color", cor);
+        var timer = GetTree().CreateTimer(2.5);
+        timer.Timeout += () =>
+        {
+            if (GodotObject.IsInstanceValid(_feedback))
+                _feedback.Text = "";
+        };
     }
 
     private void BrowseTexture(System.Action<Texture2D> setter, TextureRect preview)
@@ -197,7 +220,11 @@ public partial class EditorRecursosUI : Control
     {
         _listaRecursos.Clear();
         var dir = DirAccess.Open(DirRecursos);
-        if (dir == null) return;
+        if (dir == null)
+        {
+            MostrarFeedback("Diretorio 'Recursos' nao encontrado!", new Color(0.9f, 0.3f, 0.3f));
+            return;
+        }
 
         var paths = new List<string>();
         dir.ListDirBegin();
@@ -215,33 +242,31 @@ public partial class EditorRecursosUI : Control
         {
             var res = ResourceLoader.Load<RecursoResource>(p);
             if (res != null)
-                _listaRecursos.AddItem(res.Nome, null, false);
+            {
+                var idx = _listaRecursos.AddItem(res.Nome, null, false);
+                _listaRecursos.SetItemMetadata((int)idx, p);
+            }
         }
+
+        if (paths.Count == 0)
+            MostrarFeedback("Nenhum recurso encontrado. Crie um novo!", new Color(0.6f, 0.6f, 0.6f));
     }
 
     private void OnItemSelected(long index)
     {
-        var dir = DirAccess.Open(DirRecursos);
-        if (dir == null) return;
+        if (index < 0) return;
 
-        var paths = new List<string>();
-        dir.ListDirBegin();
-        while (true)
-        {
-            var f = dir.GetNext();
-            if (string.IsNullOrEmpty(f)) break;
-            if (f.EndsWith(".tres") || f.EndsWith(".res"))
-                paths.Add(DirRecursos + f);
-        }
-        dir.ListDirEnd();
-        paths.Sort();
+        var meta = _listaRecursos.GetItemMetadata((int)index);
+        if (meta.Obj == null) return;
 
-        if (index < 0 || index >= paths.Count) return;
-
-        _atualPath = paths[(int)index];
+        _atualPath = meta.AsString();
         _atual = ResourceLoader.Load<RecursoResource>(_atualPath);
 
-        if (_atual == null) return;
+        if (_atual == null)
+        {
+            MostrarFeedback("Erro ao carregar recurso!", new Color(0.9f, 0.3f, 0.3f));
+            return;
+        }
 
         _nomeEdit.Text = _atual.Nome;
         _tipoEdit.Text = _atual.Tipo;
@@ -290,25 +315,42 @@ public partial class EditorRecursosUI : Control
         _previewFase3.Texture = null;
         _previewFase4.Texture = null;
         _previewFase5.Texture = null;
+
+        MostrarFeedback("Novo recurso. Preencha os campos e salve.", new Color(0.3f, 0.8f, 0.4f));
     }
 
     private void OnExcluir()
     {
-        if (string.IsNullOrEmpty(_atualPath)) return;
+        if (string.IsNullOrEmpty(_atualPath))
+        {
+            MostrarFeedback("Nenhum recurso selecionado para excluir.", new Color(0.9f, 0.6f, 0.0f));
+            return;
+        }
         var dir = DirAccess.Open("res://");
         if (dir != null)
         {
-            dir.Remove(_atualPath);
+            var err = dir.Remove(_atualPath);
             _atual = null;
             _atualPath = null;
             OnNovo();
             CarregarLista();
+            MostrarFeedback(err == Error.Ok ? "Recurso excluido!" : "Erro ao excluir.", err == Error.Ok ? new Color(0.3f, 0.8f, 0.3f) : new Color(0.9f, 0.3f, 0.3f));
         }
     }
 
     private void OnSalvar()
     {
-        if (_atual == null) return;
+        if (_atual == null)
+        {
+            MostrarFeedback("Clique em '+ Novo Recurso' primeiro.", new Color(0.9f, 0.6f, 0.0f));
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_nomeEdit.Text))
+        {
+            MostrarFeedback("Preencha o nome do recurso!", new Color(0.9f, 0.3f, 0.3f));
+            return;
+        }
 
         _atual.Nome = _nomeEdit.Text;
         _atual.Tipo = _tipoEdit.Text;
@@ -334,11 +376,14 @@ public partial class EditorRecursosUI : Control
         var err = ResourceSaver.Save(_atual, _atualPath);
         if (err == Error.Ok)
         {
+            _feedback.Text = "";
+            MostrarFeedback("Recurso salvo com sucesso!", new Color(0.3f, 0.8f, 0.3f));
             CarregarLista();
             GD.Print($"[EditorRecursos] Salvo: {_atualPath}");
         }
         else
         {
+            MostrarFeedback($"Erro ao salvar: {err}", new Color(0.9f, 0.3f, 0.3f));
             GD.PrintErr($"[EditorRecursos] Erro ao salvar: {err}");
         }
     }

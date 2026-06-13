@@ -48,6 +48,7 @@ public enum PacketId : ushort
     C2S_BankWithdraw = 0x0185,
     C2S_BankRequest = 0x0186,
     C2S_MobDropConfig = 0x0190,
+    C2S_PetCapture = 0x0191,
     C2S_Ping = 0x01FF,
 
     S2C_LoginResult = 0x0201,
@@ -95,5 +96,6 @@ public enum PacketId : ushort
     S2C_GoldUpdate = 0x0286,
     S2C_OpenGuildForm = 0x0288,
     S2C_GuildCreateResult = 0x0289,
+    S2C_PetData = 0x0290,
     S2C_Pong = 0x02FF,
 }

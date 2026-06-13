@@ -98,6 +98,14 @@ public class DatabaseManager
                 claimed INTEGER NOT NULL DEFAULT 0,
                 FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS character_pets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                character_id INTEGER NOT NULL,
+                pet_id INTEGER NOT NULL,
+                pet_name TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
             """;
         cmd.ExecuteNonQuery();
 
@@ -404,6 +412,41 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@c", characterId);
         cmd.Parameters.AddWithValue("@s", slot);
         cmd.ExecuteNonQuery();
+    }
+
+    public void SavePet(int characterId, int petId, string petName)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var check = conn.CreateCommand();
+        check.CommandText = "SELECT id FROM character_pets WHERE character_id = @c AND pet_id = @p";
+        check.Parameters.AddWithValue("@c", characterId);
+        check.Parameters.AddWithValue("@p", petId);
+        var existing = check.ExecuteScalar();
+        if (existing != null) return;
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT INTO character_pets (character_id, pet_id, pet_name) VALUES (@c, @p, @n)";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@p", petId);
+        cmd.Parameters.AddWithValue("@n", petName);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<(int petId, string petName)> LoadPets(int characterId)
+    {
+        var result = new List<(int, string)>();
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT pet_id, pet_name FROM character_pets WHERE character_id = @c ORDER BY id";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add((reader.GetInt32(0), reader.GetString(1)));
+        }
+        return result;
     }
 
     public void SaveGuild(int guildId, string name, int level, int xp, int skillPoints)
