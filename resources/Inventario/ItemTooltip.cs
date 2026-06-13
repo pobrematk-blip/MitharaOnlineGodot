@@ -1,8 +1,20 @@
 using Godot;
+using System.Collections.Generic;
 
-public partial class ItemTooltip : PanelContainer
+public partial class ItemTooltip : Panel
 {
-    private RichTextLabel _content;
+    private VBoxContainer _container;
+    private Control _seletorCor;
+
+    private static readonly Dictionary<Raridade, Color> RarityColors = new()
+    {
+        [Raridade.Comum] = Color.FromHtml("#ffffff"),
+        [Raridade.Incomum] = Color.FromHtml("#1eff00"),
+        [Raridade.Raro] = Color.FromHtml("#0070dd"),
+        [Raridade.Epico] = Color.FromHtml("#a335ee"),
+        [Raridade.Lendario] = Color.FromHtml("#ffcc00"),
+        [Raridade.Mistico] = Color.FromHtml("#ff4444"),
+    };
 
     public override void _Ready()
     {
@@ -11,27 +23,21 @@ public partial class ItemTooltip : PanelContainer
 
         AddThemeStyleboxOverride("panel", new StyleBoxFlat
         {
-            BgColor = new Color(0.08f, 0.08f, 0.12f, 0.95f),
-            BorderColor = new Color(0.3f, 0.3f, 0.4f, 1),
-            CornerRadiusTopLeft = 4,
-            CornerRadiusTopRight = 4,
-            CornerRadiusBottomRight = 4,
-            CornerRadiusBottomLeft = 4,
+            BgColor = new Color(0.06f, 0.06f, 0.10f, 0.97f),
+            BorderColor = new Color(0.25f, 0.25f, 0.35f, 1),
+            CornerRadiusTopLeft = 6,
+            CornerRadiusTopRight = 6,
+            CornerRadiusBottomRight = 6,
+            CornerRadiusBottomLeft = 6,
             BorderWidthLeft = 1,
             BorderWidthRight = 1,
             BorderWidthTop = 1,
             BorderWidthBottom = 1,
         });
 
-        _content = new RichTextLabel();
-        _content.FitContent = true;
-        _content.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        _content.BbcodeEnabled = true;
-        _content.AddThemeFontSizeOverride("font_size", 11);
-        _content.AddThemeColorOverride("default_color", new Color(0.9f, 0.9f, 1));
-        _content.CustomMinimumSize = new Vector2(180, 0);
-        _content.Size = new Vector2(180, 0);
-        AddChild(_content);
+        _container = new VBoxContainer();
+        _container.AddThemeConstantOverride("separation", 0);
+        AddChild(_container);
 
         ProcessPriority = int.MaxValue;
     }
@@ -40,25 +46,62 @@ public partial class ItemTooltip : PanelContainer
     {
         if (item == null) { Esconder(); return; }
 
-        _content.Text = MontarDescricao(item);
+        foreach (var child in _container.GetChildren())
+            child.QueueFree();
+
+        Color cor = RarityColors.GetValueOrDefault(item.Raridade, Colors.White);
+        _seletorCor = new Control();
+        _seletorCor.CustomMinimumSize = new Vector2(0, 3);
+        _seletorCor.AddThemeColorOverride("theme_modulate", cor);
+        var topBar = new StyleBoxFlat();
+        topBar.BgColor = cor;
+        _seletorCor.AddThemeStyleboxOverride("panel", topBar);
+        _seletorCor.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _container.AddChild(_seletorCor);
+
+        AddHeader(item, cor);
+        AddSeparator();
+        AddStatus(item);
+        AddSeparator();
+        AddDescricao(item);
+        AddSeparator();
+        AddCartas();
+        AddSeparator();
+        AddRefino();
+        AddSeparator();
+        AddClasses(item);
+        AddSeparator();
+        AddValor(item);
+
+        _seletorCor = new Control();
+        _seletorCor.CustomMinimumSize = new Vector2(0, 3);
+        _seletorCor.AddThemeColorOverride("theme_modulate", cor);
+        var botBar = new StyleBoxFlat();
+        botBar.BgColor = cor;
+        _seletorCor.AddThemeStyleboxOverride("panel", botBar);
+        _seletorCor.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _container.AddChild(_seletorCor);
+
         Visible = true;
 
         var window = GetWindow();
         if (window == null) return;
 
-        float w = _content.Size.X + 16;
-        float h = _content.Size.Y + 16;
+        float cw = CustomMinimumSize.X > 0 ? CustomMinimumSize.X : 240;
+        float ch = _container.Size.Y + 16;
         float mx = posicaoGlobal.X + 16;
         float my = posicaoGlobal.Y;
 
-        if (mx + w > window.Size.X)
-            mx = posicaoGlobal.X - w - 16;
-        if (my + h > window.Size.Y)
-            my = window.Size.Y - h - 8;
+        if (mx + cw > window.Size.X)
+            mx = posicaoGlobal.X - cw - 16;
+        if (my + ch > window.Size.Y)
+            my = window.Size.Y - ch - 8;
         if (mx < 0) mx = 0;
         if (my < 0) my = 0;
 
         Position = new Vector2(mx, my);
+        CustomMinimumSize = new Vector2(cw, 0);
+        Size = new Vector2(cw, 0);
     }
 
     public void Esconder()
@@ -66,25 +109,46 @@ public partial class ItemTooltip : PanelContainer
         Visible = false;
     }
 
-    private static string MontarDescricao(ItemResource item)
+    private void AddHeader(ItemResource item, Color cor)
     {
-        var lines = new System.Collections.Generic.List<string>();
+        AddEspaco(4);
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left", 8);
+        margin.AddThemeConstantOverride("margin_right", 8);
+        margin.AddThemeConstantOverride("margin_top", 2);
+        margin.AddThemeConstantOverride("margin_bottom", 2);
 
-        // Rarity color
-        string corRaridade = item.Raridade switch
+        var hbox = new HBoxContainer();
+        hbox.AddThemeConstantOverride("separation", 8);
+
+        if (item.Icone != null)
         {
-            Raridade.Comum => "#ffffff",
-            Raridade.Incomum => "#1eff00",
-            Raridade.Raro => "#0070dd",
-            Raridade.Epico => "#a335ee",
-            Raridade.Lendario => "#ffcc00",
-            Raridade.Mistico => "#ff4444",
-            _ => "#ffffff",
-        };
+            var icon = new TextureRect();
+            icon.Texture = item.Icone;
+            icon.CustomMinimumSize = new Vector2(48, 48);
+            icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+            icon.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
+            var iconBg = new StyleBoxFlat();
+            iconBg.BgColor = new Color(0, 0, 0, 0.4f);
+            iconBg.CornerRadiusTopLeft = 4;
+            iconBg.CornerRadiusTopRight = 4;
+            iconBg.CornerRadiusBottomRight = 4;
+            iconBg.CornerRadiusBottomLeft = 4;
+            icon.AddThemeStyleboxOverride("panel", iconBg);
+            hbox.AddChild(icon);
+        }
 
-        string eliteTag = item.TipoItem == TipoItem.Elite ? " [color=#ff4444](Elite)[/color]" : "";
-        lines.Add($"[color={corRaridade}][b]{item.Nome}[/b]{eliteTag}[/color]");
+        var vbox = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 1);
 
+        var nome = new Label();
+        nome.Text = item.Nome.ToUpper();
+        nome.AddThemeColorOverride("font_color", cor);
+        nome.AddThemeFontSizeOverride("font_size", 15);
+        nome.AddThemeConstantOverride("outline_size", 1);
+        hbox.AddChild(vbox);
+
+        var raridadeLabel = new Label();
         string raridadeNome = item.Raridade switch
         {
             Raridade.Comum => "Comum",
@@ -95,80 +159,152 @@ public partial class ItemTooltip : PanelContainer
             Raridade.Mistico => "Místico",
             _ => "",
         };
-        lines.Add($"[color={corRaridade}]{raridadeNome}[/color]");
+        string eliteTag = item.TipoItem == TipoItem.Elite ? " (Elite)" : "";
+        raridadeLabel.Text = $"{raridadeNome}{eliteTag} | Nível {item.NivelRequerido}";
+        raridadeLabel.AddThemeColorOverride("font_color", cor);
+        raridadeLabel.AddThemeFontSizeOverride("font_size", 11);
+        vbox.AddChild(nome);
+        vbox.AddChild(raridadeLabel);
 
-        if (item.Tipo != TipoEquipamento.Nenhum)
-            lines.Add($"[color=#888888]{TraduzirTipo(item.Tipo)}[/color]");
+        string tipoTraduzido = TraduzirTipo(item.Tipo);
+        if (!string.IsNullOrEmpty(tipoTraduzido))
+        {
+            string slotTraduzido = TraduzirSlot(item.Tipo);
+            var tipoLabel = new Label();
+            tipoLabel.Text = $"{tipoTraduzido} | {slotTraduzido}";
+            tipoLabel.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f));
+            tipoLabel.AddThemeFontSizeOverride("font_size", 11);
+            vbox.AddChild(tipoLabel);
+        }
 
-        if (item.EhDuasMaos)
-            lines.Add("[color=#cc8844]Duas Mãos[/color]");
+        string pesoNome = item.CategoriaPeso switch
+        {
+            PesoItem.Leve => "LEVE",
+            PesoItem.Medio => "MÉDIO",
+            PesoItem.Pesado => "PESADO",
+            _ => "",
+        };
+        if (!string.IsNullOrEmpty(pesoNome))
+        {
+            var pesoLabel = new Label();
+            pesoLabel.Text = $"Classe do Item: {pesoNome}";
+            pesoLabel.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.7f));
+            pesoLabel.AddThemeFontSizeOverride("font_size", 10);
+            vbox.AddChild(pesoLabel);
+        }
 
-        if (item.NivelRequerido > 1)
-            lines.Add($"Nível requerido: [color=#ffcc00]{item.NivelRequerido}[/color]");
+        margin.AddChild(hbox);
+        _container.AddChild(margin);
+    }
 
-        if (!string.IsNullOrEmpty(item.Descricao))
-            lines.Add($"\n[color=#aaaaaa]{item.Descricao}[/color]");
+    private void AddStatus(ItemResource item)
+    {
+        AddSecaoTitulo("ESTATÍSTICAS");
 
-        bool temAtributo = false;
-        if (item.Forca != 0) { lines.Add($"Força {item.Forca:+0;-0}"); temAtributo = true; }
-        if (item.Agilidade != 0) { lines.Add($"Agilidade {item.Agilidade:+0;-0}"); temAtributo = true; }
-        if (item.Destreza != 0) { lines.Add($"Destreza {item.Destreza:+0;-0}"); temAtributo = true; }
-        if (item.Inteligencia != 0) { lines.Add($"Inteligência {item.Inteligencia:+0;-0}"); temAtributo = true; }
+        bool temAlgo = false;
 
-        bool temCombate = false;
-        if (item.DanoFisico > 0) { if (temAtributo || temCombate) lines.Add(""); lines.Add($"Dano Físico: [color=#ff6666]{item.DanoFisico}[/color]"); temCombate = true; }
-        if (item.DanoMagico > 0) { if (temAtributo || temCombate) lines.Add(""); lines.Add($"Dano Mágico: [color=#6666ff]{item.DanoMagico}[/color]"); temCombate = true; }
-        if (item.DefesaFisica > 0) { if (temAtributo || temCombate) lines.Add(""); lines.Add($"Defesa Física: [color=#66ff66]{item.DefesaFisica}[/color]"); temCombate = true; }
-        if (item.DefesaMagica > 0) { if (temAtributo || temCombate) lines.Add(""); lines.Add($"Defesa Mágica: [color=#66ff66]{item.DefesaMagica}[/color]"); temCombate = true; }
+        temAlgo |= AddStat(item.Forca, "Força", "+{0}", new Color(0.9f, 0.6f, 0.3f));
+        temAlgo |= AddStat(item.Agilidade, "Agilidade", "+{0}", new Color(0.3f, 0.8f, 0.3f));
+        temAlgo |= AddStat(item.Destreza, "Destreza", "+{0}", new Color(0.3f, 0.6f, 0.9f));
+        temAlgo |= AddStat(item.Inteligencia, "Inteligência", "+{0}", new Color(0.5f, 0.4f, 1.0f));
 
-        // Bonus stats
-        bool temBonus = false;
-        if (item.ChanceCritica > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Chance Crítica: [color=#ff6666]{item.ChanceCritica:F1}%[/color]"); temBonus = true; }
-        if (item.Evasao > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Evasão: [color=#66ff66]{item.Evasao:F1}%[/color]"); temBonus = true; }
-        if (item.DanoCriticoBonus > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Dano Crítico: [color=#ff8000]+{item.DanoCriticoBonus:F2}x[/color]"); temBonus = true; }
-        if (item.RouboVida > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Roubo de Vida: [color=#ff4444]{item.RouboVida:F1}%[/color]"); temBonus = true; }
-        if (item.RouboMana > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Roubo de Mana: [color=#6666ff]{item.RouboMana:F1}%[/color]"); temBonus = true; }
-        if (item.RegeneracaoVida > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Regen. Vida: [color=#66ff66]{item.RegeneracaoVida:F1}/s[/color]"); temBonus = true; }
-        if (item.RegeneracaoMana > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Regen. Mana: [color=#6666ff]{item.RegeneracaoMana:F1}/s[/color]"); temBonus = true; }
-        if (item.Hp > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Vida: [color=#66ff66]+{item.Hp}[/color]"); temBonus = true; }
-        if (item.Mana > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Mana: [color=#6666ff]+{item.Mana}[/color]"); temBonus = true; }
-        if (item.Stamina > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Stamina: [color=#66ff66]+{item.Stamina}[/color]"); temBonus = true; }
-        if (item.VelocidadeMovimento > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Vel. Movimento: [color=#66ff66]+{item.VelocidadeMovimento:F2}x[/color]"); temBonus = true; }
-        if (item.VelocidadeAtaque > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Vel. Ataque: [color=#ff6666]+{item.VelocidadeAtaque:F2}x[/color]"); temBonus = true; }
-        if (item.Precisao > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Precisão: [color=#66ff66]+{item.Precisao}[/color]"); temBonus = true; }
-        if (item.Tenacidade > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Tenacidade: [color=#66ff66]+{item.Tenacidade}[/color]"); temBonus = true; }
-        if (item.DanoPvp > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Dano PvP: [color=#ff6666]+{item.DanoPvp}[/color]"); temBonus = true; }
-        if (item.DefesaPvp > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Defesa PvP: [color=#66ff66]+{item.DefesaPvp}[/color]"); temBonus = true; }
-        if (item.PenetracaoArmadura > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Pen. Armadura: [color=#ff6666]+{item.PenetracaoArmadura}[/color]"); temBonus = true; }
-        if (item.ReducaoCooldown > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Red. Cooldown: [color=#66ff66]{item.ReducaoCooldown:F1}%[/color]"); temBonus = true; }
-        if (item.BonusExperiencia > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Bônus XP: [color=#ffdd66]{item.BonusExperiencia:F1}%[/color]"); temBonus = true; }
-        if (item.ChanceDropAumentada > 0) { if (temAtributo || temCombate || temBonus) lines.Add(""); lines.Add($"Chance Drop: [color=#ffdd66]{item.ChanceDropAumentada:F1}%[/color]"); temBonus = true; }
+        temAlgo |= AddStat(item.DefesaFisica, "Proteção", "+{0}", new Color(0.6f, 0.9f, 0.6f));
+        temAlgo |= AddStat(item.DefesaMagica, "Resist. Mágica", "+{0}", new Color(0.4f, 0.6f, 1.0f));
+        temAlgo |= AddStat(item.DanoFisico, "Dano Físico", "+{0}", new Color(1.0f, 0.4f, 0.4f));
+        temAlgo |= AddStat(item.DanoMagico, "Dano Mágico", "+{0}", new Color(0.4f, 0.4f, 1.0f));
 
-        if (!string.IsNullOrEmpty(item.AnimacaoUsar))
-            lines.Add($"\n[color=#ffaa33][i]Anim. Uso: {item.AnimacaoUsar}[/i][/color]");
+        temAlgo |= AddStatF(item.ChanceCritica, "Crítico", "+{0:F1}", new Color(1.0f, 0.5f, 0.2f));
+        temAlgo |= AddStatF(item.Evasao, "Evasão", "+{0:F1}", new Color(0.3f, 0.9f, 0.6f));
+        temAlgo |= AddStatF(item.DanoCriticoBonus, "Dano Crítico", "x{0:F2}", new Color(1.0f, 0.6f, 0.0f));
+        temAlgo |= AddStatF(item.RouboVida, "Roubo de Vida", "+{0:F1}%", new Color(1.0f, 0.3f, 0.3f));
+        temAlgo |= AddStatF(item.RouboMana, "Roubo de Mana", "+{0:F1}%", new Color(0.3f, 0.3f, 1.0f));
+        temAlgo |= AddStatF(item.RegeneracaoVida, "Regen. Vida", "+{0:F1}/s", new Color(0.4f, 1.0f, 0.4f));
+        temAlgo |= AddStatF(item.RegeneracaoMana, "Regen. Mana", "+{0:F1}/s", new Color(0.4f, 0.4f, 1.0f));
+        temAlgo |= AddStat(item.Hp, "Vida", "+{0}", new Color(0.5f, 1.0f, 0.5f));
+        temAlgo |= AddStat(item.Mana, "Mana", "+{0}", new Color(0.4f, 0.4f, 1.0f));
+        temAlgo |= AddStat(item.Stamina, "Stamina", "+{0}", new Color(0.6f, 1.0f, 0.6f));
+        temAlgo |= AddStatF(item.VelocidadeMovimento, "Vel. Movimento", "x{0:F2}", new Color(0.5f, 1.0f, 0.5f));
+        temAlgo |= AddStatF(item.VelocidadeAtaque, "Vel. Ataque", "x{0:F2}", new Color(1.0f, 0.5f, 0.5f));
+        temAlgo |= AddStatF(item.Precisao, "Precisão", "+{0:F1}", new Color(0.5f, 0.8f, 1.0f));
+        temAlgo |= AddStatF(item.Tenacidade, "Tenacidade", "+{0:F1}", new Color(0.8f, 0.5f, 1.0f));
+        temAlgo |= AddStat(item.DanoPvp, "Dano PvP", "+{0}", new Color(1.0f, 0.3f, 0.3f));
+        temAlgo |= AddStat(item.DefesaPvp, "Defesa PvP", "+{0}", new Color(0.3f, 0.8f, 0.8f));
+        temAlgo |= AddStat(item.PenetracaoArmadura, "Pen. Armadura", "+{0}", new Color(1.0f, 0.5f, 0.2f));
+        temAlgo |= AddStatF(item.ReducaoCooldown, "Red. Cooldown", "+{0:F1}%", new Color(0.4f, 0.7f, 1.0f));
+        temAlgo |= AddStatF(item.BonusExperiencia, "Bônus XP", "+{0:F1}%", new Color(1.0f, 0.85f, 0.3f));
+        temAlgo |= AddStatF(item.ChanceDropAumentada, "Chance Drop", "+{0:F1}%", new Color(1.0f, 0.8f, 0.3f));
 
-        if (!string.IsNullOrEmpty(item.AnimacaoEquipado))
-            lines.Add($"[color=#ffaa33][i]Anim. Equip: {item.AnimacaoEquipado}[/i][/color]");
+        if (!temAlgo)
+        {
+            var vazio = new Label();
+            vazio.Text = "Nenhum atributo adicional";
+            vazio.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
+            vazio.AddThemeFontSizeOverride("font_size", 11);
+            AddMargined(vazio, 8, 2);
+        }
+    }
 
-        if (item.EhBolsa)
-            lines.Add($"\n[color=#ffaa33]Bolsa: +{item.SlotsAdicionais} slots[/color]");
+    private void AddDescricao(ItemResource item)
+    {
+        if (string.IsNullOrEmpty(item.Descricao)) return;
+        AddSecaoTitulo("DESCRIÇÃO");
+        var desc = new Label();
+        desc.Text = item.Descricao;
+        desc.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        desc.AddThemeColorOverride("font_color", new Color(0.75f, 0.75f, 0.85f));
+        desc.AddThemeFontSizeOverride("font_size", 11);
+        AddMargined(desc, 8, 2);
+    }
 
-        if (item.Acumulavel && item.QuantidadeMaximaPorSlot > 1)
-            lines.Add($"\nMáx por slot: {item.QuantidadeMaximaPorSlot}");
+    private void AddCartas()
+    {
+        AddSecaoTitulo("CARTAS");
+        var vazio = new Label();
+        vazio.Text = "Nenhuma carta equipada";
+        vazio.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
+        vazio.AddThemeFontSizeOverride("font_size", 11);
+        AddMargined(vazio, 8, 2);
+    }
 
-        if (item.Valor > 0)
-            lines.Add($"\n[color=#ffdd66]Valor: {item.Valor} moedas[/color]");
+    private void AddRefino()
+    {
+        AddSecaoTitulo("REFINO");
+        var vazio = new Label();
+        vazio.Text = "Item sem refino";
+        vazio.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
+        vazio.AddThemeFontSizeOverride("font_size", 11);
+        AddMargined(vazio, 8, 2);
+    }
 
-        if (item.TempoCooldown > 0)
-            lines.Add($"\n[color=#88ccff]Cooldown: {item.TempoCooldown}s[/color]");
+    private void AddClasses(ItemResource item)
+    {
+        if (string.IsNullOrEmpty(item.ClassesPermitidas)) return;
+        AddSecaoTitulo("CLASSES QUE PODEM USAR");
+        var classes = new Label();
+        classes.Text = item.ClassesPermitidas.Replace(",", "\n");
+        classes.AddThemeColorOverride("font_color", new Color(0.8f, 0.8f, 0.9f));
+        classes.AddThemeFontSizeOverride("font_size", 12);
+        AddMargined(classes, 8, 2);
+    }
 
-        lines.Add($"\n[color=#888888]Drop: {(item.PodeDropar ? "Sim" : "Não")}  |  Troca: {(item.PodeTrocar ? "Sim" : "Não")}  |  Venda: {(item.PodeVender ? "Sim" : "Não")}[/color]");
-        if (item.PodeDropar)
-            lines.Add($"[color=#888888]Desaparece em: {item.TempoDesaparecimento}s[/color]");
-        if (item.DropEmPk)
-            lines.Add($"[color=#ff6666]Drop em PK: {item.ChanceDrop}%[/color]");
+    private void AddValor(ItemResource item)
+    {
+        AddEspaco(2);
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left", 8);
+        margin.AddThemeConstantOverride("margin_right", 8);
+        margin.AddThemeConstantOverride("margin_top", 2);
+        margin.AddThemeConstantOverride("margin_bottom", 4);
 
-        return string.Join("\n", lines);
+        var hbox = new HBoxContainer();
+        var label = new Label();
+        label.Text = item.Valor > 0 ? $"VENDA: {item.Valor:N0} GOLD" : "Sem valor de venda";
+        label.AddThemeColorOverride("font_color", new Color(1.0f, 0.85f, 0.3f));
+        label.AddThemeFontSizeOverride("font_size", 12);
+        hbox.AddChild(label);
+        hbox.AddSpacer(true);
+        margin.AddChild(hbox);
+        _container.AddChild(margin);
     }
 
     private static string TraduzirTipo(TipoEquipamento tipo)
@@ -176,7 +312,7 @@ public partial class ItemTooltip : PanelContainer
         return tipo switch
         {
             TipoEquipamento.Capacete => "Capacete",
-            TipoEquipamento.Peitoral => "Peitoral",
+            TipoEquipamento.Peitoral => "Armadura",
             TipoEquipamento.Cinto => "Cinto",
             TipoEquipamento.Luvas => "Luvas",
             TipoEquipamento.Calca => "Calças",
@@ -196,5 +332,87 @@ public partial class ItemTooltip : PanelContainer
             TipoEquipamento.Feitico => "Feitiço",
             _ => "",
         };
+    }
+
+    private static string TraduzirSlot(TipoEquipamento tipo)
+    {
+        return tipo switch
+        {
+            TipoEquipamento.Capacete => "Cabeça",
+            TipoEquipamento.Peitoral => "Torso",
+            TipoEquipamento.Cinto => "Cintura",
+            TipoEquipamento.Luvas => "Mãos",
+            TipoEquipamento.Calca => "Pernas",
+            TipoEquipamento.Botas => "Pés",
+            TipoEquipamento.Arma => "Mão",
+            TipoEquipamento.Escudo => "Mão Secundária",
+            TipoEquipamento.Colar => "Pescoço",
+            TipoEquipamento.Anel => "Dedos",
+            TipoEquipamento.Brinco => "Orelhas",
+            TipoEquipamento.Runa => "Runa",
+            TipoEquipamento.Asa => "Costas",
+            TipoEquipamento.Montaria => "Montaria",
+            TipoEquipamento.Pet => "Pet",
+            TipoEquipamento.Skin => "Skin",
+            _ => "",
+        };
+    }
+
+    private bool AddStat(int valor, string nome, string formato, Color cor)
+    {
+        if (valor == 0) return false;
+        var label = new Label();
+        label.Text = $"+{valor} {nome}";
+        label.AddThemeColorOverride("font_color", cor);
+        label.AddThemeFontSizeOverride("font_size", 12);
+        AddMargined(label, 12, 1);
+        return true;
+    }
+
+    private bool AddStatF(float valor, string nome, string formato, Color cor)
+    {
+        if (valor == 0) return false;
+        var label = new Label();
+        label.Text = $"+{valor:F1} {nome}";
+        label.AddThemeColorOverride("font_color", cor);
+        label.AddThemeFontSizeOverride("font_size", 12);
+        AddMargined(label, 12, 1);
+        return true;
+    }
+
+    private void AddSecaoTitulo(string titulo)
+    {
+        var label = new Label();
+        label.Text = titulo;
+        label.AddThemeColorOverride("font_color", new Color(0.5f, 0.55f, 0.7f));
+        label.AddThemeFontSizeOverride("font_size", 10);
+        label.AddThemeConstantOverride("outline_size", 0);
+        AddMargined(label, 8, 2);
+    }
+
+    private void AddSeparator()
+    {
+        var sep = new HSeparator();
+        sep.AddThemeColorOverride("color", new Color(0.2f, 0.2f, 0.3f, 1));
+        sep.CustomMinimumSize = new Vector2(0, 1);
+        _container.AddChild(sep);
+    }
+
+    private void AddMargined(Control child, int leftRight, int topBottom)
+    {
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left", leftRight);
+        margin.AddThemeConstantOverride("margin_right", leftRight);
+        margin.AddThemeConstantOverride("margin_top", topBottom);
+        margin.AddThemeConstantOverride("margin_bottom", topBottom);
+        margin.AddChild(child);
+        _container.AddChild(margin);
+    }
+
+    private void AddEspaco(int px)
+    {
+        var esp = new Control();
+        esp.CustomMinimumSize = new Vector2(0, px);
+        _container.AddChild(esp);
     }
 }

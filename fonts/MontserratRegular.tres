@@ -1,0 +1,10 @@
+[gd_resource type="FontFile" load_steps=2 format=3 uid="uid://dydnm2if48gjw"]
+
+[ext_resource type="FontFile" path="res://fonts/Montserrat-Variable.ttf" id="1_regular"]
+
+[resource]
+resource_name = "Montserrat Regular"
+font_data = ExtResource("1_regular")
+font_data/variation_opentype = {
+"wght": 400.0
+}
