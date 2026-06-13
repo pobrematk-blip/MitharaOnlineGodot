@@ -76566,7 +76566,6 @@ radius = 40.0
 script = ExtResource("32_main")
 
 [node name="World" type="Node2D" parent="."]
-y_sort_enabled = true
 
 [node name="mapaintersect" type="TileMapLayer" parent="World"]
 z_index = -1

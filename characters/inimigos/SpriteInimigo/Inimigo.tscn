@@ -564,7 +564,6 @@ animations = [{
 size = Vector2(26, 46)
 
 [node name="Inimigo" type="CharacterBody2D"]
-y_sort_enabled = true
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("script_inimigo")
