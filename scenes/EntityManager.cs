@@ -291,6 +291,11 @@ public partial class EntityManager : Node
             foreach (var s in _pendingSpawns)
                 ProcessSpawn(s.EntityId, s.EntityType, s.Name, s.X, s.Y, s.Level, s.Health, s.MaxHealth, s.Extra1, s.Extra2, s.Extra3);
             _pendingSpawns.Clear();
+
+            // Fechar tela de carregamento
+            var loading = GetTree()?.Root.GetNodeOrNull("LoadingScreen");
+            if (loading != null)
+                loading.QueueFree();
         }
         catch (System.Exception ex)
         {

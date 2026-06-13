@@ -1,4 +1,4 @@
-[gd_scene load_steps=82 format=4 uid="uid://c3ocjs01psycc"]
+[gd_scene load_steps=84 format=4 uid="uid://c3ocjs01psycc"]
 
 [ext_resource type="Texture2D" uid="uid://buwum1ed2iflk" path="res://tiles/TileSets/$CL_Buildings (1).png" id="1_agua"]
 [ext_resource type="Texture2D" uid="uid://c2s12g1mrpj68" path="res://tiles/TileSets/$CL_Buildings (6).png" id="1_bjd11"]
@@ -41,10 +41,7 @@
 [ext_resource type="PackedScene" uid="uid://respawnui" path="res://ui/RespawnUI.tscn" id="28_respawnui"]
 [ext_resource type="Script" uid="uid://pqbk041quy2l" path="res://scenes/SpawnerInimigo.cs" id="30_spawnerscript"]
 [ext_resource type="PackedScene" uid="uid://emvoxtm5y7ht" path="res://characters/Inimigos/SpriteInimigo/Inimigo.tscn" id="31_inimigo"]
-[ext_resource type="Script" path="res://scenes/Main.cs" id="32_main"]
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_npc"]
-radius = 40.0
+[ext_resource type="Script" uid="uid://c1fhm5tup4r47" path="res://scenes/Main.cs" id="32_main"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8b871"]
 texture = ExtResource("1_cmqll")
@@ -76562,6 +76559,9 @@ sources/0 = SubResource("TileSetAtlasSource_gjpm3")
 sources/4 = SubResource("TileSetAtlasSource_knagv")
 sources/5 = SubResource("TileSetAtlasSource_pb578")
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_npc"]
+radius = 40.0
+
 [node name="main" type="Node2D"]
 script = ExtResource("32_main")
 
@@ -76681,7 +76681,6 @@ position = Vector2(310, 211)
 [node name="Banqueiro" type="CharacterBody2D" parent="World"]
 position = Vector2(1040, 1050)
 collision_layer = 2
-groups = ["NPC"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/Banqueiro"]
 shape = SubResource("CircleShape2D_npc")
@@ -76689,7 +76688,6 @@ shape = SubResource("CircleShape2D_npc")
 [node name="GuardaSolareth" type="CharacterBody2D" parent="World"]
 position = Vector2(1070, 1050)
 collision_layer = 2
-groups = ["NPC"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/GuardaSolareth"]
 shape = SubResource("CircleShape2D_npc")

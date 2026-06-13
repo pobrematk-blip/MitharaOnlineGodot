@@ -1,0 +1,6 @@
+[gd_scene format=4 uid="uid://loadingscreen"]
+
+[ext_resource type="Script" uid="uid://loadingscreencs" path="res://ui/LoadingScreen.cs" id="1_8n3f2"]
+
+[node name="LoadingScreen" type="CanvasLayer"]
+script = ExtResource("1_8n3f2")

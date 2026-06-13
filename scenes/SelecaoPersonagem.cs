@@ -397,6 +397,8 @@ public partial class SelecaoPersonagem : Control
     {
         if (_slotSelecionado == null) return;
 
+        MostrarTelaCarregamento();
+
         var escolhido = GetNode<PersonagemEscolhido>("/root/PersonagemEscolhido");
 
         if (_net != null && _net.IsConnected)
@@ -430,6 +432,16 @@ public partial class SelecaoPersonagem : Control
             if (!escolhido.CarregarSlot(_slotSelecionado.Value)) return;
             GetTree().ChangeSceneToFile(SceneConstants.MAIN);
         }
+    }
+
+    private void MostrarTelaCarregamento()
+    {
+        var existing = GetTree().Root.GetNodeOrNull("LoadingScreen");
+        if (existing != null) return;
+
+        var loading = ResourceLoader.Load<PackedScene>("res://ui/LoadingScreen.tscn").Instantiate<LoadingScreen>();
+        loading.Name = "LoadingScreen";
+        GetTree().Root.AddChild(loading);
     }
 
     private void OnCriarNovo()
