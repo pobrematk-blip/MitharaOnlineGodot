@@ -466,6 +466,7 @@ public partial class EntityManager : Node
             inimigo.AnimPrefix = MobSpriteFramesBuilder.ObterPrefixo(mobType);
             inimigo.SetMeta("network_id", entityId);
             inimigo.SetMeta(MetaAnimPrefix, inimigo.AnimPrefix);
+            inimigo.NetworkTargetPos = new Vector2(x, y);
             { var _p = ObterMundo(); if (_p != null) _p.AddChild(inimigo); else AddChild(inimigo); }
             return inimigo;
         }
