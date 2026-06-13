@@ -976,8 +976,15 @@ public partial class EntityManager : Node
 
             double elapsed = now - cur.Timestamp;
 
-            float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
-            node.Position = node.Position.Lerp(cur.Position, lerpWeight);
+            if (node is Inimigo inimigo)
+            {
+                inimigo.NetworkTargetPos = cur.Position;
+            }
+            else
+            {
+                float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
+                node.Position = node.Position.Lerp(cur.Position, lerpWeight);
+            }
 
             // Use last direction for idle facing when current direction is zero
             Vector2 animDir = computedDir;

@@ -105,6 +105,7 @@ public partial class Inimigo : CharacterBody2D
     }
 
     public bool IsNetworked => HasMeta("network_id");
+    public Vector2 NetworkTargetPos { get; set; }
 
     private void EscolherNovoPontoPatrulha()
     {
@@ -320,6 +321,19 @@ public partial class Inimigo : CharacterBody2D
                         _sprite.Play(idleAnim);
                 }
             }
+
+            Vector2 toTarget = NetworkTargetPos - GlobalPosition;
+            float dist = toTarget.Length();
+            if (dist > 2f)
+            {
+                float speed = Mathf.Clamp(dist * 15f, 50f, 400f);
+                Velocity = toTarget / dist * speed;
+            }
+            else
+            {
+                Velocity = Vector2.Zero;
+            }
+            MoveAndSlide();
             return;
         }
 
