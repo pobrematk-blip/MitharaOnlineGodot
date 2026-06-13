@@ -14,8 +14,16 @@ public partial class LoadingScreen : CanvasLayer
         rootCtrl.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         AddChild(rootCtrl);
 
+        _bg = new TextureRect();
+        _bg.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _bg.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        var bgTexture = ResourceLoader.Load<Texture2D>("res://ui/Tela de Carregamento/Tela de Carregamento.png");
+        if (bgTexture != null)
+            _bg.Texture = bgTexture;
+        rootCtrl.AddChild(_bg);
+
         var overlay = new ColorRect();
-        overlay.Color = new Color(0, 0, 0, 0.85f);
+        overlay.Color = new Color(0, 0, 0, 0.4f);
         overlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         rootCtrl.AddChild(overlay);
 
@@ -26,11 +34,6 @@ public partial class LoadingScreen : CanvasLayer
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 20);
         center.AddChild(vbox);
-
-        _bg = new TextureRect();
-        _bg.StretchMode = TextureRect.StretchModeEnum.KeepCentered;
-        _bg.CustomMinimumSize = new Vector2(400, 300);
-        vbox.AddChild(_bg);
 
         _status = new Label();
         _status.Text = "Carregando...";
