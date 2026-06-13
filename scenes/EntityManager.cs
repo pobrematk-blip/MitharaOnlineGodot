@@ -945,15 +945,8 @@ public partial class EntityManager : Node
 
             double elapsed = now - cur.Timestamp;
 
-            if (cur.Moving)
-            {
-                Vector2 predicted = cur.Position + computedDir * (185f * (float)elapsed);
-                node.Position = node.Position.Lerp(predicted, (float)Mathf.Min(delta * 10.0, 1.0));
-            }
-            else
-            {
-                node.Position = node.Position.Lerp(cur.Position, (float)Mathf.Min(delta * 15.0, 1.0));
-            }
+            float lerpWeight = cur.Moving ? (float)Mathf.Min(delta * 30.0, 1.0) : (float)Mathf.Min(delta * 50.0, 1.0);
+            node.Position = node.Position.Lerp(cur.Position, lerpWeight);
 
             // Use last direction for idle facing when current direction is zero
             Vector2 animDir = computedDir;

@@ -203,7 +203,7 @@ public class Channel
                     _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
                 }
             }
-            else
+            else if (!mob.Passive)
             {
                 var nearby = GetEntitiesInAoi(mob.X, mob.Y);
                 ulong? closestPlayer = null;

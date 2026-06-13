@@ -26,10 +26,11 @@ public class MonsterTemplate
     public int Inteligencia { get; set; } = 0;
     public float Speed { get; set; } = 100f;
     public float AttackRange { get; set; } = 40f;
-    public float AggroRange { get; set; } = 300f;
+    public float AggroRange { get; set; } = 384f;
     public float AttackCooldown { get; set; } = 1.5f;
     public int ExperienceReward { get; set; } = 10;
     public bool IsBoss { get; set; }
+    public bool Passive { get; set; } = true;
     public string FactionId { get; set; } = "monster";
     public List<LootEntry> LootTable { get; set; } = new();
     public int GoldMin { get; set; }
@@ -167,6 +168,7 @@ public class SpawnerManager
             AggroRange = 500f,
             ExperienceReward = 500,
             IsBoss = true,
+            Passive = false,
             GoldMin = 50,
             GoldMax = 200,
             LootTable = new List<LootEntry>
@@ -228,6 +230,7 @@ public class SpawnerManager
             AttackCooldown = template.AttackCooldown,
             ExperienceReward = template.ExperienceReward,
             IsBoss = template.IsBoss,
+            Passive = template.Passive,
             FactionId = template.FactionId,
             X = x,
             Y = y,
@@ -267,6 +270,7 @@ public class SpawnerManager
             AttackCooldown = template.AttackCooldown,
             ExperienceReward = template.ExperienceReward,
             IsBoss = template.IsBoss,
+            Passive = template.Passive,
             FactionId = template.FactionId,
             X = spawnX,
             Y = spawnY,

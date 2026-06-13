@@ -230,7 +230,7 @@ partial class GameServer
         float dx = target.X - attacker.X;
         float dy = target.Y - attacker.Y;
         float dist = MathF.Sqrt(dx * dx + dy * dy);
-        float attackRange = 800f;
+        float attackRange = 320f;
 
         if (dist > attackRange) return;
 
@@ -248,6 +248,11 @@ partial class GameServer
 
         target.Health -= damage;
         if (target.Health < 0) target.Health = 0;
+
+        if (target is MonsterEntity hitMob)
+        {
+            hitMob.TargetEntityId = session.EntityId;
+        }
 
         var writerCombat = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
         writerCombat.Put(session.EntityId);

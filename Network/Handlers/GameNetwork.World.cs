@@ -95,6 +95,7 @@ partial class GameNetwork
                 int expReward = r.GetInt();
                 extra1 = r.GetString(); // PrefabId for scene selection
                 extra2 = name; // Keep original name
+                bool passive = r.GetBool(); // not used client-side
                 break;
             case 3:
                 typeLabel = "npc";

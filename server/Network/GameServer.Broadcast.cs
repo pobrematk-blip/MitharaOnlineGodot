@@ -237,6 +237,7 @@ partial class GameServer
             writer.Put(mob.IsBoss);
             writer.Put(mob.ExperienceReward);
             writer.Put(mob.PrefabId);
+            writer.Put(mob.Passive);
         }
         else if (entity is NPCEntity npc)
         {
