@@ -138,12 +138,11 @@ public partial class EntityManager : Node
         _gameNet.OnRespawn += OnRespawnHandler;
         _gameNet.OnLootSpawn += OnLootSpawn;
         _gameNet.OnLootDespawn += OnLootDespawn;
-
-        CarregarCenasMob();
     }
 
     private void OnEnterWorldHandler()
     {
+        CarregarCenasMob();
         CallDeferred(nameof(FlushPendingSpawns));
         CallDeferred(nameof(EnviarDropsParaServidor));
     }
@@ -977,7 +976,7 @@ public partial class EntityManager : Node
 
             double elapsed = now - cur.Timestamp;
 
-            float lerpWeight = cur.Moving ? (float)Mathf.Min(delta * 30.0, 1.0) : (float)Mathf.Min(delta * 50.0, 1.0);
+            float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
             node.Position = node.Position.Lerp(cur.Position, lerpWeight);
 
             // Use last direction for idle facing when current direction is zero

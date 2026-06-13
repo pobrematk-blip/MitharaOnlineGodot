@@ -1,4 +1,4 @@
-[gd_scene format=4 uid="uid://loadingscreen"]
+[gd_scene load_steps=0 format=4 uid="uid://dxgmcjma7dmu4"]
 
 [ext_resource type="Script" uid="uid://loadingscreencs" path="res://ui/LoadingScreen.cs" id="1_8n3f2"]
 

@@ -205,6 +205,21 @@ public class Channel
             }
             else
             {
+                // Leash: if too far from spawn, force return
+                float spawnDx = mob.X - mob.SpawnX;
+                float spawnDy = mob.Y - mob.SpawnY;
+                float distFromSpawn = MathF.Sqrt(spawnDx * spawnDx + spawnDy * spawnDy);
+
+                if (distFromSpawn > MonsterEntity.MaxWanderRange)
+                {
+                    // Force patrol target toward spawn
+                    float returnAngle = MathF.Atan2(-spawnDy, -spawnDx);
+                    float returnDist = 50f + MathF.Min(distFromSpawn - MonsterEntity.ReturnRange, 300f);
+                    mob.PatrolTargetX = mob.X + MathF.Cos(returnAngle) * returnDist;
+                    mob.PatrolTargetY = mob.Y + MathF.Sin(returnAngle) * returnDist;
+                    mob.PatrolTimer = gameTime + 1.0;
+                }
+
                 // Patrol: runs for ALL mobs (both passive and aggressive)
                 if (mob.PatrolTargetX.HasValue && mob.PatrolTargetY.HasValue)
                 {
@@ -234,9 +249,11 @@ public class Channel
                 else if (gameTime >= mob.PatrolTimer)
                 {
                     float angle = Random.Shared.NextSingle() * MathF.PI * 2;
-                    float dist = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
-                    mob.PatrolTargetX = mob.SpawnX + MathF.Cos(angle) * dist;
-                    mob.PatrolTargetY = mob.SpawnY + MathF.Sin(angle) * dist;
+                    float range = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
+                    if (distFromSpawn > MonsterEntity.ReturnRange)
+                        range = MathF.Min(range, distFromSpawn * 0.5f);
+                    mob.PatrolTargetX = mob.SpawnX + MathF.Cos(angle) * range;
+                    mob.PatrolTargetY = mob.SpawnY + MathF.Sin(angle) * range;
                 }
                 else
                 {

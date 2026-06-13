@@ -21,6 +21,9 @@ public class MonsterEntity : Entity
     public float? PatrolTargetY { get; set; }
     public double PatrolTimer { get; set; }
 
+    public const float MaxWanderRange = 1280f;
+    public const float ReturnRange = 1120f;
+
     public MonsterEntity()
     {
         Type = EntityType.Monster;

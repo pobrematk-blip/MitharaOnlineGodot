@@ -28,12 +28,19 @@ public static class LpcSpriteFramesBuilder
         ["guerreiro"] = (RowSlash, 6, 5f),
     };
 
+    private static readonly Dictionary<string, SpriteFrames> _cache = new();
+
     public static SpriteFrames Construir(Texture2D sheet, string prefixoAtaque)
     {
-        var frames = new SpriteFrames();
-        if (sheet == null) return frames;
+        if (sheet == null) return new SpriteFrames();
 
         prefixoAtaque = string.IsNullOrWhiteSpace(prefixoAtaque) ? "mago" : prefixoAtaque.Trim().ToLowerInvariant();
+
+        string cacheKey = $"{sheet.ResourcePath}:{prefixoAtaque}";
+        if (_cache.TryGetValue(cacheKey, out var cached))
+            return cached;
+
+        var frames = new SpriteFrames();
         var (atkRowBase, atkFrameCount, atkSpeed) = MapaAtaque.GetValueOrDefault(prefixoAtaque, (RowSlash, 6, 5f));
 
         for (int d = 0; d < Direcoes.Length; d++)
@@ -61,6 +68,7 @@ public static class LpcSpriteFramesBuilder
 
         AdicionarAnimacao(frames, sheet, "death", RowHurt, 6, false, 5f);
 
+        _cache[cacheKey] = frames;
         return frames;
     }
 
