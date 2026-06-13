@@ -7,7 +7,7 @@ public class MonsterEntity : Entity
     public string PrefabId { get; set; } = "";
     public int AttackDamage { get; set; }
     public float AttackRange { get; set; } = 40f;
-    public float AggroRange { get; set; } = 384f;
+    public float AggroRange { get; set; } = 768f;
     public bool Passive { get; set; } = true;
     public float AttackCooldown { get; set; } = 1.5f;
     public double LastAttackTime { get; set; }

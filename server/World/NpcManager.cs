@@ -110,10 +110,6 @@ public class NpcManager
             FactionId = "solari",
         });
 
-        _spawnPoints.Add(new NpcSpawnPoint { X = 920, Y = 950, PrefabId = "velho_sabio" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 980, Y = 940, PrefabId = "mestre_guerreiro" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 900, Y = 1050, PrefabId = "mercador" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 960, PrefabId = "mestre_treino" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1040, Y = 1050, PrefabId = "banqueiro" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1050, PrefabId = "guarda_solareth" });
     }

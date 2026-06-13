@@ -43,6 +43,9 @@
 [ext_resource type="PackedScene" uid="uid://emvoxtm5y7ht" path="res://characters/Inimigos/SpriteInimigo/Inimigo.tscn" id="31_inimigo"]
 [ext_resource type="Script" path="res://scenes/Main.cs" id="32_main"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_npc"]
+radius = 40.0
+
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8b871"]
 texture = ExtResource("1_cmqll")
 texture_region_size = Vector2i(32, 32)
@@ -76675,6 +76678,22 @@ position = Vector2(272, 211)
 [node name="PocaoVida" parent="World" instance=ExtResource("5_vcsgt")]
 position = Vector2(310, 211)
 
+[node name="Banqueiro" type="CharacterBody2D" parent="World"]
+position = Vector2(1040, 1050)
+collision_layer = 2
+groups = ["NPC"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Banqueiro"]
+shape = SubResource("CircleShape2D_npc")
+
+[node name="GuardaSolareth" type="CharacterBody2D" parent="World"]
+position = Vector2(1070, 1050)
+collision_layer = 2
+groups = ["NPC"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/GuardaSolareth"]
+shape = SubResource("CircleShape2D_npc")
+
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="InventarioUi" parent="HUD" instance=ExtResource("4_rarhs")]
@@ -76749,6 +76768,6 @@ offset_right = 0.0
 offset_bottom = 230.0
 grow_horizontal = 0
 
-[node name="ItemTooltip" type="PanelContainer" parent="UI"]
+[node name="ItemTooltip" type="Panel" parent="UI"]
 mouse_filter = 2
 script = ExtResource("24_tooltip")

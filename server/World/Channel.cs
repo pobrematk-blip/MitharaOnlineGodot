@@ -203,72 +203,74 @@ public class Channel
                     _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
                 }
             }
-            else if (!mob.Passive)
+            else
             {
-                var nearby = GetEntitiesInAoi(mob.X, mob.Y);
-                ulong? closestPlayer = null;
-                float closestDist = mob.AggroRange;
-
-                foreach (var eid in nearby)
+                // Patrol: runs for ALL mobs (both passive and aggressive)
+                if (mob.PatrolTargetX.HasValue && mob.PatrolTargetY.HasValue)
                 {
-                    if (!_entities.TryGetValue(eid, out var e) || e.Type != EntityType.Player) continue;
-                    if (e.Health <= 0) continue;
-
-                    float dx = e.X - mob.X;
-                    float dy = e.Y - mob.Y;
+                    float dx = mob.PatrolTargetX.Value - mob.X;
+                    float dy = mob.PatrolTargetY.Value - mob.Y;
                     float dist = MathF.Sqrt(dx * dx + dy * dy);
 
-                    if (dist < closestDist)
+                    if (dist < 10f)
                     {
-                        closestDist = dist;
-                        closestPlayer = eid;
-                    }
-                }
-
-                if (closestPlayer.HasValue)
-                {
-                    mob.TargetEntityId = closestPlayer;
-                    mob.PatrolTargetX = null;
-                    mob.PatrolTargetY = null;
-                }
-                else
-                {
-                    // Patrol behavior when no player is nearby
-                    if (mob.PatrolTargetX.HasValue && mob.PatrolTargetY.HasValue)
-                    {
-                        float dx = mob.PatrolTargetX.Value - mob.X;
-                        float dy = mob.PatrolTargetY.Value - mob.Y;
-                        float dist = MathF.Sqrt(dx * dx + dy * dy);
-
-                        if (dist < 10f)
-                        {
-                            mob.PatrolTargetX = null;
-                            mob.PatrolTargetY = null;
-                            mob.PatrolTimer = gameTime + 3.0;
-                            mob.Moving = false;
-                        }
-                        else
-                        {
-                            float moveDist = mob.Speed * dt * 0.5f;
-                            float ratio = Math.Min(moveDist / dist, 1f);
-                            mob.X += dx * ratio;
-                            mob.Y += dy * ratio;
-                            mob.DirX = dx / dist;
-                            mob.DirY = dy / dist;
-                            mob.Moving = true;
-                            _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
-                        }
-                    }
-                    else if (gameTime >= mob.PatrolTimer)
-                    {
-                        float angle = Random.Shared.NextSingle() * MathF.PI * 2;
-                        float dist = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
-                        mob.PatrolTargetX = mob.SpawnX + MathF.Cos(angle) * dist;
-                        mob.PatrolTargetY = mob.SpawnY + MathF.Sin(angle) * dist;
+                        mob.PatrolTargetX = null;
+                        mob.PatrolTargetY = null;
+                        mob.PatrolTimer = gameTime + 3.0;
+                        mob.Moving = false;
                     }
                     else
                     {
-                        mob.Moving = false;
+                        float moveDist = mob.Speed * dt * 0.5f;
+                        float ratio = Math.Min(moveDist / dist, 1f);
+                        mob.X += dx * ratio;
+                        mob.Y += dy * ratio;
+                        mob.DirX = dx / dist;
+                        mob.DirY = dy / dist;
+                        mob.Moving = true;
+                        _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                    }
+                }
+                else if (gameTime >= mob.PatrolTimer)
+                {
+                    float angle = Random.Shared.NextSingle() * MathF.PI * 2;
+                    float dist = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
+                    mob.PatrolTargetX = mob.SpawnX + MathF.Cos(angle) * dist;
+                    mob.PatrolTargetY = mob.SpawnY + MathF.Sin(angle) * dist;
+                }
+                else
+                {
+                    mob.Moving = false;
+                }
+
+                // Aggro: only non-passive mobs look for nearby players
+                if (!mob.Passive)
+                {
+                    var nearby = GetEntitiesInAoi(mob.X, mob.Y);
+                    ulong? closestPlayer = null;
+                    float closestDist = mob.AggroRange;
+
+                    foreach (var eid in nearby)
+                    {
+                        if (!_entities.TryGetValue(eid, out var e) || e.Type != EntityType.Player) continue;
+                        if (e.Health <= 0) continue;
+
+                        float dx = e.X - mob.X;
+                        float dy = e.Y - mob.Y;
+                        float dist = MathF.Sqrt(dx * dx + dy * dy);
+
+                        if (dist < closestDist)
+                        {
+                            closestDist = dist;
+                            closestPlayer = eid;
+                        }
+                    }
+
+                    if (closestPlayer.HasValue)
+                    {
+                        mob.TargetEntityId = closestPlayer;
+                        mob.PatrolTargetX = null;
+                        mob.PatrolTargetY = null;
                     }
                 }
             }

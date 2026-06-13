@@ -230,7 +230,7 @@ partial class GameServer
         float dx = target.X - attacker.X;
         float dy = target.Y - attacker.Y;
         float dist = MathF.Sqrt(dx * dx + dy * dy);
-        float attackRange = 320f;
+        float attackRange = 640f;
 
         if (dist > attackRange) return;
 

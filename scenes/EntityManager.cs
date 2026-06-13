@@ -503,6 +503,8 @@ public partial class EntityManager : Node
     {
         var existing = GetTree()?.GetNodesInGroup("NPC");
         GD.Print($"[EntityManager] CreateNpcEntity({entityId}, {name}, {x}, {y}) — {existing?.Count ?? 0} NPCs no grupo");
+        Node2D root = null;
+
         if (existing != null)
         {
             var pos = new Vector2(x, y);
@@ -516,84 +518,109 @@ public partial class EntityManager : Node
                     {
                         n2d.SetMeta("network_id", (long)entityId);
                         n2d.SetMeta("dialog_id", dialogId);
+                        n2d.SetMeta(MetaAnimPrefix, animPrefix);
                         GD.Print($"[EntityManager] NPC {name} (ID {entityId}) vinculado ao WorldNPC existente '{n2d.Name}'");
-                        return null;
+                        root = n2d;
+                        break;
                     }
                 }
             }
         }
 
-        var root = new CharacterBody2D();
-        root.Position = new Vector2(x, y);
-        root.Name = $"NPC_{entityId}";
-        root.SetMeta("network_id", entityId);
-        root.SetMeta("dialog_id", dialogId);
-        root.AddToGroup("NPC");
-        root.SetMeta(MetaAnimPrefix, animPrefix);
-
-        var col = new CollisionShape2D();
-        col.Shape = new CircleShape2D { Radius = 40f };
-        root.AddChild(col);
-        root.CollisionLayer = 2u;
-
-        var sprite = new AnimatedSprite2D();
-        sprite.Name = "AnimatedSprite";
-        sprite.Position = new Vector2(0, -5);
-        sprite.Scale = Vector2.One * 2f;
-
-        string sheetPath = LpcSpriteFramesBuilder.PastaSpritesNpc + race + ".png";
-        if (!ResourceLoader.Exists(sheetPath))
+        if (root == null)
         {
-            string raceFile = (race ?? "Humano").Trim().Replace(" ", "");
-            sheetPath = LpcSpriteFramesBuilder.PastaSpritesRaca + raceFile + ".png";
+            var body = new CharacterBody2D();
+            body.Position = new Vector2(x, y);
+            body.Name = $"NPC_{entityId}";
+            body.SetMeta("network_id", entityId);
+            body.SetMeta("dialog_id", dialogId);
+            body.AddToGroup("NPC");
+            body.SetMeta(MetaAnimPrefix, animPrefix);
+
+            var col = new CollisionShape2D();
+            col.Shape = new CircleShape2D { Radius = 40f };
+            body.AddChild(col);
+            body.CollisionLayer = 2u;
+            root = body;
         }
-        root.SetMeta(MetaSpritePath, sheetPath);
-
-        if (ResourceLoader.Exists(sheetPath))
+        else if (root is CollisionObject2D colObj)
         {
-            var sheet = ResourceLoader.Load<Texture2D>(sheetPath);
-            if (sheet != null)
+            colObj.CollisionLayer = 2u;
+        }
+
+        // Always add sprite, name label and prompt (even for linked nodes)
+        if (root.GetNodeOrNull("AnimatedSprite") == null)
+        {
+            var sprite = new AnimatedSprite2D();
+            sprite.Name = "AnimatedSprite";
+            sprite.Position = new Vector2(0, -5);
+            sprite.Scale = Vector2.One * 2f;
+
+            string sheetPath = LpcSpriteFramesBuilder.PastaSpritesNpc + race + ".png";
+            if (!ResourceLoader.Exists(sheetPath))
             {
-                var frames = LpcSpriteFramesBuilder.Construir(sheet, animPrefix);
-                if (frames != null && frames.GetAnimationNames().Length > 0)
+                string raceFile = (race ?? "Humano").Trim().Replace(" ", "");
+                sheetPath = LpcSpriteFramesBuilder.PastaSpritesRaca + raceFile + ".png";
+            }
+            root.SetMeta(MetaSpritePath, sheetPath);
+
+            if (ResourceLoader.Exists(sheetPath))
+            {
+                var sheet = ResourceLoader.Load<Texture2D>(sheetPath);
+                if (sheet != null)
                 {
-                    sprite.SpriteFrames = frames;
-                    sprite.Play("idle_down");
+                    var frames = LpcSpriteFramesBuilder.Construir(sheet, animPrefix);
+                    if (frames != null && frames.GetAnimationNames().Length > 0)
+                    {
+                        sprite.SpriteFrames = frames;
+                        sprite.Play("idle_down");
+                    }
                 }
             }
+
+            root.AddChild(sprite);
         }
 
-        root.AddChild(sprite);
-
-        var labelName = new Label
+        if (root.GetNodeOrNull("NameLabel") == null)
         {
-            Text = name,
-            Position = new Vector2(-30, -60),
-            ZIndex = 2,
-        };
-        labelName.AddThemeFontSizeOverride("font_size", 14);
-        labelName.AddThemeColorOverride("font_color", Colors.White);
-        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
-        labelName.AddThemeConstantOverride("outline_size", 2);
-        root.AddChild(labelName);
+            var labelName = new Label
+            {
+                Text = name,
+                Position = new Vector2(-30, -60),
+                ZIndex = 2,
+            };
+            labelName.Name = "NameLabel";
+            labelName.AddThemeFontSizeOverride("font_size", 14);
+            labelName.AddThemeColorOverride("font_color", Colors.White);
+            labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+            labelName.AddThemeConstantOverride("outline_size", 2);
+            root.AddChild(labelName);
+        }
 
-        var prompt = new Label();
-        prompt.Text = "[F] Falar";
-        prompt.Name = "InteractPrompt";
-        prompt.Position = new Vector2(-20, -45);
-        prompt.ZIndex = 2;
-        prompt.AddThemeFontSizeOverride("font_size", 18);
-        prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
-        prompt.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
-        prompt.AddThemeConstantOverride("outline_size", 2);
-        prompt.Visible = false;
-        root.AddChild(prompt);
+        if (root.GetNodeOrNull("InteractPrompt") == null)
+        {
+            var prompt = new Label();
+            prompt.Text = "[F] Falar";
+            prompt.Name = "InteractPrompt";
+            prompt.Position = new Vector2(-20, -45);
+            prompt.ZIndex = 2;
+            prompt.AddThemeFontSizeOverride("font_size", 18);
+            prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
+            prompt.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
+            prompt.AddThemeConstantOverride("outline_size", 2);
+            prompt.Visible = false;
+            root.AddChild(prompt);
+        }
 
-        var _p3 = ObterMundo();
-        if (_p3 != null)
-            _p3.AddChild(root);
-        else
-            AddChild(root);
+        if (root.GetParent() == null)
+        {
+            var _p3 = ObterMundo();
+            if (_p3 != null)
+                _p3.AddChild(root);
+            else
+                AddChild(root);
+        }
+
         return root;
     }
 
