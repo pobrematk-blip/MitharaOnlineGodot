@@ -35,6 +35,21 @@ partial class GameNetwork
         int bankGold = r.GetInt();
         Gold = onHandGold;
         GD.Print($"[GAME] Banco - Mãos: {onHandGold} | Banco: {bankGold}");
+
+        if (GetTree()?.CurrentScene != null)
+        {
+            var banco = GetTree().CurrentScene.FindChild("BancoUi", true, false) as BancoUI;
+            if (banco == null)
+            {
+                var bancoScene = ResourceLoader.Load<PackedScene>("res://Banco/BancoUI.tscn");
+                if (bancoScene != null)
+                {
+                    banco = bancoScene.Instantiate<BancoUI>();
+                    GetTree().CurrentScene.AddChild(banco);
+                }
+            }
+        }
+
         EmitSignal(SignalName.OnBankData, onHandGold, bankGold);
     }
 

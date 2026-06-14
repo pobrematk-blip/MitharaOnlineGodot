@@ -117,6 +117,15 @@ partial class GameNetwork
         int maxMana = r.GetInt();
         int baseAttack = r.GetInt();
         int defense = r.GetInt();
+        int statPoints = r.GetInt();
+
+        _pendingLevel = level;
+        _pendingXp = xp;
+        _pendingStatPoints = statPoints;
+        _pendingBaseForca = forca;
+        _pendingBaseAgilidade = agilidade;
+        _pendingBaseDestreza = destreza;
+        _pendingBaseInteligencia = inteligencia;
 
         Log($"Entrando no mundo! ID={LocalPlayerId} Canal={LocalChannelId} Lv={level} Pos=({x:F0},{y:F0})");
         Log("Sinalizando enterWorldPending para _Process fazer a troca de cena");

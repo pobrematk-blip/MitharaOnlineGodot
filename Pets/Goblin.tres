@@ -1,7 +1,7 @@
 [gd_resource type="Resource" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://resources/Pets/PetResource.cs" id="1"]
-[ext_resource type="Texture2D" uid="uid://cwhpc6k61pdnn" path="res://characters/Inimigos/SpriteInimigo/inimigoGoblim.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://upsbludks544" path="res://characters/Inimigos/SpriteInimigo/MonstroGoblim.png" id="2"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_zs73w"]
 atlas = ExtResource("2")
@@ -23,9 +23,9 @@ Forca = 2
 Agilidade = 2
 Destreza = 1
 Inteligencia = 0
-Speed = 100.0
-AttackRange = 45.0
-AttackCooldown = 1.2
+Speed = 250.0
+AttackRange = 60.0
+AttackCooldown = 0.8
 ColetaRange = 100.0
 GuardRange = 200.0
 AnimPrefix = "Goblin"

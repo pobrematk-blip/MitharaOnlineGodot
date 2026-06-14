@@ -329,19 +329,21 @@ partial class GameServer
             }
         }
 
-        long xpForNextLevel = killer.Level * 100L;
+        long xpForNextLevel = 20L + (killer.Level - 1) * 12L;
         while (killer.Experience >= xpForNextLevel)
         {
             killer.Experience -= xpForNextLevel;
             killer.Level++;
-            xpForNextLevel = killer.Level * 100L;
+            xpForNextLevel = 100L + (killer.Level - 1) * 50L;
 
             killer.MaxHealth = 80 + killer.Forca * 5 + killer.Level * 10;
             killer.Health = killer.MaxHealth;
+            killer.StatPoints += 5;
 
             var writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
             writerLevelUp.Put(killer.Id);
             writerLevelUp.Put(killer.Level);
+            writerLevelUp.Put(killer.Experience);
             foreach (var eid in aoi)
             {
                 var p = channel.GetPlayerPeer(eid);
@@ -351,6 +353,7 @@ partial class GameServer
                     writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
                     writerLevelUp.Put(killer.Id);
                     writerLevelUp.Put(killer.Level);
+                    writerLevelUp.Put(killer.Experience);
                 }
             }
 
@@ -361,6 +364,7 @@ partial class GameServer
 
         _db.SaveCharacterXp(killerSession.SelectedCharacter!.Id, killer.Experience);
         _db.SaveCharacterLevel(killerSession.SelectedCharacter.Id, killer.Level);
+        _db.SaveCharacterStats(killerSession.SelectedCharacter.Id, killer.BaseForca, killer.BaseAgilidade, killer.BaseDestreza, killer.BaseInteligencia, killer.StatPoints);
 
         UpdateQuestKillProgress(killer, mob.PrefabId);
 

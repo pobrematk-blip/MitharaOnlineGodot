@@ -78,8 +78,10 @@ public partial class WorldNPC : CharacterBody2D
         var labelName = new Label
         {
             Text = NpcName,
-            Position = new Vector2(-30, -60),
+            Position = new Vector2(-60, -60),
             ZIndex = 2,
+            Size = new Vector2(120, 0),
+            HorizontalAlignment = HorizontalAlignment.Center,
         };
         labelName.AddThemeFontSizeOverride("font_size", 14);
         labelName.AddThemeColorOverride("font_color", Colors.White);
@@ -90,8 +92,10 @@ public partial class WorldNPC : CharacterBody2D
         var prompt = new Label();
         prompt.Text = "[F] Falar";
         prompt.Name = "InteractPrompt";
-        prompt.Position = new Vector2(-20, -45);
+        prompt.Position = new Vector2(-40, -45);
         prompt.ZIndex = 2;
+        prompt.Size = new Vector2(80, 0);
+        prompt.HorizontalAlignment = HorizontalAlignment.Center;
         prompt.AddThemeFontSizeOverride("font_size", 18);
         prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
         prompt.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));

@@ -71,7 +71,7 @@ public class SpawnerManager
             Forca = 1,
             Agilidade = 1,
             Speed = 60f,
-            ExperienceReward = 8,
+            ExperienceReward = 3,
             GoldMin = 1,
             GoldMax = 5,
             LootTable = new List<LootEntry>
@@ -92,7 +92,7 @@ public class SpawnerManager
             Forca = 2,
             Agilidade = 2,
             Speed = 80f,
-            ExperienceReward = 15,
+            ExperienceReward = 5,
             GoldMin = 3,
             GoldMax = 10,
             LootTable = new List<LootEntry>
@@ -117,7 +117,7 @@ public class SpawnerManager
             Forca = 3,
             Agilidade = 3,
             Speed = 110f,
-            ExperienceReward = 25,
+            ExperienceReward = 8,
             GoldMin = 5,
             GoldMax = 15,
             LootTable = new List<LootEntry>
@@ -140,7 +140,7 @@ public class SpawnerManager
             Forca = 5,
             Agilidade = 2,
             Speed = 70f,
-            ExperienceReward = 45,
+            ExperienceReward = 14,
             GoldMin = 8,
             GoldMax = 25,
             LootTable = new List<LootEntry>
@@ -166,7 +166,7 @@ public class SpawnerManager
             Speed = 90f,
             AttackRange = 60f,
             AggroRange = 500f,
-            ExperienceReward = 500,
+            ExperienceReward = 80,
             IsBoss = true,
             Passive = false,
             GoldMin = 50,
@@ -203,7 +203,7 @@ public class SpawnerManager
 
     private void RegisterDefaultSpawnPoints()
     {
-        _spawnPoints.Add(new SpawnPoint { X = 1200, Y = 1100, Radius = 250f, PrefabId = "goblin", MaxCount = 5 });
+        _spawnPoints.Add(new SpawnPoint { X = 2000, Y = 1100, Radius = 250f, PrefabId = "goblin", MaxCount = 5 });
     }
 
     public List<SpawnPoint> GetSpawnPoints() => _spawnPoints;

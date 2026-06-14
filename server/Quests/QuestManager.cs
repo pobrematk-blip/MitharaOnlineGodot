@@ -26,7 +26,7 @@ public class QuestManager
             },
             Reward = new QuestReward
             {
-                Experience = 100,
+                Experience = 35,
                 Gold = 10,
             },
         });
@@ -44,7 +44,7 @@ public class QuestManager
             },
             Reward = new QuestReward
             {
-                Experience = 250,
+                Experience = 80,
                 Gold = 25,
                 Items = new List<(int, int)> { (3, 1) },
             },
@@ -63,7 +63,7 @@ public class QuestManager
             },
             Reward = new QuestReward
             {
-                Experience = 500,
+                Experience = 180,
                 Gold = 50,
             },
         });

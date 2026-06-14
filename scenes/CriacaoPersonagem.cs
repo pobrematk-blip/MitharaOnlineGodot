@@ -508,6 +508,16 @@ public partial class CriacaoPersonagem : Control
         return copia;
     }
 
+    private void MostrarTelaCarregamento()
+    {
+        var existing = GetTree().Root.GetNodeOrNull("LoadingScreen");
+        if (existing != null) return;
+        var loading = ResourceLoader.Load<PackedScene>("res://ui/LoadingScreen.tscn")
+            .Instantiate<LoadingScreen>();
+        loading.Name = "LoadingScreen";
+        GetTree().Root.AddChild(loading);
+    }
+
     private void OnEntrarJogo()
     {
         if (_faccaoSelecionada == null || _racaSelecionada == null || _classeSelecionada == null) return;
@@ -538,6 +548,7 @@ public partial class CriacaoPersonagem : Control
             string nomeRaca = _racaSelecionada.NomeRaca;
             net.SendCreateCharacter(escolhido.NomePersonagem, nomeClasse, nomeRaca);
             net.SendEnterWorld(escolhido.NomePersonagem, nomeClasse, nomeRaca, 230f, 300f);
+            MostrarTelaCarregamento();
         }
         else
         {

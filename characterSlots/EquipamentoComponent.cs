@@ -162,25 +162,16 @@ public partial class EquipamentoComponent : Node
         return null;
     }
 
-    /// <summary>
-    /// Calcula o dano físico final com variação aleatória
-    /// </summary>
     public int CalcularDanoFisicoAleatorio()
     {
         return (int)(GD.Randi() % (DanoFisicoMax - DanoFisicoMin + 1)) + DanoFisicoMin;
     }
 
-    /// <summary>
-    /// Calcula o dano mágico final com variação aleatória
-    /// </summary>
     public int CalcularDanoMagicoAleatorio()
     {
         return (int)(GD.Randi() % (DanoMagicoMax - DanoMagicoMin + 1)) + DanoMagicoMin;
     }
 
-    /// <summary>
-    /// Recalcula todos os bônus de equipamentos ativos
-    /// </summary>
     private void RecalcularBonusEquipamentos()
     {
         _bonusForca = 0;
@@ -254,28 +245,19 @@ public partial class EquipamentoComponent : Node
         }
     }
 
-    /// <summary>
-    /// Adiciona bônus de dano crítico de um item equipado
-    /// </summary>
     public void AdicionarBonusDanoCritico(float bonusPercentual)
     {
         _bonusDanoCritico += bonusPercentual;
         EmitSignal(SignalName.EquipamentoAtualizado);
-        GD.Print($"[EQUIPAMENTO] ðŸ”¥ Dano Crítico aumentado! Novo bônus: +{bonusPercentual:F2}x (Total: {DanoCritico:F2}x)");
     }
 
-    /// <summary>
-    /// Remove bônus de dano crítico de um item desequipado
-    /// </summary>
     public void RemoverBonusDanoCritico(float bonusPercentual)
     {
         _bonusDanoCritico -= bonusPercentual;
-        _bonusDanoCritico = Mathf.Max(_bonusDanoCritico, 0f);  // Não pode ser negativo
+        _bonusDanoCritico = Mathf.Max(_bonusDanoCritico, 0f);
         EmitSignal(SignalName.EquipamentoAtualizado);
-        GD.Print($"[EQUIPAMENTO] ðŸ“‰ Dano Crítico reduzido! Novo bônus: +{_bonusDanoCritico:F2}x (Total: {DanoCritico:F2}x)");
     }
 
-    // Métodos para adicionar pontos nos atributos
     public void AdicionarPontoForca()
     {
         if (_pontosDisponiveis > 0)
@@ -283,7 +265,8 @@ public partial class EquipamentoComponent : Node
             _forca++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] ðŸ’ª Força aumentada! Novo valor: {_forca}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] Forca aumentada! Novo valor: {_forca}. Pontos restantes: {_pontosDisponiveis}");
+            SendAllocateStat("forca");
         }
     }
 
@@ -294,7 +277,8 @@ public partial class EquipamentoComponent : Node
             _agilidade++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] ✘ Agilidade aumentada! Novo valor: {_agilidade}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] Agilidade aumentada! Novo valor: {_agilidade}. Pontos restantes: {_pontosDisponiveis}");
+            SendAllocateStat("agilidade");
         }
     }
 
@@ -305,7 +289,8 @@ public partial class EquipamentoComponent : Node
             _destreza++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] ðŸŽ¯ Destreza aumentada! Novo valor: {_destreza}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] Destreza aumentada! Novo valor: {_destreza}. Pontos restantes: {_pontosDisponiveis}");
+            SendAllocateStat("destreza");
         }
     }
 
@@ -316,8 +301,16 @@ public partial class EquipamentoComponent : Node
             _inteligencia++;
             _pontosDisponiveis--;
             EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] ðŸ§  Inteligência aumentada! Novo valor: {_inteligencia}. Pontos restantes: {_pontosDisponiveis}");
+            GD.Print($"[EQUIPAMENTO] Inteligencia aumentada! Novo valor: {_inteligencia}. Pontos restantes: {_pontosDisponiveis}");
+            SendAllocateStat("inteligencia");
         }
+    }
+
+    private void SendAllocateStat(string statName)
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet.IsConnected)
+            gameNet.SendAllocateStat(statName);
     }
 
     public void AdicionarPontosDisponiveis(int qtd)
@@ -346,6 +339,22 @@ public partial class EquipamentoComponent : Node
         _destreza = destreza;
         _inteligencia = inteligencia;
         _pontosDisponiveis = pontosDisponiveis;
+        RecalcularBonusEquipamentos();
+        EmitSignal(SignalName.EquipamentoAtualizado);
+    }
+
+    public void ImportarEquipamentos(System.Collections.Generic.Dictionary<TipoEquipamento, int> equipados, ItemDatabase itemDB)
+    {
+        if (equipados == null || itemDB == null) return;
+        foreach (var kv in equipados)
+        {
+            if (kv.Value <= 0) continue;
+            var item = itemDB.GetItem(kv.Value);
+            if (item == null) continue;
+
+            ItensEquipados[kv.Key].Item = item;
+            ItensEquipados[kv.Key].Quantidade = 1;
+        }
         RecalcularBonusEquipamentos();
         EmitSignal(SignalName.EquipamentoAtualizado);
     }

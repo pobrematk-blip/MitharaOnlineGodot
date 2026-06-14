@@ -323,4 +323,49 @@ partial class GameServer
         player.MaxHealth = 80 + player.Forca * 5 + player.Level * 10;
         player.MaxMana = 30 + player.Inteligencia * 5 + player.Level * 5;
     }
+
+    private void HandleCollectLocalItem(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.ChannelId < 0) return;
+        var character = session.SelectedCharacter;
+        if (character == null) return;
+
+        int itemId = reader.GetInt();
+        int quantity = reader.GetInt();
+
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel == null) return;
+
+        var player = channel.GetEntity(session.EntityId) as PlayerEntity;
+        if (player == null) return;
+
+        int slot = player.FindEmptyInventorySlot();
+        var existingItem = player.Items.FirstOrDefault(i => i.ItemId == itemId && i.Quantity + quantity <= 999);
+
+        if (existingItem != null)
+        {
+            existingItem.Quantity += quantity;
+            _db.SaveItem(character.Id, existingItem);
+            var wUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
+            wUpdate.Put(existingItem.Slot);
+            wUpdate.Put(existingItem.ItemId);
+            wUpdate.Put(existingItem.Quantity);
+            peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
+        }
+        else if (slot >= 0)
+        {
+            var newItem = new ItemInstance { Slot = slot, ItemId = itemId, Quantity = quantity };
+            player.Items.Add(newItem);
+            _db.SaveItem(character.Id, newItem);
+            var wUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
+            wUpdate.Put(slot);
+            wUpdate.Put(itemId);
+            wUpdate.Put(quantity);
+            peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
+        }
+        else
+        {
+            SendSystemMessage(peer, "Inventário cheio!");
+        }
+    }
 }

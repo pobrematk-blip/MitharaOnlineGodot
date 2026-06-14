@@ -159,6 +159,19 @@ public partial class SaveManager : Node
             cfg.SetValue("progressao", "pontos", personagem.PontosDisponiveisSalvos);
         }
 
+        if (personagem.TemEquipadosSalvos && personagem.EquipadosSalvos != null)
+        {
+            int idx = 0;
+            foreach (var kv in personagem.EquipadosSalvos)
+            {
+                if (kv.Value <= 0) continue;
+                cfg.SetValue("equipamentos", $"slot_{idx}_tipo", (int)kv.Key);
+                cfg.SetValue("equipamentos", $"slot_{idx}_item", kv.Value);
+                idx++;
+            }
+            cfg.SetValue("equipamentos", "total", idx);
+        }
+
         var err = cfg.Save(SlotPath(slotIndex));
         if (err != Error.Ok)
         {
@@ -230,6 +243,23 @@ public partial class SaveManager : Node
             personagem.ResetarProgressaoSalva();
         }
 
+        if (cfg.HasSection("equipamentos"))
+        {
+            int total = cfg.GetValue("equipamentos", "total", 0).AsInt32();
+            if (total > 0)
+            {
+                personagem.EquipadosSalvos = new System.Collections.Generic.Dictionary<TipoEquipamento, int>();
+                for (int i = 0; i < total; i++)
+                {
+                    var tipo = (TipoEquipamento)cfg.GetValue("equipamentos", $"slot_{i}_tipo", 0).AsInt32();
+                    int itemId = cfg.GetValue("equipamentos", $"slot_{i}_item", 0).AsInt32();
+                    if (tipo != TipoEquipamento.Nenhum && itemId > 0)
+                        personagem.EquipadosSalvos[tipo] = itemId;
+                }
+                personagem.TemEquipadosSalvos = personagem.EquipadosSalvos.Count > 0;
+            }
+        }
+
         Conta.UltimoSlotSelecionado = slotIndex;
         SalvarConta();
 
@@ -251,9 +281,10 @@ public partial class SaveManager : Node
         return false;
     }
 
-    public void SalvarInventario(System.Collections.Generic.List<SlotInventario> slots)
+    public void SalvarInventario(System.Collections.Generic.List<SlotInventario> slots, int? slotIndex = null)
     {
-        var path = SlotPath(Conta.UltimoSlotSelecionado).Replace(".cfg", "_inv.json");
+        int idx = slotIndex ?? Conta.UltimoSlotSelecionado;
+        var path = SlotPath(idx).Replace(".cfg", "_inv.json");
         using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
         if (file == null) return;
         var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
@@ -270,9 +301,10 @@ public partial class SaveManager : Node
         file.StoreString(Json.Stringify(list));
     }
 
-    public void CarregarInventario(System.Collections.Generic.List<SlotInventario> slots, ItemDatabase itemDB)
+    public void CarregarInventario(System.Collections.Generic.List<SlotInventario> slots, ItemDatabase itemDB, int? slotIndex = null)
     {
-        var path = SlotPath(Conta.UltimoSlotSelecionado).Replace(".cfg", "_inv.json");
+        int idx = slotIndex ?? Conta.UltimoSlotSelecionado;
+        var path = SlotPath(idx).Replace(".cfg", "_inv.json");
         if (!FileAccess.FileExists(path)) return;
         using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
         if (file == null) return;

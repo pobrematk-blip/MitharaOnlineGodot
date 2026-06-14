@@ -22,6 +22,17 @@
 - Não otimizar ou refatorar sem pedido.
 - Não criar novos arquivos sem pedido.
 
+## Depurador (Godot Output)
+
+- Quando eu pedir "leia e corrija erros" ou "olhe o depurador", você DEVE ler o output do Godot (console/debug) e corrigir os erros listados.
+- Temos logs disponíveis no console do Godot. Use-os para diagnosticar problemas.
+
+## Y-Sort (Ordenação por Profundidade)
+
+- **RESOLVIDO**: Player, NPCs e mobs agora estão todos na Main.tscn como filhos diretos de `World`, que tem `y_sort_enabled = true`.
+- Tilemaps base estão em `z_index = -1`, entidades em `z_index = 0`, tilemaps de cima em `z_index = 5`.
+- Player fica atrás do mob/NPC quando está acima (Y menor) e na frente quando está abaixo (Y maior).
+
 ## Regra CRÍTICA: MMORPG Online
 
 - **TODO** sistema novo deve funcionar exclusivamente através do servidor (`server/`).

@@ -31,10 +31,11 @@ public partial class GuildCreateUI : Control
 
     public override void _Ready()
     {
+        GD.Print("[GUILD-CREATE] _Ready() iniciado!");
         _panel = GetNode<Panel>("Panel");
         _titleBar = _panel.GetNode<Panel>("TitleBar");
         _closeButton = _panel.GetNode<Button>("CloseButton");
-        _npcDialog = _panel.GetNode<Label>("NpcDialog");
+        _npcDialog = _panel.GetNode<Label>("NpcDialogScroll/NpcDialog");
         _nomeEdit = _panel.GetNode<LineEdit>("EditGrid/NomeEdit");
         _tagEdit = _panel.GetNode<LineEdit>("EditGrid/TagEdit");
         _emblemasGrid = _panel.GetNode<GridContainer>("EmblemasGrid");
@@ -42,8 +43,10 @@ public partial class GuildCreateUI : Control
         _statusLabel = _panel.GetNode<Label>("StatusLabel");
         _criarBtn = _panel.GetNode<Button>("CriarBtn");
         _cancelarBtn = _panel.GetNode<Button>("CancelarBtn");
+        GD.Print("[GUILD-CREATE] Todos os nodes obtidos!");
 
         _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        GD.Print($"[GUILD-CREATE] _gameNet = {_gameNet}");
 
         _closeButton.Pressed += OnFechar;
         _cancelarBtn.Pressed += OnFechar;
@@ -59,8 +62,10 @@ public partial class GuildCreateUI : Control
         if (_gameNet != null)
         {
             _gameNet.OnGuildCreateResult += OnGuildCreateResult;
+            GD.Print("[GUILD-CREATE] Conectado ao OnGuildCreateResult!");
         }
 
+        GD.Print("[GUILD-CREATE] _Ready() finalizado!");
         CallDeferred(MethodName.Centralizar);
     }
 
@@ -198,6 +203,20 @@ public partial class GuildCreateUI : Control
     {
         if (success)
         {
+            string tag = _tagEdit.Text.Trim();
+            int emblem = _emblemaSelecionado;
+            var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+            string nome = escolhido?.NomePersonagem?.Replace(" ", "_") ?? "default";
+            string path = $"user://guild_data_{nome}.cfg";
+            var cfg = new ConfigFile();
+            cfg.Load(path);
+            cfg.SetValue("Guild", "tag", tag);
+            cfg.SetValue("Guild", "emblem_index", emblem);
+            cfg.Save(path);
+
+            var overhead = GetTree().Root.FindChild("OverheadUI", true, false) as OverheadUI;
+            overhead?.RecarregarDadosGuild();
+
             _statusLabel.Text = message;
             var timer = GetTree().CreateTimer(2.0);
             timer.Timeout += OnFechar;

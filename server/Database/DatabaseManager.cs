@@ -116,6 +116,7 @@ public class DatabaseManager
         TryAddColumn(conn, "characters", "pos_y", "REAL NOT NULL DEFAULT 1000");
         TryAddColumn(conn, "characters", "bank_gold", "INTEGER NOT NULL DEFAULT 0");
         TryAddColumn(conn, "characters", "gold", "INTEGER NOT NULL DEFAULT 50");
+        TryAddColumn(conn, "characters", "stat_points", "INTEGER NOT NULL DEFAULT 10");
 
         Logger.Info("Banco de dados inicializado.");
     }
@@ -216,7 +217,7 @@ public class DatabaseManager
         conn.Open();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold FROM characters WHERE account_id = @a ORDER BY slot_index";
+        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points FROM characters WHERE account_id = @a ORDER BY slot_index";
         cmd.Parameters.AddWithValue("@a", accountId);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -238,6 +239,7 @@ public class DatabaseManager
                 PosY = (float)reader.GetDouble(12),
                 BankGold = reader.GetInt32(13),
                 Gold = reader.GetInt32(14),
+                StatPoints = reader.GetInt32(15),
             });
         }
         return result;
@@ -338,6 +340,21 @@ public class DatabaseManager
         cmd.CommandText = "UPDATE characters SET gold = @g WHERE id = @i";
         cmd.Parameters.AddWithValue("@g", gold);
         cmd.Parameters.AddWithValue("@i", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveCharacterStats(int characterId, int forca, int agilidade, int destreza, int inteligencia, int statPoints)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET forca = @f, agilidade = @a, destreza = @d, inteligencia = @i, stat_points = @s WHERE id = @c";
+        cmd.Parameters.AddWithValue("@f", forca);
+        cmd.Parameters.AddWithValue("@a", agilidade);
+        cmd.Parameters.AddWithValue("@d", destreza);
+        cmd.Parameters.AddWithValue("@i", inteligencia);
+        cmd.Parameters.AddWithValue("@s", statPoints);
+        cmd.Parameters.AddWithValue("@c", characterId);
         cmd.ExecuteNonQuery();
     }
 
@@ -673,4 +690,5 @@ public class CharacterRow
     public float PosY { get; set; } = 1000f;
     public int BankGold { get; set; }
     public int Gold { get; set; }
+    public int StatPoints { get; set; }
 }

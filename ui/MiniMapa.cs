@@ -11,6 +11,12 @@ public partial class MiniMapa : Control
     private Control _borderOverlay;
     private Control _dotsOverlay;
 
+    private Control _fullMapOverlay;
+    private SubViewportContainer _fullMapContainer;
+    private SubViewport _fullMapViewport;
+    private Camera2D _fullMapCamera;
+    private bool _fullMapOpen;
+
     private float _updateTimer;
     private FaccaoResource _playerFaction;
 
@@ -34,22 +40,130 @@ public partial class MiniMapa : Control
 
         _viewport.TransparentBg = true;
         _viewport.Size = new Vector2I(128, 128);
-        _viewport.RenderTargetUpdateMode = (SubViewport.UpdateMode)2;
+        _viewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
         _viewport.World2D = GetWorld2D();
 
         float zoom = _viewport.Size.X / (WorldRadius * 2f);
         _minimapCamera.Zoom = new Vector2(zoom, zoom);
-
-        var viewportContainer = GetNode<SubViewportContainer>("SubViewportContainer");
-        viewportContainer.Visible = false;
 
         _borderOverlay.Draw += OnBorderDraw;
         _borderOverlay.Resized += () => _borderOverlay.QueueRedraw();
         _borderOverlay.QueueRedraw();
 
         _dotsOverlay.Draw += OnDotsDraw;
+        _dotsOverlay.GuiInput += OnMinimapGuiInput;
 
         FindPlayer();
+    }
+
+    private void OnMinimapGuiInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
+        {
+            ToggleFullMap();
+        }
+    }
+
+    private void ToggleFullMap()
+    {
+        if (_fullMapOpen)
+            CloseFullMap();
+        else
+            OpenFullMap();
+    }
+
+    private void OpenFullMap()
+    {
+        if (_fullMapOpen) return;
+        _fullMapOpen = true;
+
+        _fullMapOverlay = new Control();
+        _fullMapOverlay.Name = "FullMapOverlay";
+        _fullMapOverlay.SetAnchorsPreset(LayoutPreset.FullRect);
+        _fullMapOverlay.MouseFilter = MouseFilterEnum.Stop;
+
+        var bg = new ColorRect();
+        bg.Color = new Color(0, 0, 0, 0.85f);
+        bg.SetAnchorsPreset(LayoutPreset.FullRect);
+        _fullMapOverlay.AddChild(bg);
+
+        var title = new Label();
+        title.Text = "MAPA DO MUNDO";
+        title.HorizontalAlignment = HorizontalAlignment.Center;
+        title.SetAnchorsPreset(LayoutPreset.TopWide);
+        title.Position = new Vector2(0, 12);
+        title.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
+        title.AddThemeFontSizeOverride("font_size", 18);
+        _fullMapOverlay.AddChild(title);
+
+        var closeBtn = new Button();
+        closeBtn.Text = "Fechar";
+        closeBtn.Position = new Vector2(12, 10);
+        closeBtn.Pressed += CloseFullMap;
+        _fullMapOverlay.AddChild(closeBtn);
+
+        _fullMapContainer = new SubViewportContainer();
+        _fullMapContainer.Stretch = true;
+        _fullMapContainer.MouseFilter = MouseFilterEnum.Ignore;
+        _fullMapOverlay.AddChild(_fullMapContainer);
+
+        _fullMapViewport = new SubViewport();
+        _fullMapViewport.TransparentBg = true;
+        _fullMapViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
+        _fullMapViewport.World2D = GetWorld2D();
+        _fullMapContainer.AddChild(_fullMapViewport);
+
+        _fullMapCamera = new Camera2D();
+        _fullMapViewport.AddChild(_fullMapCamera);
+
+        AddChild(_fullMapOverlay);
+
+        GetViewport().SizeChanged += OnFullMapViewportResized;
+        Callable.From(UpdateFullMapLayout).CallDeferred();
+    }
+
+    private void UpdateFullMapLayout()
+    {
+        if (_fullMapOverlay == null || _fullMapContainer == null || _fullMapViewport == null) return;
+
+        Vector2 viewportSize = GetViewportRect().Size;
+        float mapSize = Mathf.Min(viewportSize.X, viewportSize.Y) * 0.85f;
+        mapSize = Mathf.Min(mapSize, 700f);
+
+        _fullMapContainer.Size = new Vector2(mapSize, mapSize);
+        _fullMapContainer.Position = new Vector2(
+            (viewportSize.X - mapSize) / 2f,
+            (viewportSize.Y - mapSize) / 2f
+        );
+
+        Vector2I vpSize = new Vector2I((int)mapSize, (int)mapSize);
+        _fullMapViewport.Size = vpSize;
+
+        float zoom = mapSize / (WorldRadius * 4f);
+        _fullMapCamera.Zoom = new Vector2(zoom, zoom);
+
+        if (_player != null)
+            _fullMapCamera.GlobalPosition = _player.GlobalPosition;
+    }
+
+    private void OnFullMapViewportResized()
+    {
+        if (_fullMapOpen)
+            Callable.From(UpdateFullMapLayout).CallDeferred();
+    }
+
+    private void CloseFullMap()
+    {
+        _fullMapOpen = false;
+        GetViewport().SizeChanged -= OnFullMapViewportResized;
+        if (_fullMapOverlay != null)
+        {
+            _fullMapOverlay.QueueFree();
+            _fullMapOverlay = null;
+            _fullMapContainer = null;
+            _fullMapViewport = null;
+            _fullMapCamera = null;
+        }
     }
 
     private void FindPlayer()
@@ -72,12 +186,24 @@ public partial class MiniMapa : Control
 
         _minimapCamera.GlobalPosition = _player.GlobalPosition;
 
+        if (_fullMapCamera != null)
+            _fullMapCamera.GlobalPosition = _player.GlobalPosition;
+
         _updateTimer += (float)delta;
         if (_updateTimer >= 0.25f)
         {
             _updateTimer = 0f;
             UpdateLabels();
             _dotsOverlay.QueueRedraw();
+        }
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (_fullMapOpen && @event.IsActionPressed("ui_cancel"))
+        {
+            CloseFullMap();
+            GetViewport().SetInputAsHandled();
         }
     }
 

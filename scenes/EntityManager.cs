@@ -137,6 +137,7 @@ public partial class EntityManager : Node
         _gameNet.OnRespawn += OnRespawnHandler;
         _gameNet.OnLootSpawn += OnLootSpawn;
         _gameNet.OnLootDespawn += OnLootDespawn;
+        _gameNet.OnStatUpdate += OnStatUpdate;
     }
 
     private void OnEnterWorldHandler()
@@ -144,6 +145,31 @@ public partial class EntityManager : Node
         CarregarCenasMob();
         CallDeferred(nameof(FlushPendingSpawns));
         CallDeferred(nameof(EnviarDropsParaServidor));
+        CallDeferred(nameof(ApplyServerDataAfterEnterWorld));
+    }
+
+    private void ApplyServerDataAfterEnterWorld()
+    {
+        if (_gameNet == null) return;
+        var player = _gameNet.GetEntity(_gameNet.LocalPlayerId);
+        if (player == null) return;
+
+        var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+        if (equip != null)
+        {
+            equip.ImportarEstado(
+                _gameNet._pendingBaseForca,
+                _gameNet._pendingBaseAgilidade,
+                _gameNet._pendingBaseDestreza,
+                _gameNet._pendingBaseInteligencia,
+                _gameNet._pendingStatPoints);
+        }
+
+        var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+        if (prog != null)
+        {
+            prog.DefinirProgresso(_gameNet._pendingLevel, (int)_gameNet._pendingXp);
+        }
     }
 
     private void EnviarDropsParaServidor()
@@ -593,8 +619,10 @@ public partial class EntityManager : Node
             var labelName = new Label
             {
                 Text = name,
-                Position = new Vector2(-30, -60),
+                Position = new Vector2(-60, -60),
                 ZIndex = 2,
+                Size = new Vector2(120, 0),
+                HorizontalAlignment = HorizontalAlignment.Center,
             };
             labelName.Name = "NameLabel";
             labelName.AddThemeFontSizeOverride("font_size", 14);
@@ -764,6 +792,14 @@ public partial class EntityManager : Node
     {
         if (entityId != _gameNet?.LocalPlayerId) return;
 
+        var player = _gameNet?.GetEntity(entityId);
+        if (player != null)
+        {
+            var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+            if (prog != null)
+                prog.DefinirProgresso(prog.Nivel, (int)totalExp);
+        }
+
         var expLabel = new Label
         {
             Text = $"+{amount} XP",
@@ -786,9 +822,17 @@ public partial class EntityManager : Node
         }
     }
 
-    private void OnLevelUp(ulong entityId, int newLevel)
+    private void OnLevelUp(ulong entityId, int newLevel, int remainingXp)
     {
         if (entityId != _gameNet?.LocalPlayerId) return;
+
+        var player = _gameNet?.GetEntity(entityId);
+        if (player != null)
+        {
+            var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+            if (prog != null)
+                prog.DefinirProgresso(newLevel, remainingXp);
+        }
 
         var lvLabel = new Label
         {
@@ -812,6 +856,17 @@ public partial class EntityManager : Node
             }));
             tween.Play();
         }
+    }
+
+    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana)
+    {
+        if (_gameNet == null) return;
+        var player = _gameNet.GetEntity(_gameNet.LocalPlayerId);
+        if (player == null) return;
+
+        var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+        if (equip != null)
+            equip.ImportarEstado(baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints);
     }
 
     private static void SetRemotePlayerDowned(Node2D node)
@@ -1034,6 +1089,7 @@ public partial class EntityManager : Node
             _gameNet.OnRespawn -= OnRespawnHandler;
             _gameNet.OnLootSpawn -= OnLootSpawn;
             _gameNet.OnLootDespawn -= OnLootDespawn;
+            _gameNet.OnStatUpdate -= OnStatUpdate;
         }
     }
 }

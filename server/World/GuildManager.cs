@@ -128,6 +128,20 @@ public class GuildManager
         }
     }
 
+    public void RemoveGuild(int guildId)
+    {
+        lock (_lock)
+        {
+            if (!_guilds.TryGetValue(guildId, out var guild)) return;
+            foreach (var memberId in guild.Members.ToList())
+            {
+                _playerGuild.Remove(memberId);
+            }
+            guild.Members.Clear();
+            _guilds.Remove(guildId);
+        }
+    }
+
     public void LoadGuild(Guild guild)
     {
         lock (_lock)

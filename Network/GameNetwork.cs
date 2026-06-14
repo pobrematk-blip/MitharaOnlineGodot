@@ -13,6 +13,13 @@ public partial class GameNetwork : Node
     private static string? _logPath;
 
     private bool _enterWorldPending;
+    internal int _pendingStatPoints;
+    internal int _pendingBaseForca;
+    internal int _pendingBaseAgilidade;
+    internal int _pendingBaseDestreza;
+    internal int _pendingBaseInteligencia;
+    internal int _pendingLevel;
+    internal long _pendingXp;
 
     public static void Log(string msg)
     {
@@ -54,7 +61,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnCombatResultEventHandler(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth);
     [Signal] public delegate void OnEntityDiedEventHandler(ulong entityId, ulong killerId);
     [Signal] public delegate void OnGainExpEventHandler(ulong entityId, int amount, long totalExp);
-    [Signal] public delegate void OnLevelUpEventHandler(ulong entityId, int newLevel);
+    [Signal] public delegate void OnLevelUpEventHandler(ulong entityId, int newLevel, int remainingXp);
     [Signal] public delegate void OnInventoryDataEventHandler(Godot.Collections.Array<Godot.Collections.Dictionary> items, Godot.Collections.Array<Godot.Collections.Dictionary> equipment);
     [Signal] public delegate void OnEquipUpdateEventHandler(int equipSlot, int itemId, int quantity, bool hasUnequip, int invSlot, int unequipItemId, int unequipQuantity);
 
@@ -64,7 +71,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnPartyMemberUpdateEventHandler(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined);
     [Signal] public delegate void OnPartyLeaderUpdateEventHandler(ulong newLeaderId);
 
-    [Signal] public delegate void OnGuildDataEventHandler(int guildId, string guildName, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills);
+    [Signal] public delegate void OnGuildDataEventHandler(int guildId, string guildName, string guildTag, int guildEmblem, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills);
     [Signal] public delegate void OnGuildMemberUpdateEventHandler(ulong entityId, string name, int rank, bool joined);
     [Signal] public delegate void OnGuildRankUpdateEventHandler(ulong entityId, int newRank);
     [Signal] public delegate void OnGuildSkillUpdateEventHandler(string skillId, int newLevel);
@@ -74,6 +81,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
+    [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
     [Signal] public delegate void OnGuildCreateResultEventHandler(bool success, string message);
 
@@ -293,13 +301,18 @@ public partial class GameNetwork : Node
                 HandleGoldUpdate(r);
                 break;
             case PacketId.S2C_OpenGuildForm:
+                GD.Print("[NET] S2C_OpenGuildForm RECEBIDO! Emitindo OnOpenGuildForm...");
                 EmitSignal(SignalName.OnOpenGuildForm);
+                GD.Print("[NET] OnOpenGuildForm emitido!");
                 break;
             case PacketId.S2C_GuildCreateResult:
                 HandleGuildCreateResult(r);
                 break;
             case PacketId.S2C_PetData:
                 HandlePetData(r);
+                break;
+            case PacketId.S2C_StatUpdate:
+                HandleStatUpdate(r);
                 break;
         } } catch (System.Exception ex)
         {
@@ -440,6 +453,15 @@ public partial class GameNetwork : Node
             w.Put(petName);
         });
         GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId})");
+    }
+
+    public void SendCollectLocalItem(int itemId, int quantity)
+    {
+        _client?.SendPacket(PacketId.C2S_CollectLocalItem, w =>
+        {
+            w.Put(itemId);
+            w.Put(quantity);
+        });
     }
 }
 

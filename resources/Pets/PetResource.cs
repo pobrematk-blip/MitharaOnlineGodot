@@ -19,9 +19,9 @@ public partial class PetResource : Resource
     [Export] public int Agilidade { get; set; } = 1;
     [Export] public int Destreza { get; set; } = 1;
     [Export] public int Inteligencia { get; set; } = 1;
-    [Export] public float Speed { get; set; } = 200f;
-    [Export] public float AttackRange { get; set; } = 40f;
-    [Export] public float AttackCooldown { get; set; } = 1.5f;
+    [Export] public float Speed { get; set; } = 300f;
+    [Export] public float AttackRange { get; set; } = 60f;
+    [Export] public float AttackCooldown { get; set; } = 0.8f;
 
     [Export] public float ColetaRange { get; set; } = 150f;
     [Export] public float GuardRange { get; set; } = 200f;

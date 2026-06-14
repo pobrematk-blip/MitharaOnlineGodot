@@ -181,6 +181,7 @@ partial class GameServer
                 var lvlWriter = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
                 lvlWriter.Put(sender.Id);
                 lvlWriter.Put(newLevel);
+                lvlWriter.Put(sender.Experience);
                 peer.Send(lvlWriter, DeliveryMethod.ReliableOrdered);
                 break;
 

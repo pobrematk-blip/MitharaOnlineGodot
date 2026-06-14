@@ -7,6 +7,7 @@ public partial class DialogUI : Control
     private Panel _titleBar;
     private Button _closeButton;
     private Label _npcText;
+    private ScrollContainer _npcTextScroll;
     private VBoxContainer _optionsContainer;
     private GameNetwork _gameNet;
     private bool _arrastando;
@@ -17,7 +18,8 @@ public partial class DialogUI : Control
         _panel = GetNode<Panel>("Panel");
         _titleBar = _panel.GetNode<Panel>("TitleBar");
         _closeButton = _panel.GetNode<Button>("CloseButton");
-        _npcText = _panel.GetNode<Label>("NpcText");
+        _npcTextScroll = _panel.GetNode<ScrollContainer>("NpcTextScroll");
+        _npcText = _panel.GetNode<Label>("NpcTextScroll/NpcText");
         _optionsContainer = _panel.GetNode<VBoxContainer>("OptionsContainer");
 
         _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -42,6 +44,7 @@ public partial class DialogUI : Control
         }
 
         _npcText.Text = text;
+        _npcTextScroll.ScrollVertical = 0;
 
         foreach (var child in _optionsContainer.GetChildren())
             child.QueueFree();
@@ -121,6 +124,7 @@ public partial class DialogUI : Control
 
         AdicionarOpcaoLocal("Sair", Fechar);
 
+        _npcTextScroll.ScrollVertical = 0;
         _panel.Visible = true;
         CallDeferred(MethodName.Centralizar);
     }
@@ -144,6 +148,7 @@ public partial class DialogUI : Control
         if (bancoScene == null) return;
         var banco = bancoScene.Instantiate<BancoUI>();
         GetTree().CurrentScene.AddChild(banco);
+        _gameNet?.SendBankRequest();
     }
 
     private void AbrirGuilda()
@@ -157,11 +162,25 @@ public partial class DialogUI : Control
 
     private void AbrirCriacaoGuilda()
     {
+        GD.Print("[GUILD] AbrirCriacaoGuilda chamado!");
         Fechar();
         var scene = ResourceLoader.Load<PackedScene>("res://ui/GuildCreateUI.tscn");
-        if (scene == null) return;
+        if (scene == null) { GD.Print("[GUILD] ERRO: cena GuildCreateUI.tscn nao encontrada!"); return; }
+        GD.Print("[GUILD] Cena carregada com sucesso!");
         var ui = scene.Instantiate<GuildCreateUI>();
-        GetTree().CurrentScene.AddChild(ui);
+        if (ui == null) { GD.Print("[GUILD] ERRO: Instantiate retornou null!"); return; }
+        GD.Print("[GUILD] GuildCreateUI instanciado com sucesso!");
+        var hud = GetTree().Root.FindChild("HUD", true, false);
+        if (hud != null)
+        {
+            hud.AddChild(ui);
+            GD.Print("[GUILD] GuildCreateUI adicionado ao HUD!");
+        }
+        else
+        {
+            GetTree().CurrentScene.AddChild(ui);
+            GD.Print("[GUILD] GuildCreateUI adicionado ao CurrentScene (fallback)!");
+        }
     }
 
     private void Fechar()

@@ -12,10 +12,10 @@ public enum PetMode
 public partial class PetNode : Node2D
 {
     [Export] public float SeguirDistancia = 80f;
-    [Export] public float Velocidade = 200f;
+    [Export] public float Velocidade = 300f;
     [Export] public float ColetaRange = 150f;
-    [Export] public float AtaqueRange = 40f;
-    [Export] public float AtaqueCooldown = 1.5f;
+    [Export] public float AtaqueRange = 60f;
+    [Export] public float AtaqueCooldown = 0.8f;
     [Export] public int AtaqueDano = 5;
     [Export] public float GuardaRange = 200f;
 
@@ -222,7 +222,7 @@ public partial class PetNode : Node2D
     private void ProcurarAlvoProximo()
     {
         var inimigos = GetTree().GetNodesInGroup("Inimigos");
-        float menorDist = AtaqueRange * 3f;
+        float menorDist = Mathf.Max(AtaqueRange * 5f, 400f);
         Node2D alvo = null;
 
         foreach (var node in inimigos)
@@ -259,7 +259,7 @@ public partial class PetNode : Node2D
                 Vector2 v when v.X > 0.5f => $"{_animPrefixo}_attack_right",
                 _ => $"{_animPrefixo}_attack_down"
             };
-            if (_sprite.SpriteFrames.HasAnimation(anim))
+            if (_sprite?.SpriteFrames?.HasAnimation(anim) == true)
                 _sprite.Play(anim);
         }
 
@@ -383,7 +383,7 @@ public partial class PetNode : Node2D
             baseAnim = $"{_animPrefixo}_idle_{lastDir}";
         }
 
-        if (_sprite.SpriteFrames.HasAnimation(baseAnim))
+        if (_sprite?.SpriteFrames?.HasAnimation(baseAnim) == true)
             _sprite.Play(baseAnim);
     }
 }

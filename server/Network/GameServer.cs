@@ -322,6 +322,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_LootPickup:
                 HandleLootPickup(peer, reader);
                 break;
+            case PacketId.C2S_CollectLocalItem:
+                HandleCollectLocalItem(peer, reader);
+                break;
             case PacketId.C2S_QuestList:
                 HandleQuestList(peer, reader);
                 break;
@@ -354,6 +357,9 @@ public partial class GameServer : INetEventListener
                 break;
             case PacketId.C2S_PetCapture:
                 HandlePetCapture(peer, reader);
+                break;
+            case PacketId.C2S_AllocateStat:
+                HandleAllocateStat(peer, reader);
                 break;
             }
         }

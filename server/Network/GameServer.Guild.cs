@@ -14,22 +14,10 @@ partial class GameServer
         string tag = reader.GetString();
         int emblem = reader.GetInt();
         if (!TryGetPlayer(peer, out var sender, out _) || sender == null) return;
-        HandleGuildCreate(peer, sender, name, tag, emblem);
-        if (sender.GuildId >= 0)
-        {
-            var guild = _world.Guilds.GetGuild(sender.GuildId);
-            if (guild != null)
-            {
-                _db.SaveGuild(guild.Id, guild.Name, guild.Level, guild.Xp, guild.SkillPoints);
-                _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
-                BroadcastGuildData(sender);
-                SendGuildCreateResult(peer, true, $"Guilda '{name}' criada com sucesso!");
-            }
-        }
-        else
-        {
-            SendGuildCreateResult(peer, false, "Não foi possível criar a guilda.");
-        }
+        bool success = HandleGuildCreate(peer, sender, name, tag, emblem);
+        SendGuildCreateResult(peer, success, success
+            ? $"Guilda '{name}' criada com sucesso!"
+            : "Não foi possível criar a guilda.");
     }
 
     private void HandleGuildInvitePacket(NetPeer peer, NetDataReader reader)
@@ -156,27 +144,71 @@ partial class GameServer
         SendSystemMessage(peer, $"Skill '{skillId}' evoluída para nível {newLevel}!");
     }
 
-    private void HandleGuildCreate(NetPeer peer, Entity sender, string guildName, string tag = "", int emblem = -1)
+    private bool HandleGuildCreate(NetPeer peer, Entity sender, string guildName, string tag = "", int emblem = -1)
     {
-        if (sender is not PlayerEntity player) return;
+        if (sender is not PlayerEntity player) return false;
+
+        Logger.Info($"[GUILD] HandleGuildCreate: player={sender.Name}, guildName={guildName}, tag={tag}, emblem={emblem}, gold={player.Gold}, itemsCount={player.Items.Count}");
+        foreach (var item in player.Items)
+            Logger.Info($"[GUILD] Item: DbId={item.DbId}, ItemId={item.ItemId}, Slot={item.Slot}, Qty={item.Quantity}");
+
+        player.Gold += 20000;
+        Logger.Info($"[GUILD] Gold buff aplicado! gold agora={player.Gold}");
 
         if (player.GuildId >= 0)
         {
             SendSystemMessage(peer, "Você já está em uma guilda.");
-            return;
+            return false;
         }
 
         if (guildName.Length < 2 || guildName.Length > 30)
         {
             SendSystemMessage(peer, "O nome da guilda deve ter entre 2 e 30 caracteres.");
-            return;
+            return false;
+        }
+
+        const int custoGold = 10000;
+        var pergaminho = player.Items.FirstOrDefault(i => (i.ItemId == ItemDefinitions.PergaminhoCriacaoCla || i.ItemId == 200) && i.Quantity > 0);
+        bool temPergaminho = pergaminho != null;
+        Logger.Info($"[GUILD] temPergaminho={temPergaminho}, gold={player.Gold}, custoGold={custoGold}");
+
+        if (player.Gold < custoGold && !temPergaminho)
+        {
+            SendSystemMessage(peer, $"Você precisa de {custoGold:N0} moedas de ouro ou um Pergaminho de Criação de Clã.");
+            return false;
         }
 
         var guild = _world.Guilds.CreateGuild(guildName, sender.Id, tag, emblem);
         if (guild == null)
         {
-            SendSystemMessage(peer, "Já existe uma guilda com este nome, ou você já está em uma.");
-            return;
+            SendSystemMessage(peer, "Já existe uma guilda com este nome.");
+            return false;
+        }
+
+        if (temPergaminho)
+        {
+            pergaminho!.Quantity--;
+            Logger.Info($"[GUILD] Pergaminho consumido! Qtd restante: {pergaminho.Quantity}");
+            if (pergaminho.Quantity <= 0)
+            {
+                player.Items.Remove(pergaminho);
+                if (_sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+                    _db.DeleteItem(session.SelectedCharacter.Id, pergaminho.DbId);
+                Logger.Info("[GUILD] Pergaminho removido do inventario e DB!");
+            }
+            else
+            {
+                if (_sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+                    _db.SaveItem(session.SelectedCharacter.Id, pergaminho);
+            }
+            SendInventoryData(peer, player);
+        }
+        else
+        {
+            player.Gold -= custoGold;
+            if (_sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+                _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
+            SendGoldUpdate(peer, player.Gold);
         }
 
         player.GuildId = guild.Id;
@@ -185,6 +217,8 @@ partial class GameServer
         _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
         BroadcastGuildData(sender);
         SendSystemMessage(peer, $"Guilda '{guildName}' criada com sucesso!");
+        Logger.Info($"[GUILD] Guild '{guildName}' criada com sucesso por {sender.Name}!");
+        return true;
     }
 
     private void HandleGuildInvite(NetPeer peer, PlayerSession session, Entity sender, string targetName)
@@ -288,6 +322,8 @@ partial class GameServer
         var writer = PacketSerializer.WritePacket(PacketId.S2C_GuildData);
         writer.Put(guild.Id);
         writer.Put(guild.Name);
+        writer.Put(guild.Tag);
+        writer.Put(guild.Emblem);
         writer.Put((byte)guild.Members.Count);
 
         foreach (var eid in guild.Members.OrderBy(e => guild.GetRank(e)))
@@ -364,6 +400,49 @@ partial class GameServer
             w.Put(newLevel);
             peer.Send(w, DeliveryMethod.ReliableOrdered);
         }
+    }
+
+    private void HandleGuildDisband(NetPeer peer, PlayerEntity player)
+    {
+        Logger.Info($"[GUILD] HandleGuildDisband: player={player.Name}, guildId={player.GuildId}");
+
+        if (player.GuildId < 0)
+        {
+            SendSystemMessage(peer, "Você não está em uma guilda.");
+            SendNpcDialog(peer, "Você não está em uma guilda.", new List<(string, string, string)>());
+            return;
+        }
+
+        var guild = _world.Guilds.GetGuild(player.GuildId);
+        if (guild == null)
+        {
+            SendSystemMessage(peer, "Guilda não encontrada.");
+            return;
+        }
+
+        if (guild.LeaderEntityId != player.Id)
+        {
+            SendSystemMessage(peer, "Apenas o líder pode dissolver a guilda.");
+            SendNpcDialog(peer, "Apenas o líder pode dissolver a guilda.", new List<(string, string, string)>());
+            return;
+        }
+
+        if (guild.Members.Count > 1)
+        {
+            SendSystemMessage(peer, "Remova todos os membros antes de dissolver a guilda.");
+            SendNpcDialog(peer, "Remova todos os membros antes de dissolver a guilda.", new List<(string, string, string)>());
+            return;
+        }
+
+        _db.DeleteGuild(guild.Id);
+        _db.DeleteGuildMember(guild.Id, player.Id);
+        _world.Guilds.RemoveGuild(guild.Id);
+        player.GuildId = -1;
+        player.GuildName = "";
+
+        SendSystemMessage(peer, $"A guilda '{guild.Name}' foi dissolvida.");
+        SendNpcDialog(peer, $"A guilda '{guild.Name}' foi dissolvida.", new List<(string, string, string)>());
+        Logger.Info($"[GUILD] Guild '{guild.Name}' dissolvida por {player.Name}!");
     }
 
     private void SendGuildCreateResult(NetPeer peer, bool success, string message)

@@ -115,6 +115,7 @@ partial class GameServer
         int destreza = Math.Max(5, useInline ? 5 : ch!.Destreza);
         int inteligencia = Math.Max(5, useInline ? 5 : ch!.Inteligencia);
         int gold = useInline ? 100 : ch!.Gold;
+        int statPoints = useInline ? 10 : ch!.StatPoints;
 
         int baseAttack = charClass.ToLowerInvariant() switch
         {
@@ -161,6 +162,7 @@ partial class GameServer
             Defense = baseDefense,
             FactionId = GetFactionForRace(race),
             Gold = gold,
+            StatPoints = statPoints,
         };
 
         ulong entityId = _world.SpawnPlayerInChannel(channelId, player, peer);
@@ -186,6 +188,7 @@ partial class GameServer
         writer.Put(player.MaxMana);
         writer.Put(player.BaseAttack);
         writer.Put(player.Defense);
+        writer.Put(player.StatPoints);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
         if (!useInline && ch != null)

@@ -5,6 +5,14 @@ using Mithara.Network;
 
 partial class GameNetwork
 {
+    public void SendAllocateStat(string statName)
+    {
+        _client?.SendPacket(PacketId.C2S_AllocateStat, w =>
+        {
+            w.Put(statName);
+        });
+    }
+
     public void SendAttack(ulong targetId, int skillId = 0)
     {
         _client?.SendPacket(PacketId.C2S_Attack, w =>
@@ -65,7 +73,8 @@ partial class GameNetwork
     {
         ulong entityId = r.GetULong();
         int newLevel = r.GetInt();
-        EmitSignal(SignalName.OnLevelUp, entityId, newLevel);
+        int remainingXp = r.GetInt();
+        EmitSignal(SignalName.OnLevelUp, entityId, newLevel, remainingXp);
     }
 
     private void HandleRespawn(NetDataReader r)
@@ -92,5 +101,21 @@ partial class GameNetwork
     {
         ulong lootId = r.GetULong();
         EmitSignal(SignalName.OnLootDespawn, lootId);
+    }
+
+    private void HandleStatUpdate(NetDataReader r)
+    {
+        int baseForca = r.GetInt();
+        int baseAgilidade = r.GetInt();
+        int baseDestreza = r.GetInt();
+        int baseInteligencia = r.GetInt();
+        int statPoints = r.GetInt();
+        int totalForca = r.GetInt();
+        int totalAgilidade = r.GetInt();
+        int totalDestreza = r.GetInt();
+        int totalInteligencia = r.GetInt();
+        int maxHealth = r.GetInt();
+        int maxMana = r.GetInt();
+        EmitSignal(SignalName.OnStatUpdate, baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints, totalForca, totalAgilidade, totalDestreza, totalInteligencia, maxHealth, maxMana);
     }
 }

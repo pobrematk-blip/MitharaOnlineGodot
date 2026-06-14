@@ -46,6 +46,8 @@ public static class ItemDefinitions
 {
     private static readonly Dictionary<int, ItemDefinition> _defs = new();
 
+    public const int PergaminhoCriacaoCla = 102;
+
     static ItemDefinitions()
     {
         Register(new ItemDefinition { Id = 1, Name = "Poção de Vida", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 10 });
@@ -64,6 +66,7 @@ public static class ItemDefinitions
         Register(new ItemDefinition { Id = 31, Name = "Anel de Força", Type = ItemType.Ring, Forca = 3, BuyPrice = 1000 });
         Register(new ItemDefinition { Id = 100, Name = "Pergaminho do Pet", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 500 });
         Register(new ItemDefinition { Id = 101, Name = "Pergaminho de Ressureicao", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 500 });
+        Register(new ItemDefinition { Id = PergaminhoCriacaoCla, Name = "Pergaminho de Criação de Clã", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 8000 });
         Register(new ItemDefinition { Id = 200, Name = "Slime Pet", Type = ItemType.Pet, MaxStack = 1, BuyPrice = 2000 });
         Register(new ItemDefinition { Id = 201, Name = "Lobo Pet", Type = ItemType.Pet, MaxStack = 1, BuyPrice = 3000 });
     }

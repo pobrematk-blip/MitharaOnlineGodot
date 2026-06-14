@@ -41,6 +41,7 @@ public enum PacketId : ushort
     C2S_GuildDemote = 0x0156,
     C2S_GuildBuySkill = 0x0157,
     C2S_LootPickup = 0x0160,
+    C2S_CollectLocalItem = 0x0161,
     C2S_QuestList = 0x0170,
     C2S_QuestClaimReward = 0x0171,
     C2S_NpcInteract = 0x0180,
@@ -52,6 +53,7 @@ public enum PacketId : ushort
     C2S_BankRequest = 0x0186,
     C2S_MobDropConfig = 0x0190,
     C2S_PetCapture = 0x0191,
+    C2S_AllocateStat = 0x0192,
     C2S_Ping = 0x01FF,
 
     // Server -> Client
@@ -101,6 +103,7 @@ public enum PacketId : ushort
     S2C_OpenGuildForm = 0x0288,
     S2C_GuildCreateResult = 0x0289,
     S2C_PetData = 0x0290,
+    S2C_StatUpdate = 0x0291,
     S2C_Pong = 0x02FF,
 }
 

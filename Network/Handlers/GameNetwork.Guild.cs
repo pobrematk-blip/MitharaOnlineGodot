@@ -74,6 +74,8 @@ partial class GameNetwork
     {
         int guildId = r.GetInt();
         string guildName = r.GetString();
+        string guildTag = r.GetString();
+        int guildEmblem = r.GetInt();
         byte memberCount = r.GetByte();
         var members = new Godot.Collections.Array<Godot.Collections.Dictionary>();
 
@@ -115,7 +117,28 @@ partial class GameNetwork
             skills.Add(s);
         }
 
-        EmitSignal(SignalName.OnGuildData, guildId, guildName, members, guildLevel, guildXp, skillPoints, skills);
+        SalvarGuildDataLocal(guildTag, guildEmblem);
+        AtualizarOverheadUI();
+
+        EmitSignal(SignalName.OnGuildData, guildId, guildName, guildTag, guildEmblem, members, guildLevel, guildXp, skillPoints, skills);
+    }
+
+    private void SalvarGuildDataLocal(string tag, int emblemIdx)
+    {
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        string nome = escolhido?.NomePersonagem?.Replace(" ", "_") ?? "default";
+        string path = $"user://guild_data_{nome}.cfg";
+        var cfg = new ConfigFile();
+        cfg.Load(path);
+        cfg.SetValue("Guild", "tag", tag);
+        cfg.SetValue("Guild", "emblem_index", emblemIdx);
+        cfg.Save(path);
+    }
+
+    private void AtualizarOverheadUI()
+    {
+        var overhead = GetTree()?.Root.FindChild("OverheadUI", true, false) as OverheadUI;
+        overhead?.RecarregarDadosGuild();
     }
 
     private void HandleGuildMemberUpdate(NetDataReader r)

@@ -1,31 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://guildui"]
+[gd_scene load_steps=6 format=3 uid="uid://guildui"]
 
 [ext_resource type="Script" path="res://ui/GuildUI.cs" id="1"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.08, 0.08, 0.12, 0.95)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_left = 8
-corner_radius_bottom_right = 8
-border_color = Color(0.25, 0.25, 0.35, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_title"]
-bg_color = Color(0.12, 0.12, 0.18, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-border_color = Color(0.2, 0.2, 0.3, 1)
-border_width_bottom = 1
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_fill"]
 bg_color = Color(0.8, 0.7, 0.1, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_skill_fill"]
-bg_color = Color(0.2, 0.6, 0.9, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
 bg_color = Color(1, 0, 0, 0.8)
@@ -62,7 +40,6 @@ custom_minimum_size = Vector2(320, 400)
 layout_mode = 0
 offset_right = 320.0
 offset_bottom = 400.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="TitleBar" type="Panel" parent="Panel"]
 layout_mode = 0

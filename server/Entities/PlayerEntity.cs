@@ -22,6 +22,7 @@ public class PlayerEntity : Entity
     public int BaseAgilidade { get; set; }
     public int BaseDestreza { get; set; }
     public int BaseInteligencia { get; set; }
+    public int StatPoints { get; set; } = 10;
 
     public List<ItemInstance> Items { get; set; } = new();
     public Dictionary<int, ItemInstance> Equipment { get; set; } = new();

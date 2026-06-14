@@ -60,6 +60,16 @@ partial class GameServer
 
         Logger.Info($"Dialogo encontrado: \"{dialog.Text}\" ({dialog.Options.Count} opcoes)");
         var options = dialog.Options.Select(o => (o.Text, o.Action, o.ActionData)).ToList();
+
+        if (dialog.Id == "guilda" && player.GuildId >= 0)
+        {
+            var guild = _world.Guilds.GetGuild(player.GuildId);
+            if (guild != null && guild.LeaderEntityId == player.Id && guild.Members.Count <= 1)
+            {
+                options.Add(("Dissolver a guilda", "guild_disband", ""));
+            }
+        }
+
         SendNpcDialog(peer, dialog.Text, options);
     }
 
@@ -106,8 +116,14 @@ partial class GameServer
                 break;
 
             case "guild_open_form":
+                Logger.Info("[GUILD] guild_open_form: enviando dialog vazio + OpenGuildForm");
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 SendOpenGuildForm(peer);
+                Logger.Info("[GUILD] guild_open_form: pacotes enviados!");
+                break;
+
+            case "guild_disband":
+                HandleGuildDisband(peer, player);
                 break;
 
             case "close":

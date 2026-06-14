@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 Icone = ExtResource("2_icon")
-ItemID = 200
+ItemID = 102
 Nome = "Pergaminho de Criacao de Cla"
 Descricao = "Um pergaminho ancestral que permite fundar uma guilda sem pagar em ouro."
 Acumulavel = true

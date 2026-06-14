@@ -130,11 +130,11 @@ public partial class OverheadUI : Control
         _nomeLabel.Visible = MostrarNome;
         AddChild(_nomeLabel);
 
-        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(10, 20), out _hpBg, out _hpFill);
+        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(20, 20), out _hpBg, out _hpFill);
         _hpBg.Visible = MostrarBarraVida;
         AddChild(_hpBg);
 
-        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(10, 27), out _manaBg, out _manaFill);
+        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(20, 27), out _manaBg, out _manaFill);
         _manaBg.Visible = MostrarBarraMana;
         AddChild(_manaBg);
 
@@ -159,8 +159,10 @@ public partial class OverheadUI : Control
 
     private void CarregarDadosGuild()
     {
+        string nome = _nomePersonagem.Replace(" ", "_");
+        string path = $"user://guild_data_{nome}.cfg";
         var cfg = new ConfigFile();
-        if (cfg.Load("user://guild_data.cfg") != Error.Ok) return;
+        if (cfg.Load(path) != Error.Ok) return;
         _guildTag = cfg.GetValue("Guild", "tag", "").AsString();
         _guildEmblemIdx = cfg.GetValue("Guild", "emblem_index", -1).AsInt32();
     }
@@ -197,7 +199,7 @@ public partial class OverheadUI : Control
         if (_camera == null) return;
 
         Vector2 screenPos = (_player.GlobalPosition - _camera.GlobalPosition) * _camera.Zoom + GetViewportRect().Size / 2;
-        Position = screenPos + new Vector2(-50, -75);
+        Position = screenPos + new Vector2(-60, -75);
     }
 
     private void Atualizar()

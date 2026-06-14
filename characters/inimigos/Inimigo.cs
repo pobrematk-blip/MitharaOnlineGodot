@@ -406,11 +406,11 @@ public partial class Inimigo : CharacterBody2D
         MoveAndSlide();
 
         string idleAnim = $"{AnimPrefix}idle_{CardinalDirection(_facingDirection)}";
-        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(idleAnim) && _sprite.Animation != idleAnim)
-            _sprite.Play(idleAnim);
-    }
+            if (_sprite?.SpriteFrames?.HasAnimation(idleAnim) == true && _sprite.Animation != idleAnim)
+                _sprite.Play(idleAnim);
+        }
 
-    private void AtualizarPatrulha(float delta)
+        private void AtualizarPatrulha(float delta)
     {
         if (DeveIniciarChase())
         {
@@ -454,7 +454,7 @@ public partial class Inimigo : CharacterBody2D
         MoveAndSlide();
 
         string walkAnim = $"{AnimPrefix}walk_{CardinalDirection(_facingDirection)}";
-        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(walkAnim) && _sprite.Animation != walkAnim)
+        if (_sprite?.SpriteFrames?.HasAnimation(walkAnim) == true && _sprite.Animation != walkAnim)
             _sprite.Play(walkAnim);
     }
 
@@ -496,7 +496,7 @@ public partial class Inimigo : CharacterBody2D
         MoveAndSlide();
 
         string walkAnim = $"{AnimPrefix}walk_{CardinalDirection(_facingDirection)}";
-        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(walkAnim) && _sprite.Animation != walkAnim)
+        if (_sprite?.SpriteFrames?.HasAnimation(walkAnim) == true && _sprite.Animation != walkAnim)
             _sprite.Play(walkAnim);
     }
 
@@ -520,14 +520,14 @@ public partial class Inimigo : CharacterBody2D
         string cardinal = CardinalDirection(_facingDirection);
         string animacaoAtaque = $"{AnimPrefix}attack_{cardinal}";
 
-        if (_sprite != null && _sprite.SpriteFrames.HasAnimation(animacaoAtaque))
+        if (_sprite?.SpriteFrames?.HasAnimation(animacaoAtaque) == true)
         {
             _sprite.Play(animacaoAtaque);
         }
         else
         {
             string fallback = $"{AnimPrefix}idle_down";
-            if (_sprite != null && _sprite.SpriteFrames.HasAnimation(fallback))
+            if (_sprite?.SpriteFrames?.HasAnimation(fallback) == true)
                 _sprite.Play(fallback);
         }
 
@@ -566,7 +566,7 @@ public partial class Inimigo : CharacterBody2D
                 break;
         }
 
-        if (_sprite != null && !string.IsNullOrEmpty(anim) && _sprite.SpriteFrames.HasAnimation(anim))
+        if (_sprite?.SpriteFrames?.HasAnimation(anim) == true && !string.IsNullOrEmpty(anim))
             _sprite.Play(anim);
     }
 
@@ -577,7 +577,7 @@ public partial class Inimigo : CharacterBody2D
         string cardinal = VectorToCardinal4(direction);
         string attackAnim = $"{AnimPrefix}attack_{cardinal}";
 
-        if (_sprite.SpriteFrames.HasAnimation(attackAnim))
+        if (_sprite?.SpriteFrames?.HasAnimation(attackAnim) == true)
             _sprite.Play(attackAnim);
     }
 
@@ -599,7 +599,7 @@ public partial class Inimigo : CharacterBody2D
                 Vector2 dirToPlayer = (_player.GlobalPosition - GlobalPosition).Normalized();
                 string atkCardinal = VectorToCardinal4(dirToPlayer);
                 string atkAnim = $"{AnimPrefix}attack_{atkCardinal}";
-                if (_sprite.SpriteFrames.HasAnimation(atkAnim))
+                if (_sprite?.SpriteFrames?.HasAnimation(atkAnim) == true)
                 {
                     _sprite.Play(atkAnim);
                     return;
@@ -615,7 +615,7 @@ public partial class Inimigo : CharacterBody2D
 
     private void TocarAnimacao(string desejada)
     {
-        if (!string.IsNullOrEmpty(desejada) && _sprite.SpriteFrames.HasAnimation(desejada))
+        if (!string.IsNullOrEmpty(desejada) && _sprite?.SpriteFrames?.HasAnimation(desejada) == true)
         {
             if (_sprite.Animation != desejada || !_sprite.IsPlaying())
                 _sprite.Play(desejada);

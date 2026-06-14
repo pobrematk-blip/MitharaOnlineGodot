@@ -166,8 +166,19 @@ public partial class GuildUI : Control
     {
         bool newState = forcedState ?? !_panel.Visible;
         _panel.Visible = newState;
-        if (newState) Centralizar();
+        if (newState)
+        {
+            Centralizar();
+            TrazerParaFrente();
+        }
         _arrastando = false;
+    }
+
+    private void TrazerParaFrente()
+    {
+        var parent = GetParent();
+        if (parent != null)
+            parent.MoveChild(this, parent.GetChildCount() - 1);
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)
@@ -201,7 +212,7 @@ public partial class GuildUI : Control
 
     // ================= NETWORK CALLBACKS =================
 
-    private void OnNetworkGuildData(int guildId, string guildName, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills)
+    private void OnNetworkGuildData(int guildId, string guildName, string guildTag, int guildEmblem, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills)
     {
         _guildId = guildId;
         _guildName = guildName;

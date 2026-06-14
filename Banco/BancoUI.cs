@@ -226,35 +226,6 @@ public partial class BancoUI : Control
             ForcarAtualizacaoDosDados();
     }
 
-    public override void _Input(InputEvent @event)
-    {
-        if (_panel == null) return;
-        if (GetViewport().GuiGetFocusOwner() is LineEdit) return;
-
-        if (@event.IsActionPressed("banco"))
-        {
-            _panel.Visible = !_panel.Visible;
-            _arrastando = false;
-            GetViewport().SetInputAsHandled();
-
-            if (_panel.Visible)
-            {
-                DesenharInterface();
-                _goldResult.Text = "";
-                if (_gameNet != null)
-                    _gameNet.SendBankRequest();
-            }
-        }
-
-        if (_panel.Visible && @event is InputEventMouseButton mouseEvent
-            && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left
-            && _closeButton.GetGlobalRect().HasPoint(mouseEvent.GlobalPosition))
-        {
-            FecharPainel();
-            GetViewport().SetInputAsHandled();
-        }
-    }
-
     public override void _ExitTree()
     {
         if (_gameNet != null)

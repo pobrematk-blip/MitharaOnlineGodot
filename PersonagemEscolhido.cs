@@ -1,4 +1,5 @@
 ﻿using Godot;
+using System.Collections.Generic;
 using System.Linq;
 
 public partial class PersonagemEscolhido : Node
@@ -21,6 +22,9 @@ public partial class PersonagemEscolhido : Node
     public int InteligenciaSalva { get; set; }
     public int PontosDisponiveisSalvos { get; set; }
     public bool TemProgressaoSalva { get; set; }
+
+    public System.Collections.Generic.Dictionary<TipoEquipamento, int> EquipadosSalvos { get; set; }
+    public bool TemEquipadosSalvos { get; set; }
 
     public string CabeloPath { get; set; }
     public string BarbaPath { get; set; }
@@ -155,20 +159,36 @@ public partial class PersonagemEscolhido : Node
         InteligenciaSalva = equipamento.Inteligencia;
         PontosDisponiveisSalvos = equipamento.PontosDisponiveis;
         TemProgressaoSalva = true;
+
+        EquipadosSalvos = new Dictionary<TipoEquipamento, int>();
+        foreach (var kv in equipamento.ItensEquipados)
+        {
+            if (kv.Value?.Item != null)
+                EquipadosSalvos[kv.Key] = kv.Value.Item.ItemID;
+        }
+        TemEquipadosSalvos = EquipadosSalvos.Count > 0;
         Salvar();
     }
 
-    public void AplicarProgressaoSalva(LevelProgressionComponent progressao, EquipamentoComponent equipamento)
+    public void AplicarProgressaoSalva(LevelProgressionComponent progressao, EquipamentoComponent equipamento, ItemDatabase itemDB = null)
     {
-        if (progressao == null || equipamento == null || !TemProgressaoSalva) return;
+        if (progressao == null || equipamento == null) return;
 
-        progressao.DefinirProgresso(NivelSalvo, ExperienciaSalva);
-        equipamento.ImportarEstado(
-            ForcaSalva,
-            AgilidadeSalva,
-            DestrezaSalva,
-            InteligenciaSalva,
-            PontosDisponiveisSalvos);
+        if (TemProgressaoSalva)
+        {
+            progressao.DefinirProgresso(NivelSalvo, ExperienciaSalva);
+            equipamento.ImportarEstado(
+                ForcaSalva,
+                AgilidadeSalva,
+                DestrezaSalva,
+                InteligenciaSalva,
+                PontosDisponiveisSalvos);
+        }
+
+        if (TemEquipadosSalvos && itemDB != null)
+        {
+            equipamento.ImportarEquipamentos(EquipadosSalvos, itemDB);
+        }
     }
 
     public bool CarregarSalvo(out ClasseCustomResource classe, out RacaResource raca)
@@ -238,5 +258,7 @@ public partial class PersonagemEscolhido : Node
         InteligenciaSalva = 0;
         PontosDisponiveisSalvos = 0;
         TemProgressaoSalva = false;
+        EquipadosSalvos = null;
+        TemEquipadosSalvos = false;
     }
 }

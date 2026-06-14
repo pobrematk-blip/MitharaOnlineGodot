@@ -10,3 +10,4 @@ script = ExtResource("1")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = ExtResource("2")
 animation = &"Goblin_idle_down"
+playing = true

@@ -2,8 +2,8 @@
 {
     public const int NivelInicial = 1;
     public const int PontosPorLevel = 5;
-    public const int XpBase = 100;
-    public const int XpIncrementoPorLevel = 50;
+    public const int XpBase = 20;
+    public const int XpIncrementoPorLevel = 12;
 
     /// <summary>XP necessária para sair do nível atual e ir ao próximo.</summary>
     public static int XpParaProximoLevel(int nivelAtual)

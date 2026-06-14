@@ -192,16 +192,34 @@ public partial class SettingsUI : Control
             FindPlayer();
             Centralizar();
             SelecionarResolucaoAtual();
+            TrazerParaFrente();
         }
         _arrastando = false;
     }
 
+    private void TrazerParaFrente()
+    {
+        var parent = GetParent();
+        if (parent != null)
+            parent.MoveChild(this, parent.GetChildCount() - 1);
+    }
+
     private void OnVoltarSelecao()
     {
+        GD.Print("[SETTINGS] OnVoltarSelecao chamado!");
         SaveSettings();
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        net?.DisconnectFromServer();
-        GetTree().ChangeSceneToFile("res://scenes/SelecaoPersonagem.tscn");
+        if (net != null)
+        {
+            net.OnEnterWorld -= OnEnterWorld;
+            net.DisconnectFromServer();
+        }
+        var err = GetTree().ChangeSceneToFile("res://scenes/SelecaoPersonagem.tscn");
+        GD.Print($"[SETTINGS] ChangeSceneToFile result: {err}");
+    }
+
+    private void OnEnterWorld()
+    {
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)
