@@ -32,7 +32,7 @@ public partial class SlotUI : Control
         if (_icone != null)
         {
             _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            _icone.ExpandMode = TextureRect.ExpandModeEnum.FitBoth;
+            _icone.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
             _icone.CustomMinimumSize = new Vector2(40, 40);
             _icone.Size = new Vector2(40, 40);
         }
@@ -247,7 +247,7 @@ public partial class SlotUI : Control
         var preview = new TextureRect
         {
             Texture = SlotInterno.Item.Icone,
-            ExpandMode = TextureRect.ExpandModeEnum.FitBoth,
+            ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
             CustomMinimumSize = new Vector2(40, 40),
             Size = new Vector2(40, 40),
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
