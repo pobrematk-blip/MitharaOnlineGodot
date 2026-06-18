@@ -1,0 +1,15 @@
+﻿[gd_scene format=3]
+
+[node name="PoraoDaIgreja" type="Node2D"]
+
+[node name="SpawnPoint" type="Marker2D" parent="."]
+
+[node name="ExitDoor" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitDoor"]
+shape = SubResource("Rect")
+
+[sub_resource type="RectangleShape2D" id="Rect"]
+size = Vector2(32, 64)
