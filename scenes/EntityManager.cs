@@ -153,7 +153,14 @@ public partial class EntityManager : Node
     private void OnEnterWorldHandler()
     {
         _flushRetryCount = 0;
-        CarregarCenasMob();
+        try
+        {
+            CarregarCenasMob();
+        }
+        catch (System.Exception ex)
+        {
+            GameNetwork.Log($"OnEnterWorldHandler: CarregarCenasMob falhou: {ex.Message}");
+        }
         CallDeferred(nameof(FlushPendingSpawns));
         CallDeferred(nameof(EnviarDropsParaServidor));
         CallDeferred(nameof(ApplyServerDataAfterEnterWorld));
@@ -830,7 +837,13 @@ public partial class EntityManager : Node
         {
             var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
             if (prog != null)
-                prog.DefinirProgresso(prog.Nivel, (int)totalExp);
+            {
+                int nivel = prog.Nivel;
+                // Safety: if component still has default level, use pending from server
+                if (nivel <= 1 && _gameNet._pendingLevel > 1)
+                    nivel = _gameNet._pendingLevel;
+                prog.DefinirProgresso(nivel, (int)totalExp);
+            }
         }
 
         var expLabel = new Label
