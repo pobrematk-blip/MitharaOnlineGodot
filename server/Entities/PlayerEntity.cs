@@ -37,12 +37,12 @@ public class PlayerEntity : Entity
 
     public int CalculateAttackDamage()
     {
-        return Math.Max(1, BaseAttack + Forca * 2);
+        return Math.Max(1, BaseAttack + Forca / 2);
     }
 
     public int CalculateDefense()
     {
-        return Defense + Agilidade;
+        return Defense + Agilidade / 2;
     }
 
     public int FindEmptyInventorySlot()

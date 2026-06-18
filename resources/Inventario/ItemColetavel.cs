@@ -1,4 +1,5 @@
 ﻿using Godot;
+using System.Collections.Generic;
 
 public partial class ItemColetavel : Area2D
 {
@@ -11,8 +12,29 @@ public partial class ItemColetavel : Area2D
     private bool _wasFPressed;
     private ItemTooltip _tooltip;
 
+    private static readonly Dictionary<Raridade, Color> RarityColors = new()
+    {
+        [Raridade.Comum] = Color.FromHtml("#ffffff"),
+        [Raridade.Incomum] = Color.FromHtml("#1eff00"),
+        [Raridade.Raro] = Color.FromHtml("#0070dd"),
+        [Raridade.Epico] = Color.FromHtml("#a335ee"),
+        [Raridade.Lendario] = Color.FromHtml("#ffcc00"),
+        [Raridade.Mistico] = Color.FromHtml("#ff4444"),
+    };
+
     public override void _Ready()
     {
+        Color rarityColor = Color.FromHtml("#ffffff");
+        if (ItemContido != null)
+            rarityColor = RarityColors.GetValueOrDefault(ItemContido.Raridade, Color.FromHtml("#ffffff"));
+
+        ZIndex = -1;
+        Scale = Vector2.Zero;
+
+        var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        spawnTween.TweenProperty(this, "scale", Vector2.One * 1.15f, 0.25f);
+        spawnTween.TweenProperty(this, "scale", Vector2.One, 0.1f);
+
         var sprite = GetNodeOrNull<Sprite2D>("Sprite2D");
         if (sprite != null)
         {
@@ -30,13 +52,19 @@ public partial class ItemColetavel : Area2D
             {
                 sprite.Scale = EscalaSprite;
             }
+
+            sprite.SelfModulate = rarityColor;
+
+            var floatTween = CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+            floatTween.TweenProperty(sprite, "position:y", -6f, 1.2f);
+            floatTween.TweenProperty(sprite, "position:y", 0f, 1.2f);
         }
 
         _nameLabel = new Label();
         _nameLabel.Text = ItemContido?.Nome ?? "Item";
         _nameLabel.Position = new Vector2(-40, -38);
         _nameLabel.AddThemeFontSizeOverride("font_size", 14);
-        _nameLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+        _nameLabel.AddThemeColorOverride("font_color", rarityColor);
         _nameLabel.AddThemeConstantOverride("shadow_offset_x", 1);
         _nameLabel.AddThemeConstantOverride("shadow_offset_y", 1);
         _nameLabel.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));

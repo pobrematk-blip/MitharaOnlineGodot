@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Mithara.Server;
 using Mithara.Server.Database;
+using Mithara.Server.Entities;
 using Mithara.Server.Network;
 
 Logger.Info("=== Mithara MMO Server ===");
@@ -11,12 +12,18 @@ Logger.Info($"Porta: {config.Port}");
 Logger.Info($"Canais: {config.ChannelCount}");
 Logger.Info($"Tick Rate: {config.TickRate} Hz");
 Logger.Info($"Max Conexões: {config.MaxConnections}");
-Logger.Info($"DB: {config.DbPath}");
+Logger.Info($"PostgreSQL: {config.PgUser}@{config.PgHost}:{config.PgPort}/{config.PgDatabase}");
 Logger.Info("");
 
-var dbPath = Path.Combine(AppContext.BaseDirectory, config.DbPath);
-var db = new DatabaseManager(dbPath);
+var db = new DatabaseManager(config.PgHost, config.PgPort, config.PgDatabase, config.PgUser, config.PgPassword);
 db.Initialize();
+
+// Auto-migrate from SQLite if data exists there
+var sqlitePath = Path.Combine(AppContext.BaseDirectory, config.DbPath);
+DatabaseMigration.MigrateFromSqlite(sqlitePath, db);
+
+db.SeedItemDefinitions();
+ItemDefinitions.LoadFromDatabase(db);
 
 var server = new GameServer(config, db);
 server.Start();

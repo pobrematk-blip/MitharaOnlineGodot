@@ -5,6 +5,7 @@ using Mithara.Server.Entities;
 using Mithara.Server.Packets;
 using Mithara.Server.Quests;
 using Mithara.Server.World;
+using Mithara.Server.World.Pathfinding;
 using LiteNetLib;
 using LiteNetLib.Utils;
 
@@ -36,6 +37,8 @@ public partial class GameServer : INetEventListener
 
     internal volatile bool _running;
     internal double _gameTime;
+    private const double AutoSaveInterval = 60.0;
+    private double _lastAutoSaveTime;
 
     public WorldManager World => _world;
 
@@ -59,10 +62,21 @@ public partial class GameServer : INetEventListener
         _netManager.Start(_config.Port);
         _running = true;
 
+        var pathGrid = new PathfindingGrid(
+            _config.PathfindingGridWidth,
+            _config.PathfindingGridHeight,
+            _config.PathfindingCellSize,
+            _config.PathfindingOriginX,
+            _config.PathfindingOriginY
+        );
+        pathGrid.ApplyBlockedAreas(_config.BlockedAreas);
+
         foreach (var ch in _world.GetAllChannels())
         {
             ch.EntitySpawned += OnChannelEntitySpawned;
             ch.OnMonsterAttack += HandleMonsterAIAttack;
+            ch.NoMobZones = _config.NoMobZones;
+            ch.PathGrid = pathGrid;
         }
 
         LoadGuildsFromDb();
@@ -116,6 +130,34 @@ public partial class GameServer : INetEventListener
         _gameTime += dt;
         _world.UpdateAll(dt, _gameTime);
         BroadcastEntityUpdates();
+
+        if (_gameTime - _lastAutoSaveTime >= AutoSaveInterval)
+        {
+            _lastAutoSaveTime = _gameTime;
+            AutoSaveAllPlayers();
+        }
+    }
+
+    private void AutoSaveAllPlayers()
+    {
+        foreach (var ch in _world.GetAllChannels())
+        {
+            foreach (var kv in ch.GetAllEntities())
+            {
+                if (kv.Value is PlayerEntity player)
+                {
+                    var session = _sessions.Values.FirstOrDefault(s => s.EntityId == kv.Key);
+                    if (session?.SelectedCharacter != null)
+                    {
+                        _db.SaveCharacterPosition(session.SelectedCharacter.Id, player.X, player.Y);
+                        _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
+                        _db.SaveCharacterXp(session.SelectedCharacter.Id, player.Experience);
+                        _db.SaveCharacterLevel(session.SelectedCharacter.Id, player.Level);
+                        _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
+                    }
+                }
+            }
+        }
     }
 
     public bool IsRunning => _running;
@@ -149,19 +191,9 @@ public partial class GameServer : INetEventListener
                         if (entity is PlayerEntity player)
                         {
                             if (session.SelectedCharacter != null)
-                                _db.SaveCharacterPosition(session.SelectedCharacter.Id, player.X, player.Y);
+                                _db.SaveCharacterFull(session.SelectedCharacter.Id, player, session.SelectedCharacter.BankGold);
                             if (player.PartyId >= 0)
                                 _world.Parties.RemoveMember(session.EntityId);
-                            if (player.GuildId >= 0)
-                            {
-                                int gid = player.GuildId;
-                                _world.Guilds.RemoveMember(session.EntityId);
-                                var remaining = _world.Guilds.GetGuild(gid);
-                                if (remaining == null)
-                                    _db.DeleteGuild(gid);
-                                else
-                                    _db.DeleteGuildMember(gid, session.EntityId);
-                            }
                         }
                     }
 
@@ -439,6 +471,7 @@ public class PlayerSession
     public ulong EntityId { get; set; }
     public int ChannelId { get; set; } = -1;
     public bool IsAdmin { get; set; }
+    public HashSet<ulong> SpawnedEntities { get; set; } = new();
 
     public bool IsAdminOrAdminMode(ServerConfig config)
     {

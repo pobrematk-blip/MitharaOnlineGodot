@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 6016
+Nome = "Martelo Real"
+Descricao = "Frequentemente carregado pelos protetores dos templos da capital."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 7
+CategoriaPeso = 0
+NivelRequerido = 75
+Valor = 610
+Forca = 30
+ForcaMin = 24
+ForcaMax = 30
+Agilidade = 0
+AgilidadeMin = 0
+AgilidadeMax = 0
+Destreza = 0
+DestrezaMin = 0
+DestrezaMax = 0
+Inteligencia = 30
+InteligenciaMin = 24
+InteligenciaMax = 30
+DanoFisico = 69
+DanoFisicoMin = 62
+DanoFisicoMax = 69
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "RouboVida,RouboMana,RegeneracaoVida,RegeneracaoMana,Tenacidade,Precisao,ChanceCritica"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

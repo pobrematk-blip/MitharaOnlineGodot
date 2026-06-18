@@ -16,13 +16,13 @@ public class MonsterEntity : Entity
     // Patrol
     public float SpawnX { get; set; }
     public float SpawnY { get; set; }
-    public float PatrolRadius { get; set; } = 250f;
+    public float PatrolRadius { get; set; } = 960f;
     public float? PatrolTargetX { get; set; }
     public float? PatrolTargetY { get; set; }
     public double PatrolTimer { get; set; }
 
-    public const float MaxWanderRange = 1280f;
-    public const float ReturnRange = 1120f;
+    public const float MaxWanderRange = 1440f;
+    public const float ReturnRange = 1280f;
 
     public MonsterEntity()
     {

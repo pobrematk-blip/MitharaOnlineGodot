@@ -50,6 +50,12 @@ public partial class ClasseCustomResource : Resource
     [ExportGroup("Talentos")]
     [Export] public TalentTreeResource ArvoreTalentos { get; set; }
 
+    [ExportGroup("Itens Iniciais")]
+    [Export] public ItemResource[] ItensIniciais { get; set; } = System.Array.Empty<ItemResource>();
+
+    /// <summary>IDs dos itens separados por vírgula (para o servidor).</summary>
+    [Export] public string ItensIniciaisIds { get; set; } = "";
+
     public string ObterPrefixoAnimacao()
     {
         if (!string.IsNullOrWhiteSpace(PrefixoAnimacao))

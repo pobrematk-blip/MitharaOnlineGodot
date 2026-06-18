@@ -31,6 +31,16 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
     private Node2D? _worldNode;
 
+    private static readonly Dictionary<Raridade, Color> RarityColors = new()
+    {
+        [Raridade.Comum] = Color.FromHtml("#ffffff"),
+        [Raridade.Incomum] = Color.FromHtml("#1eff00"),
+        [Raridade.Raro] = Color.FromHtml("#0070dd"),
+        [Raridade.Epico] = Color.FromHtml("#a335ee"),
+        [Raridade.Lendario] = Color.FromHtml("#ffcc00"),
+        [Raridade.Mistico] = Color.FromHtml("#ff4444"),
+    };
+
     private struct RemoteState
     {
         public Vector2 Position;
@@ -142,6 +152,7 @@ public partial class EntityManager : Node
 
     private void OnEnterWorldHandler()
     {
+        _flushRetryCount = 0;
         CarregarCenasMob();
         CallDeferred(nameof(FlushPendingSpawns));
         CallDeferred(nameof(EnviarDropsParaServidor));
@@ -151,8 +162,12 @@ public partial class EntityManager : Node
     private void ApplyServerDataAfterEnterWorld()
     {
         if (_gameNet == null) return;
-        var player = _gameNet.GetEntity(_gameNet.LocalPlayerId);
-        if (player == null) return;
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        if (player == null)
+        {
+            GameNetwork.Log("ApplyServerDataAfterEnterWorld: Player nao encontrado na cena");
+            return;
+        }
 
         var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (equip != null)
@@ -225,6 +240,11 @@ public partial class EntityManager : Node
 
     private void FlushPendingSpawns()
     {
+        if (_flushRetryCount >= 10)
+        {
+            GameNetwork.LogError("FlushPendingSpawns: limite de retentativas atingido, abandonando");
+            return;
+        }
         try
         {
             var world = ObterMundo();
@@ -324,7 +344,12 @@ public partial class EntityManager : Node
         catch (System.Exception ex)
         {
             GameNetwork.LogError($"Erro em FlushPendingSpawns", ex.ToString());
-            CallDeferred(nameof(FlushPendingSpawns));
+            // Limita retentativas para evitar loop infinito
+            _flushRetryCount++;
+            if (_flushRetryCount < 10)
+                CallDeferred(nameof(FlushPendingSpawns));
+            else
+                GameNetwork.LogError("FlushPendingSpawns: limite de retentativas atingido");
         }
     }
 
@@ -747,21 +772,22 @@ public partial class EntityManager : Node
                 Position = new Vector2(-10, -20),
                 ZIndex = 10,
             };
+            damageLabel.AddThemeFontOverride("font", GetBoldFont());
 
             if (isCrit)
             {
                 damageLabel.Text = $"{damage}!";
                 damageLabel.AddThemeFontSizeOverride("font_size", 26);
                 damageLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.85f, 0.1f));
-                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.7f));
-                damageLabel.AddThemeConstantOverride("outline_size", 3);
+                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
+                damageLabel.AddThemeConstantOverride("outline_size", 4);
             }
             else
             {
                 damageLabel.AddThemeFontSizeOverride("font_size", 20);
                 damageLabel.AddThemeColorOverride("font_color", Colors.White);
-                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.6f));
-                damageLabel.AddThemeConstantOverride("outline_size", 2);
+                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
+                damageLabel.AddThemeConstantOverride("outline_size", 4);
             }
 
             targetNode.AddChild(damageLabel);
@@ -792,7 +818,7 @@ public partial class EntityManager : Node
     {
         if (entityId != _gameNet?.LocalPlayerId) return;
 
-        var player = _gameNet?.GetEntity(entityId);
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player != null)
         {
             var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
@@ -806,12 +832,15 @@ public partial class EntityManager : Node
             Position = new Vector2(0, -60),
             ZIndex = 10,
         };
+        expLabel.AddThemeFontOverride("font", GetBoldFont());
+        expLabel.AddThemeFontSizeOverride("font_size", 18);
         expLabel.AddThemeColorOverride("font_color", new Color(0.3f, 0.8f, 1.0f));
+        expLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
+        expLabel.AddThemeConstantOverride("outline_size", 4);
 
-        var playerNode = _gameNet?.GetEntity(entityId);
-        if (playerNode != null)
+        if (player != null)
         {
-            playerNode.AddChild(expLabel);
+            player.AddChild(expLabel);
             var tween = CreateTween();
             tween.TweenProperty(expLabel, "position", expLabel.Position + new Vector2(0, -30), 1.0f);
             tween.TweenCallback(Callable.From(() =>
@@ -826,42 +855,114 @@ public partial class EntityManager : Node
     {
         if (entityId != _gameNet?.LocalPlayerId) return;
 
-        var player = _gameNet?.GetEntity(entityId);
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player != null)
         {
             var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
             if (prog != null)
-                prog.DefinirProgresso(newLevel, remainingXp);
-        }
-
-        var lvLabel = new Label
-        {
-            Text = $"LEVEL UP! ({newLevel})",
-            Position = new Vector2(-50, -80),
-            ZIndex = 10,
-            Scale = new Vector2(1.5f, 1.5f),
-        };
-        lvLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.9f, 0.1f));
-
-        var playerNode = _gameNet?.GetEntity(entityId);
-        if (playerNode != null)
-        {
-            playerNode.AddChild(lvLabel);
-            var tween = CreateTween();
-            tween.TweenProperty(lvLabel, "position", lvLabel.Position + new Vector2(0, -40), 1.5f);
-            tween.TweenProperty(lvLabel, "scale", new Vector2(0.5f, 0.5f), 1.5f);
-            tween.TweenCallback(Callable.From(() =>
             {
-                if (IsInstanceValid(lvLabel)) lvLabel.QueueFree();
-            }));
-            tween.Play();
+                prog.DefinirProgresso(newLevel, remainingXp);
+                prog.EmitSignal(LevelProgressionComponent.SignalName.SubiuDeLevel, newLevel);
+            }
         }
+
+        if (player != null)
+        {
+            var container = new Node2D();
+            container.Name = "LevelUpContainer";
+            container.ZIndex = 10;
+            player.AddChild(container);
+
+            var sprite = CriarLevelUpSprite();
+            if (sprite != null)
+            {
+                sprite.Position = new Vector2(0, -120);
+                sprite.Scale = Vector2.Zero;
+                sprite.Name = "LevelUpSprite";
+                container.AddChild(sprite);
+
+                var tween = CreateTween();
+                tween.SetParallel(true);
+                tween.TweenProperty(sprite, "scale", new Vector2(2.0f, 2.0f), 0.8f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
+                tween.TweenProperty(sprite, "self_modulate", new Color(1, 1, 1, 0), 0.8f).SetDelay(1.3f);
+            }
+
+            for (int i = 0; i < 6; i++)
+            {
+                var spark = new Label();
+                spark.Text = "\u2726";
+                spark.AddThemeFontSizeOverride("font_size", 16);
+                spark.AddThemeColorOverride("font_color", new Color(1, 0.9f, 0.2f));
+                spark.AddThemeConstantOverride("shadow_offset_x", 1);
+                spark.AddThemeConstantOverride("shadow_offset_y", 1);
+                spark.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
+                spark.ZIndex = 10;
+                float angle = (float)(i * (Mathf.Pi * 2 / 6));
+                float dist = 40f;
+                container.AddChild(spark);
+
+                var sparkTween = CreateTween().SetParallel(true);
+                sparkTween.TweenProperty(spark, "position", new Vector2(Mathf.Cos(angle) * dist, -120 + Mathf.Sin(angle) * dist), 0.6f).SetEase(Tween.EaseType.Out);
+                sparkTween.TweenProperty(spark, "scale", Vector2.One * 0.3f, 0.6f).SetEase(Tween.EaseType.In);
+                sparkTween.TweenProperty(spark, "self_modulate", new Color(1, 0.9f, 0.2f, 0), 0.4f).SetDelay(0.3f);
+                sparkTween.Play();
+            }
+
+            var levelUpText = new Label();
+            levelUpText.Text = $"LEVEL UP! [{newLevel}]";
+            levelUpText.Position = new Vector2(-80, -200);
+            levelUpText.AddThemeFontSizeOverride("font_size", 22);
+            levelUpText.AddThemeColorOverride("font_color", new Color(1, 0.85f, 0));
+            levelUpText.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
+            levelUpText.AddThemeConstantOverride("outline_size", 6);
+            levelUpText.ZIndex = 10;
+            container.AddChild(levelUpText);
+
+            var textTween = CreateTween().SetParallel(true);
+            textTween.TweenProperty(levelUpText, "position", levelUpText.Position + new Vector2(0, -40), 1.5f).SetEase(Tween.EaseType.Out);
+            textTween.TweenProperty(levelUpText, "self_modulate", new Color(1, 0.85f, 0, 0), 0.6f).SetDelay(0.9f);
+            textTween.TweenCallback(Callable.From(() =>
+            {
+                if (IsInstanceValid(container)) container.QueueFree();
+            })).SetDelay(2.0f);
+            textTween.Play();
+        }
+    }
+
+    private static Texture2D? _levelUpTexCache;
+    private static Sprite2D? CriarLevelUpSprite()
+    {
+        if (_levelUpTexCache != null)
+            return new Sprite2D { Texture = _levelUpTexCache };
+
+        var tex = ResourceLoader.Load<Texture2D>("res://tiles/AnimaçõesdeMapa/LevelUp.png");
+        if (tex == null) return null;
+
+        var image = tex.GetImage();
+        if (image == null)
+        {
+            image = new Image();
+            var err = image.Load("res://tiles/AnimaçõesdeMapa/LevelUp.png");
+            if (err != Error.Ok) return null;
+        }
+
+        // Use the last (most complete) frame: region at (62, 822, 899, 123)
+        var region = new Rect2I(62, 822, 899, 123);
+        int canvasW = 1024;
+        int canvasH = 256;
+        var frameImg = Image.CreateEmpty(canvasW, canvasH, false, Image.Format.Rgba8);
+        int offsetX = (canvasW - region.Size.X) / 2;
+        int offsetY = (canvasH - region.Size.Y) / 2;
+        frameImg.BlitRect(image, region, new Vector2I(offsetX, offsetY));
+        _levelUpTexCache = ImageTexture.CreateFromImage(frameImg);
+
+        return new Sprite2D { Texture = _levelUpTexCache };
     }
 
     private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana)
     {
         if (_gameNet == null) return;
-        var player = _gameNet.GetEntity(_gameNet.LocalPlayerId);
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null) return;
 
         var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
@@ -916,6 +1017,8 @@ public partial class EntityManager : Node
         var root = new Area2D();
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
+        root.ZIndex = -1;
+        root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
         root.SetMeta("item_id", itemId);
         root.SetMeta("quantity", quantity);
@@ -923,6 +1026,14 @@ public partial class EntityManager : Node
         var col = new CollisionShape2D();
         col.Shape = new CircleShape2D { Radius = 30f };
         root.AddChild(col);
+
+        Color rarityColor = new Color(1.0f, 0.9f, 0.0f);
+        if (itemId > 0 && _gameNet?.ItemDB != null)
+        {
+            var itemRes = _gameNet.ItemDB.GetItem(itemId);
+            if (itemRes != null)
+                rarityColor = RarityColors.GetValueOrDefault(itemRes.Raridade, rarityColor);
+        }
 
         var icon = new Label();
         icon.Text = "\u2666";
@@ -932,7 +1043,22 @@ public partial class EntityManager : Node
         icon.AddThemeConstantOverride("shadow_offset_x", 1);
         icon.AddThemeConstantOverride("shadow_offset_y", 1);
         icon.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
+        icon.AddThemeColorOverride("font_outline_color", rarityColor);
+        icon.AddThemeConstantOverride("outline_size", 6);
         root.AddChild(icon);
+
+        var visuals = new Node2D();
+        visuals.Name = "Visuals";
+        root.AddChild(visuals);
+        icon.Reparent(visuals);
+
+        var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        spawnTween.TweenProperty(root, "scale", Vector2.One * 1.15f, 0.25f);
+        spawnTween.TweenProperty(root, "scale", Vector2.One, 0.1f);
+
+        var floatTween = root.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        floatTween.TweenProperty(visuals, "position:y", -6f, 1.2f);
+        floatTween.TweenProperty(visuals, "position:y", 0f, 1.2f);
 
         if (itemId > 0 && _gameNet?.ItemDB != null)
         {
@@ -943,11 +1069,11 @@ public partial class EntityManager : Node
                 labelName.Text = $"{itemRes.Nome} x{quantity}";
                 labelName.Position = new Vector2(-40, 8);
                 labelName.AddThemeFontSizeOverride("font_size", 14);
-                labelName.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+                labelName.AddThemeColorOverride("font_color", rarityColor);
                 labelName.AddThemeConstantOverride("shadow_offset_x", 1);
                 labelName.AddThemeConstantOverride("shadow_offset_y", 1);
                 labelName.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
-                root.AddChild(labelName);
+                visuals.AddChild(labelName);
             }
         }
 
@@ -960,7 +1086,7 @@ public partial class EntityManager : Node
         prompt.AddThemeConstantOverride("shadow_offset_y", 1);
         prompt.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
         prompt.Visible = false;
-        root.AddChild(prompt);
+        visuals.AddChild(prompt);
 
         ItemTooltip tooltip = GetNodeOrNull<ItemTooltip>("/root/main/UI/ItemTooltip");
         root.MouseEntered += () =>
@@ -1012,6 +1138,15 @@ public partial class EntityManager : Node
             if (!_networkNodes.TryGetValue(kvp.Key, out var node))
                 continue;
 
+            if (!IsInstanceValid(node))
+            {
+                _networkNodes.Remove(kvp.Key);
+                _remoteStates.Remove(kvp.Key);
+                _previousPositions.Remove(kvp.Key);
+                _lastDirections.Remove(kvp.Key);
+                continue;
+            }
+
             // Nao sobrescrever posicao do proprio jogador local (colisao local e soberana)
             if (kvp.Key == _gameNet?.LocalPlayerId)
                 continue;
@@ -1036,7 +1171,12 @@ public partial class EntityManager : Node
 
             if (node is Inimigo inimigo)
             {
-                inimigo.NetworkTargetPos = cur.Position;
+                Vector2 predicted = cur.Position;
+                if (cur.Moving && computedDir.LengthSquared() > 0.001f && elapsed < 0.5)
+                {
+                    predicted += computedDir * inimigo.Velocidade * (float)elapsed;
+                }
+                inimigo.NetworkTargetPos = predicted;
             }
             else
             {
@@ -1091,5 +1231,24 @@ public partial class EntityManager : Node
             _gameNet.OnLootDespawn -= OnLootDespawn;
             _gameNet.OnStatUpdate -= OnStatUpdate;
         }
+    }
+
+    private static Font _boldFont;
+    private static Font GetBoldFont()
+    {
+        if (_boldFont != null) return _boldFont;
+        var fnt = ResourceLoader.Load<Font>("res://fonts/Montserrat-Variable.ttf");
+        if (fnt != null)
+        {
+            var v = new FontVariation();
+            v.SetBaseFont(fnt);
+            v.SetVariationEmbolden(1.0f);
+            _boldFont = v;
+        }
+        else
+        {
+            _boldFont = ThemeDB.GetProjectTheme().DefaultFont;
+        }
+        return _boldFont;
     }
 }

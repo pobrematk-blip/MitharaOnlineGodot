@@ -1,29 +1,51 @@
 ﻿using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class SlotEquipamentoUI : Control
 {
-    // Qual tipo de item este slot específico do corpo aceita
     [Export] public TipoEquipamento TipoDeSlot { get; set; } = TipoEquipamento.Nenhum;
 
+    private static readonly Dictionary<Raridade, Color> RarityColors = new()
+    {
+        [Raridade.Comum] = Color.FromHtml("#ffffff"),
+        [Raridade.Incomum] = Color.FromHtml("#1eff00"),
+        [Raridade.Raro] = Color.FromHtml("#0070dd"),
+        [Raridade.Epico] = Color.FromHtml("#a335ee"),
+        [Raridade.Lendario] = Color.FromHtml("#ffcc00"),
+        [Raridade.Mistico] = Color.FromHtml("#ff4444"),
+    };
+
     private TextureRect _icone;
-    private Texture2D _texturaFundoPadrao;
-    
-    // Referência para o slot lógico dentro do EquipamentoComponent
+    private ColorRect _fundoEscuro;
+    private ColorRect _rarityGlow;
+
     public SlotInventario SlotLogico { get; private set; }
+
+    private bool _mouseSobre;
+    private double _ultimoCliqueEsquerdo;
+    private const double IntervaloDuploClique = 300;
 
     public override void _Ready()
     {
-        _icone = GetNode<TextureRect>("Icone"); // Certifique-se de ter um TextureRect com esse nome dentro dele
+        _icone = GetNode<TextureRect>("Icone");
+
         if (_icone != null)
         {
-            _texturaFundoPadrao = _icone.Texture; // Guarda o desenho fantasma (ex: desenho do capacete vazio)
+            _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+            _icone.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
+            _icone.CustomMinimumSize = new Vector2(40, 40);
         }
 
-        // Adiciona ao grupo para fácil localização
+        CriarFundoEscuro();
+
+        _rarityGlow = GetNodeOrNull<ColorRect>("RarityGlow");
+
         AddToGroup("SlotEquipamentoUI");
 
-        // Tooltip com o nome do slot
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
+
         TooltipText = TipoDeSlot switch
         {
             TipoEquipamento.Capacete => "Capacete",
@@ -46,7 +68,127 @@ public partial class SlotEquipamentoUI : Control
         };
     }
 
-    // Atualiza o visual do slot (chamado pela UI principal do personagem)
+    private void AtualizarGlow(ItemResource item)
+    {
+        if (item == null)
+        {
+            if (_rarityGlow != null)
+                _rarityGlow.Visible = false;
+            return;
+        }
+
+        if (_rarityGlow == null)
+        {
+            _rarityGlow = new ColorRect();
+            _rarityGlow.Name = "RarityGlow";
+            _rarityGlow.MouseFilter = MouseFilterEnum.Ignore;
+            _rarityGlow.CustomMinimumSize = new Vector2(42, 42);
+            _rarityGlow.Size = new Vector2(42, 42);
+            _rarityGlow.Position = new Vector2(0, 0);
+            _rarityGlow.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+            _rarityGlow.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+            AddChild(_rarityGlow);
+        }
+
+        _rarityGlow.Visible = true;
+        Color cor = RarityColors.GetValueOrDefault(item.Raridade, Colors.White);
+        _rarityGlow.Color = Colors.Transparent;
+        var style = new StyleBoxFlat();
+        style.BgColor = Colors.Transparent;
+        style.BorderWidthTop = 2;
+        style.BorderWidthBottom = 2;
+        style.BorderWidthLeft = 2;
+        style.BorderWidthRight = 2;
+        style.BorderColor = cor;
+        style.CornerRadiusTopLeft = 3;
+        style.CornerRadiusTopRight = 3;
+        style.CornerRadiusBottomLeft = 3;
+        style.CornerRadiusBottomRight = 3;
+        _rarityGlow.AddThemeStyleboxOverride("normal", style);
+    }
+
+    private void OnMouseEntered()
+    {
+        _mouseSobre = true;
+        MostrarTooltip();
+    }
+
+    private void OnMouseExited()
+    {
+        _mouseSobre = false;
+        EsconderTooltip();
+    }
+
+    private ItemTooltip ObterTooltip()
+    {
+        return GetNodeOrNull<ItemTooltip>("/root/main/UI/ItemTooltip");
+    }
+
+    private void MostrarTooltip()
+    {
+        if (SlotLogico?.Item == null) return;
+        var tip = ObterTooltip();
+        if (tip == null) return;
+        tip.Mostrar(SlotLogico.Item, GetGlobalMousePosition(), SlotLogico.RefinoNivel);
+    }
+
+    private void EsconderTooltip()
+    {
+        var tip = ObterTooltip();
+        tip?.Esconder();
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (@event is not InputEventMouseButton mouseEvent || !mouseEvent.Pressed)
+            return;
+
+        if (mouseEvent.ButtonIndex == MouseButton.Left)
+        {
+            double agora = Time.GetTicksMsec();
+            bool duploClique = (agora - _ultimoCliqueEsquerdo) < IntervaloDuploClique;
+            _ultimoCliqueEsquerdo = agora;
+
+            if (!duploClique || !_mouseSobre)
+                return;
+
+            if (SlotLogico?.Item == null)
+                return;
+
+            DesequiparItem();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+    }
+
+    private void DesequiparItem()
+    {
+        var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
+        if (player == null) return;
+
+        var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+        if (equip == null) return;
+
+        var inventario = player.FindChild("InventarioComponent", true, false) as InventarioComponent;
+        if (inventario == null) return;
+
+        var item = SlotLogico.Item;
+        if (inventario.AdicionarItem(item, 1))
+        {
+            SlotLogico.Item = null;
+            SlotLogico.Quantidade = 0;
+            equip.RecalcularBonusEquipamentos();
+            equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
+            inventario.NotificarMudancaExterna();
+
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected)
+                gameNet.SendUnequipItem((int)TipoDeSlot, -1);
+
+            GD.Print($"[EQUIP SLOT] Item '{item.Nome}' desequipado por duplo clique.");
+        }
+    }
+
     public void AtualizarSlot(SlotInventario slotLogico)
     {
         SlotLogico = slotLogico;
@@ -55,19 +197,36 @@ public partial class SlotEquipamentoUI : Control
 
         if (slotLogico == null || slotLogico.Item == null)
         {
-            // Volta para a imagem fantasma padrão do slot do corpo
-            _icone.Texture = _texturaFundoPadrao;
-            _icone.SelfModulate = new Color(1, 1, 1, 0.4f); // Deixa meio transparente para parecer vazio
+            AtualizarGlow(null);
+            _icone.Texture = null;
+            _icone.SelfModulate = new Color(1, 1, 1, 1);
         }
         else
         {
-            // Mostra o item equipado
+            AtualizarGlow(slotLogico.Item);
+            _icone.CustomMinimumSize = new Vector2(40, 40);
             _icone.Texture = slotLogico.Item.Icone;
-            _icone.SelfModulate = new Color(1, 1, 1, 1); // Opacidade total
+            _icone.SetDeferred("size", new Vector2(40, 40));
+            _icone.SelfModulate = new Color(1, 1, 1, 1);
+            GD.Print($"[EQUIP DEBUG] Icone Size={_icone.Size} MinSize={_icone.CustomMinimumSize} Expand={_icone.ExpandMode} Stretch={_icone.StretchMode} TexSize={(slotLogico.Item.Icone?.GetSize() ?? Vector2.Zero)}");
         }
     }
 
-    // DRAG: Permite tirar o item do corpo arrastando
+    private void CriarFundoEscuro()
+    {
+        _fundoEscuro = new ColorRect();
+        _fundoEscuro.Name = "FundoEscuro";
+        _fundoEscuro.MouseFilter = MouseFilterEnum.Ignore;
+        _fundoEscuro.Size = new Vector2(42, 42);
+        _fundoEscuro.Position = new Vector2(0, 0);
+        _fundoEscuro.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+        _fundoEscuro.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+        _fundoEscuro.Color = new Color(0.06f, 0.06f, 0.08f, 0.85f);
+
+        AddChild(_fundoEscuro);
+        MoveChild(_fundoEscuro, 0);
+    }
+
     public override Variant _GetDragData(Vector2 position)
     {
         if (SlotLogico == null || SlotLogico.Item == null) return default;
@@ -78,23 +237,19 @@ public partial class SlotEquipamentoUI : Control
         preview.CustomMinimumSize = new Vector2(40, 40);
         preview.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         preview.Modulate = new Color(1, 1, 1, 0.7f);
-        
+
         SetDragPreview(preview);
-        return this; // Passa a si mesmo como dado do arrasto
+        return this;
     }
 
-    // CAN DROP: Só aceita se o item que está vindo for do mesmo tipo do slot e respeitar restrições de classe!
     public override bool _CanDropData(Vector2 position, Variant data)
     {
-        // Se o item estiver vindo de um slot de inventário comum
         if (data.AsGodotObject() is SlotUI slotOrigem)
         {
             if (slotOrigem.SlotInterno == null || slotOrigem.SlotInterno.Item == null) return false;
 
-            // REGRA CRÍTICA: O tipo do item precisa bater EXATAMENTE com o tipo deste slot do corpo
             if (slotOrigem.SlotInterno.Item.Tipo != this.TipoDeSlot) return false;
 
-            // Verifica restrição de classe
             var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
             if (player != null && !EquipamentoComponent.PodeEquipar(slotOrigem.SlotInterno.Item, player.NomeDaClasse))
             {
@@ -107,14 +262,12 @@ public partial class SlotEquipamentoUI : Control
         return false;
     }
 
-    // DROP: Quando solta o item do inventário em cima deste slot do corpo
     public override void _DropData(Vector2 position, Variant data)
     {
         if (data.AsGodotObject() is SlotUI slotOrigem)
         {
             if (slotOrigem.SlotInterno == null || slotOrigem.SlotInterno.Item == null) return;
 
-            // Verifica restrição de classe antes de equipar
             var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
             if (player != null && !EquipamentoComponent.PodeEquipar(slotOrigem.SlotInterno.Item, player.NomeDaClasse))
             {

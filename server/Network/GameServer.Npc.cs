@@ -60,17 +60,25 @@ partial class GameServer
 
         Logger.Info($"Dialogo encontrado: \"{dialog.Text}\" ({dialog.Options.Count} opcoes)");
         var options = dialog.Options.Select(o => (o.Text, o.Action, o.ActionData)).ToList();
+        string dialogText = dialog.Text;
 
         if (dialog.Id == "guilda" && player.GuildId >= 0)
         {
             var guild = _world.Guilds.GetGuild(player.GuildId);
-            if (guild != null && guild.LeaderEntityId == player.Id && guild.Members.Count <= 1)
+            if (guild != null)
             {
-                options.Add(("Dissolver a guilda", "guild_disband", ""));
+                dialogText = $"Bem-vindo de volta, {guild.Name}! Como posso ajudar?";
+                options.Clear();
+                options.Add(("Gerenciar Guilda", "guild_manage", ""));
+                options.Add(("Entrar na base da guilda", "guild_enter_base", ""));
+                options.Add(("Entrar na GvG", "guild_enter_gvg", ""));
+                if (guild.LeaderEntityId == player.Id)
+                    options.Add(("Dissolver a guilda", "guild_disband", ""));
+                options.Add(("Sair", "close", ""));
             }
         }
 
-        SendNpcDialog(peer, dialog.Text, options);
+        SendNpcDialog(peer, dialogText, options);
     }
 
     private void HandleNpcSelectOption(NetPeer peer, NetDataReader reader)
@@ -122,14 +130,78 @@ partial class GameServer
                 Logger.Info("[GUILD] guild_open_form: pacotes enviados!");
                 break;
 
+            case "guild_manage":
+                Logger.Info("[GUILD] guild_manage: enviando OpenGuildForm");
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                SendOpenGuildForm(peer);
+                break;
+
             case "guild_disband":
                 HandleGuildDisband(peer, player);
+                break;
+
+            case "guild_enter_base":
+                HandleGuildEnterBase(peer, player, channel);
+                break;
+
+            case "guild_enter_gvg":
+                HandleGuildEnterGvg(peer, player, channel);
+                break;
+
+            case "refine":
+                HandleRefineItem(peer, player, channel, actionData);
                 break;
 
             case "close":
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
         }
+    }
+
+    private static int GetRefineCost(int currentLevel)
+    {
+        return (currentLevel * currentLevel + 1) * 500;
+    }
+
+    private void HandleRefineItem(NetPeer peer, PlayerEntity player, Channel channel, string slotType)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null) return;
+        int equipSlot = slotType == "shield" ? 108 : 107; // 107=Weapon, 108=Shield
+
+        if (!player.Equipment.TryGetValue(equipSlot, out var item))
+        {
+            SendNpcDialog(peer, "Você não tem nada equipado nesse slot!", new List<(string, string, string)> { ("Voltar", "goto", "refino"), ("Sair", "close", "") });
+            return;
+        }
+
+        if (item.RefineLevel >= 10)
+        {
+            SendNpcDialog(peer, "Este item já está no nível máximo de refino (+10)!", new List<(string, string, string)> { ("Voltar", "goto", "refino"), ("Sair", "close", "") });
+            return;
+        }
+
+        int cost = GetRefineCost(item.RefineLevel);
+        if (player.Gold < cost)
+        {
+            SendNpcDialog(peer, $"Você precisa de {cost} gold para refinar este item. Volte quando tiver mais gold!", new List<(string, string, string)> { ("Voltar", "goto", "refino"), ("Sair", "close", "") });
+            return;
+        }
+
+        player.Gold -= cost;
+        item.RefineLevel++;
+
+        _db.SaveItem(session.SelectedCharacter.Id, item);
+        _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
+        RecalculatePlayerStats(player);
+
+        SendGoldUpdate(peer, player.Gold);
+        SendInventoryData(peer, player);
+
+        var def = item.Definition;
+        string itemName = def?.Name ?? "Item";
+        SendNpcDialog(peer, $"Seu {itemName} foi refinado com sucesso para +{item.RefineLevel}!",
+            new List<(string, string, string)> { ("Refinar novamente", "refine", slotType), ("Sair", "close", "") });
+        SendSystemMessage(peer, $"Item {itemName} refinado para +{item.RefineLevel}!");
     }
 
     private void HandleNpcBuyItem(NetPeer peer, NetDataReader reader)
@@ -175,9 +247,13 @@ partial class GameServer
         }
 
         player.Gold -= totalCost;
+        var newItem = new ItemInstance { Slot = slot, ItemId = itemId, Quantity = quantity };
+        player.Items.Add(newItem);
         if (_sessions.TryGetValue(peer, out var buySession) && buySession.SelectedCharacter != null)
+        {
             _db.SaveCharacterGold(buySession.SelectedCharacter.Id, player.Gold);
-        player.Items.Add(new ItemInstance { Slot = slot, ItemId = itemId, Quantity = quantity });
+            _db.SaveItem(buySession.SelectedCharacter.Id, newItem);
+        }
 
         if (entry.Stock > 0)
             entry.Stock -= quantity;
@@ -208,12 +284,26 @@ partial class GameServer
         int totalGold = sellPrice * quantity;
         player.Gold += totalGold;
         if (_sessions.TryGetValue(peer, out var sellSession) && sellSession.SelectedCharacter != null)
+        {
             _db.SaveCharacterGold(sellSession.SelectedCharacter.Id, player.Gold);
-
-        if (quantity >= item.Quantity)
-            player.Items.Remove(item);
+            if (quantity >= item.Quantity)
+            {
+                player.Items.Remove(item);
+                _db.DeleteItem(sellSession.SelectedCharacter.Id, item.DbId);
+            }
+            else
+            {
+                item.Quantity -= quantity;
+                _db.SaveItem(sellSession.SelectedCharacter.Id, item);
+            }
+        }
         else
-            item.Quantity -= quantity;
+        {
+            if (quantity >= item.Quantity)
+                player.Items.Remove(item);
+            else
+                item.Quantity -= quantity;
+        }
 
         SendNpcSellResult(peer, true, $"Vendido por {totalGold} gold!");
         SendInventoryData(peer, player);

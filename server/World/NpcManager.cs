@@ -70,8 +70,19 @@ public class NpcManager
             FactionId = "solari",
         });
 
+        RegisterTemplate(new NpcTemplate
+        {
+            PrefabId = "ferreiro",
+            Name = "Ferreiro",
+            DialogId = "refino",
+            Race = "Humano",
+            AnimPrefix = "padrao",
+            FactionId = "solari",
+        });
+
         _spawnPoints.Add(new NpcSpawnPoint { X = 1040, Y = 1050, PrefabId = "banqueiro" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1050, PrefabId = "guarda_solareth" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1100, Y = 1050, PrefabId = "ferreiro" });
     }
 
     private void RegisterDialogs()
@@ -101,6 +112,20 @@ public class NpcManager
                 new() { Text = "Ainda não estou pronto", Action = "close" },
             },
         };
+
+        _dialogs["refino"] = new DialogNode
+        {
+            Id = "refino",
+            Text = "Bem-vindo à forja! Posso refinar seu equipamento para torná-lo mais poderoso. " +
+                   "Cada nível de refino aumenta os atributos do item permanentemente!",
+            Options = new List<DialogOption>
+            {
+                new() { Text = "Refinar arma equipada", Action = "refine", ActionData = "weapon" },
+                new() { Text = "Refinar escudo equipado", Action = "refine", ActionData = "shield" },
+                new() { Text = "Sair", Action = "close" },
+            },
+        };
+
     }
 
     private void RegisterShops()

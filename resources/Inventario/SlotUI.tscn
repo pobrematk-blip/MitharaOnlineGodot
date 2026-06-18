@@ -6,13 +6,6 @@
 [node name="SlotUI" type="Control"]
 custom_minimum_size = Vector2(42, 42)
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = -1238.0
-offset_bottom = -678.0
-grow_horizontal = 2
-grow_vertical = 2
 script = ExtResource("1_4u8pp")
 
 [node name="Icone" type="TextureRect" parent="."]
@@ -23,7 +16,6 @@ offset_right = 41.0
 offset_bottom = 41.0
 mouse_filter = 2
 stretch_mode = 6
-texture = ExtResource("2_7fjui")
 
 [node name="Quantidade" type="Label" parent="."]
 layout_mode = 0

@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class ClasseEditorUI : Control
 {
@@ -20,6 +21,15 @@ public partial class ClasseEditorUI : Control
     private readonly Dictionary<string, SpinBox> _spins = new();
     private readonly List<string> _prefixosAtaqueLista = new();
     private bool _ignorarEventosUi;
+
+    private ItemList _listaItensIniciais;
+    private Button _btnAdicionarItem;
+    private Button _btnRemoverItem;
+    private Window _popupItemBrowser;
+    private ItemList _itemBrowserList;
+    private Button _btnConfirmarItem;
+    private Button _btnCancelarItem;
+    private readonly List<(string path, ItemResource item)> _todosItens = new();
 
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
@@ -62,6 +72,20 @@ public partial class ClasseEditorUI : Control
         GetNode<Button>("%BtnExcluir").Pressed += OnExcluir;
         GetNode<Button>("%BtnTestar").Pressed += OnTestar;
         GetNode<Button>("%BtnRecarregar").Pressed += OnRecarregar;
+
+        _listaItensIniciais = GetNode<ItemList>("%ListaItensIniciais");
+        _btnAdicionarItem = GetNode<Button>("%BtnAdicionarItem");
+        _btnRemoverItem = GetNode<Button>("%BtnRemoverItem");
+        _popupItemBrowser = GetNode<Window>("%PopupItemBrowser");
+        _itemBrowserList = GetNode<ItemList>("%ItemBrowserList");
+        _btnConfirmarItem = GetNode<Button>("%BtnConfirmarItem");
+        _btnCancelarItem = GetNode<Button>("%BtnCancelarItem");
+
+        _btnAdicionarItem.Pressed += OnAbrirBrowserItem;
+        _btnRemoverItem.Pressed += OnRemoverItemInicial;
+        _listaItensIniciais.ItemSelected += _ => _btnRemoverItem.Disabled = false;
+        _btnConfirmarItem.Pressed += OnConfirmarSelecaoItem;
+        _btnCancelarItem.Pressed += () => _popupItemBrowser.Hide();
 
         _listaClasses.ItemSelected += OnClasseSelecionada;
         _nomeEdit.TextChanged += _ =>
@@ -284,7 +308,10 @@ public partial class ClasseEditorUI : Control
             _listaClasses.AddItem($"{c.NomeClasse}  {sufixo}{arvore}");
         }
         if (registry.Classes.Count > 0)
+        {
             _listaClasses.Select(0);
+            OnClasseSelecionada(0);
+        }
     }
 
     private void OnClasseSelecionada(long index)
@@ -325,9 +352,27 @@ public partial class ClasseEditorUI : Control
         AtualizarEstadoUiAtaque();
         SelecionarRaca(c.Raca);
         SelecionarArvore(c.ArvoreTalentos);
+        AtualizarListaItensIniciais();
         _ignorarEventosUi = false;
 
         AtualizarPreview();
+    }
+
+    private void AtualizarListaItensIniciais()
+    {
+        _listaItensIniciais.Clear();
+        _btnRemoverItem.Disabled = true;
+        if (_classeEditando?.ItensIniciais == null) return;
+
+        int idx = 0;
+        foreach (var item in _classeEditando.ItensIniciais)
+        {
+            if (item == null) { idx++; continue; }
+            string nome = $"[{item.ItemID}] {item.Nome}  (Nv.{item.NivelRequerido})";
+            _listaItensIniciais.AddItem(nome);
+            _listaItensIniciais.SetItemMetadata(idx, item.ResourcePath);
+            idx++;
+        }
     }
 
     private void SelecionarSprite(SpritePresetResource preset)
@@ -418,6 +463,8 @@ public partial class ClasseEditorUI : Control
             c.ProjetilDanoMagico = string.Equals(c.ObterPrefixoAtaque(), "mago", StringComparison.OrdinalIgnoreCase);
         }
 
+        SincronizarItensIniciais(c);
+
         return c;
     }
 
@@ -457,7 +504,8 @@ public partial class ClasseEditorUI : Control
             $"Vel. Mov: {1f + a * 0.05f:F2}x | Vel. Ataque: {1f + a * 0.03f:F2}x\n" +
             $"Sprite: {prefixoSprite} | Ataque: {prefixoAtk} | Vel.anim: {c.AttackAnimSpeedScale:F1}x\n" +
             $"Projétil: {(c.UsaProjetil ? "Sim" : "Não")}\n" +
-            $"Árvore: {c.ArvoreTalentos?.NomeArvore ?? "(nenhuma)"}";
+            $"Árvore: {c.ArvoreTalentos?.NomeArvore ?? "(nenhuma)"}\n" +
+            $"Itens Iniciais: {(c.ItensIniciais != null && c.ItensIniciais.Length > 0 ? string.Join(", ", c.ItensIniciais.Where(i => i != null).Select(i => i.Nome)) : "(nenhum)")}";
     }
 
     private void OnNova()
@@ -527,6 +575,163 @@ public partial class ClasseEditorUI : Control
         PreencherOpcoesArvore();
         AtualizarListaClasses(registry);
         AtualizarEstadoUiAtaque();
+    }
+
+    private static string ObterGrupoItem(ItemResource item)
+    {
+        if (item == null) return "Outros";
+        return item.Tipo switch
+        {
+            TipoEquipamento.Arma => "Armas",
+            TipoEquipamento.Escudo => "Escudos",
+            TipoEquipamento.Capacete => "Capacetes",
+            TipoEquipamento.Peitoral => "Peitorais",
+            TipoEquipamento.Cinto => "Cintos",
+            TipoEquipamento.Luvas => "Luvas",
+            TipoEquipamento.Calca => "Calças",
+            TipoEquipamento.Botas => "Botas",
+            TipoEquipamento.Colar => "Colares",
+            TipoEquipamento.Anel => "Anéis",
+            TipoEquipamento.Brinco => "Brincos",
+            TipoEquipamento.Runa => "Runas",
+            TipoEquipamento.Asa => "Asas",
+            TipoEquipamento.Montaria => "Montarias",
+            TipoEquipamento.Pet => "Pets",
+            TipoEquipamento.Skin => "Skins",
+            TipoEquipamento.Consumivel => "Consumíveis",
+            TipoEquipamento.Feitico => "Feitiços",
+            TipoEquipamento.Moeda => "Moedas",
+            _ => "Outros",
+        };
+    }
+
+    private void OnAbrirBrowserItem()
+    {
+        if (_classeEditando == null) return;
+        _popupItemBrowser.PopupCentered();
+        _itemBrowserList.Clear();
+        _todosItens.Clear();
+
+        ScanItemDirRecursive("res://Itens/");
+
+        var jaTemPaths = new HashSet<string>();
+        if (_classeEditando.ItensIniciais != null)
+        {
+            foreach (var i in _classeEditando.ItensIniciais)
+            {
+                if (i != null && !string.IsNullOrEmpty(i.ResourcePath))
+                    jaTemPaths.Add(i.ResourcePath);
+            }
+        }
+
+        var disponiveis = _todosItens
+            .Where(t => t.item != null && !jaTemPaths.Contains(t.path))
+            .GroupBy(t => ObterGrupoItem(t.item))
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        int idx = 0;
+        foreach (var grupo in disponiveis)
+        {
+            if (idx > 0)
+            {
+                _itemBrowserList.AddItem("────────────────────");
+                _itemBrowserList.SetItemDisabled(idx, true);
+                idx++;
+            }
+
+            _itemBrowserList.AddItem($"── {grupo.Key} ──");
+            _itemBrowserList.SetItemDisabled(idx, true);
+            _itemBrowserList.SetItemCustomFgColor(idx, new Color(1, 0.8f, 0.4f));
+            idx++;
+
+            foreach (var (path, item) in grupo.OrderByDescending(t => t.item.NivelRequerido))
+            {
+                string nome = $"[{item.ItemID}] {item.Nome}  (Nv.{item.NivelRequerido})";
+                _itemBrowserList.AddItem(nome);
+                _itemBrowserList.SetItemMetadata(idx, path);
+                idx++;
+            }
+        }
+    }
+
+    private void ScanItemDirRecursive(string dirPath)
+    {
+        var dir = DirAccess.Open(dirPath);
+        if (dir == null) return;
+
+        dir.ListDirBegin();
+        string entry;
+        while ((entry = dir.GetNext()) != "")
+        {
+            if (entry == "." || entry == "..") continue;
+            string full = dirPath.TrimEnd('/') + "/" + entry;
+            if (dir.CurrentIsDir())
+            {
+                ScanItemDirRecursive(full);
+            }
+            else if (entry.EndsWith(".tres") || entry.EndsWith(".res"))
+            {
+                var item = ResourceLoader.Load<ItemResource>(full);
+                if (item != null)
+                    _todosItens.Add((full, item));
+            }
+        }
+        dir.ListDirEnd();
+    }
+
+    private void OnConfirmarSelecaoItem()
+    {
+        var selected = _itemBrowserList.GetSelectedItems();
+        if (selected.Length == 0) return;
+
+        int idx = selected[0];
+        string path = (string)_itemBrowserList.GetItemMetadata(idx);
+        var item = ResourceLoader.Load<ItemResource>(path);
+        if (item == null) return;
+
+        var lista = _classeEditando.ItensIniciais?.ToList() ?? new List<ItemResource>();
+        lista.Add(item);
+        _classeEditando.ItensIniciais = lista.ToArray();
+        SincronizarItensIniciais(_classeEditando);
+        AtualizarListaItensIniciais();
+        AtualizarPreview();
+        _popupItemBrowser.Hide();
+    }
+
+    private void OnRemoverItemInicial()
+    {
+        var selected = _listaItensIniciais.GetSelectedItems();
+        if (selected.Length == 0) return;
+        if (_classeEditando?.ItensIniciais == null) return;
+
+        int idx = selected[0];
+        var lista = _classeEditando.ItensIniciais.ToList();
+        if (idx >= 0 && idx < lista.Count)
+        {
+            lista.RemoveAt(idx);
+            _classeEditando.ItensIniciais = lista.ToArray();
+            SincronizarItensIniciais(_classeEditando);
+            AtualizarListaItensIniciais();
+            AtualizarPreview();
+        }
+    }
+
+    private void SincronizarItensIniciais(ClasseCustomResource c)
+    {
+        if (c.ItensIniciais == null || c.ItensIniciais.Length == 0)
+        {
+            c.ItensIniciaisIds = "";
+            return;
+        }
+        var ids = new System.Text.StringBuilder();
+        foreach (var item in c.ItensIniciais)
+        {
+            if (item == null) continue;
+            if (ids.Length > 0) ids.Append(',');
+            ids.Append(item.ItemID);
+        }
+        c.ItensIniciaisIds = ids.ToString();
     }
 
     private Vector2 _dragOffset;

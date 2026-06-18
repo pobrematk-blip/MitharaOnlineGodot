@@ -1,4 +1,5 @@
 ﻿using Mithara.Server.Entities;
+using Mithara.Server.World.Pathfinding;
 using LiteNetLib;
 using System.Linq;
 
@@ -11,6 +12,9 @@ public class Channel
     public int Id { get; }
     public string Name { get; }
 
+    public List<NoMobZone> NoMobZones { get; set; } = new();
+    public PathfindingGrid? PathGrid { get; set; }
+
     private readonly Dictionary<ulong, Entity> _entities = new();
     private readonly SpatialGrid _grid;
     private readonly Dictionary<ulong, NetPeer> _playerPeers = new();
@@ -20,10 +24,12 @@ public class Channel
     private readonly Dictionary<string, int> _spawnCounts = new();
     private readonly Dictionary<string, List<ulong>> _spawnedByPrefab = new();
     private readonly List<LootEntity> _lootItems = new();
+    private readonly Dictionary<ulong, PathFollower> _pathFollowers = new();
+    private readonly Dictionary<ulong, double> _lastPathfindTime = new();
     private ulong _nextEntityId = 1;
     private bool _initialSpawned = false;
 
-    public const float AoiRadius = 600f;
+    public const float AoiRadius = 1200f;
 
     public SpawnerManager Spawner => _spawner;
     public event Action<Entity>? EntitySpawned;
@@ -43,6 +49,11 @@ public class Channel
             var npc = npcManager.CreateNpc(point);
             if (npc != null)
             {
+                if (PathGrid != null)
+                {
+                    var (gx, gy) = PathGrid.WorldToGrid(npc.X, npc.Y);
+                    PathGrid.SetBlocked(gx, gy, true);
+                }
                 AddEntity(npc);
             }
         }
@@ -156,6 +167,26 @@ public class Channel
         }
     }
 
+    private bool IsInNoMobZone(float x, float y)
+    {
+        foreach (var zone in NoMobZones)
+        {
+            if (zone.Contains(x, y))
+                return true;
+        }
+        return false;
+    }
+
+    private PathFollower GetOrCreatePathFollower(ulong entityId)
+    {
+        if (!_pathFollowers.TryGetValue(entityId, out var follower))
+        {
+            follower = new PathFollower(PathGrid ?? new PathfindingGrid(200, 200, 32f));
+            _pathFollowers[entityId] = follower;
+        }
+        return follower;
+    }
+
     private void UpdateMonsterAI(float dt, double gameTime)
     {
         foreach (var kv in _entities.ToList())
@@ -163,11 +194,15 @@ public class Channel
             if (kv.Value is not MonsterEntity mob) continue;
             if (mob.Health <= 0) continue;
 
+            bool usePathfinding = PathGrid != null;
+            var pathFollower = usePathfinding ? GetOrCreatePathFollower(mob.Id) : null;
+
             if (mob.TargetEntityId.HasValue)
             {
                 if (!_entities.TryGetValue(mob.TargetEntityId.Value, out var target) || target.Health <= 0)
                 {
                     mob.TargetEntityId = null;
+                    pathFollower?.Stop();
                     continue;
                 }
 
@@ -178,6 +213,7 @@ public class Channel
                 if (dist <= mob.AttackRange)
                 {
                     mob.Moving = false;
+                    pathFollower?.Stop();
                     if (dist > 0.001f)
                     {
                         mob.DirX = dx / dist;
@@ -193,14 +229,102 @@ public class Channel
                 }
                 else
                 {
-                    float moveDist = mob.Speed * dt;
-                    float ratio = Math.Min(moveDist / dist, 1f);
-                    mob.X += dx * ratio;
-                    mob.Y += dy * ratio;
-                    mob.DirX = dx / dist;
-                    mob.DirY = dy / dist;
-                    mob.Moving = true;
-                    _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                    if (usePathfinding && pathFollower != null)
+                    {
+                        if (!_lastPathfindTime.TryGetValue(mob.Id, out var lastPf))
+                            lastPf = double.MinValue;
+
+                        if (!pathFollower.HasPath || gameTime - lastPf > 1.0)
+                        {
+                            if (!pathFollower.HasPath && gameTime - lastPf < 0.3)
+                            {
+                                // Skip recalculation if path just ended recently
+                            }
+                            else
+                            {
+                                pathFollower.SetDestination(mob.X, mob.Y, target.X, target.Y);
+                                _lastPathfindTime[mob.Id] = gameTime;
+                            }
+                        }
+
+                        float oldX = mob.X;
+                        float oldY = mob.Y;
+
+                        var (newX, newY, dirX, dirY, moving) = pathFollower.MoveToward(mob.X, mob.Y, mob.Speed, dt);
+
+                        if (moving)
+                        {
+                            if (IsInNoMobZone(newX, newY))
+                            {
+                                mob.TargetEntityId = null;
+                                pathFollower.Stop();
+                                mob.Moving = false;
+                                continue;
+                            }
+
+                            mob.X = newX;
+                            mob.Y = newY;
+                            mob.DirX = dirX;
+                            mob.DirY = dirY;
+                            mob.Moving = true;
+                            if (oldX != newX || oldY != newY)
+                                _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
+                        }
+                        else if (!pathFollower.HasPath)
+                        {
+                            float moveDist = mob.Speed * dt;
+                            float ratio = Math.Min(moveDist / dist, 1f);
+                            float newFx = mob.X + dx * ratio;
+                            float newFy = mob.Y + dy * ratio;
+
+                            bool currentWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(mob.X, mob.Y);
+                            bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
+                            if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
+                            {
+                                mob.X = newFx;
+                                mob.Y = newFy;
+                                mob.DirX = dx / dist;
+                                mob.DirY = dy / dist;
+                                mob.Moving = true;
+                                _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                            }
+                            else
+                            {
+                                mob.TargetEntityId = null;
+                                mob.Moving = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        float moveDist = mob.Speed * dt;
+                        float ratio = Math.Min(moveDist / dist, 1f);
+                        float newFx = mob.X + dx * ratio;
+                        float newFy = mob.Y + dy * ratio;
+
+                        if (IsInNoMobZone(newFx, newFy))
+                        {
+                            mob.TargetEntityId = null;
+                            mob.Moving = false;
+                            continue;
+                        }
+
+                        bool currentWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(mob.X, mob.Y);
+                        bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
+                        if (usePathfinding && !newWalkable && currentWalkable)
+                        {
+                            mob.TargetEntityId = null;
+                            mob.Moving = false;
+                            continue;
+                        }
+
+                        mob.X = newFx;
+                        mob.Y = newFy;
+                        mob.DirX = dx / dist;
+                        mob.DirY = dy / dist;
+                        mob.Moving = true;
+                        _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                    }
                 }
             }
             else
@@ -212,15 +336,14 @@ public class Channel
 
                 if (distFromSpawn > MonsterEntity.MaxWanderRange)
                 {
-                    // Force patrol target toward spawn
                     float returnAngle = MathF.Atan2(-spawnDy, -spawnDx);
                     float returnDist = 50f + MathF.Min(distFromSpawn - MonsterEntity.ReturnRange, 300f);
                     mob.PatrolTargetX = mob.X + MathF.Cos(returnAngle) * returnDist;
                     mob.PatrolTargetY = mob.Y + MathF.Sin(returnAngle) * returnDist;
                     mob.PatrolTimer = gameTime + 1.0;
+                    pathFollower?.Stop();
                 }
 
-                // Patrol: runs for ALL mobs (both passive and aggressive)
                 if (mob.PatrolTargetX.HasValue && mob.PatrolTargetY.HasValue)
                 {
                     float dx = mob.PatrolTargetX.Value - mob.X;
@@ -233,34 +356,115 @@ public class Channel
                         mob.PatrolTargetY = null;
                         mob.PatrolTimer = gameTime + 3.0;
                         mob.Moving = false;
+                        pathFollower?.Stop();
                     }
                     else
                     {
-                        float moveDist = mob.Speed * dt * 0.5f;
-                        float ratio = Math.Min(moveDist / dist, 1f);
-                        mob.X += dx * ratio;
-                        mob.Y += dy * ratio;
-                        mob.DirX = dx / dist;
-                        mob.DirY = dy / dist;
-                        mob.Moving = true;
-                        _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                        if (usePathfinding && pathFollower != null)
+                        {
+                            if (!pathFollower.HasPath)
+                            {
+                                pathFollower.SetDestination(mob.X, mob.Y, mob.PatrolTargetX.Value, mob.PatrolTargetY.Value);
+                            }
+
+                            float oldX = mob.X;
+                            float oldY = mob.Y;
+
+                            var (newX, newY, dirX, dirY, moving) = pathFollower.MoveToward(mob.X, mob.Y, mob.Speed * 0.5f, dt);
+
+                            if (moving)
+                            {
+                                if (IsInNoMobZone(newX, newY))
+                                {
+                                    mob.PatrolTargetX = null;
+                                    mob.PatrolTargetY = null;
+                                    pathFollower.Stop();
+                                    mob.Moving = false;
+                                    continue;
+                                }
+
+                                mob.X = newX;
+                                mob.Y = newY;
+                                mob.DirX = dirX;
+                                mob.DirY = dirY;
+                                mob.Moving = true;
+                                _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
+                            }
+                            else if (!pathFollower.HasPath)
+                            {
+                                float moveDist = mob.Speed * dt * 0.5f;
+                                float ratio = Math.Min(moveDist / dist, 1f);
+                                float newFx = mob.X + dx * ratio;
+                                float newFy = mob.Y + dy * ratio;
+
+                                bool currentWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(mob.X, mob.Y);
+                                bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
+                                if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
+                                {
+                                    mob.X = newFx;
+                                    mob.Y = newFy;
+                                    mob.DirX = dx / dist;
+                                    mob.DirY = dy / dist;
+                                    mob.Moving = true;
+                                    _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                                }
+                                else
+                                {
+                                    mob.PatrolTargetX = null;
+                                    mob.PatrolTargetY = null;
+                                    mob.Moving = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            float moveDist = mob.Speed * dt * 0.5f;
+                            float ratio = Math.Min(moveDist / dist, 1f);
+                            float newFx = mob.X + dx * ratio;
+                            float newFy = mob.Y + dy * ratio;
+
+                            if (IsInNoMobZone(newFx, newFy))
+                            {
+                                mob.PatrolTargetX = null;
+                                mob.PatrolTargetY = null;
+                                mob.Moving = false;
+                                continue;
+                            }
+
+                            mob.X = newFx;
+                            mob.Y = newFy;
+                            mob.DirX = dx / dist;
+                            mob.DirY = dy / dist;
+                            mob.Moving = true;
+                            _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                        }
                     }
                 }
                 else if (gameTime >= mob.PatrolTimer)
                 {
-                    float angle = Random.Shared.NextSingle() * MathF.PI * 2;
-                    float range = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
-                    if (distFromSpawn > MonsterEntity.ReturnRange)
-                        range = MathF.Min(range, distFromSpawn * 0.5f);
-                    mob.PatrolTargetX = mob.SpawnX + MathF.Cos(angle) * range;
-                    mob.PatrolTargetY = mob.SpawnY + MathF.Sin(angle) * range;
+                    for (int attempt = 0; attempt < 10; attempt++)
+                    {
+                        float angle = Random.Shared.NextSingle() * MathF.PI * 2;
+                        float range = 50f + Random.Shared.NextSingle() * mob.PatrolRadius;
+                        if (distFromSpawn > MonsterEntity.ReturnRange)
+                            range = MathF.Min(range, distFromSpawn * 0.5f);
+                        float tx = mob.SpawnX + MathF.Cos(angle) * range;
+                        float ty = mob.SpawnY + MathF.Sin(angle) * range;
+                        if (!IsInNoMobZone(tx, ty) && (!usePathfinding || PathGrid!.IsWalkableWorld(tx, ty)))
+                        {
+                            mob.PatrolTargetX = tx;
+                            mob.PatrolTargetY = ty;
+                            break;
+                        }
+                    }
+                    pathFollower?.Stop();
                 }
                 else
                 {
                     mob.Moving = false;
+                    pathFollower?.Stop();
                 }
 
-                // Aggro: only non-passive mobs look for nearby players
                 if (!mob.Passive)
                 {
                     var nearby = GetEntitiesInAoi(mob.X, mob.Y);
@@ -285,9 +489,17 @@ public class Channel
 
                     if (closestPlayer.HasValue)
                     {
-                        mob.TargetEntityId = closestPlayer;
-                        mob.PatrolTargetX = null;
-                        mob.PatrolTargetY = null;
+                        if (_entities.TryGetValue(closestPlayer.Value, out var targetEntity) && IsInNoMobZone(targetEntity.X, targetEntity.Y))
+                        {
+                            closestPlayer = null;
+                        }
+                        else
+                        {
+                            mob.TargetEntityId = closestPlayer;
+                            mob.PatrolTargetX = null;
+                            mob.PatrolTargetY = null;
+                            pathFollower?.Stop();
+                        }
                     }
                 }
             }
@@ -327,10 +539,17 @@ public class Channel
         int current = CountMonstersByPrefab(point.PrefabId);
         if (current >= point.MaxCount) return;
 
-        var monster = _spawner.CreateMonster(point);
-        if (monster == null) return;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            var monster = _spawner.CreateMonster(point);
+            if (monster == null) return;
 
-        AddEntity(monster);
+            if (!IsInNoMobZone(monster.X, monster.Y))
+            {
+                AddEntity(monster);
+                return;
+            }
+        }
     }
 
     public void ScheduleRespawn(SpawnPoint point, double gameTime)

@@ -1,0 +1,734 @@
+﻿using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Data.Sqlite;
+
+namespace Mithara.Server.Database;
+
+public class DatabaseManager
+{
+    private readonly string _connectionString;
+
+    public DatabaseManager(string dbPath)
+    {
+        var dir = Path.GetDirectoryName(dbPath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            Directory.CreateDirectory(dir);
+
+        _connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = dbPath,
+            Mode = SqliteOpenMode.ReadWriteCreate,
+        }.ToString();
+    }
+
+    public void Initialize()
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            CREATE TABLE IF NOT EXISTS accounts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                security_question TEXT NOT NULL DEFAULT '',
+                security_answer TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS characters (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL,
+                slot_index INTEGER NOT NULL DEFAULT 0,
+                name TEXT NOT NULL,
+                class TEXT NOT NULL,
+                race TEXT NOT NULL,
+                level INTEGER NOT NULL DEFAULT 1,
+                xp INTEGER NOT NULL DEFAULT 0,
+                forca INTEGER NOT NULL DEFAULT 0,
+                agilidade INTEGER NOT NULL DEFAULT 0,
+                destreza INTEGER NOT NULL DEFAULT 0,
+                inteligencia INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                character_id INTEGER NOT NULL,
+                slot INTEGER NOT NULL DEFAULT 0,
+                item_id INTEGER NOT NULL DEFAULT 0,
+                quantity INTEGER NOT NULL DEFAULT 1,
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS guilds (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                level INTEGER NOT NULL DEFAULT 1,
+                xp INTEGER NOT NULL DEFAULT 0,
+                skill_points INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS guild_members (
+                guild_id INTEGER NOT NULL,
+                entity_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                rank INTEGER NOT NULL DEFAULT 4,
+                PRIMARY KEY (guild_id, entity_id),
+                FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS guild_skills (
+                guild_id INTEGER NOT NULL,
+                skill_id TEXT NOT NULL,
+                level INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (guild_id, skill_id),
+                FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS player_quests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                character_id INTEGER NOT NULL,
+                quest_id INTEGER NOT NULL,
+                progress TEXT NOT NULL DEFAULT '[]',
+                completed INTEGER NOT NULL DEFAULT 0,
+                claimed INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS character_pets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                character_id INTEGER NOT NULL,
+                pet_id INTEGER NOT NULL,
+                pet_name TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+            """;
+        cmd.ExecuteNonQuery();
+
+        TryAddColumn(conn, "accounts", "security_question", "TEXT NOT NULL DEFAULT ''");
+        TryAddColumn(conn, "accounts", "security_answer", "TEXT NOT NULL DEFAULT ''");
+        TryAddColumn(conn, "accounts", "salt", "TEXT NOT NULL DEFAULT ''");
+        TryAddColumn(conn, "characters", "pos_x", "REAL NOT NULL DEFAULT 1000");
+        TryAddColumn(conn, "characters", "pos_y", "REAL NOT NULL DEFAULT 1000");
+        TryAddColumn(conn, "characters", "bank_gold", "INTEGER NOT NULL DEFAULT 0");
+        TryAddColumn(conn, "characters", "gold", "INTEGER NOT NULL DEFAULT 50");
+        TryAddColumn(conn, "characters", "stat_points", "INTEGER NOT NULL DEFAULT 10");
+
+        Logger.Info("Banco de dados inicializado.");
+    }
+
+    private static void TryAddColumn(SqliteConnection conn, string table, string column, string type)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"ALTER TABLE {table} ADD COLUMN {column} {type}";
+            cmd.ExecuteNonQuery();
+            Logger.Info($"Coluna '{column}' adicionada em '{table}'.");
+        }
+        catch
+        {
+            // Coluna já existe — ignorar
+        }
+    }
+
+    public int? CreateAccount(string username, string password, string securityQuestion = "", string securityAnswer = "")
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var check = conn.CreateCommand();
+        check.CommandText = "SELECT id FROM accounts WHERE username = @u";
+        check.Parameters.AddWithValue("@u", username);
+        var exists = check.ExecuteScalar();
+        if (exists != null) return null;
+
+        using var cmd = conn.CreateCommand();
+        string salt = GenerateSalt();
+        cmd.CommandText = "INSERT INTO accounts (username, password_hash, security_question, security_answer, salt) VALUES (@u, @p, @q, @a, @s)";
+        cmd.Parameters.AddWithValue("@u", username);
+        cmd.Parameters.AddWithValue("@p", HashPassword(password, salt));
+        cmd.Parameters.AddWithValue("@q", securityQuestion);
+        cmd.Parameters.AddWithValue("@a", HashPassword(securityAnswer, salt));
+        cmd.Parameters.AddWithValue("@s", salt);
+        cmd.ExecuteNonQuery();
+
+        using var getId = conn.CreateCommand();
+        getId.CommandText = "SELECT id FROM accounts WHERE username = @u";
+        getId.Parameters.AddWithValue("@u", username);
+        return (int)(long)getId.ExecuteScalar()!;
+    }
+
+    public int? LoginAccount(string username, string password)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, password_hash, salt FROM accounts WHERE username = @u";
+        cmd.Parameters.AddWithValue("@u", username);
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read()) return null;
+
+        var hash = reader.GetString(1);
+        var salt = reader.IsDBNull(2) ? "" : reader.GetString(2);
+        if (hash != HashPassword(password, salt)) return null;
+
+        return reader.GetInt32(0);
+    }
+
+    public int CreateCharacter(int accountId, string name, string className, string race)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var slotCmd = conn.CreateCommand();
+        slotCmd.CommandText = "SELECT COALESCE(MAX(slot_index), -1) + 1 FROM characters WHERE account_id = @a";
+        slotCmd.Parameters.AddWithValue("@a", accountId);
+        int slotIndex = Convert.ToInt32(slotCmd.ExecuteScalar());
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO characters (account_id, slot_index, name, class, race, level)
+            VALUES (@a, @s, @n, @c, @r, 1)
+            """;
+        cmd.Parameters.AddWithValue("@a", accountId);
+        cmd.Parameters.AddWithValue("@s", slotIndex);
+        cmd.Parameters.AddWithValue("@n", name);
+        cmd.Parameters.AddWithValue("@c", className);
+        cmd.Parameters.AddWithValue("@r", race);
+        cmd.ExecuteNonQuery();
+
+        using var getId = conn.CreateCommand();
+        getId.CommandText = "SELECT id FROM characters WHERE account_id = @a AND slot_index = @s";
+        getId.Parameters.AddWithValue("@a", accountId);
+        getId.Parameters.AddWithValue("@s", slotIndex);
+        return Convert.ToInt32(getId.ExecuteScalar());
+    }
+
+    public List<CharacterRow> GetCharacters(int accountId)
+    {
+        var result = new List<CharacterRow>();
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points FROM characters WHERE account_id = @a ORDER BY slot_index";
+        cmd.Parameters.AddWithValue("@a", accountId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add(new CharacterRow
+            {
+                Id = reader.GetInt32(0),
+                SlotIndex = reader.GetInt32(1),
+                Name = reader.GetString(2),
+                Class = reader.GetString(3),
+                Race = reader.GetString(4),
+                Level = reader.GetInt32(5),
+                Xp = reader.GetInt32(6),
+                Forca = reader.GetInt32(7),
+                Agilidade = reader.GetInt32(8),
+                Destreza = reader.GetInt32(9),
+                Inteligencia = reader.GetInt32(10),
+                PosX = (float)reader.GetDouble(11),
+                PosY = (float)reader.GetDouble(12),
+                BankGold = reader.GetInt32(13),
+                Gold = reader.GetInt32(14),
+                StatPoints = reader.GetInt32(15),
+            });
+        }
+        return result;
+    }
+
+    public string? GetSecurityQuestion(string username)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT security_question FROM accounts WHERE username = @u";
+        cmd.Parameters.AddWithValue("@u", username);
+        var result = cmd.ExecuteScalar();
+        if (result == null || result == DBNull.Value) return null;
+        string q = (string)result;
+        return string.IsNullOrEmpty(q) ? null : q;
+    }
+
+    public bool RecoverPassword(string username, string answer, string newPassword)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, security_answer, salt FROM accounts WHERE username = @u";
+        cmd.Parameters.AddWithValue("@u", username);
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read()) return false;
+
+        var storedHash = reader.GetString(1);
+        var salt = reader.IsDBNull(2) ? "" : reader.GetString(2);
+        if (storedHash != HashPassword(answer, salt)) return false;
+
+        int accountId = reader.GetInt32(0);
+        reader.Close();
+
+        string newSalt = GenerateSalt();
+        using var update = conn.CreateCommand();
+        update.CommandText = "UPDATE accounts SET password_hash = @p, salt = @s WHERE id = @i";
+        update.Parameters.AddWithValue("@p", HashPassword(newPassword, newSalt));
+        update.Parameters.AddWithValue("@s", newSalt);
+        update.Parameters.AddWithValue("@i", accountId);
+        update.ExecuteNonQuery();
+        return true;
+    }
+
+    public void SaveCharacterXp(int characterId, long xp)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET xp = @x WHERE id = @i";
+        cmd.Parameters.AddWithValue("@x", xp);
+        cmd.Parameters.AddWithValue("@i", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveCharacterLevel(int characterId, int level)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET level = @l WHERE id = @i";
+        cmd.Parameters.AddWithValue("@l", level);
+        cmd.Parameters.AddWithValue("@i", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveCharacterPosition(int characterId, float x, float y)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET pos_x = @x, pos_y = @y WHERE id = @i";
+        cmd.Parameters.AddWithValue("@x", x);
+        cmd.Parameters.AddWithValue("@y", y);
+        cmd.Parameters.AddWithValue("@i", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveCharacterBankGold(int characterId, int bankGold)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET bank_gold = @g WHERE id = @i";
+        cmd.Parameters.AddWithValue("@g", bankGold);
+        cmd.Parameters.AddWithValue("@i", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveCharacterGold(int characterId, int gold)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET gold = @g WHERE id = @i";
+        cmd.Parameters.AddWithValue("@g", gold);
+        cmd.Parameters.AddWithValue("@i", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveCharacterStats(int characterId, int forca, int agilidade, int destreza, int inteligencia, int statPoints)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET forca = @f, agilidade = @a, destreza = @d, inteligencia = @i, stat_points = @s WHERE id = @c";
+        cmd.Parameters.AddWithValue("@f", forca);
+        cmd.Parameters.AddWithValue("@a", agilidade);
+        cmd.Parameters.AddWithValue("@d", destreza);
+        cmd.Parameters.AddWithValue("@i", inteligencia);
+        cmd.Parameters.AddWithValue("@s", statPoints);
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<Mithara.Server.Entities.ItemInstance> LoadItems(int characterId)
+    {
+        var result = new List<Mithara.Server.Entities.ItemInstance>();
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, item_id, slot, quantity FROM items WHERE character_id = @c ORDER BY slot";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add(new Mithara.Server.Entities.ItemInstance
+            {
+                DbId = reader.GetInt32(0),
+                ItemId = reader.GetInt32(1),
+                Slot = reader.GetInt32(2),
+                Quantity = reader.GetInt32(3),
+            });
+        }
+        return result;
+    }
+
+    public void SaveItem(int characterId, Mithara.Server.Entities.ItemInstance item)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        if (item.DbId > 0)
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "UPDATE items SET slot = @s, quantity = @q WHERE id = @i AND character_id = @c";
+            cmd.Parameters.AddWithValue("@s", item.Slot);
+            cmd.Parameters.AddWithValue("@q", item.Quantity);
+            cmd.Parameters.AddWithValue("@i", item.DbId);
+            cmd.Parameters.AddWithValue("@c", characterId);
+            cmd.ExecuteNonQuery();
+        }
+        else
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "INSERT INTO items (character_id, slot, item_id, quantity) VALUES (@c, @s, @ii, @q)";
+            cmd.Parameters.AddWithValue("@c", characterId);
+            cmd.Parameters.AddWithValue("@s", item.Slot);
+            cmd.Parameters.AddWithValue("@ii", item.ItemId);
+            cmd.Parameters.AddWithValue("@q", item.Quantity);
+            cmd.ExecuteNonQuery();
+            using var getId = conn.CreateCommand();
+            getId.CommandText = "SELECT last_insert_rowid()";
+            item.DbId = Convert.ToInt32(getId.ExecuteScalar());
+        }
+    }
+
+    public void DeleteItem(int characterId, int dbId)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM items WHERE id = @i AND character_id = @c";
+        cmd.Parameters.AddWithValue("@i", dbId);
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteItemBySlot(int characterId, int slot)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM items WHERE character_id = @c AND slot = @s";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@s", slot);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SavePet(int characterId, int petId, string petName)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var check = conn.CreateCommand();
+        check.CommandText = "SELECT id FROM character_pets WHERE character_id = @c AND pet_id = @p";
+        check.Parameters.AddWithValue("@c", characterId);
+        check.Parameters.AddWithValue("@p", petId);
+        var existing = check.ExecuteScalar();
+        if (existing != null) return;
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT INTO character_pets (character_id, pet_id, pet_name) VALUES (@c, @p, @n)";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@p", petId);
+        cmd.Parameters.AddWithValue("@n", petName);
+        cmd.ExecuteNonQuery();
+    }
+
+    public List<(int petId, string petName)> LoadPets(int characterId)
+    {
+        var result = new List<(int, string)>();
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT pet_id, pet_name FROM character_pets WHERE character_id = @c ORDER BY id";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add((reader.GetInt32(0), reader.GetString(1)));
+        }
+        return result;
+    }
+
+    public void SaveGuild(int guildId, string name, int level, int xp, int skillPoints)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO guilds (id, name, level, xp, skill_points)
+            VALUES (@i, @n, @l, @x, @s)
+            ON CONFLICT(id) DO UPDATE SET name=@n, level=@l, xp=@x, skill_points=@s";
+        cmd.Parameters.AddWithValue("@i", guildId);
+        cmd.Parameters.AddWithValue("@n", name);
+        cmd.Parameters.AddWithValue("@l", level);
+        cmd.Parameters.AddWithValue("@x", xp);
+        cmd.Parameters.AddWithValue("@s", skillPoints);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveGuildMember(int guildId, ulong entityId, string name, int rank)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO guild_members (guild_id, entity_id, name, rank)
+            VALUES (@g, @e, @n, @r)
+            ON CONFLICT(guild_id, entity_id) DO UPDATE SET name=@n, rank=@r";
+        cmd.Parameters.AddWithValue("@g", guildId);
+        cmd.Parameters.AddWithValue("@e", (long)entityId);
+        cmd.Parameters.AddWithValue("@n", name);
+        cmd.Parameters.AddWithValue("@r", rank);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteGuildMember(int guildId, ulong entityId)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM guild_members WHERE guild_id = @g AND entity_id = @e";
+        cmd.Parameters.AddWithValue("@g", guildId);
+        cmd.Parameters.AddWithValue("@e", (long)entityId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteGuildMemberByName(int guildId, string name)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM guild_members WHERE guild_id = @g AND name = @n";
+        cmd.Parameters.AddWithValue("@g", guildId);
+        cmd.Parameters.AddWithValue("@n", name);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteGuild(int guildId)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM guilds WHERE id = @i";
+        cmd.Parameters.AddWithValue("@i", guildId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void SaveGuildSkill(int guildId, string skillId, int level)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO guild_skills (guild_id, skill_id, level)
+            VALUES (@g, @s, @l)
+            ON CONFLICT(guild_id, skill_id) DO UPDATE SET level=@l";
+        cmd.Parameters.AddWithValue("@g", guildId);
+        cmd.Parameters.AddWithValue("@s", skillId);
+        cmd.Parameters.AddWithValue("@l", level);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void LoadAllGuilds(Action<int, string, int, int, int> onGuild,
+        Action<int, ulong, string, int> onMember,
+        Action<int, string, int> onSkill)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var gcmd = conn.CreateCommand();
+        gcmd.CommandText = "SELECT id, name, level, xp, skill_points FROM guilds";
+        using var greader = gcmd.ExecuteReader();
+        while (greader.Read())
+        {
+            onGuild(greader.GetInt32(0), greader.GetString(1), greader.GetInt32(2),
+                greader.GetInt32(3), greader.GetInt32(4));
+        }
+
+        using var mcmd = conn.CreateCommand();
+        mcmd.CommandText = "SELECT guild_id, entity_id, name, rank FROM guild_members";
+        using var mreader = mcmd.ExecuteReader();
+        while (mreader.Read())
+        {
+            onMember(mreader.GetInt32(0), (ulong)mreader.GetInt64(1), mreader.GetString(2), mreader.GetInt32(3));
+        }
+
+        using var scmd = conn.CreateCommand();
+        scmd.CommandText = "SELECT guild_id, skill_id, level FROM guild_skills";
+        using var sreader = scmd.ExecuteReader();
+        while (sreader.Read())
+        {
+            onSkill(sreader.GetInt32(0), sreader.GetString(1), sreader.GetInt32(2));
+        }
+    }
+
+    public void DeleteCharacter(int characterId, string characterName)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var tx = conn.BeginTransaction();
+
+        using var delItems = conn.CreateCommand();
+        delItems.CommandText = "DELETE FROM items WHERE character_id = @c";
+        delItems.Parameters.AddWithValue("@c", characterId);
+        delItems.ExecuteNonQuery();
+
+        using var delQuests = conn.CreateCommand();
+        delQuests.CommandText = "DELETE FROM player_quests WHERE character_id = @c";
+        delQuests.Parameters.AddWithValue("@c", characterId);
+        delQuests.ExecuteNonQuery();
+
+        using var delGuild = conn.CreateCommand();
+        delGuild.CommandText = "DELETE FROM guild_members WHERE name = @n";
+        delGuild.Parameters.AddWithValue("@n", characterName);
+        delGuild.ExecuteNonQuery();
+
+        using var delChar = conn.CreateCommand();
+        delChar.CommandText = "DELETE FROM characters WHERE id = @c";
+        delChar.Parameters.AddWithValue("@c", characterId);
+        delChar.ExecuteNonQuery();
+
+        tx.Commit();
+        Logger.Info($"[DB] Personagem {characterId} ({characterName}) deletado (itens+quests+guild+char).");
+    }
+
+    public List<(int questId, string progress, bool completed, bool claimed)> GetPlayerQuests(int characterId)
+    {
+        var result = new List<(int, string, bool, bool)>();
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT quest_id, progress, completed, claimed FROM player_quests WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add((reader.GetInt32(0), reader.GetString(1), reader.GetInt32(2) != 0, reader.GetInt32(3) != 0));
+        }
+        return result;
+    }
+
+    public void SavePlayerQuest(int characterId, int questId, string progress, bool completed, bool claimed)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO player_quests (character_id, quest_id, progress, completed, claimed)
+            VALUES (@c, @q, @p, @co, @cl)
+            ON CONFLICT(id) DO UPDATE SET progress = @p, completed = @co, claimed = @cl
+            """;
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@q", questId);
+        cmd.Parameters.AddWithValue("@p", progress);
+        cmd.Parameters.AddWithValue("@co", completed ? 1 : 0);
+        cmd.Parameters.AddWithValue("@cl", claimed ? 1 : 0);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void UpsertPlayerQuest(int characterId, int questId, string progress, bool completed, bool claimed)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+
+        using var check = conn.CreateCommand();
+        check.CommandText = "SELECT id FROM player_quests WHERE character_id = @c AND quest_id = @q";
+        check.Parameters.AddWithValue("@c", characterId);
+        check.Parameters.AddWithValue("@q", questId);
+        var existingId = check.ExecuteScalar();
+
+        using var cmd = conn.CreateCommand();
+        if (existingId != null)
+        {
+            cmd.CommandText = "UPDATE player_quests SET progress = @p, completed = @co, claimed = @cl WHERE id = @i";
+            cmd.Parameters.AddWithValue("@i", (int)(long)existingId);
+        }
+        else
+        {
+            cmd.CommandText = "INSERT INTO player_quests (character_id, quest_id, progress, completed, claimed) VALUES (@c, @q, @p, @co, @cl)";
+            cmd.Parameters.AddWithValue("@c", characterId);
+            cmd.Parameters.AddWithValue("@q", questId);
+        }
+        cmd.Parameters.AddWithValue("@p", progress);
+        cmd.Parameters.AddWithValue("@co", completed ? 1 : 0);
+        cmd.Parameters.AddWithValue("@cl", claimed ? 1 : 0);
+        cmd.ExecuteNonQuery();
+    }
+
+    private static string HashPassword(string password, string salt = "")
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password + salt));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    public int GetCharacterGuildId(string characterName)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT guild_id FROM guild_members WHERE name = @n";
+        cmd.Parameters.AddWithValue("@n", characterName);
+        var result = cmd.ExecuteScalar();
+        if (result == null || result == DBNull.Value) return -1;
+        return Convert.ToInt32(result);
+    }
+
+    public (int guildId, ulong entityId, int rank) GetCharacterGuildData(string characterName)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT guild_id, entity_id, rank FROM guild_members WHERE name = @n";
+        cmd.Parameters.AddWithValue("@n", characterName);
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read()) return (-1, 0, 0);
+        return (reader.GetInt32(0), (ulong)reader.GetInt64(1), reader.GetInt32(2));
+    }
+
+    private static string GenerateSalt()
+    {
+        var bytes = new byte[16];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(bytes);
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+}
+
+public class CharacterRow
+{
+    public int Id { get; set; }
+    public int SlotIndex { get; set; }
+    public string Name { get; set; } = "";
+    public string Class { get; set; } = "";
+    public string Race { get; set; } = "";
+    public int Level { get; set; } = 1;
+    public int Xp { get; set; }
+    public int Forca { get; set; }
+    public int Agilidade { get; set; }
+    public int Destreza { get; set; }
+    public int Inteligencia { get; set; }
+    public float PosX { get; set; } = 1000f;
+    public float PosY { get; set; } = 1000f;
+    public int BankGold { get; set; }
+    public int Gold { get; set; }
+    public int StatPoints { get; set; }
+}

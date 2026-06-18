@@ -389,3 +389,66 @@ text = "Excluir"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Testar no Player"
+
+[node name="SepItensIniciais" type="HSeparator" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="TituloItensIniciais" type="Label" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+text = "ITENS INICIAIS"
+
+[node name="HBoxItensBotoes" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+alignment = 0
+
+[node name="BtnAdicionarItem" type="Button" parent="Panel/HBox/ScrollForm/Form/HBoxItensBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Adicionar Item"
+
+[node name="BtnRemoverItem" type="Button" parent="Panel/HBox/ScrollForm/Form/HBoxItensBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Remover Item"
+
+[node name="ListaItensIniciais" type="ItemList" parent="Panel/HBox/ScrollForm/Form"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PopupItemBrowser" type="Window" parent="."]
+unique_name_in_owner = true
+title = "Selecionar Item Inicial"
+size = Vector2i(420, 500)
+visible = false
+exclusive = true
+
+[node name="VBoxItemBrowser" type="VBoxContainer" parent="PopupItemBrowser"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemBrowserList" type="ItemList" parent="PopupItemBrowser/VBoxItemBrowser"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 0
+
+[node name="HBoxItemBrowserBotoes" type="HBoxContainer" parent="PopupItemBrowser/VBoxItemBrowser"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnConfirmarItem" type="Button" parent="PopupItemBrowser/VBoxItemBrowser/HBoxItemBrowserBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Confirmar"
+
+[node name="BtnCancelarItem" type="Button" parent="PopupItemBrowser/VBoxItemBrowser/HBoxItemBrowserBotoes"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancelar"

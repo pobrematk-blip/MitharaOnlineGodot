@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="RecursoResource" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=4 format=3 uid="uid://bwuj47o31au6c"]
 
-[ext_resource type="Texture2D" path="res://Itens/Recursos/Sprite Recursos/Toco de arvore 1 (cheia).png" id="1_qaqww"]
-[ext_resource type="Texture2D" path="res://Itens/Recursos/Sprite Recursos/Arvore cheia.png" id="2_nawmw"]
-[ext_resource type="Script" path="res://Itens/Recursos/RecursoResource.cs" id="3_hjxum"]
+[ext_resource type="Texture2D" uid="uid://b4mk7o34vujb2" path="res://Itens/Recursos/Sprite Recursos/Toco de arvore 1 (cheia).png" id="1_qaqww"]
+[ext_resource type="Texture2D" uid="uid://dj2hx6p5vtyyo" path="res://Itens/Recursos/Sprite Recursos/Arvore cheia.png" id="2_nawmw"]
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="3_hjxum"]
 
 [resource]
 script = ExtResource("3_hjxum")
 Nome = "Arvore"
 TexturaFase1 = ExtResource("1_qaqww")
 TexturaFase5 = ExtResource("2_nawmw")
+Scale = Vector2(2, 2)
 QuantidadeMaxima = 3

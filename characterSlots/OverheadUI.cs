@@ -72,16 +72,43 @@ public partial class OverheadUI : Control
     private string _nomePersonagem;
     private string _guildTag = "";
     private int _guildEmblemIdx = -1;
+    private TextureRect _emblemaIcon;
 
     private const float BarraLargura = 80f;
     private const float BarraAltura = 6f;
     private const int RaioCanto = 3;
 
-    private static readonly Color[] EmblemCores = {
-        Colors.Red, Colors.Blue, Colors.Green, Colors.Yellow,
-        Colors.Purple, Colors.Orange, Colors.Cyan, Colors.Pink,
-        Colors.Brown, Colors.White
+    private static readonly string[] FALLBACK_EMBLEMS = {
+        "12.png","13.png","14.png","17.png","18.png","19.png","2.png","20.png","21.png","22.png",
+        "2250.png","2256.png","2266.png","2279.png","2280.png","23.png","2307.png","2311.png",
+        "2314.png","2315.png","2330.png","2338.png","2340.png","2341.png","2347.png","2353.png",
+        "2354.png","2355.png","2366.png","2367.png","25.png","2544.png","2545.png","2583.png",
+        "2592.png","2594.png","26.png","2608.png","2635.png","2646.png","2649.png","2656.png",
+        "27.png","28.png","29.png","3.png","30.png","33.png","35.png","36.png","37.png","39.png",
+        "4.png","40.png","41.png","42.png","43.png","44.png","45.png","46.png","47.png","49.png",
+        "51.png","7.png","8.png",
     };
+
+    private static readonly string[] EmblemFiles = CarregarEmblemas();
+
+    private static string[] CarregarEmblemas()
+    {
+        var dir = DirAccess.Open("res://Itens/Emblema de Guild/");
+        if (dir == null) return FALLBACK_EMBLEMS;
+        var files = new System.Collections.Generic.List<string>();
+        dir.ListDirBegin();
+        string file = dir.GetNext();
+        while (!string.IsNullOrEmpty(file))
+        {
+            if (file.EndsWith(".png"))
+                files.Add(file);
+            file = dir.GetNext();
+        }
+        dir.ListDirEnd();
+        if (files.Count == 0) return FALLBACK_EMBLEMS;
+        files.Sort();
+        return files.ToArray();
+    }
 
     private static StyleBoxFlat CriarEstilo(Color cor, bool bg)
     {
@@ -130,6 +157,14 @@ public partial class OverheadUI : Control
         _nomeLabel.Visible = MostrarNome;
         AddChild(_nomeLabel);
 
+        _emblemaIcon = new TextureRect();
+        _emblemaIcon.Position = new Vector2(2, 1);
+        _emblemaIcon.Size = new Vector2(20, 20);
+        _emblemaIcon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+        _emblemaIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
+        _emblemaIcon.Visible = false;
+        AddChild(_emblemaIcon);
+
         CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(20, 20), out _hpBg, out _hpFill);
         _hpBg.Visible = MostrarBarraVida;
         AddChild(_hpBg);
@@ -163,6 +198,16 @@ public partial class OverheadUI : Control
         string path = $"user://guild_data_{nome}.cfg";
         var cfg = new ConfigFile();
         if (cfg.Load(path) != Error.Ok) return;
+        int guildId = cfg.GetValue("Guild", "id", -1).AsInt32();
+        if (guildId <= 0)
+        {
+            _guildTag = "";
+            _guildEmblemIdx = -1;
+            cfg.SetValue("Guild", "tag", "");
+            cfg.SetValue("Guild", "emblem_index", -1);
+            cfg.Save(path);
+            return;
+        }
         _guildTag = cfg.GetValue("Guild", "tag", "").AsString();
         _guildEmblemIdx = cfg.GetValue("Guild", "emblem_index", -1).AsInt32();
     }
@@ -174,16 +219,19 @@ public partial class OverheadUI : Control
         if (_mostrarTagGuild && !string.IsNullOrEmpty(_guildTag))
             nome = $"[{_guildTag}] {nome}";
 
-        if (_mostrarEmblemaGuild && _guildEmblemIdx >= 0 && _guildEmblemIdx < EmblemCores.Length)
+        if (_mostrarEmblemaGuild && _guildEmblemIdx >= 0 && _guildEmblemIdx < EmblemFiles.Length)
         {
-            string simbolo = _guildEmblemIdx switch
+            string path = "res://Itens/Emblema de Guild/" + EmblemFiles[_guildEmblemIdx];
+            var tex = ResourceLoader.Load<Texture2D>(path);
+            if (tex != null)
             {
-                0 => "🔴", 1 => "🔵", 2 => "🟢", 3 => "🟡",
-                4 => "🟣", 5 => "🟠", 6 => "🩵", 7 => "🩷",
-                8 => "🟤", 9 => "⬜",
-                _ => "⬛"
-            };
-            nome = $"{simbolo} {nome}";
+                _emblemaIcon.Texture = tex;
+                _emblemaIcon.Visible = true;
+            }
+        }
+        else
+        {
+            _emblemaIcon.Visible = false;
         }
 
         _nomeLabel.Text = nome;

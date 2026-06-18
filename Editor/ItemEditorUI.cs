@@ -97,6 +97,8 @@ public partial class ItemEditorUI : Control
     private SpinBox _chanceDropSpin;
     private SpinBox _tempoDesaparecimentoSpin;
 
+    private LineEdit _afixosPoolEdit;
+
     private ItemResource _currentItem;
     private string _currentItemPath;
     private bool _ignorarEventosUi;
@@ -239,6 +241,23 @@ public partial class ItemEditorUI : Control
         else
             _tipoItemDropdown.AddSibling(_statsAleatoriosCheck);
 
+        _afixosPoolEdit = new LineEdit();
+        _afixosPoolEdit.Name = "AfixosPoolEdit";
+        _afixosPoolEdit.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _afixosPoolEdit.PlaceholderText = "ChanceCritica, DanoCriticoBonus, Precisao, ...";
+        var classesRow = _classesEdit.GetParent() as HBoxContainer;
+        var classesRowParent = classesRow?.GetParent() as Container;
+        if (classesRowParent != null)
+        {
+            var afixosRow = new HBoxContainer();
+            var label = new Label();
+            label.Text = "Pool de Afixos";
+            label.CustomMinimumSize = new Vector2(120, 0);
+            afixosRow.AddChild(label);
+            afixosRow.AddChild(_afixosPoolEdit);
+            classesRowParent.AddChild(afixosRow);
+        }
+
         var formFields = new Control[]
         {
             _itemIdSpin, _nomeEdit, _acumulavelCheck, _ehDuasMaosCheck, _ehPvpCheck, _ehBolsaCheck,
@@ -272,7 +291,7 @@ public partial class ItemEditorUI : Control
             _bonusExperienciaMinSpin, _bonusExperienciaMaxSpin,
             _chanceDropAumentadaMinSpin, _chanceDropAumentadaMaxSpin,
             _animacaoUsarEdit, _animacaoEquipadoEdit,
-            _classesEdit,
+            _classesEdit, _afixosPoolEdit,
             _podeDroparCheck, _podeTrocarCheck, _podeVenderCheck,
             _podeArmazenarBancoCheck, _podeArmazenarBancoGuildCheck,
             _dropEmPkCheck, _chanceDropSpin, _tempoDesaparecimentoSpin,
@@ -316,24 +335,42 @@ public partial class ItemEditorUI : Control
             return;
         }
 
-        var dir = DirAccess.Open(ItensDir);
-        if (dir == null) return;
-
         var paths = new List<string>();
-        dir.ListDirBegin();
-        string fileName;
-        while ((fileName = dir.GetNext()) != "")
-        {
-            if ((fileName.EndsWith(".tres") || fileName.EndsWith(".res")) && fileName != "ItemColetavel.tscn")
-                paths.Add(fileName);
-        }
-        dir.ListDirEnd();
+        ScanDirRecursive(ItensDir, paths);
         paths.Sort();
 
         foreach (var p in paths)
-            _itemList.AddItem(p.Replace(".tres", "").Replace(".res", ""));
+        {
+            string relativePath = p.Replace(ItensDir, "");
+            string displayName = relativePath.Replace(".tres", "").Replace(".res", "");
+            int idx = _itemList.AddItem(displayName);
+            _itemList.SetItemMetadata(idx, relativePath);
+        }
 
         _previewStatus.Text = $"Encontrados {paths.Count} item(ns). Selecione um.";
+    }
+
+    private void ScanDirRecursive(string dirPath, List<string> results)
+    {
+        var dir = DirAccess.Open(dirPath);
+        if (dir == null) return;
+
+        dir.ListDirBegin();
+        string entry;
+        while ((entry = dir.GetNext()) != "")
+        {
+            if (entry == "." || entry == "..") continue;
+            string full = dirPath.TrimEnd('/') + "/" + entry;
+            if (dir.CurrentIsDir())
+            {
+                ScanDirRecursive(full, results);
+            }
+            else if ((entry.EndsWith(".tres") || entry.EndsWith(".res")) && entry != "ItemColetavel.tscn")
+            {
+                results.Add(full);
+            }
+        }
+        dir.ListDirEnd();
     }
 
     private void OnItemSelected(long index)
@@ -341,12 +378,12 @@ public partial class ItemEditorUI : Control
         if (_ignorarEventosUi) return;
         if (index < 0 || index >= _itemList.ItemCount) return;
 
-        string name = _itemList.GetItemText((int)index);
-        string path = ItensDir + name + ".tres";
+        string relativePath = (string)_itemList.GetItemMetadata((int)index);
+        string path = ItensDir + relativePath;
         if (!ResourceLoader.Exists(path))
         {
-            path = ItensDir + name + ".res";
-            if (!ResourceLoader.Exists(path)) return;
+            _previewStatus.Text = "Arquivo nao encontrado: " + path;
+            return;
         }
 
         var item = ResourceLoader.Load<ItemResource>(path);
@@ -445,6 +482,7 @@ public partial class ItemEditorUI : Control
         if (_spritesheetPreview != null)
             _spritesheetPreview.Texture = _currentItem.SpritesheetEquipamento;
         _classesEdit.Text = _currentItem.ClassesPermitidas ?? "";
+        _afixosPoolEdit.Text = _currentItem.PoolDeAfixos ?? "";
         _animacaoUsarEdit.Text = _currentItem.AnimacaoUsar ?? "";
         _animacaoEquipadoEdit.Text = _currentItem.AnimacaoEquipado ?? "";
 
@@ -547,6 +585,7 @@ public partial class ItemEditorUI : Control
         if (_spritesheetPreview != null)
             _spritesheetPreview.Texture = null;
         _classesEdit.Text = "";
+        _afixosPoolEdit.Text = "";
         _animacaoUsarEdit.Text = "";
         _animacaoEquipadoEdit.Text = "";
 
@@ -648,6 +687,7 @@ public partial class ItemEditorUI : Control
         _currentItem.EhPvp = _ehPvpCheck.ButtonPressed;
 
         _currentItem.ClassesPermitidas = _classesEdit.Text.Trim();
+        _currentItem.PoolDeAfixos = _afixosPoolEdit.Text.Trim();
         _currentItem.AnimacaoUsar = _animacaoUsarEdit.Text.Trim();
         _currentItem.AnimacaoEquipado = _animacaoEquipadoEdit.Text.Trim();
 
@@ -718,17 +758,52 @@ public partial class ItemEditorUI : Control
         dialog.PopupCentered(new Vector2I(700, 500));
     }
 
+    private static string ObterPastaPorTipo(TipoEquipamento tipo)
+    {
+        return tipo switch
+        {
+            TipoEquipamento.Arma => "Armas",
+            TipoEquipamento.Escudo => "Escudos",
+            TipoEquipamento.Capacete => "Capacetes",
+            TipoEquipamento.Peitoral => "Peitorais",
+            TipoEquipamento.Cinto => "Cintos",
+            TipoEquipamento.Luvas => "Luvas",
+            TipoEquipamento.Calca => "Calcas",
+            TipoEquipamento.Botas => "Botas",
+            TipoEquipamento.Colar => "Colares",
+            TipoEquipamento.Anel => "Aneis",
+            TipoEquipamento.Brinco => "Brincos",
+            TipoEquipamento.Runa => "Runas",
+            TipoEquipamento.Asa => "Asas",
+            TipoEquipamento.Montaria => "Montarias",
+            TipoEquipamento.Pet => "Pets",
+            TipoEquipamento.Skin => "Skins",
+            TipoEquipamento.Consumivel => "Consumiveis",
+            TipoEquipamento.Feitico => "Feiticos",
+            TipoEquipamento.Moeda => "Moedas",
+            _ => "Outros",
+        };
+    }
+
     private void OnAddItem()
     {
         var item = new ItemResource();
         item.Nome = "Item Novo";
 
-        string basePath = ItensDir + "ItemNovo.tres";
+        var tipoAtual = (TipoEquipamento)_tipoDropdown.Selected;
+        string pasta = ObterPastaPorTipo(tipoAtual);
+        string dirPasta = ItensDir + pasta + "/";
+
+        if (!DirAccess.DirExistsAbsolute(dirPasta))
+            DirAccess.MakeDirAbsolute(dirPasta);
+
+        string baseName = "ItemNovo";
+        string basePath = dirPasta + baseName + ".tres";
         string path = basePath;
         int counter = 1;
         while (ResourceLoader.Exists(path))
         {
-            path = ItensDir + $"ItemNovo{counter}.tres";
+            path = dirPasta + baseName + counter + ".tres";
             counter++;
         }
 

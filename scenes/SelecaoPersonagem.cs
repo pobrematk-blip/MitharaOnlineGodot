@@ -91,7 +91,7 @@ public partial class SelecaoPersonagem : Control
         _cards.Clear();
         _slotSelecionado = null;
 
-        bool online = _net != null && _net.IsConnected && _net.Characters.Count > 0;
+        bool online = _net != null && _net.Characters.Count > 0;
 
         if (online)
             PopulatarDeDadosServidor(_net!.Characters);
@@ -304,7 +304,7 @@ public partial class SelecaoPersonagem : Control
         _personagemPreview.Visible = true;
         _previewInfo.Visible = true;
 
-        bool online = _net != null && _net.IsConnected && _net.Characters.Count > 0;
+        bool online = _net != null && _net.Characters.Count > 0;
 
         string nome;
         int nivel;
@@ -404,14 +404,14 @@ public partial class SelecaoPersonagem : Control
         if (_net != null && _net.IsConnected)
         {
             var card = _cards.Find(c => c.SlotIndex == _slotSelecionado.Value);
-            if (card == null) { GD.PrintErr("[SELECAO] Card nao encontrado para slot " + _slotSelecionado); return; }
+            if (card == null) { GD.PrintErr("[SELECAO] Card nao encontrado para slot " + _slotSelecionado); FecharTelaCarregamento(); return; }
 
             GD.Print($"[SELECAO] OnJogar: slot={card.SlotIndex} nome={card.Nome} classePath={card.ClassePath} racaPath={card.RacaPath}");
 
             var classe = ResourceLoader.Load<ClasseCustomResource>(card.ClassePath);
             var raca = ResourceLoader.Load<RacaResource>(card.RacaPath);
-            if (classe == null) { GD.PrintErr($"[SELECAO] Falha ao carregar classe: {card.ClassePath}"); return; }
-            if (raca == null) { GD.PrintErr($"[SELECAO] Falha ao carregar raca: {card.RacaPath}"); return; }
+            if (classe == null) { GD.PrintErr($"[SELECAO] Falha ao carregar classe: {card.ClassePath}"); FecharTelaCarregamento(); return; }
+            if (raca == null) { GD.PrintErr($"[SELECAO] Falha ao carregar raca: {card.RacaPath}"); FecharTelaCarregamento(); return; }
 
             escolhido.ClasseBase = classe;
             escolhido.Raca = raca;
@@ -442,6 +442,13 @@ public partial class SelecaoPersonagem : Control
         var loading = ResourceLoader.Load<PackedScene>("res://ui/LoadingScreen.tscn").Instantiate<LoadingScreen>();
         loading.Name = "LoadingScreen";
         GetTree().Root.AddChild(loading);
+    }
+
+    private void FecharTelaCarregamento()
+    {
+        var loading = GetTree()?.Root.GetNodeOrNull("LoadingScreen");
+        if (loading != null)
+            loading.QueueFree();
     }
 
     private void OnCriarNovo()

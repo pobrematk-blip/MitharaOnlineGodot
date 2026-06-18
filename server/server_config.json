@@ -4,5 +4,23 @@
   "MaxConnections": 500,
   "ChannelCount": 4,
   "TickRate": 20,
-  "AoiRadius": 600
+  "AoiRadius": 1200,
+  "PgHost": "localhost",
+  "PgPort": 5432,
+  "PgDatabase": "mithara_db",
+  "PgUser": "mithara",
+  "PgPassword": "Tk7142536@",
+  "NoMobZones": [
+    { "X": 700, "Y": 700, "Width": 350, "Height": 350 }
+  ],
+  "PathfindingGridWidth": 200,
+  "PathfindingGridHeight": 200,
+  "PathfindingCellSize": 32,
+  "PathfindingOriginX": 0,
+  "PathfindingOriginY": 0,
+  "BlockedAreas": [
+    { "X": 400, "Y": 400, "Width": 64, "Height": 64 },
+    { "X": 800, "Y": 800, "Width": 128, "Height": 128 },
+    { "X": 1100, "Y": 900, "Width": 64, "Height": 64 }
+  ]
 }

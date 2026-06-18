@@ -1,0 +1,15 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bgagoix5bb8ey"
+valid=false
+
+[deps]
+
+source_file="res://stats_para_balanceamento.csv"
+
+[params]
+
+compress=true
+delimiter=0

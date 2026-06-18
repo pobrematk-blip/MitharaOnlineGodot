@@ -65,7 +65,7 @@ public class PlayerEntityTests
 
         var damage = p.CalculateAttackDamage();
 
-        Assert.Equal(20, damage);
+        Assert.Equal(12, damage);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class PlayerEntityTests
 
         var def = p.CalculateDefense();
 
-        Assert.Equal(20, def);
+        Assert.Equal(17, def);
     }
 
     [Fact]
@@ -267,30 +267,11 @@ public class ItemInstanceTests
 public class ItemDefinitionTests
 {
     [Fact]
-    public void ItemDefinitions_Get_ExistingItem()
-    {
-        var def = ItemDefinitions.Get(1);
-
-        Assert.NotNull(def);
-        Assert.Equal("Poção de Vida", def!.Name);
-        Assert.Equal(ItemType.Consumable, def.Type);
-    }
-
-    [Fact]
     public void ItemDefinitions_Get_NonExistentItem_ReturnsNull()
     {
         var def = ItemDefinitions.Get(9999);
 
         Assert.Null(def);
-    }
-
-    [Fact]
-    public void ItemDefinitions_Exists_ChecksCorrectly()
-    {
-        Assert.True(ItemDefinitions.Exists(1));
-        Assert.True(ItemDefinitions.Exists(10));
-        Assert.True(ItemDefinitions.Exists(31));
-        Assert.False(ItemDefinitions.Exists(999));
     }
 
     [Fact]
@@ -310,57 +291,10 @@ public class ItemDefinitionTests
     }
 
     [Fact]
-    public void ItemDefinitions_AllRegisteredItems()
+    public void ItemDefinitions_FlagshipItemsNotRegistered_ReturnsFalse()
     {
-        Assert.True(ItemDefinitions.Exists(1));
-        Assert.True(ItemDefinitions.Exists(2));
-        Assert.True(ItemDefinitions.Exists(3));
-        Assert.True(ItemDefinitions.Exists(10));
-        Assert.True(ItemDefinitions.Exists(11));
-        Assert.True(ItemDefinitions.Exists(12));
-        Assert.True(ItemDefinitions.Exists(13));
-        Assert.True(ItemDefinitions.Exists(20));
-        Assert.True(ItemDefinitions.Exists(21));
-        Assert.True(ItemDefinitions.Exists(22));
-        Assert.True(ItemDefinitions.Exists(23));
-        Assert.True(ItemDefinitions.Exists(24));
-        Assert.True(ItemDefinitions.Exists(30));
-        Assert.True(ItemDefinitions.Exists(31));
-    }
-
-    [Fact]
-    public void ItemDefinition_BagProperties()
-    {
-        var def = ItemDefinitions.Get(3);
-
-        Assert.NotNull(def);
-        Assert.True(def!.IsBag);
-        Assert.Equal(6, def.ExtraSlots);
-    }
-
-    [Fact]
-    public void ItemDefinition_WeaponStats()
-    {
-        var shortSword = ItemDefinitions.Get(10);
-        var longSword = ItemDefinitions.Get(11);
-        var staff = ItemDefinitions.Get(12);
-
-        Assert.Equal(5, shortSword!.BaseAttack);
-        Assert.Equal(10, longSword!.BaseAttack);
-        Assert.Equal(3, staff!.BaseAttack);
-        Assert.Equal(5, staff.Inteligencia);
-    }
-
-    [Fact]
-    public void ItemDefinition_ArmorStats()
-    {
-        var helmet = ItemDefinitions.Get(20);
-        var chest = ItemDefinitions.Get(21);
-        var boots = ItemDefinitions.Get(23);
-
-        Assert.Equal(3, helmet!.Defense);
-        Assert.Equal(5, chest!.Defense);
-        Assert.Equal(2, boots!.Defense);
-        Assert.Equal(2, boots.Agilidade);
+        Assert.False(ItemDefinitions.Exists(1));
+        Assert.False(ItemDefinitions.Exists(10));
+        Assert.False(ItemDefinitions.Exists(999));
     }
 }

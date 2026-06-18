@@ -1,13 +1,25 @@
 ﻿using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class SlotUI : Control
 {
     private enum TipoContainerUi { Nenhum, Inventario, Banco }
 
+    private static readonly Dictionary<Raridade, Color> RarityColors = new()
+    {
+        [Raridade.Comum] = Color.FromHtml("#ffffff"),
+        [Raridade.Incomum] = Color.FromHtml("#1eff00"),
+        [Raridade.Raro] = Color.FromHtml("#0070dd"),
+        [Raridade.Epico] = Color.FromHtml("#a335ee"),
+        [Raridade.Lendario] = Color.FromHtml("#ffcc00"),
+        [Raridade.Mistico] = Color.FromHtml("#ff4444"),
+    };
+
     private TextureRect _icone;
     private Label _quantidadeTexto;
-    private Texture2D _texturaFundoPadrao;
+    private ColorRect _fundoEscuro;
+    private ColorRect _rarityGlow;
 
     public SlotInventario SlotInterno { get; private set; }
     public int SlotIndex { get; set; }
@@ -18,10 +30,72 @@ public partial class SlotUI : Control
         _quantidadeTexto = GetNode<Label>("Quantidade");
 
         if (_icone != null)
-            _texturaFundoPadrao = _icone.Texture;
+        {
+            _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+            _icone.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
+            _icone.CustomMinimumSize = new Vector2(40, 40);
+        }
+
+        CriarFundoEscuro();
+
+        _rarityGlow = GetNodeOrNull<ColorRect>("RarityGlow");
 
         MouseEntered += OnMouseEnteredSlot;
         MouseExited += OnMouseExitedSlot;
+    }
+
+    private void CriarFundoEscuro()
+    {
+        _fundoEscuro = new ColorRect();
+        _fundoEscuro.Name = "FundoEscuro";
+        _fundoEscuro.MouseFilter = MouseFilterEnum.Ignore;
+        _fundoEscuro.Size = new Vector2(42, 42);
+        _fundoEscuro.Position = new Vector2(0, 0);
+        _fundoEscuro.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+        _fundoEscuro.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+        _fundoEscuro.Color = new Color(0.06f, 0.06f, 0.08f, 0.85f);
+
+        AddChild(_fundoEscuro);
+        MoveChild(_fundoEscuro, 0);
+    }
+
+    private void AtualizarGlow(ItemResource item)
+    {
+        if (item == null)
+        {
+            if (_rarityGlow != null)
+                _rarityGlow.Visible = false;
+            return;
+        }
+
+        if (_rarityGlow == null)
+        {
+            _rarityGlow = new ColorRect();
+            _rarityGlow.Name = "RarityGlow";
+            _rarityGlow.MouseFilter = MouseFilterEnum.Ignore;
+            _rarityGlow.CustomMinimumSize = new Vector2(42, 42);
+            _rarityGlow.Size = new Vector2(42, 42);
+            _rarityGlow.Position = new Vector2(0, 0);
+            _rarityGlow.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+            _rarityGlow.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+            AddChild(_rarityGlow);
+        }
+
+        _rarityGlow.Visible = true;
+        Color cor = RarityColors.GetValueOrDefault(item.Raridade, Colors.White);
+        _rarityGlow.Color = Colors.Transparent;
+        var style = new StyleBoxFlat();
+        style.BgColor = Colors.Transparent;
+        style.BorderWidthTop = 2;
+        style.BorderWidthBottom = 2;
+        style.BorderWidthLeft = 2;
+        style.BorderWidthRight = 2;
+        style.BorderColor = cor;
+        style.CornerRadiusTopLeft = 3;
+        style.CornerRadiusTopRight = 3;
+        style.CornerRadiusBottomLeft = 3;
+        style.CornerRadiusBottomRight = 3;
+        _rarityGlow.Set("theme_override_styles/normal", style);
     }
 
     private TipoContainerUi ObterContainerUi()
@@ -91,13 +165,32 @@ public partial class SlotUI : Control
         if (SlotInterno?.Item == null) return;
         var tip = ObterTooltip();
         if (tip == null) return;
-        tip.Mostrar(SlotInterno.Item, GetGlobalMousePosition());
+
+        if (EhSlotBolsaInventario)
+        {
+            var itemNovo = SlotInterno.Item;
+            var equip = ObterEquipamentoComponent();
+            if (equip != null && equip.ItensEquipados.TryGetValue(itemNovo.Tipo, out var slotEquipado)
+                && slotEquipado?.Item != null && slotEquipado.Item != itemNovo)
+            {
+                tip.MostrarComparacao(itemNovo, slotEquipado.Item, GetGlobalMousePosition(), SlotInterno.RefinoNivel, slotEquipado.RefinoNivel);
+                return;
+            }
+        }
+
+        tip.Mostrar(SlotInterno.Item, GetGlobalMousePosition(), SlotInterno.RefinoNivel);
     }
 
     private void EsconderTooltip()
     {
         var tip = ObterTooltip();
         tip?.Esconder();
+    }
+
+    private EquipamentoComponent ObterEquipamentoComponent()
+    {
+        var player = GetTree().CurrentScene?.FindChild("Player", true, false);
+        return player?.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
     }
 
     public void AtualizarSlot(SlotInventario slotLogico)
@@ -111,16 +204,10 @@ public partial class SlotUI : Control
 
         if (slotLogico == null || slotLogico.Item == null)
         {
-            if (_texturaFundoPadrao != null)
-            {
-                _icone.Texture = _texturaFundoPadrao;
-                _icone.SelfModulate = new Color(1, 1, 1, 1);
-            }
-            else
-            {
-                _icone.Texture = GD.Load<Texture2D>("res://icon.svg");
-                _icone.SelfModulate = new Color(0.2f, 0.2f, 0.2f, 0.6f);
-            }
+            AtualizarGlow(null);
+
+            _icone.Texture = null;
+            _icone.SelfModulate = new Color(1, 1, 1, 1);
 
             _quantidadeTexto.Text = "";
             _quantidadeTexto.Visible = false;
@@ -128,8 +215,13 @@ public partial class SlotUI : Control
         }
         else
         {
+            AtualizarGlow(slotLogico.Item);
+
+            _icone.CustomMinimumSize = new Vector2(40, 40);
             _icone.Texture = slotLogico.Item.Icone;
+            _icone.SetDeferred("size", new Vector2(40, 40));
             _icone.SelfModulate = new Color(1, 1, 1, 1);
+            GD.Print($"[SLOT DEBUG] Icone Size={_icone.Size} MinSize={_icone.CustomMinimumSize} Expand={_icone.ExpandMode} Stretch={_icone.StretchMode} TexSize={(slotLogico.Item.Icone?.GetSize() ?? Vector2.Zero)}");
 
             if (slotLogico.Quantidade > 1)
             {

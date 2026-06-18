@@ -172,6 +172,42 @@ public class GuildManager
         }
     }
 
+    public void SetMemberRank(int guildId, ulong entityId, int rank)
+    {
+        lock (_lock)
+        {
+            if (_guilds.TryGetValue(guildId, out var guild))
+                guild.SetRank(entityId, rank);
+        }
+    }
+
+    public bool ReplaceMemberEntityId(int guildId, ulong oldEntityId, ulong newEntityId)
+    {
+        lock (_lock)
+        {
+            if (!_guilds.TryGetValue(guildId, out var guild)) return false;
+            if (!guild.Members.Contains(oldEntityId)) return false;
+            if (guild.Members.Contains(newEntityId)) return false;
+
+            guild.Members.Remove(oldEntityId);
+            guild.Members.Add(newEntityId);
+
+            if (guild.MemberRanks.TryGetValue(oldEntityId, out var rank))
+            {
+                guild.MemberRanks[newEntityId] = rank;
+                guild.MemberRanks.Remove(oldEntityId);
+            }
+
+            if (guild.LeaderEntityId == oldEntityId)
+                guild.LeaderEntityId = newEntityId;
+
+            _playerGuild.Remove(oldEntityId);
+            _playerGuild[newEntityId] = guildId;
+
+            return true;
+        }
+    }
+
     public List<ulong> GetMemberEntityIds(int guildId)
     {
         lock (_lock)

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Entities;
@@ -9,6 +12,63 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private static readonly Dictionary<string, int[]> _classStartingItems = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Arqueiro"] = new[] { 1001, 1051 },  // Arco de Madeira, Aljava Simples
+        ["Mago"] = new[] { 5001, 5051 },      // Cajado do Aprendiz, Orbe do Aprendiz
+        ["Ladino"] = new[] { 2001, 2051 },    // Adaga de Osso, Adaga Secundária de Osso
+        ["Berseker"] = new[] { 3001, 3051 },  // Machado de Pedra, Bumerangue de Pedra
+        ["Guardiao"] = new[] { 4001, 4051 },  // Espada de Ferro, Escudo de Ferro
+        ["Prist"] = new[] { 6001, 6051 },     // Martelo de Madeira, Escudo Sagrado de Madeira
+    };
+
+    private static int[] GetStartingItemsForClass(string className)
+    {
+        if (string.IsNullOrWhiteSpace(className)) return Array.Empty<int>();
+        return _classStartingItems.TryGetValue(className, out var items) ? items : Array.Empty<int>();
+    }
+
+    private void GiveStartingItems(int characterId, string className)
+    {
+        var itemIds = GetStartingItemsForClass(className);
+        int invSlot = 0;
+        int count = 0;
+        foreach (var itemId in itemIds)
+        {
+            var def = ItemDefinitions.Get(itemId);
+            if (def == null) continue;
+
+            int eqSlot = def.Type switch
+            {
+                ItemType.Weapon => 107,
+                ItemType.Shield => 108,
+                ItemType.Helmet => 101,
+                ItemType.Chestplate => 102,
+                ItemType.Belt => 103,
+                ItemType.Gloves => 104,
+                ItemType.Pants => 105,
+                ItemType.Boots => 106,
+                ItemType.Necklace => 109,
+                ItemType.Ring => 110,
+                ItemType.Earring => 111,
+                ItemType.Bag => 0, // bags go to inventory for manual equipping
+                _ => -1,
+            };
+
+            int slot = eqSlot > 0 ? eqSlot : invSlot++;
+            var item = new ItemInstance
+            {
+                ItemId = itemId,
+                Slot = slot,
+                Quantity = 1,
+            };
+            _db.SaveItem(characterId, item);
+            count++;
+        }
+        if (count > 0)
+            Logger.Info($"Itens iniciais dados ao personagem {characterId}: {count} item(ns)");
+    }
+
     private void HandleCreateCharacter(NetPeer peer, NetDataReader reader)
     {
         string name = reader.GetString();
@@ -18,6 +78,9 @@ partial class GameServer
         if (!_sessions.TryGetValue(peer, out var session)) return;
 
         int charId = _db.CreateCharacter(session.AccountId, name, className, race);
+
+        GiveStartingItems(charId, className);
+
         var chars = _db.GetCharacters(session.AccountId);
 
         var created = chars.FirstOrDefault(c => c.Id == charId);
@@ -67,7 +130,7 @@ partial class GameServer
             return;
         }
 
-        _db.DeleteCharacter(toDelete.Id);
+        _db.DeleteCharacter(toDelete.Id, toDelete.Name);
 
         var updated = _db.GetCharacters(session.AccountId);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CharacterDeleted);
@@ -98,6 +161,10 @@ partial class GameServer
         float inlineY = reader.GetFloat();
 
         if (!_sessions.TryGetValue(peer, out var session)) return;
+
+        // Remove old player if re-entering world (e.g. after returning to character selection)
+        if (session.EntityId > 0 && session.ChannelId >= 0)
+            _world.RemoveFromChannel(session.ChannelId, session.EntityId);
 
         // Use character from DB if available, otherwise use inline data (quick test mode)
         bool useInline = session.SelectedCharacter == null;
@@ -131,8 +198,8 @@ partial class GameServer
             "mago" => 2,
             _ => 4,
         };
-        int maxHp = 80 + forca * 5 + level * 10;
-        int maxMana = 30 + inteligencia * 5 + level * 5;
+        int maxHp = 80 + forca * 2 + level * 10;
+        int maxMana = 30 + inteligencia * 3 + level * 5;
 
         var player = new PlayerEntity
         {
@@ -168,6 +235,35 @@ partial class GameServer
         ulong entityId = _world.SpawnPlayerInChannel(channelId, player, peer);
         session.EntityId = entityId;
         session.ChannelId = channelId;
+
+        // Restore guild membership
+        var (guildId, oldEntityId, rank) = _db.GetCharacterGuildData(name);
+        if (guildId >= 0)
+        {
+            var guild = _world.Guilds.GetGuild(guildId);
+            if (guild != null)
+            {
+                // Replace stale entity ID with current runtime ID
+                if (oldEntityId > 0 && oldEntityId != entityId)
+                    _world.Guilds.ReplaceMemberEntityId(guildId, oldEntityId, entityId);
+
+                _world.Guilds.SetMemberRank(guildId, entityId, rank);
+
+                // Persist current entity ID in database
+                if (oldEntityId != entityId)
+                {
+                    _db.DeleteGuildMemberByName(guildId, name);
+                    _db.SaveGuildMember(guildId, entityId, name, rank);
+                }
+
+                player.GuildId = guildId;
+                player.GuildName = guild.Name;
+            }
+            else
+            {
+                _db.DeleteGuildMemberByName(guildId, name);
+            }
+        }
 
         var channel = _world.GetChannel(channelId);
 
@@ -236,6 +332,9 @@ partial class GameServer
                 var aoi = channel.GetEntitiesInAoi(player.X, player.Y);
                 Logger.Info($"HandleEnterWorld({player.Name}): AOI contem {aoi.Count} entidades (incluindo self)");
 
+                session.SpawnedEntities.Clear();
+                session.SpawnedEntities.Add(entityId);
+
                 int sentNearby = 0;
                 foreach (var eid in aoi)
                 {
@@ -245,6 +344,7 @@ partial class GameServer
                     var existingWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
                     WriteEntityPacket(existingWriter, existing);
                     peer.Send(existingWriter, DeliveryMethod.ReliableOrdered);
+                    session.SpawnedEntities.Add(eid);
                     sentNearby++;
                 }
 
@@ -257,6 +357,7 @@ partial class GameServer
                     var playerWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
                     WriteEntityPacket(playerWriter, kv.Value);
                     peer.Send(playerWriter, DeliveryMethod.ReliableOrdered);
+                    session.SpawnedEntities.Add(kv.Key);
                     sentPlayers++;
                 }
                 Logger.Info($"HandleEnterWorld({player.Name}): enviou {sentNearby} spawn(s) de entidades (AOI) + {sentPlayers} player(s) no canal");

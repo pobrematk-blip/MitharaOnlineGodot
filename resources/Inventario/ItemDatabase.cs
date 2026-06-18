@@ -26,29 +26,42 @@ public partial class ItemDatabase : Node
             return;
         }
 
-        var dir = DirAccess.Open(ItensDir);
-        if (dir == null) return;
-
-        dir.ListDirBegin();
-        string fileName;
-        while ((fileName = dir.GetNext()) != "")
-        {
-            if (!fileName.EndsWith(".tres") && !fileName.EndsWith(".res"))
-                continue;
-
-            string path = ItensDir + fileName;
-            var item = ResourceLoader.Load<ItemResource>(path);
-            if (item == null) continue;
-
-            if (item.ItemID > 0 && !_itemMap.ContainsKey(item.ItemID))
-            {
-                _itemMap[item.ItemID] = path;
-            }
-        }
-        dir.ListDirEnd();
+        ScanDirRecursive(ItensDir);
 
         _scanned = true;
         GD.Print($"[ItemDatabase] Scan concluido: {_itemMap.Count} itens mapeados.");
+    }
+
+    private void ScanDirRecursive(string dirPath)
+    {
+        var dir = DirAccess.Open(dirPath);
+        if (dir == null) return;
+
+        dir.ListDirBegin();
+        string entryName;
+        while ((entryName = dir.GetNext()) != "")
+        {
+            if (entryName == "." || entryName == "..")
+                continue;
+
+            string fullPath = dirPath.TrimEnd('/') + "/" + entryName;
+
+            if (dir.CurrentIsDir())
+            {
+                ScanDirRecursive(fullPath);
+                continue;
+            }
+
+            if (!entryName.EndsWith(".tres") && !entryName.EndsWith(".res"))
+                continue;
+
+            var res = ResourceLoader.Load(fullPath);
+            if (res is ItemResource item && item.ItemID > 0 && !_itemMap.ContainsKey(item.ItemID))
+            {
+                _itemMap[item.ItemID] = fullPath;
+            }
+        }
+        dir.ListDirEnd();
     }
 
     public void Refresh() => ScanItensFolder();

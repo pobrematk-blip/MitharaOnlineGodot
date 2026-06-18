@@ -121,8 +121,42 @@ partial class GameServer
                 var peer = channel.GetPlayerPeer(eid);
                 if (peer == null) continue;
 
+                if (!_sessions.TryGetValue(peer, out var session)) continue;
+
                 var aoi = channel.GetEntitiesInAoi(playerEntity.X, playerEntity.Y);
-                FlushEntityUpdates(peer, entities, aoi, eid, maxPayload);
+
+                var aoiSet = new HashSet<ulong>(aoi);
+
+                // Send spawn packets for new entities entering AOI
+                foreach (var aoiEid in aoiSet)
+                {
+                    if (aoiEid == eid) continue;
+                    if (session.SpawnedEntities.Contains(aoiEid)) continue;
+                    if (!entities.TryGetValue(aoiEid, out var newEntity)) continue;
+
+                    var spawnWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
+                    WriteEntityPacket(spawnWriter, newEntity);
+                    peer.Send(spawnWriter, DeliveryMethod.ReliableOrdered);
+                    session.SpawnedEntities.Add(aoiEid);
+                }
+
+                // Despawn entities that left the AOI
+                var toDespawn = new List<ulong>();
+                foreach (var spawnedId in session.SpawnedEntities)
+                {
+                    if (spawnedId == eid) continue;
+                    if (!aoiSet.Contains(spawnedId))
+                        toDespawn.Add(spawnedId);
+                }
+                foreach (var despawnId in toDespawn)
+                {
+                    var despawnWriter = PacketSerializer.WritePacket(PacketId.S2C_DespawnEntity);
+                    despawnWriter.Put(despawnId);
+                    peer.Send(despawnWriter, DeliveryMethod.ReliableOrdered);
+                    session.SpawnedEntities.Remove(despawnId);
+                }
+
+                FlushEntityUpdates(peer, entities, aoiSet, eid, maxPayload);
             }
         }
     }

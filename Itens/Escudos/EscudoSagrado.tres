@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 6057
+Nome = "Escudo Sagrado"
+Descricao = "Sua construÃ§Ã£o refinada demonstra o cuidado e a tradiÃ§Ã£o dos grandes templos."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 8
+CategoriaPeso = 0
+NivelRequerido = 30
+Valor = 188
+Forca = 8
+ForcaMin = 6
+ForcaMax = 8
+Agilidade = 0
+AgilidadeMin = 0
+AgilidadeMax = 0
+Destreza = 0
+DestrezaMin = 0
+DestrezaMax = 0
+Inteligencia = 8
+InteligenciaMin = 6
+InteligenciaMax = 8
+DanoFisico = 0
+DanoFisicoMin = 0
+DanoFisicoMax = 0
+DefesaFisica = 17
+DefesaFisicaMin = 13
+DefesaFisicaMax = 17
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "Tenacidade,RegeneracaoVida,RegeneracaoMana,Hp,Mana,ReducaoCooldown,Evasao"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

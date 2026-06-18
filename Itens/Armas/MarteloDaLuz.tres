@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 6009
+Nome = "Martelo da Luz"
+Descricao = "Uma arma respeitada por clÃ©rigos que dedicam suas vidas ao auxÃ­lio dos aliados."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 7
+CategoriaPeso = 0
+NivelRequerido = 40
+Valor = 330
+Forca = 11
+ForcaMin = 8
+ForcaMax = 11
+Agilidade = 0
+AgilidadeMin = 0
+AgilidadeMax = 0
+Destreza = 0
+DestrezaMin = 0
+DestrezaMax = 0
+Inteligencia = 11
+InteligenciaMin = 8
+InteligenciaMax = 11
+DanoFisico = 28
+DanoFisicoMin = 24
+DanoFisicoMax = 28
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "RouboVida,RouboMana,RegeneracaoVida,RegeneracaoMana,Tenacidade,Precisao,ChanceCritica"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

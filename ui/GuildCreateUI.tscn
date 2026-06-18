@@ -1,18 +1,36 @@
-[gd_scene load_steps=1 format=3 uid="uid://cy3prat4pmi3q"]
+[gd_scene load_steps=5 format=3 uid="uid://cy3prat4pmi3q"]
 
 [ext_resource type="Script" path="res://ui/GuildCreateUI.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(1, 0, 0, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_darkred"]
+bg_color = Color(0.7, 0, 0, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="Theme" id="Theme_create"]
+default_font_size = 14
 
 [node name="GuildCreateUI" type="Control"]
 script = ExtResource("1")
 anchors_preset = 0
 size = Vector2i(1152, 648)
 mouse_filter = 2
+theme = SubResource("Theme_create")
 
 [node name="Panel" type="Panel" parent="."]
 offset_left = 276.0
 offset_top = 74.0
 offset_right = 876.0
-offset_bottom = 574.0
+offset_bottom = 555.0
 
 [node name="TitleBar" type="Panel" parent="Panel"]
 layout_mode = 0
@@ -25,6 +43,9 @@ layout_mode = 0
 offset_left = 564.0
 offset_right = 596.0
 offset_bottom = 28.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_darkred")
 text = "X"
 
 [node name="TitleLabel" type="Label" parent="Panel"]
@@ -40,7 +61,7 @@ layout_mode = 0
 offset_left = 16.0
 offset_top = 40.0
 offset_right = 584.0
-offset_bottom = 176.0
+offset_bottom = 130.0
 
 [node name="NpcDialog" type="Label" parent="Panel/NpcDialogScroll"]
 layout_mode = 2
@@ -53,9 +74,9 @@ theme_override_font_sizes/font_size = 12
 [node name="EditGrid" type="GridContainer" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 184.0
+offset_top = 142.0
 offset_right = 584.0
-offset_bottom = 268.0
+offset_bottom = 210.0
 columns = 2
 theme_override_constants/v_separation = 8
 theme_override_constants/h_separation = 8
@@ -85,53 +106,59 @@ max_length = 3
 [node name="EmblemaLabel" type="Label" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 280.0
+offset_top = 222.0
 text = "Emblema da Guilda:"
 theme_override_colors/font_color = Color(1, 1, 1, 0.85)
 
-[node name="EmblemasGrid" type="GridContainer" parent="Panel"]
+[node name="EmblemasScroll" type="ScrollContainer" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 300.0
+offset_top = 240.0
 offset_right = 584.0
-offset_bottom = 388.0
-columns = 5
+offset_bottom = 420.0
+
+[node name="EmblemasGrid" type="GridContainer" parent="Panel/EmblemasScroll"]
+layout_mode = 2
+columns = 6
 theme_override_constants/v_separation = 4
 theme_override_constants/h_separation = 4
+custom_minimum_size = Vector2i(560, 0)
 
 [node name="CustoLabel" type="Label" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 400.0
+offset_top = 420.0
+offset_right = 568.0
 text = "Custo: 10.000 moedas de ouro OU Pergaminho de Criacao de Cla"
+autowrap_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.77, 0.28, 1)
 theme_override_font_sizes/font_size = 11
 
 [node name="StatusLabel" type="Label" parent="Panel"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 424.0
-offset_right = 584.0
-offset_bottom = 452.0
+offset_top = 436.0
+offset_right = 568.0
+offset_bottom = 456.0
 text = ""
-autowrap_mode = 0
+autowrap_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.8, 0.4, 1)
 theme_override_font_sizes/font_size = 12
 
 [node name="CriarBtn" type="Button" parent="Panel"]
 layout_mode = 0
-offset_left = 180.0
-offset_top = 460.0
-offset_right = 320.0
-offset_bottom = 492.0
+offset_left = 378.0
+offset_top = 422.0
+offset_right = 488.0
+offset_bottom = 454.0
 text = "Criar Guilda"
 theme_override_font_sizes/font_size = 14
 
 [node name="CancelarBtn" type="Button" parent="Panel"]
 layout_mode = 0
-offset_left = 340.0
-offset_top = 460.0
-offset_right = 460.0
-offset_bottom = 492.0
+offset_left = 496.0
+offset_top = 422.0
+offset_right = 580.0
+offset_bottom = 454.0
 text = "Cancelar"
 theme_override_font_sizes/font_size = 14

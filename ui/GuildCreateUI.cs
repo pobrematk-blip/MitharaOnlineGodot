@@ -21,11 +21,44 @@ public partial class GuildCreateUI : Control
     private TextureRect[] _emblemaRects;
     private GameNetwork _gameNet;
 
-    private static readonly Color[] EmblemCores = {
-        Colors.Red, Colors.Blue, Colors.Green, Colors.Yellow,
-        Colors.Purple, Colors.Orange, Colors.Cyan, Colors.Pink,
-        Colors.Brown, Colors.White
+    private static readonly string[] FALLBACK_EMBLEMS = {
+        "12.png","13.png","14.png","17.png","18.png","19.png","2.png","20.png","21.png","22.png",
+        "2250.png","2256.png","2266.png","2279.png","2280.png","23.png","2307.png","2311.png",
+        "2314.png","2315.png","2330.png","2338.png","2340.png","2341.png","2347.png","2353.png",
+        "2354.png","2355.png","2366.png","2367.png","25.png","2544.png","2545.png","2583.png",
+        "2592.png","2594.png","26.png","2608.png","2635.png","2646.png","2649.png","2656.png",
+        "27.png","28.png","29.png","3.png","30.png","33.png","35.png","36.png","37.png","39.png",
+        "4.png","40.png","41.png","42.png","43.png","44.png","45.png","46.png","47.png","49.png",
+        "51.png","7.png","8.png",
     };
+
+    private string[] _emblemFiles;
+
+    private string[] CarregarEmblemas()
+    {
+        try
+        {
+            var dir = DirAccess.Open("res://Itens/Emblema de Guild/");
+            if (dir == null) return FALLBACK_EMBLEMS;
+            var files = new System.Collections.Generic.List<string>();
+            dir.ListDirBegin();
+            string file = dir.GetNext();
+            while (!string.IsNullOrEmpty(file))
+            {
+                if (file.EndsWith(".png"))
+                    files.Add(file);
+                file = dir.GetNext();
+            }
+            dir.ListDirEnd();
+            if (files.Count == 0) return FALLBACK_EMBLEMS;
+            files.Sort();
+            return files.ToArray();
+        }
+        catch
+        {
+            return FALLBACK_EMBLEMS;
+        }
+    }
 
     private const int CUSTO_GOLD = 10000;
 
@@ -38,7 +71,7 @@ public partial class GuildCreateUI : Control
         _npcDialog = _panel.GetNode<Label>("NpcDialogScroll/NpcDialog");
         _nomeEdit = _panel.GetNode<LineEdit>("EditGrid/NomeEdit");
         _tagEdit = _panel.GetNode<LineEdit>("EditGrid/TagEdit");
-        _emblemasGrid = _panel.GetNode<GridContainer>("EmblemasGrid");
+        _emblemasGrid = _panel.GetNode<GridContainer>("EmblemasScroll/EmblemasGrid");
         _custoLabel = _panel.GetNode<Label>("CustoLabel");
         _statusLabel = _panel.GetNode<Label>("StatusLabel");
         _criarBtn = _panel.GetNode<Button>("CriarBtn");
@@ -47,6 +80,8 @@ public partial class GuildCreateUI : Control
 
         _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         GD.Print($"[GUILD-CREATE] _gameNet = {_gameNet}");
+
+        _emblemFiles = CarregarEmblemas();
 
         _closeButton.Pressed += OnFechar;
         _cancelarBtn.Pressed += OnFechar;
@@ -87,9 +122,9 @@ public partial class GuildCreateUI : Control
 
     private void PopularEmblemas()
     {
-        _emblemaRects = new TextureRect[EmblemCores.Length];
+        _emblemaRects = new TextureRect[_emblemFiles.Length];
 
-        for (int i = 0; i < EmblemCores.Length; i++)
+        for (int i = 0; i < _emblemFiles.Length; i++)
         {
             int idx = i;
             var container = new PanelContainer();
@@ -112,10 +147,10 @@ public partial class GuildCreateUI : Control
             rect.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
             rect.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
 
-            var img = Image.CreateEmpty(36, 36, false, Image.Format.Rgba8);
-            img.Fill(EmblemCores[idx]);
-            var tex = ImageTexture.CreateFromImage(img);
-            rect.Texture = tex;
+            string path = "res://Itens/Emblema de Guild/" + _emblemFiles[idx];
+            var tex = ResourceLoader.Load<Texture2D>(path);
+            if (tex != null)
+                rect.Texture = tex;
 
             container.AddChild(rect);
             _emblemaRects[idx] = rect;
@@ -199,10 +234,11 @@ public partial class GuildCreateUI : Control
         }
     }
 
-    private void OnGuildCreateResult(bool success, string message)
+    private void OnGuildCreateResult(int guildId, bool success, string message)
     {
         if (success)
         {
+            string guildName = _nomeEdit.Text.Trim();
             string tag = _tagEdit.Text.Trim();
             int emblem = _emblemaSelecionado;
             var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
@@ -210,9 +246,27 @@ public partial class GuildCreateUI : Control
             string path = $"user://guild_data_{nome}.cfg";
             var cfg = new ConfigFile();
             cfg.Load(path);
+            cfg.SetValue("Guild", "id", guildId);
+            cfg.SetValue("Guild", "name", guildName);
             cfg.SetValue("Guild", "tag", tag);
             cfg.SetValue("Guild", "emblem_index", emblem);
+            cfg.SetValue("Guild", "is_leader", true);
+            cfg.SetValue("Guild", "meu_rank", 0);
+            cfg.SetValue("Guild", "level", 1);
+            cfg.SetValue("Guild", "xp", 0);
+            cfg.SetValue("Guild", "member_count", 1);
+            cfg.SetValue("Guild", "leader_name", escolhido?.NomePersonagem ?? "");
             cfg.Save(path);
+
+            if (_gameNet != null)
+            {
+                _gameNet.GuildId = guildId;
+                _gameNet.IsGuildLeader = true;
+            }
+
+            var guildUI = GetTree().Root.FindChild("GuildUI", true, false) as GuildUI;
+            guildUI?.AbrirFechar(true);
+            guildUI?.RecarregarDadosArquivo();
 
             var overhead = GetTree().Root.FindChild("OverheadUI", true, false) as OverheadUI;
             overhead?.RecarregarDadosGuild();

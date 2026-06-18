@@ -324,9 +324,10 @@ public partial class Inimigo : CharacterBody2D
 
             Vector2 toTarget = NetworkTargetPos - GlobalPosition;
             float dist = toTarget.Length();
-            if (dist > 2f)
+            if (dist > 1f)
             {
-                float speed = Mathf.Clamp(dist * 15f, 50f, 400f);
+                float catchupSpeed = dist * 8f;
+                float speed = Mathf.Clamp(catchupSpeed, Velocidade, Mathf.Max(Velocidade * 1.5f, 200f));
                 Velocity = toTarget / dist * speed;
             }
             else

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dj8mfexdgwcbh" path="res://resources/Inventario/ItemColetavel.cs" id="1_85bdg"]
 [ext_resource type="Texture2D" uid="uid://e4ktg64uwj4i" path="res://Itens/Incones/Bag (3).png" id="1_arote"]
-[ext_resource type="Resource" uid="uid://du717ibioj6gi" path="res://Itens/BolsaDeCouro.tres" id="2_0j0sb"]
+[ext_resource type="Resource" path="res://Itens/BolsaDeCouro.tres" id="2_0j0sb"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_85bdg"]
 radius = 26.0

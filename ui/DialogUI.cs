@@ -66,6 +66,12 @@ public partial class DialogUI : Control
             string capturedData = actionData;
             btn.Pressed += () =>
             {
+                if (capturedAction == "guild_manage")
+                {
+                    Fechar();
+                    AbrirGuilda();
+                    return;
+                }
                 if (_gameNet != null)
                     _gameNet.SendNpcSelectOption(capturedAction, capturedData);
             };
@@ -112,9 +118,42 @@ public partial class DialogUI : Control
                 break;
 
             case "guilda":
-                _npcText.Text = $"[{npcNome}]\nBem-vindo, aventureiro! Já ouviu falar de Solareth?\n\nDizem que é uma terra próspera onde aventureiros audaciosos fundaram sua própria guilda.\nVocê tem coragem de começar essa jornada?\n\n(Para fundar uma guilda é preciso ter 10.000 moedas de ouro ou um Pergaminho de Criação de Clã.)";
-                AdicionarOpcaoLocal("Quero fundar uma guilda em Solareth!", () => AbrirCriacaoGuilda());
-                AdicionarOpcaoLocal("Ainda não estou pronto", Fechar);
+                var oh = GetTree().Root.FindChild("OverheadUI", true, false) as OverheadUI;
+                oh?.RecarregarDadosGuild();
+                bool temGuild = TemGuildaSalva() || (_gameNet != null && _gameNet.GuildId >= 0);
+                bool ehLider = (_gameNet != null && _gameNet.IsGuildLeader) || EhLiderGuildSalvo();
+                GD.Print($"[DIALOG] guilda: temGuild={temGuild} ehLider={ehLider} guildId={_gameNet?.GuildId ?? -1}");
+                if (temGuild)
+                {
+                    _npcText.Text = $"[{npcNome}]\nBem-vindo de volta! Como posso ajudar?";
+                    AdicionarOpcaoLocal("Gerenciar Guilda", () =>
+                    {
+                        Fechar();
+                        AbrirGuilda();
+                    });
+                    AdicionarOpcaoLocal("Entrar na base da guilda", () =>
+                    {
+                        Fechar();
+                        _gameNet?.SendNpcSelectOption("guild_enter_base", "");
+                    });
+                    AdicionarOpcaoLocal("Entrar na GvG", () =>
+                    {
+                        Fechar();
+                        _gameNet?.SendNpcSelectOption("guild_enter_gvg", "");
+                    });
+                    if (ehLider)
+                        AdicionarOpcaoLocal("Dissolver a guilda", () =>
+                        {
+                            Fechar();
+                            _gameNet?.SendNpcSelectOption("guild_disband", "");
+                        });
+                }
+                else
+                {
+                    _npcText.Text = $"[{npcNome}]\nBem-vindo, aventureiro! Já ouviu falar de Solareth?\n\nDizem que é uma terra próspera onde aventureiros audaciosos fundaram sua própria guilda.\nVocê tem coragem de começar essa jornada?\n\n(Para fundar uma guilda é preciso ter 10.000 moedas de ouro ou um Pergaminho de Criação de Clã.)";
+                    AdicionarOpcaoLocal("Quero fundar uma guilda em Solareth!", () => AbrirCriacaoGuilda());
+                    AdicionarOpcaoLocal("Ainda não estou pronto", Fechar);
+                }
                 break;
 
             default:
@@ -154,10 +193,15 @@ public partial class DialogUI : Control
     private void AbrirGuilda()
     {
         Fechar();
-        var guildScene = ResourceLoader.Load<PackedScene>("res://ui/GuildUI.tscn");
-        if (guildScene == null) return;
-        var guild = guildScene.Instantiate<GuildUI>();
-        GetTree().CurrentScene.AddChild(guild);
+        var guild = GetTree().Root.FindChild("GuildUI", true, false) as GuildUI;
+        if (guild == null)
+        {
+            var guildScene = ResourceLoader.Load<PackedScene>("res://ui/GuildUI.tscn");
+            if (guildScene == null) return;
+            guild = guildScene.Instantiate<GuildUI>();
+            GetTree().CurrentScene.AddChild(guild);
+        }
+        guild.AbrirFechar(true);
     }
 
     private void AbrirCriacaoGuilda()
@@ -188,6 +232,46 @@ public partial class DialogUI : Control
         _panel.Visible = false;
         foreach (var child in _optionsContainer.GetChildren())
             child.QueueFree();
+    }
+
+    private bool TemGuildaSalva()
+    {
+        return CarregarGuildId() >= 0;
+    }
+
+    private bool EhLiderGuildSalvo()
+    {
+        var cfg = CarregarCfgGuild();
+        if (cfg == null) return false;
+        // Se não tem a chave is_leader (dados salvos antes dessa chave existir),
+        // assume que é líder (quem criou a guild)
+        if (!cfg.HasSectionKey("Guild", "is_leader"))
+            return true;
+        return cfg.GetValue("Guild", "is_leader", false).AsBool();
+    }
+
+    private int CarregarGuildId()
+    {
+        var cfg = CarregarCfgGuild();
+        if (cfg == null) return -1;
+        return cfg.GetValue("Guild", "id", -1).AsInt32();
+    }
+
+    private ConfigFile CarregarCfgGuild()
+    {
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        string nome = escolhido?.NomePersonagem?.Replace(" ", "_") ?? "default";
+        string path = $"user://guild_data_{nome}.cfg";
+        var cfg = new ConfigFile();
+        Error err = cfg.Load(path);
+        GD.Print($"[DIALOG] CarregarCfgGuild: nome={nome} path={path} err={err}");
+        if (err != Error.Ok) return null;
+        bool hasId = cfg.HasSectionKey("Guild", "id");
+        bool hasLeader = cfg.HasSectionKey("Guild", "is_leader");
+        int id = cfg.GetValue("Guild", "id", -1).AsInt32();
+        bool lider = cfg.GetValue("Guild", "is_leader", false).AsBool();
+        GD.Print($"[DIALOG] cfg: hasId={hasId} id={id} hasLeader={hasLeader} lider={lider}");
+        return cfg;
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)

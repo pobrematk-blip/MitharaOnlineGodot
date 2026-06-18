@@ -103,6 +103,7 @@ public class SpawnerManager
                 new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.08 },
                 new() { ItemId = 30, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.10 },
                 new() { ItemId = 100, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
+                new() { ItemId = 1001, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.08 },
             },
         });
 
@@ -203,7 +204,7 @@ public class SpawnerManager
 
     private void RegisterDefaultSpawnPoints()
     {
-        _spawnPoints.Add(new SpawnPoint { X = 2000, Y = 1100, Radius = 250f, PrefabId = "goblin", MaxCount = 5 });
+        _spawnPoints.Add(new SpawnPoint { X = 1200, Y = 1050, Radius = 200f, PrefabId = "goblin", MaxCount = 5 });
     }
 
     public List<SpawnPoint> GetSpawnPoints() => _spawnPoints;

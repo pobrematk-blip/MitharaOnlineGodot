@@ -67,14 +67,14 @@ public partial class EquipamentoComponent : Node
     public string DanoMagico => $"{DanoMagicoMin}-{DanoMagicoMax}";
     
     // HP (por Força + bônus de itens)
-    public int Hp => 100 + (Forca * 5) + _bonusHp;
+    public int Hp => 100 + (Forca * 2) + _bonusHp;
     
     // Mana (por Inteligência + bônus de itens)
     public int Mana => 50 + (Inteligencia * 3) + _bonusMana;
     
     // Chance Crítica e Evasão (por Destreza + bônus de itens)
-    public float ChanceCritica => (Destreza * 0.5f) + _bonusChanceCritica;
-    public float Evasao => (Destreza * 0.3f) + _bonusEvasao;
+    public float ChanceCritica => MathF.Min(75f, (Destreza * 0.25f) + _bonusChanceCritica);
+    public float Evasao => MathF.Min(40f, (Destreza * 0.3f) + _bonusEvasao);
     
     // Dano Crítico - Base 1.5x, aumenta APENAS com itens
     private float _bonusDanoCritico = 0f;
@@ -82,7 +82,7 @@ public partial class EquipamentoComponent : Node
     
     // Velocidades (por Agilidade + bônus de itens)
     public float VelocidadeMovimento => 1.0f + (Agilidade * 0.05f) + _bonusVelocidadeMovimento;
-    public float VelocidadeAtaque => 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque;
+    public float VelocidadeAtaque => MathF.Min(100f, 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque);
     
     // Defesas
     public int DefesaFisica => (Agilidade / 2) + _bonusDefesaFisica;
@@ -104,11 +104,11 @@ public partial class EquipamentoComponent : Node
     public float RegeneracaoMana => Inteligencia / 10f + _bonusRegeneracaoMana;
     
     // Roubo
-    public float RouboVida => Destreza / 50f + _bonusRouboVida;
-    public float RouboMana => Inteligencia / 20f + _bonusRouboMana;
+    public float RouboVida => MathF.Min(15f, Destreza / 50f + _bonusRouboVida);
+    public float RouboMana => MathF.Min(15f, Inteligencia / 20f + _bonusRouboMana);
     
     // Redução e Bônus
-    public float ReducaoCooldown => Agilidade / 100f + _bonusReducaoCooldown;
+    public float ReducaoCooldown => MathF.Min(40f, Agilidade / 100f + _bonusReducaoCooldown);
     public float BonusExperiencia => Inteligencia / 100f + _bonusBonusExperiencia;
     public int Stamina => 100 + (Agilidade * 2) + _bonusStamina;
 
@@ -172,7 +172,7 @@ public partial class EquipamentoComponent : Node
         return (int)(GD.Randi() % (DanoMagicoMax - DanoMagicoMin + 1)) + DanoMagicoMin;
     }
 
-    private void RecalcularBonusEquipamentos()
+    public void RecalcularBonusEquipamentos()
     {
         _bonusForca = 0;
         _bonusAgilidade = 0;
@@ -211,37 +211,52 @@ public partial class EquipamentoComponent : Node
             var item = kv.Value?.Item;
             if (item == null) continue;
 
-            _bonusForca += item.Forca;
-            _bonusAgilidade += item.Agilidade;
-            _bonusDestreza += item.Destreza;
-            _bonusInteligencia += item.Inteligencia;
-            _bonusDanoFisico += item.DanoFisico;
-            _bonusDanoFisicoMin += item.DanoFisicoMin;
-            _bonusDanoFisicoMax += item.DanoFisicoMax;
-            _bonusDanoMagico += item.DanoMagico;
-            _bonusDanoMagicoMin += item.DanoMagicoMin;
-            _bonusDanoMagicoMax += item.DanoMagicoMax;
-            _bonusDefesaFisica += item.DefesaFisica;
-            _bonusDefesaMagica += item.DefesaMagica;
-            _bonusHp += item.Hp;
-            _bonusMana += item.Mana;
-            _bonusStamina += item.Stamina;
-            _bonusVelocidadeMovimento += item.VelocidadeMovimento;
-            _bonusVelocidadeAtaque += item.VelocidadeAtaque;
-            _bonusChanceCritica += item.ChanceCritica;
-            _bonusEvasao += item.Evasao;
-            _bonusDanoCritico += item.DanoCriticoBonus;
-            _bonusPrecisao += item.Precisao;
-            _bonusTenacidade += item.Tenacidade;
-            _bonusDanoPvp += item.DanoPvp;
-            _bonusDefesaPvp += item.DefesaPvp;
-            _bonusPenetracaoArmadura += item.PenetracaoArmadura;
-            _bonusRegeneracaoVida += item.RegeneracaoVida;
-            _bonusRegeneracaoMana += item.RegeneracaoMana;
-            _bonusRouboVida += item.RouboVida;
-            _bonusRouboMana += item.RouboMana;
-            _bonusReducaoCooldown += item.ReducaoCooldown;
-            _bonusBonusExperiencia += item.BonusExperiencia;
+            double refineMult = kv.Value.RefinoNivel switch
+            {
+                1 => 1.02,
+                2 => 1.04,
+                3 => 1.06,
+                4 => 1.08,
+                5 => 1.10,
+                6 => 1.13,
+                7 => 1.16,
+                8 => 1.20,
+                9 => 1.25,
+                10 => 1.30,
+                _ => 1.0,
+            };
+
+            _bonusForca += (int)(item.Forca * refineMult);
+            _bonusAgilidade += (int)(item.Agilidade * refineMult);
+            _bonusDestreza += (int)(item.Destreza * refineMult);
+            _bonusInteligencia += (int)(item.Inteligencia * refineMult);
+            _bonusDanoFisico += (int)(item.DanoFisico * refineMult);
+            _bonusDanoFisicoMin += (int)(item.DanoFisicoMin * refineMult);
+            _bonusDanoFisicoMax += (int)(item.DanoFisicoMax * refineMult);
+            _bonusDanoMagico += (int)(item.DanoMagico * refineMult);
+            _bonusDanoMagicoMin += (int)(item.DanoMagicoMin * refineMult);
+            _bonusDanoMagicoMax += (int)(item.DanoMagicoMax * refineMult);
+            _bonusDefesaFisica += (int)(item.DefesaFisica * refineMult);
+            _bonusDefesaMagica += (int)(item.DefesaMagica * refineMult);
+            _bonusHp += (int)(item.Hp * refineMult);
+            _bonusMana += (int)(item.Mana * refineMult);
+            _bonusStamina += (int)(item.Stamina * refineMult);
+            _bonusVelocidadeMovimento += (float)(item.VelocidadeMovimento * refineMult);
+            _bonusVelocidadeAtaque += (float)(item.VelocidadeAtaque * refineMult);
+            _bonusChanceCritica += (float)(item.ChanceCritica * refineMult);
+            _bonusEvasao += (float)(item.Evasao * refineMult);
+            _bonusDanoCritico += (float)(item.DanoCriticoBonus * refineMult);
+            _bonusPrecisao += (float)(item.Precisao * refineMult);
+            _bonusTenacidade += (float)(item.Tenacidade * refineMult);
+            _bonusDanoPvp += (int)(item.DanoPvp * refineMult);
+            _bonusDefesaPvp += (int)(item.DefesaPvp * refineMult);
+            _bonusPenetracaoArmadura += (int)(item.PenetracaoArmadura * refineMult);
+            _bonusRegeneracaoVida += (float)(item.RegeneracaoVida * refineMult);
+            _bonusRegeneracaoMana += (float)(item.RegeneracaoMana * refineMult);
+            _bonusRouboVida += (float)(item.RouboVida * refineMult);
+            _bonusRouboMana += (float)(item.RouboMana * refineMult);
+            _bonusReducaoCooldown += (float)(item.ReducaoCooldown * refineMult);
+            _bonusBonusExperiencia += (float)(item.BonusExperiencia * refineMult);
         }
     }
 

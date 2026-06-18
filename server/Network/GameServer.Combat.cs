@@ -16,8 +16,10 @@ partial class GameServer
             MonsterEntity m => m.CalculateDefense(),
             _ => 0,
         };
-        bool isCrit = Random.Shared.Next(100) < mob.Destreza;
-        int damage = Math.Max(1, mob.CalculateAttackDamage() - targetDefense);
+        float defReduction = MathF.Min(0.80f, targetDefense / (targetDefense + 400f));
+        bool isCrit = Random.Shared.Next(100) < mob.Destreza / 4;
+        int rawDamage = mob.CalculateAttackDamage();
+        int damage = Math.Max(1, (int)(rawDamage * (1f - defReduction)));
         if (isCrit) damage = (int)(damage * 1.5f);
 
         target.Health -= damage;
@@ -143,6 +145,7 @@ partial class GameServer
         wItemUpdate.Put(scroll.Slot);
         wItemUpdate.Put(scroll.Quantity > 0 ? scroll.ItemId : 0);
         wItemUpdate.Put(scroll.Quantity > 0 ? scroll.Quantity : 0);
+        wItemUpdate.Put(0);
         peer.Send(wItemUpdate, DeliveryMethod.ReliableOrdered);
 
         target.Health = target.MaxHealth;
@@ -242,8 +245,10 @@ partial class GameServer
             MonsterEntity m => m.CalculateDefense(),
             _ => 0,
         };
-        bool isCrit = Random.Shared.Next(100) < attacker.Destreza;
-        int damage = Math.Max(1, attacker.CalculateAttackDamage() - targetDefense);
+        float defReduction = MathF.Min(0.80f, targetDefense / (targetDefense + 400f));
+        bool isCrit = Random.Shared.Next(100) < attacker.Destreza / 4;
+        int rawDamage = attacker.CalculateAttackDamage();
+        int damage = Math.Max(1, (int)(rawDamage * (1f - defReduction)));
         if (isCrit) damage = (int)(damage * 1.5f);
 
         target.Health -= damage;
@@ -336,7 +341,7 @@ partial class GameServer
             killer.Level++;
             xpForNextLevel = 100L + (killer.Level - 1) * 50L;
 
-            killer.MaxHealth = 80 + killer.Forca * 5 + killer.Level * 10;
+            killer.MaxHealth = 80 + killer.Forca * 2 + killer.Level * 10;
             killer.Health = killer.MaxHealth;
             killer.StatPoints += 5;
 
@@ -478,6 +483,7 @@ partial class GameServer
                 wUpdate.Put(existingItem.Slot);
                 wUpdate.Put(existingItem.ItemId);
                 wUpdate.Put(existingItem.Quantity);
+                wUpdate.Put(existingItem.RefineLevel);
                 peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
             }
             else if (slot >= 0)
@@ -489,6 +495,7 @@ partial class GameServer
                 wUpdate.Put(slot);
                 wUpdate.Put(loot.ItemId);
                 wUpdate.Put(loot.Quantity);
+                wUpdate.Put(0);
                 peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
             }
             else

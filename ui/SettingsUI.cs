@@ -208,18 +208,8 @@ public partial class SettingsUI : Control
     {
         GD.Print("[SETTINGS] OnVoltarSelecao chamado!");
         SaveSettings();
-        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (net != null)
-        {
-            net.OnEnterWorld -= OnEnterWorld;
-            net.DisconnectFromServer();
-        }
         var err = GetTree().ChangeSceneToFile("res://scenes/SelecaoPersonagem.tscn");
         GD.Print($"[SETTINGS] ChangeSceneToFile result: {err}");
-    }
-
-    private void OnEnterWorld()
-    {
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)

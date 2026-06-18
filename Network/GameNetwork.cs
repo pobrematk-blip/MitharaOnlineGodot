@@ -46,6 +46,8 @@ public partial class GameNetwork : Node
     public ulong LocalPlayerId { get; private set; }
     public int LocalChannelId { get; private set; }
     public int Gold { get; set; }
+    public int GuildId { get; set; } = -1;
+    public bool IsGuildLeader { get; set; }
     public Vector2 PendingPlayerSpawn { get; private set; }
 
     [Signal] public delegate void OnConnectedEventHandler();
@@ -78,12 +80,14 @@ public partial class GameNetwork : Node
 
     [Signal] public delegate void OnEntityHealthUpdateEventHandler(ulong entityId, int health, int maxHealth);
     [Signal] public delegate void OnRespawnEventHandler(ulong entityId, float x, float y, int health, int maxHealth);
+    [Signal] public delegate void OnTeleportEventHandler(ulong entityId, float x, float y);
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
     [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
-    [Signal] public delegate void OnGuildCreateResultEventHandler(bool success, string message);
+    [Signal] public delegate void OnGuildCreateResultEventHandler(int guildId, bool success, string message);
+    [Signal] public delegate void OnGuildClearedEventHandler();
 
     public new bool IsConnected => _client?.IsConnected ?? false;
     public int ServerPing => _client?.Ping ?? 0;
@@ -125,18 +129,26 @@ public partial class GameNetwork : Node
     public override void _Process(double delta)
     {
         if (!_enterWorldPending) return;
-
         _enterWorldPending = false;
+        CallDeferred(nameof(ApplyEnterWorld));
+    }
+
+    private void ApplyEnterWorld()
+    {
         try
         {
-            Log("_Process: ChangeSceneToFile...");
+            // Força GC para reduzir risco de finalizers durante ChangeSceneToFile
+            System.GC.Collect();
+            System.GC.WaitForPendingFinalizers();
+
+            Log("ApplyEnterWorld: ChangeSceneToFile...");
             var err = GetTree().ChangeSceneToFile(SceneConstants.MAIN);
             if (err != Error.Ok)
             {
-                LogError($"_Process: ChangeSceneToFile retornou erro {err}");
+                LogError($"ApplyEnterWorld: ChangeSceneToFile retornou erro {err}");
                 return;
             }
-            Log("_Process: ChangeSceneToFile concluido!");
+            Log("ApplyEnterWorld: ChangeSceneToFile concluido!");
 
             // Ativar HUD - busca robusta
             var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
@@ -160,19 +172,24 @@ public partial class GameNetwork : Node
             if (hud != null)
             {
                 hud.Visible = true;
-                Log("HUD ativado de GameNetwork._Process");
+                Log("HUD ativado de ApplyEnterWorld");
             }
             else
             {
                 Log("HUD nao encontrado");
             }
 
-            EmitSignal(SignalName.OnEnterWorld);
+            CallDeferred(nameof(EmitOnEnterWorld));
         }
         catch (System.Exception ex)
         {
-            LogError("_Process: ChangeSceneToFile falhou", ex.ToString());
+            LogError("ApplyEnterWorld: ChangeSceneToFile falhou", ex.ToString());
         }
+    }
+
+    private void EmitOnEnterWorld()
+    {
+        EmitSignal(SignalName.OnEnterWorld);
     }
 
     public void ConnectToServer(string host = "127.0.0.1", int port = 7777)
@@ -246,6 +263,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_Respawn:
                 HandleRespawn(r);
                 break;
+            case PacketId.S2C_Teleport:
+                HandleTeleport(r);
+                break;
             case PacketId.S2C_RecoverResult:
                 HandleRecoverResult(r);
                 break;
@@ -307,6 +327,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_GuildCreateResult:
                 HandleGuildCreateResult(r);
+                break;
+            case PacketId.S2C_GuildClear:
+                HandleGuildClear();
                 break;
             case PacketId.S2C_PetData:
                 HandlePetData(r);

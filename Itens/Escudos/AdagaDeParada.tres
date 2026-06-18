@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 2053
+Nome = "Adaga de Parada"
+Descricao = "Criada para bloquear ataques e criar oportunidades para contra-atacar."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 8
+CategoriaPeso = 0
+NivelRequerido = 10
+Valor = 68
+Forca = 0
+ForcaMin = 0
+ForcaMax = 0
+Agilidade = 3
+AgilidadeMin = 2
+AgilidadeMax = 3
+Destreza = 4
+DestrezaMin = 3
+DestrezaMax = 4
+Inteligencia = 0
+InteligenciaMin = 0
+InteligenciaMax = 0
+DanoFisico = 0
+DanoFisicoMin = 0
+DanoFisicoMax = 0
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,VelocidadeAtaque,Evasao,Precisao,RouboVida,RouboMana,VelocidadeMovimento,PenetracaoArmadura"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

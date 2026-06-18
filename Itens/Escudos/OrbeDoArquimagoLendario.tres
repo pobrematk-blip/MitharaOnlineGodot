@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 5071
+Nome = "Orbe do Arquimago LendÃ¡rio"
+Descricao = "O auge dos orbes comuns. Sua energia refinada Ã© reconhecida em toda Mitthara."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 8
+CategoriaPeso = 0
+NivelRequerido = 100
+Valor = 608
+Forca = 0
+ForcaMin = 0
+ForcaMax = 0
+Agilidade = 0
+AgilidadeMin = 0
+AgilidadeMax = 0
+Destreza = 40
+DestrezaMin = 30
+DestrezaMax = 40
+Inteligencia = 54
+InteligenciaMin = 43
+InteligenciaMax = 54
+DanoFisico = 0
+DanoFisicoMin = 0
+DanoFisicoMax = 0
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Mago"
+PoolDeAfixos = "RouboMana,RegeneracaoMana,ReducaoCooldown,ChanceCritica,DanoCriticoBonus,Precisao,Mana"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

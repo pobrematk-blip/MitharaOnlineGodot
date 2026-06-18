@@ -1,26 +1,22 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://criacaocla"]
-
-[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Bau surpresa.png" id="2_icon"]
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
 
 [resource]
-script = ExtResource("1")
-Icone = ExtResource("2_icon")
-ItemID = 102
-Nome = "Pergaminho de Criacao de Cla"
-Descricao = "Um pergaminho ancestral que permite fundar uma guilda sem pagar em ouro."
+script = ExtResource("1_taxcw")
+ItemID = 200
+Nome = "Pergaminho de Criação de Clã"
+Descricao = "Um pergaminho sagrado necessário para fundar um clã. Leve-o ao Mestre de Guildas."
 Acumulavel = true
 QuantidadeMaximaPorSlot = 99
-EhBolsa = false
-SlotsAdicionais = 10
-Tipo = 0
+Tipo = 17
 NivelRequerido = 1
-Valor = 10000
-Forca = 0
-Agilidade = 0
-Destreza = 0
-Inteligencia = 0
-DanoFisico = 0
-DanoMagico = 0
-DefesaFisica = 0
-DefesaMagica = 0
+Valor = 100
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 2

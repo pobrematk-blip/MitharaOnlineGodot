@@ -12,7 +12,6 @@ public partial class GuildUI : Control
 
     private LineEdit _inviteInput;
     private Button _inviteButton;
-    private Button _baseTeleportButton;
     private Label _guildNameLabel;
     private Label _guildLevelLabel;
     private Label _memberCountLabel;
@@ -24,10 +23,19 @@ public partial class GuildUI : Control
     private Label _skillPointsLabel;
     private VBoxContainer _skillsList;
 
-    [Signal] public delegate void BaseTeleportRequestedEventHandler();
+    private TextureRect _infoEmblem;
+    private Label _infoNameLabel;
+    private Label _infoTagLabel;
+    private Label _infoLevelLabel;
+    private Label _infoXpLabel;
+    private ProgressBar _infoXpBar;
+    private Label _infoMembrosLabel;
+    private Label _infoLiderLabel;
 
     private int _guildId;
     private string _guildName = "";
+    private string _guildLiderNome = "";
+    private string _guildTag = "";
     private List<Godot.Collections.Dictionary> _membros = new();
     private int _guildLevel = 1;
     private int _guildXp;
@@ -47,6 +55,45 @@ public partial class GuildUI : Control
     private static readonly int[] SlotsPorLevel = { 0, 10, 15, 20, 25, 30 };
 
     private static readonly string[] Cargos = { "Lider", "Capitao", "Oficial", "Membro", "Novato" };
+
+    private static readonly string[] FALLBACK_EMBLEMS = {
+        "12.png","13.png","14.png","17.png","18.png","19.png","2.png","20.png","21.png","22.png",
+        "2250.png","2256.png","2266.png","2279.png","2280.png","23.png","2307.png","2311.png",
+        "2314.png","2315.png","2330.png","2338.png","2340.png","2341.png","2347.png","2353.png",
+        "2354.png","2355.png","2366.png","2367.png","25.png","2544.png","2545.png","2583.png",
+        "2592.png","2594.png","26.png","2608.png","2635.png","2646.png","2649.png","2656.png",
+        "27.png","28.png","29.png","3.png","30.png","33.png","35.png","36.png","37.png","39.png",
+        "4.png","40.png","41.png","42.png","43.png","44.png","45.png","46.png","47.png","49.png",
+        "51.png","7.png","8.png",
+    };
+
+    private string[] _emblemFiles;
+
+    private string[] CarregarEmblemas()
+    {
+        try
+        {
+            var dir = DirAccess.Open("res://Itens/Emblema de Guild/");
+            if (dir == null) return FALLBACK_EMBLEMS;
+            var files = new System.Collections.Generic.List<string>();
+            dir.ListDirBegin();
+            string file = dir.GetNext();
+            while (!string.IsNullOrEmpty(file))
+            {
+                if (file.EndsWith(".png"))
+                    files.Add(file);
+                file = dir.GetNext();
+            }
+            dir.ListDirEnd();
+            if (files.Count == 0) return FALLBACK_EMBLEMS;
+            files.Sort();
+            return files.ToArray();
+        }
+        catch
+        {
+            return FALLBACK_EMBLEMS;
+        }
+    }
 
     private struct SkillDef
     {
@@ -81,7 +128,6 @@ public partial class GuildUI : Control
 
         _inviteInput = _panel.GetNode<LineEdit>("TabContainer/Membros/InviteHBox/InviteInput");
         _inviteButton = _panel.GetNode<Button>("TabContainer/Membros/InviteHBox/InviteButton");
-        _baseTeleportButton = _panel.GetNode<Button>("TabContainer/Membros/BaseTeleportButton");
         _guildNameLabel = _panel.GetNode<Label>("TabContainer/Membros/GuildNameLabel");
         _guildLevelLabel = _panel.GetNode<Label>("TabContainer/Membros/GuildLevelLabel");
         _memberCountLabel = _panel.GetNode<Label>("TabContainer/Membros/MemberCountLabel");
@@ -93,12 +139,19 @@ public partial class GuildUI : Control
         _skillPointsLabel = _panel.GetNode<Label>("TabContainer/Habilidades/SkillPointsLabel");
         _skillsList = _panel.GetNode<VBoxContainer>("TabContainer/Habilidades/ScrollContainer/SkillsList");
 
+        _infoEmblem = _panel.GetNode<TextureRect>("TabContainer/Informacoes/InfoEmblem");
+        _infoNameLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoNameLabel");
+        _infoTagLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoTagLabel");
+        _infoLevelLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoLevelLabel");
+        _infoXpLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoXpLabel");
+        _infoXpBar = _panel.GetNode<ProgressBar>("TabContainer/Informacoes/InfoXpBar");
+        _infoMembrosLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoMembrosLabel");
+        _infoLiderLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoLiderLabel");
+
         _closeButton.Pressed += OnClose;
         _titleBar.GuiInput += OnTitleBarGuiInput;
         _inviteButton.Pressed += OnInvite;
         _inviteInput.TextSubmitted += _ => OnInvite();
-        _baseTeleportButton.Pressed += () => EmitSignal(SignalName.BaseTeleportRequested);
-
         _panel.Visible = false;
 
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -108,7 +161,10 @@ public partial class GuildUI : Control
             net.OnGuildMemberUpdate += OnNetworkGuildMemberUpdate;
             net.OnGuildRankUpdate += OnNetworkGuildRankUpdate;
             net.OnGuildSkillUpdate += OnNetworkGuildSkillUpdate;
+            net.OnGuildCleared += OnNetworkGuildCleared;
         }
+
+        _emblemFiles = CarregarEmblemas();
 
         foreach (var skill in Skills)
             _skillLevels.TryAdd(skill.Id, 0);
@@ -170,8 +226,47 @@ public partial class GuildUI : Control
         {
             Centralizar();
             TrazerParaFrente();
+            RecarregarDadosArquivo();
         }
         _arrastando = false;
+    }
+
+    public void RecarregarDadosArquivo()
+    {
+        var p = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        string nome = p?.NomePersonagem?.Replace(" ", "_") ?? "default";
+        var cfg = new ConfigFile();
+        if (cfg.Load($"user://guild_data_{nome}.cfg") != Error.Ok) return;
+
+        int id = cfg.GetValue("Guild", "id", -1).AsInt32();
+        if (id <= 0) return;
+
+        _guildId = id;
+        _guildName = cfg.GetValue("Guild", "name", "Guilda").AsString();
+        _guildTag = cfg.GetValue("Guild", "tag", "").AsString();
+        _guildLevel = cfg.GetValue("Guild", "level", 1).AsInt32();
+        _guildXp = cfg.GetValue("Guild", "xp", 0).AsInt32();
+        _guildLiderNome = cfg.GetValue("Guild", "leader_name", "").AsString();
+        int meuRank = cfg.GetValue("Guild", "meu_rank", 4).AsInt32();
+        bool ehLider = cfg.GetValue("Guild", "is_leader", false).AsBool();
+        if (ehLider && meuRank != 0)
+        {
+            meuRank = 0;
+            cfg.SetValue("Guild", "meu_rank", 0);
+            cfg.Save($"user://guild_data_{nome}.cfg");
+        }
+        _membros.Clear();
+        _membros.Add(new Godot.Collections.Dictionary
+        {
+            ["name"] = NomeJogador,
+            ["rank"] = meuRank,
+        });
+
+        int emblemIdx = cfg.GetValue("Guild", "emblem_index", -1).AsInt32();
+        CarregarEmblemaInfo(emblemIdx);
+        AtualizarInfo();
+        AtualizarLista();
+        AtualizarSkills();
     }
 
     private void TrazerParaFrente()
@@ -230,6 +325,96 @@ public partial class GuildUI : Control
 
         AtualizarLista();
         AtualizarSkills();
+        AtualizarInfo();
+        CarregarEmblemaInfo(guildEmblem);
+    }
+
+    private void OnNetworkGuildCleared()
+    {
+        _guildId = -1;
+        _guildName = "";
+        _guildTag = "";
+        _guildLevel = 1;
+        _guildXp = 0;
+        _guildLiderNome = "";
+        _membros.Clear();
+        AtualizarLista();
+        AtualizarSkills();
+        AtualizarInfo();
+        _infoEmblem.Visible = false;
+    }
+
+    private void CarregarEmblemaInfo(int emblemIdx)
+    {
+        if (emblemIdx < 0 || _emblemFiles == null || emblemIdx >= _emblemFiles.Length)
+        {
+            _infoEmblem.Visible = false;
+            return;
+        }
+        string texPath = "res://Itens/Emblema de Guild/" + _emblemFiles[emblemIdx];
+        var tex = ResourceLoader.Load<Texture2D>(texPath);
+        if (tex != null)
+        {
+            _infoEmblem.Texture = tex;
+            _infoEmblem.Visible = true;
+        }
+        else
+        {
+            _infoEmblem.Visible = false;
+        }
+    }
+
+    private string LiderNome()
+    {
+        foreach (var m in _membros)
+        {
+            if ((int)m["rank"] == 0)
+                return (string)m["name"];
+        }
+        if (!string.IsNullOrEmpty(_guildLiderNome))
+            return _guildLiderNome;
+        return "—";
+    }
+
+    private void AtualizarInfo()
+    {
+        int contagemMembros = _membros.Count;
+        if (contagemMembros == 0 && _guildId > 0)
+        {
+            var p = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+            string nome = p?.NomePersonagem?.Replace(" ", "_") ?? "default";
+            var cfg = new ConfigFile();
+            if (cfg.Load($"user://guild_data_{nome}.cfg") == Error.Ok)
+                contagemMembros = cfg.GetValue("Guild", "member_count", 0).AsInt32();
+        }
+        _infoNameLabel.Text = _guildId > 0 ? _guildName : "Sem Guilda";
+        _infoTagLabel.Text = _guildId > 0 ? ObterTagSalva() : "";
+        _infoLevelLabel.Text = $"Nível: {_guildLevel}";
+        _infoMembrosLabel.Text = $"Membros: {contagemMembros}/{MaxSlots()}";
+        _infoLiderLabel.Text = $"Líder: {LiderNome()}";
+
+        if (_guildLevel >= 5)
+        {
+            _infoXpBar.Visible = false;
+            _infoXpLabel.Text = "Nível Máximo!";
+        }
+        else
+        {
+            _infoXpBar.Visible = true;
+            int needed = XpParaProximo();
+            _infoXpBar.MaxValue = needed;
+            _infoXpBar.Value = _guildXp;
+            _infoXpLabel.Text = $"XP: {_guildXp}/{needed}";
+        }
+    }
+
+    private string ObterTagSalva()
+    {
+        var p = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        string nome = p?.NomePersonagem?.Replace(" ", "_") ?? "default";
+        var cfg = new ConfigFile();
+        if (cfg.Load($"user://guild_data_{nome}.cfg") != Error.Ok) return "";
+        return cfg.GetValue("Guild", "tag", "").AsString();
     }
 
     private void OnNetworkGuildMemberUpdate(ulong entityId, string name, int rank, bool joined)

@@ -153,12 +153,13 @@ public partial class InventarioComponent : Node
             int slot = (int)entry["slot"];
             int itemId = (int)entry["item_id"];
             int qty = (int)entry["quantity"];
+            int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
 
             if (slot >= 0 && slot < Slots.Count)
             {
                 var resource = itemDB.GetItem(itemId);
                 if (resource != null)
-                    Slots[slot] = new SlotInventario(resource, qty);
+                    Slots[slot] = new SlotInventario(resource, qty, refineLevel);
             }
         }
 
@@ -174,7 +175,7 @@ public partial class InventarioComponent : Node
         {
             foreach (var slot in Slots)
             {
-                if (slot.Item != null && slot.Item.Nome == novoItem.Nome && slot.Quantidade < slot.Item.QuantidadeMaximaPorSlot)
+                if (slot.Item != null && slot.Item.ItemID == novoItem.ItemID && slot.Quantidade < slot.Item.QuantidadeMaximaPorSlot)
                 {
                     slot.Quantidade += quantidade;
                     GD.Print($"[INVENTÁRIO] Adicionado {quantidade}x {novoItem.Nome} ao slot existente. Total: {slot.Quantidade}");

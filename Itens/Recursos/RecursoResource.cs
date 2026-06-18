@@ -19,8 +19,14 @@ public partial class RecursoResource : Resource
     [Export] public float TempoFase3Para4 { get; set; } = 30f;
     [Export] public float TempoFase4Para5 { get; set; } = 30f;
 
+    [ExportGroup("Aparencia")]
+    [Export] public Vector2 Scale { get; set; } = Vector2.One;
+
     [ExportGroup("Drop")]
     [Export] public int ItemDropID { get; set; }
     [Export] public int QuantidadeMinima { get; set; } = 1;
     [Export] public int QuantidadeMaxima { get; set; } = 1;
+
+    [ExportGroup("Coleta")]
+    [Export] public int FerramentaNecessariaID { get; set; }
 }

@@ -182,7 +182,10 @@ public partial class Player : CharacterBody2D
 
         _network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (_network != null)
+        {
             _network.OnRespawn += OnRespawnReceived;
+            _network.OnTeleport += OnTeleportReceived;
+        }
         _lastSentPosition = GlobalPosition;
     }
 
@@ -190,6 +193,15 @@ public partial class Player : CharacterBody2D
     {
         if (entityId == _network?.LocalPlayerId)
             Reviver(x, y, health, maxHealth);
+    }
+
+    private void OnTeleportReceived(ulong entityId, float x, float y)
+    {
+        if (entityId == _network?.LocalPlayerId)
+        {
+            GlobalPosition = new Vector2(x, y);
+            _lastSentPosition = GlobalPosition;
+        }
     }
 
     public virtual void InitClass() { }
@@ -512,7 +524,7 @@ public partial class Player : CharacterBody2D
     public void AplicarOverlayCabelo(string spritesheetPath, Color cor)
     {
         if (_cabeloOverlay == null) return;
-        if (!string.IsNullOrEmpty(spritesheetPath))
+        if (!string.IsNullOrEmpty(spritesheetPath) && ResourceLoader.Exists(spritesheetPath))
         {
             var tex = GD.Load<Texture2D>(spritesheetPath);
             if (tex != null)
@@ -531,7 +543,7 @@ public partial class Player : CharacterBody2D
     public void AplicarOverlayBarba(string spritesheetPath, Color cor)
     {
         if (_barbaOverlay == null) return;
-        if (!string.IsNullOrEmpty(spritesheetPath))
+        if (!string.IsNullOrEmpty(spritesheetPath) && ResourceLoader.Exists(spritesheetPath))
         {
             var tex = GD.Load<Texture2D>(spritesheetPath);
             if (tex != null)
@@ -1324,6 +1336,9 @@ public partial class Player : CharacterBody2D
     {
         base._ExitTree();
         if (_network != null)
+        {
             _network.OnRespawn -= OnRespawnReceived;
+            _network.OnTeleport -= OnTeleportReceived;
+        }
     }
 }

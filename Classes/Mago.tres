@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=3 format=3 uid="uid://cmijt7l2m3f0j"]
+[gd_resource type="Resource" script_class="ClasseCustomResource" load_steps=4 format=3 uid="uid://cmijt7l2m3f0j"]
 
 [ext_resource type="Script" uid="uid://cjmxq1pkd1o3w" path="res://Editor/ClasseCustomResource.cs" id="1"]
 [ext_resource type="Resource" path="res://skills/ArvoresClasses/ArvoreMago.tres" id="2"]
+[ext_resource type="PackedScene" path="res://resources/Projetil/ProjetilMage.tscn" id="3_proj"]
 
 [resource]
 script = ExtResource("1")
@@ -14,6 +15,7 @@ ManaMaxima = 80
 VelocidadeMovimento = 175.0
 PrefixoAnimacaoAtaque = "mago"
 UsaProjetil = true
+CenaDoProjetil = ExtResource("3_proj")
 DanoProjetilMin = 20
 DanoProjetilMax = 30
 VelocidadeDoProjetil = 220.0

@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 5002
+Nome = "Cajado do Aprendiz"
+Descricao = "Utilizado pelos estudantes das primeiras artes arcanas durante seus treinamentos."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = true
+Tipo = 7
+CategoriaPeso = 0
+NivelRequerido = 5
+Valor = 50
+Forca = 0
+ForcaMin = 0
+ForcaMax = 0
+Agilidade = 0
+AgilidadeMin = 0
+AgilidadeMax = 0
+Destreza = 0
+DestrezaMin = 0
+DestrezaMax = 0
+Inteligencia = 3
+InteligenciaMin = 2
+InteligenciaMax = 3
+DanoFisico = 5
+DanoFisicoMin = 3
+DanoFisicoMax = 5
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Mago"
+PoolDeAfixos = "DanoMagico,RouboMana,RegeneracaoMana,ReducaoCooldown,Precisao,ChanceCritica,DanoCriticoBonus"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

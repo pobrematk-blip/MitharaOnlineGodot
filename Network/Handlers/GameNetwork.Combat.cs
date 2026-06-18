@@ -87,6 +87,14 @@ partial class GameNetwork
         EmitSignal(SignalName.OnRespawn, entityId, x, y, health, maxHealth);
     }
 
+    private void HandleTeleport(NetDataReader r)
+    {
+        ulong entityId = r.GetULong();
+        float x = r.GetFloat();
+        float y = r.GetFloat();
+        EmitSignal(SignalName.OnTeleport, entityId, x, y);
+    }
+
     private void HandleLootSpawn(NetDataReader r)
     {
         ulong lootId = r.GetULong();

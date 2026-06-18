@@ -17,6 +17,7 @@ partial class GameServer
             writer.Put(item.Slot);
             writer.Put(item.ItemId);
             writer.Put(item.Quantity);
+            writer.Put(item.RefineLevel);
         }
         writer.Put(player.Equipment.Count);
         foreach (var kv in player.Equipment)
@@ -24,6 +25,7 @@ partial class GameServer
             writer.Put(kv.Key);
             writer.Put(kv.Value.ItemId);
             writer.Put(kv.Value.Quantity);
+            writer.Put(kv.Value.RefineLevel);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -102,17 +104,20 @@ partial class GameServer
         writer.Put(equipSlot);
         writer.Put(sourceItem.ItemId);
         writer.Put(sourceItem.Quantity);
+        writer.Put(sourceItem.RefineLevel);
         if (currentEquipped != null)
         {
             writer.Put(true);
             writer.Put(currentEquipped.Slot);
             writer.Put(currentEquipped.ItemId);
             writer.Put(currentEquipped.Quantity);
+            writer.Put(currentEquipped.RefineLevel);
         }
         else
         {
             writer.Put(false);
             writer.Put(invSlot);
+            writer.Put(0);
             writer.Put(0);
             writer.Put(0);
         }
@@ -285,6 +290,24 @@ partial class GameServer
         }
     }
 
+    private static double GetRefineMultiplier(int refineLevel)
+    {
+        return refineLevel switch
+        {
+            1 => 1.02,
+            2 => 1.04,
+            3 => 1.06,
+            4 => 1.08,
+            5 => 1.10,
+            6 => 1.13,
+            7 => 1.16,
+            8 => 1.20,
+            9 => 1.25,
+            10 => 1.30,
+            _ => 1.0,
+        };
+    }
+
     private static void RecalculatePlayerStats(PlayerEntity player)
     {
         int bonusAtk = 0, bonusDef = 0, bonusForca = 0, bonusAgi = 0, bonusDes = 0, bonusInt = 0;
@@ -292,12 +315,13 @@ partial class GameServer
         {
             var def = kv.Value.Definition;
             if (def == null) continue;
-            bonusAtk += def.BaseAttack;
-            bonusDef += def.Defense;
-            bonusForca += def.Forca;
-            bonusAgi += def.Agilidade;
-            bonusDes += def.Destreza;
-            bonusInt += def.Inteligencia;
+            double refineMult = GetRefineMultiplier(kv.Value.RefineLevel);
+            bonusAtk += (int)(def.BaseAttack * refineMult);
+            bonusDef += (int)(def.Defense * refineMult);
+            bonusForca += (int)(def.Forca * refineMult);
+            bonusAgi += (int)(def.Agilidade * refineMult);
+            bonusDes += (int)(def.Destreza * refineMult);
+            bonusInt += (int)(def.Inteligencia * refineMult);
         }
         int baseAttack = player.CharacterClass.ToLowerInvariant() switch
         {
@@ -320,8 +344,8 @@ partial class GameServer
         player.Agilidade = player.BaseAgilidade + bonusAgi;
         player.Destreza = player.BaseDestreza + bonusDes;
         player.Inteligencia = player.BaseInteligencia + bonusInt;
-        player.MaxHealth = 80 + player.Forca * 5 + player.Level * 10;
-        player.MaxMana = 30 + player.Inteligencia * 5 + player.Level * 5;
+        player.MaxHealth = 80 + player.Forca * 2 + player.Level * 10;
+        player.MaxMana = 30 + player.Inteligencia * 3 + player.Level * 5;
     }
 
     private void HandleCollectLocalItem(NetPeer peer, NetDataReader reader)
@@ -350,6 +374,7 @@ partial class GameServer
             wUpdate.Put(existingItem.Slot);
             wUpdate.Put(existingItem.ItemId);
             wUpdate.Put(existingItem.Quantity);
+            wUpdate.Put(existingItem.RefineLevel);
             peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
         }
         else if (slot >= 0)
@@ -361,6 +386,7 @@ partial class GameServer
             wUpdate.Put(slot);
             wUpdate.Put(itemId);
             wUpdate.Put(quantity);
+            wUpdate.Put(0);
             peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
         }
         else

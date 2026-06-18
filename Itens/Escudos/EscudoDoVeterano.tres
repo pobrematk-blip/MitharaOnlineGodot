@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 4061
+Nome = "Escudo do Veterano"
+Descricao = "SÃ­mbolo da experiÃªncia adquirida apÃ³s inÃºmeras batalhas e campanhas militares."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 8
+CategoriaPeso = 0
+NivelRequerido = 50
+Valor = 308
+Forca = 15
+ForcaMin = 12
+ForcaMax = 15
+Agilidade = 13
+AgilidadeMin = 9
+AgilidadeMax = 13
+Destreza = 0
+DestrezaMin = 0
+DestrezaMax = 0
+Inteligencia = 0
+InteligenciaMin = 0
+InteligenciaMax = 0
+DanoFisico = 0
+DanoFisicoMin = 0
+DanoFisicoMax = 0
+DefesaFisica = 35
+DefesaFisicaMin = 30
+DefesaFisicaMax = 35
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "Tenacidade,Hp,DefesaFisica,Evasao,RegeneracaoVida,Precisao"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

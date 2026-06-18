@@ -19,5 +19,4 @@ offset_right = 41.0
 offset_bottom = 41.0
 mouse_filter = 2
 stretch_mode = 6
-texture = ExtResource("2_icon")
-expand_mode = 1
+expand_mode = 0

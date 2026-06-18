@@ -1,26 +1,22 @@
-[gd_resource type="Resource" load_steps=3 format=3 uid="uid://daokfn4m3sgsh"]
-
-[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Scroll de Pet.png" id="2_scroll"]
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
 
 [resource]
-script = ExtResource("1")
-Icone = ExtResource("2_scroll")
+script = ExtResource("1_taxcw")
 ItemID = 100
 Nome = "Pergaminho do Pet"
-Descricao = "Um pergaminho antigo. Clique com botão direito para abrir o mini-game e desbloquear um pet!"
+Descricao = "Um pergaminho encantado que permite capturar um pet enfraquecido."
 Acumulavel = true
 QuantidadeMaximaPorSlot = 99
-EhBolsa = false
-SlotsAdicionais = 10
 Tipo = 17
 NivelRequerido = 1
-Valor = 100
-Forca = 0
-Agilidade = 0
-Destreza = 0
-Inteligencia = 0
-DanoFisico = 0
-DanoMagico = 0
-DefesaFisica = 0
-DefesaMagica = 0
+Valor = 50
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 1

@@ -6,6 +6,7 @@ public class ItemInstance
     public int ItemId { get; set; }
     public int Slot { get; set; }
     public int Quantity { get; set; }
+    public int RefineLevel { get; set; }
 
     public ItemDefinition? Definition => ItemDefinitions.Get(ItemId);
     public string Name => Definition?.Name ?? $"Item#{ItemId}";

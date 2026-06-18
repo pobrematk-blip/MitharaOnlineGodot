@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 3053
+Nome = "Bumerangue ReforÃ§ado"
+Descricao = "Suas extremidades foram reforÃ§adas para aumentar a eficiÃªncia durante o combate."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 8
+CategoriaPeso = 0
+NivelRequerido = 10
+Valor = 68
+Forca = 4
+ForcaMin = 3
+ForcaMax = 4
+Agilidade = 3
+AgilidadeMin = 2
+AgilidadeMax = 3
+Destreza = 0
+DestrezaMin = 0
+DestrezaMax = 0
+Inteligencia = 0
+InteligenciaMin = 0
+InteligenciaMax = 0
+DanoFisico = 0
+DanoFisicoMin = 0
+DanoFisicoMax = 0
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,Precisao,VelocidadeAtaque,PenetracaoArmadura,Evasao,VelocidadeMovimento"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0

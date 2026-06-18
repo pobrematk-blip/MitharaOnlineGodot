@@ -15,7 +15,8 @@ partial class GameServer
         int emblem = reader.GetInt();
         if (!TryGetPlayer(peer, out var sender, out _) || sender == null) return;
         bool success = HandleGuildCreate(peer, sender, name, tag, emblem);
-        SendGuildCreateResult(peer, success, success
+        int guildId = success && sender.GuildId >= 0 ? sender.GuildId : -1;
+        SendGuildCreateResult(peer, guildId, success, success
             ? $"Guilda '{name}' criada com sucesso!"
             : "Não foi possível criar a guilda.");
     }
@@ -48,6 +49,7 @@ partial class GameServer
     {
         if (!TryGetPlayer(peer, out var sender, out _)) return;
         HandleGuildLeave(sender);
+        SendGuildClear(peer);
     }
 
     private void HandleGuildKickPacket(NetPeer peer, NetDataReader reader)
@@ -74,7 +76,10 @@ partial class GameServer
         target.GuildName = "";
         SendSystemMessage(peer, $"{target.Name} foi expulso da guilda.");
         if (targetPeer != null)
+        {
+            SendGuildClear(targetPeer);
             SendSystemMessage(targetPeer, "Você foi expulso da guilda.");
+        }
     }
 
     private void HandleGuildPromotePacket(NetPeer peer, NetDataReader reader)
@@ -168,7 +173,7 @@ partial class GameServer
         }
 
         const int custoGold = 10000;
-        var pergaminho = player.Items.FirstOrDefault(i => (i.ItemId == ItemDefinitions.PergaminhoCriacaoCla || i.ItemId == 200) && i.Quantity > 0);
+        var pergaminho = player.Items.FirstOrDefault(i => i.ItemId == ItemDefinitions.PergaminhoCriacaoCla && i.Quantity > 0);
         bool temPergaminho = pergaminho != null;
         Logger.Info($"[GUILD] temPergaminho={temPergaminho}, gold={player.Gold}, custoGold={custoGold}");
 
@@ -440,16 +445,73 @@ partial class GameServer
         player.GuildId = -1;
         player.GuildName = "";
 
+        SendGuildClear(peer);
         SendSystemMessage(peer, $"A guilda '{guild.Name}' foi dissolvida.");
         SendNpcDialog(peer, $"A guilda '{guild.Name}' foi dissolvida.", new List<(string, string, string)>());
         Logger.Info($"[GUILD] Guild '{guild.Name}' dissolvida por {player.Name}!");
     }
 
-    private void SendGuildCreateResult(NetPeer peer, bool success, string message)
+    private void SendGuildClear(NetPeer peer)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_GuildClear);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void SendGuildCreateResult(NetPeer peer, int guildId, bool success, string message)
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_GuildCreateResult);
+        writer.Put(guildId);
         writer.Put(success);
         writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void HandleGuildEnterBase(NetPeer peer, PlayerEntity player, Channel channel)
+    {
+        if (player.GuildId < 0)
+        {
+            SendSystemMessage(peer, "Você não está em uma guilda.");
+            SendNpcDialog(peer, "Você não está em uma guilda.", new List<(string, string, string)>());
+            return;
+        }
+
+        float baseX = 500, baseY = 500;
+        channel.MoveEntity(player.Id, baseX, baseY);
+        SendTeleportPlayer(peer, player.Id, baseX, baseY);
+
+        if (_sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+            _db.SaveCharacterPosition(session.SelectedCharacter.Id, baseX, baseY);
+
+        SendNpcDialog(peer, "Bem-vindo à base da guilda!", new List<(string, string, string)>());
+        Logger.Info($"[GUILD] {player.Name} entrou na base da guilda.");
+    }
+
+    private void HandleGuildEnterGvg(NetPeer peer, PlayerEntity player, Channel channel)
+    {
+        if (player.GuildId < 0)
+        {
+            SendSystemMessage(peer, "Você não está em uma guilda.");
+            SendNpcDialog(peer, "Você não está em uma guilda.", new List<(string, string, string)>());
+            return;
+        }
+
+        float gvgX = 700, gvgY = 700;
+        channel.MoveEntity(player.Id, gvgX, gvgY);
+        SendTeleportPlayer(peer, player.Id, gvgX, gvgY);
+
+        if (_sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+            _db.SaveCharacterPosition(session.SelectedCharacter.Id, gvgX, gvgY);
+
+        SendNpcDialog(peer, "Bem-vindo à arena GvG!", new List<(string, string, string)>());
+        Logger.Info($"[GUILD] {player.Name} entrou na GvG.");
+    }
+
+    private void SendTeleportPlayer(NetPeer peer, ulong entityId, float x, float y)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_Teleport);
+        writer.Put(entityId);
+        writer.Put(x);
+        writer.Put(y);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }

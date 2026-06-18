@@ -7,6 +7,31 @@ public enum Raridade { Comum, Incomum, Raro, Epico, Lendario, Mistico }
 
 public enum PesoItem { Leve, Medio, Pesado }
 
+public enum TipoAfixo
+{
+    ChanceCritica,
+    DanoCriticoBonus,
+    Precisao,
+    VelocidadeAtaque,
+    Agilidade,
+    PenetracaoArmadura,
+    Evasao,
+    VelocidadeMovimento,
+    RouboVida,
+    RouboMana,
+    Tenacidade,
+    Hp,
+    DefesaFisica,
+    RegeneracaoVida,
+    RegeneracaoMana,
+    ReducaoCooldown,
+    Mana,
+    DanoMagico,
+    Forca,
+    Destreza,
+    Inteligencia,
+}
+
 [GlobalClass]
 public partial class ItemResource : Resource
 {
@@ -151,4 +176,7 @@ public partial class ItemResource : Resource
     [Export] public bool DropEmPk { get; set; } = false;
     [Export] public float ChanceDrop { get; set; } = 0f;
     [Export] public float TempoDesaparecimento { get; set; } = 30f;
+
+    [ExportGroup("Afixos")]
+    [Export] public string PoolDeAfixos { get; set; } = "";
 }

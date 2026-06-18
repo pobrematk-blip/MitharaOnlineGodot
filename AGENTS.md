@@ -1,26 +1,21 @@
 # Regras para o Agente
 
-## Sistemas CONGELADOS (não mexer sem autorização explícita do usuário)
+## Sistemas LIBERADOS (pode mexer livremente)
 
-- **UI/Menus** (`ui/`, `resources/Inventario/`, `characterSlots/`, `Banco/`) — toda a interface
-- **EntityManager** (`scenes/EntityManager.cs`) — spawn e rede de entidades
-- **GameNetwork** (`Network/GameNetwork.cs`) — toda comunicação de rede
-- **Player** (`characters/Player/`) — personagem do jogador
-- **Main.tscn** — cena principal
-- **project.godot** — configurações do projeto
-- **Qualquer TSCN de UI** (InventarioUI.tscn, CharacterUI.tscn, etc.)
-
-## Sistemas que podem ser alterados SEM autorização
-
-- Nenhum. Sempre perguntar antes.
+- `ui/GuildCreateUI.cs` — criação de guilda
+- `ui/GuildCreateUI.tscn` — cena de criação de guilda
+- `ui/DialogUI.cs` — diálogos de NPC
+- `ui/GuildUI.cs` — painel de guilda
+- `characterSlots/OverheadUI.cs` — overhead do personagem
+- `resources/Projetil/ProjetilArqueiro.tscn` — flecha
+- `Network/GameNetwork.cs` — comunicação de rede
+- `Network/Handlers/GameNetwork.Guild.cs` — handlers de guilda
+- `server/` — servidor (criar/alterar arquivos)
 
 ## Regra geral
 
-- Toda alteração deve ser autorizada explicitamente pelo usuário.
-- Se houver dúvida se um arquivo pode ser alterado, pergunte primeiro.
-- Não corrigir warnings/erros não solicitados.
-- Não otimizar ou refatorar sem pedido.
-- Não criar novos arquivos sem pedido.
+- Usuário deu permissão TOTAL para tudo relacionado a arrumar o sistema de guildas, diálogos, emblemas e flecha.
+- Se precisar mexer em outra área, pergunte antes.
 
 ## Depurador (Godot Output)
 
@@ -43,3 +38,120 @@
 - Ações de NPC (comprar, vender, criar guilda, abrir banco) devem ser pacotes de rede, não chamadas diretas locais.
 - O arquivo `server/Network/GameServer.Npc.cs` (e outros `GameServer.*.cs`) é o lugar correto para handlers de NPC.
 - Sempre perguntar antes de criar novos arquivos no servidor (`server/`).
+
+## PostgreSQL (Banco de Dados)
+
+- **Database engine**: PostgreSQL 17 via `Npgsql` (NuGet)
+- **Host**: `localhost:5432`
+- **Database**: `mithara_db`
+- **User**: `mithara` / senha: `Tk7142536@`
+- **Serviço Windows**: `postgresql-x64-17` (inicia automaticamente)
+- **Config**: `server/server_config.json` — campos `PgHost`, `PgPort`, `PgDatabase`, `PgUser`, `PgPassword`
+- **Migration de dados**: SQLite (`data/mithara.db`) → PostgreSQL via `DatabaseMigration.cs`
+- **Tools CLI**:
+  - `"C:\Program Files\PostgreSQL\17\bin\psql.exe" -U mithara -d mithara_db`
+  - `"C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" reload -D "C:\Program Files\PostgreSQL\17\data"`
+- **`rank` NÃO é reservado no PostgreSQL**, diferente do MySQL — não precisa de backticks.
+- **Sequences**: `accounts_id_seq`, `characters_id_seq`, `guilds_id_seq` — usar `setval()` se importar dados manuais.
+
+## Regras de Criação de Itens (MITTHARA ONLINE)
+
+### Padrão Geral
+- **Tipo**: Equipamento Normal
+- **Obtido em**: monstros comuns e mapas abertos
+- **Atributos Fixos**: valores são aleatórios dentro da faixa definida (Min/Max)
+- **Afixos**: NÃO pré-definidos nos itens. Sorteados apenas quando o item é obtido.
+- **Sem duplicata**: mesmo afixo não pode aparecer duas vezes no mesmo item.
+- **Pool de Afixos** depende do tipo de arma.
+
+### Quantidade de Afixos por Nível
+- Níveis 1 a 25: 0 a 2 afixos
+- Níveis 30 a 45: 2 a 4 afixos
+- Níveis 50 a 100: 3 a 6 afixos
+
+### Armas do Arqueiro
+- **Arcos**: Atributos Fixos = BaseAttack, Destreza
+- **Arcos**: Pool = ChanceCritica, DanoCriticoBonus, Precisao, VelocidadeAtaque, Agilidade, PenetracaoArmadura, Evasao
+- **Aljavas**: Atributos Fixos = Destreza, Agilidade
+- **Aljavas**: Pool = ChanceCritica, DanoCriticoBonus, Precisao, VelocidadeAtaque, Evasao, VelocidadeMovimento, PenetracaoArmadura
+
+### Armas do Assassino
+- **Adaga Principal**: Atributos Fixos = BaseAttack, Destreza
+- **Adaga Principal**: Pool = ChanceCritica, DanoCriticoBonus, VelocidadeAtaque, Evasao, Precisao, Agilidade, RouboVida, PenetracaoArmadura
+- **Adaga Secundária**: Atributos Fixos = Destreza, Agilidade
+- **Adaga Secundária**: Pool = ChanceCritica, VelocidadeAtaque, Evasao, Precisao, RouboVida, RouboMana, VelocidadeMovimento, PenetracaoArmadura
+
+### Armas do Berserker
+- **Machado Duas Mãos**: Atributos Fixos = BaseAttack, Forca
+- **Machado Duas Mãos**: Pool = ChanceCritica, DanoCriticoBonus, PenetracaoArmadura, RouboVida, Tenacidade, Agilidade, Precisao
+- **Bumerangue**: Atributos Fixos = Forca, Agilidade
+- **Bumerangue**: Pool = ChanceCritica, Precisao, VelocidadeAtaque, PenetracaoArmadura, Evasao, VelocidadeMovimento
+
+### Armas do Guardião
+- **Espada**: Atributos Fixos = BaseAttack, Forca
+- **Espada**: Pool = ChanceCritica, Tenacidade, PenetracaoArmadura, Precisao, Agilidade, RouboVida
+- **Escudo**: Atributos Fixos = Defense, Forca, Agilidade
+- **Escudo**: Pool = Tenacidade, Hp, DefesaFisica, Evasao, RegeneracaoVida, Precisao
+
+### Armas do Mago
+- **Cajado**: Atributos Fixos = BaseAttack, Inteligencia
+- **Cajado**: Pool = DanoMagico, RouboMana, RegeneracaoMana, ReducaoCooldown, Precisao, ChanceCritica, DanoCriticoBonus
+- **Orbe**: Atributos Fixos = Inteligencia, Destreza
+- **Orbe**: Pool = RouboMana, RegeneracaoMana, ReducaoCooldown, ChanceCritica, DanoCriticoBonus, Precisao, Mana
+
+### Armas do Clérigo
+- **Martelo**: Atributos Fixos = BaseAttack, Forca, Inteligencia
+- **Martelo**: Pool = RouboVida, RouboMana, RegeneracaoVida, RegeneracaoMana, Tenacidade, Precisao, ChanceCritica
+- **Escudo Sagrado**: Atributos Fixos = Defense, Forca, Inteligencia
+- **Escudo Sagrado**: Pool = Tenacidade, RegeneracaoVida, RegeneracaoMana, Hp, Mana, ReducaoCooldown, Evasao
+
+### Numeração de IDs dos Itens
+- Arcos: 1001-1021 (níveis 1-100, a cada 5)
+- Aljavas: 1051-1071 (níveis 1-100, a cada 5)
+- Adagas: 2001-2021, AdagasSecundarias: 2051-2071
+- Machados: 3001-3021, Bumerangues: 3051-3071
+- Espadas: 4001-4021, Escudos: 4051-4071
+- Cajados: 5001-5021, Orbes: 5051-5071
+- Martelos: 6001-6021, EscudosClerigo: 6051-6071
+- Consumíveis/Pergaminhos: 101-199
+- Itens de Missão/Especiais: 200-999
+
+### Estrutura de Pastas (organizada por TipoEquipamento)
+- `Itens/Armas/` — Armas (arcos, adagas, machados, espadas, cajados, martelos)
+- `Itens/Escudos/` — Escudos (escudos, aljavas, escudos sagrados)
+- `Itens/Capacetes/` — Capacete
+- `Itens/Peitorais/` — Peitoral
+- `Itens/Cintos/` — Cinto
+- `Itens/Luvas/` — Luvas
+- `Itens/Calcas/` — Calça
+- `Itens/Botas/` — Botas
+- `Itens/Colares/` — Colar
+- `Itens/Aneis/` — Anel
+- `Itens/Brincos/` — Brinco
+- `Itens/Runas/` — Runa
+- `Itens/Asas/` — Asa
+- `Itens/Montarias/` — Montaria
+- `Itens/Pets/` — Pet
+- `Itens/Skins/` — Skin
+- `Itens/Consumiveis/` — poções, pergaminhos
+- `Itens/Feiticos/` — Feitiço
+- `Itens/Moedas/` — Moeda
+- `Itens/Outros/` — fallback para tipos não categorizados
+- `Itens/Recursos/` — minério, madeira, etc. (scripts de coleta)
+- `Itens/Incones/` — ícones dos itens
+- `Itens/Emblema de Guild/` — emblemas de guildas
+
+### Ao criar itens
+1. Criar arquivo .tres na pasta correta
+2. Definir apenas **Atributos Fixos** no .tres (com Min/Max)
+3. Definir **PoolDeAfixos** no .tres (string separada por vírgula)
+4. Registrar no servidor com `AffixPool` em `ItemDefinitions`
+5. Nome do arquivo = nome do item sem espaços + .tres
+
+## Regra ABSOLUTA: SOMENTE ONLINE
+
+- **O jogo é 100% online.** Nunca criar sistemas offline/ locais. Todo sistema novo ou correção DEVE funcionar exclusivamente pelo servidor.
+- Nada de `AplicarProgressaoSalva`, saves locais de progresso, ou lógica de XP/level local. **Tudo** vem do servidor via pacotes (`S2C_EnterWorld`, `S2C_GainExp`, `S2C_LevelUp`, etc.).
+- O cliente é apenas um visualizador/input: envia pacote → servidor valida → servidor executa → servidor responde.
+- Se um sistema está quebrado no modo online, a correção NUNCA deve ser fazer ele funcionar localmente. A correção deve sempre ser no servidor ou na comunicação cliente-servidor.
+- Diretórios/arquivos exclusivamente offline (ex: saves locais, `AplicarProgressaoSalva`) devem ser ignorados/removidos.

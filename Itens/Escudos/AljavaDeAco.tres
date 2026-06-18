@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 1063
+Nome = "Aljava de AÃ§o"
+Descricao = "ReforÃ§ada com placas metÃ¡licas leves, oferece resistÃªncia superior sem prejudicar a mobilidade."
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhDuasMaos = false
+Tipo = 8
+CategoriaPeso = 0
+NivelRequerido = 60
+Valor = 368
+Forca = 0
+ForcaMin = 0
+ForcaMax = 0
+Agilidade = 14
+AgilidadeMin = 12
+AgilidadeMax = 17
+Destreza = 21
+DestrezaMin = 18
+DestrezaMax = 24
+Inteligencia = 0
+InteligenciaMin = 0
+InteligenciaMax = 0
+DanoFisico = 0
+DanoFisicoMin = 0
+DanoFisicoMax = 0
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 0
+Hp = 0
+HpMin = 0
+HpMax = 0
+Mana = 0
+ManaMin = 0
+ManaMax = 0
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Evasao,VelocidadeMovimento,PenetracaoArmadura"
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 0
