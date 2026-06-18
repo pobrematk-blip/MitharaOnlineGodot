@@ -32,8 +32,9 @@ public partial class SlotUI : Control
         if (_icone != null)
         {
             _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            _icone.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
+            _icone.ExpandMode = TextureRect.ExpandModeEnum.FitBoth;
             _icone.CustomMinimumSize = new Vector2(40, 40);
+            _icone.Size = new Vector2(40, 40);
         }
 
         CriarFundoEscuro();
@@ -246,8 +247,9 @@ public partial class SlotUI : Control
         var preview = new TextureRect
         {
             Texture = SlotInterno.Item.Icone,
-            ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
+            ExpandMode = TextureRect.ExpandModeEnum.FitBoth,
             CustomMinimumSize = new Vector2(40, 40),
+            Size = new Vector2(40, 40),
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
             Modulate = new Color(1, 1, 1, 0.7f)
         };
