@@ -9,7 +9,7 @@ collision_layer = 2
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExitDoor"]
-shape = SubResource("Rect")
+shape = SubResource("RectangleShape2D_abc12")
 
-[sub_resource type="RectangleShape2D" id="Rect"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_abc12"]
 size = Vector2(32, 64)
