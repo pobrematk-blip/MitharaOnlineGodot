@@ -1,8 +1,10 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+﻿[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 [ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Real.png" id="1_VmMPv"]
 
 [resource]
 script = ExtResource("1_taxcw")
+Icone = ExtResource("1_VmMPv")
 ItemID = 1016
 Nome = "Arco Real"
 Descricao = "Produzido pelos melhores artesÃ£os da capital, combina elegÃ¢ncia e eficiÃªncia em combate."
@@ -48,3 +50,4 @@ ChanceDrop = 0.0
 TempoDesaparecimento = 30.0
 TipoItem = 0
 Raridade = 0
+

@@ -1,8 +1,10 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+﻿[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 [ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga do Predador.png" id="1_EyhHZ"]
 
 [resource]
 script = ExtResource("1_taxcw")
+Icone = ExtResource("1_EyhHZ")
 ItemID = 2012
 Nome = "Adaga do Predador"
 Descricao = "Utilizada por caÃ§adores experientes que perseguem suas presas por dias atÃ© encontrar o momento perfeito para atacar."
@@ -48,3 +50,4 @@ ChanceDrop = 0.0
 TempoDesaparecimento = 30.0
 TipoItem = 0
 Raridade = 0
+

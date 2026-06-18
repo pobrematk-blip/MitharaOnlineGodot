@@ -1,8 +1,10 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+﻿[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 [ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Longo.png" id="1_tdGrR"]
 
 [resource]
 script = ExtResource("1_taxcw")
+Icone = ExtResource("1_tdGrR")
 ItemID = 1007
 Nome = "Arco Longo"
 Descricao = "Muito utilizado pelos vigias das muralhas, seu alcance permite atingir inimigos antes que se aproximem."
@@ -48,3 +50,4 @@ ChanceDrop = 0.0
 TempoDesaparecimento = 30.0
 TipoItem = 0
 Raridade = 0
+

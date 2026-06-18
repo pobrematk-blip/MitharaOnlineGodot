@@ -1,8 +1,10 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+﻿[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 [ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga Enferrujada.png" id="1_xsKMq"]
 
 [resource]
 script = ExtResource("1_taxcw")
+Icone = ExtResource("1_xsKMq")
 ItemID = 2001
 Nome = "Adaga Enferrujada"
 Descricao = "Uma adaga simples marcada pelo tempo. Apesar do desgaste, ainda Ã© capaz de causar ferimentos letais em mÃ£os habilidosas."
@@ -48,3 +50,4 @@ ChanceDrop = 0.0
 TempoDesaparecimento = 30.0
 TipoItem = 0
 Raridade = 0
+

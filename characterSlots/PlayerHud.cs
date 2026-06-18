@@ -49,15 +49,27 @@ public partial class PlayerHud : Control
         {
             _levelComp.ProgressaoAtualizada += AtualizarInfoNivel;
         }
+        else
+        {
+            GD.PrintErr("[PLAYER HUD] LevelProgressionComponent nao encontrado!");
+        }
     }
 
     private void AtualizarInfoNivel()
     {
         if (_player == null) return;
 
+        int nivel = _levelComp?.Nivel ?? 1;
+
+        // Fallback: try to get level from GameNetwork _pendingLevel if component is not yet set
+        if (nivel <= 1 && (GetNodeOrNull("/root/GameNetwork") is GameNetwork gn))
+        {
+            if (gn._pendingLevel > 1)
+                nivel = gn._pendingLevel;
+        }
+
         var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
         string nome = escolhido?.NomePersonagem ?? "Aventureiro";
-        int nivel = _levelComp?.Nivel ?? 1;
         _nameLevelLabel.Text = $"{nome} | Nv. {nivel}";
     }
 

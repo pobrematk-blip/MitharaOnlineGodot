@@ -183,7 +183,14 @@ public partial class EntityManager : Node
         var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
         if (prog != null)
         {
-            prog.DefinirProgresso(_gameNet._pendingLevel, (int)_gameNet._pendingXp);
+            int lvl = _gameNet._pendingLevel;
+            int xp = (int)_gameNet._pendingXp;
+            GameNetwork.Log($"ApplyServerDataAfterEnterWorld: setting level={lvl} xp={xp}");
+            prog.DefinirProgresso(lvl, xp);
+        }
+        else
+        {
+            GameNetwork.Log("ApplyServerDataAfterEnterWorld: LevelProgressionComponent nao encontrado!");
         }
     }
 
