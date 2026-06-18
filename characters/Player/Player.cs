@@ -886,7 +886,6 @@ public partial class Player : CharacterBody2D
             {
                 AnimatedSprite.SpriteFrames.SetAnimationLoop("death", false);
                 AnimatedSprite.Play("death");
-                AnimatedSprite.AnimationFinished -= AoTerminarMorte;
                 AnimatedSprite.AnimationFinished += AoTerminarMorte;
                 SincronizarOverlays();
             }
