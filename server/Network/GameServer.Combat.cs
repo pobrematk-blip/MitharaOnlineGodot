@@ -8,6 +8,12 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private static long XpForNextLevel(int level)
+    {
+        if (level < 1) level = 1;
+        return 20L + (level - 1) * 12L;
+    }
+
     private bool HandleMonsterAIAttack(Channel channel, MonsterEntity mob, Entity target, double gameTime)
     {
         int targetDefense = target switch
@@ -334,12 +340,12 @@ partial class GameServer
             }
         }
 
-        long xpForNextLevel = 20L + (killer.Level - 1) * 12L;
+        long xpForNextLevel = XpForNextLevel(killer.Level);
         while (killer.Experience >= xpForNextLevel)
         {
             killer.Experience -= xpForNextLevel;
             killer.Level++;
-            xpForNextLevel = 100L + (killer.Level - 1) * 50L;
+            xpForNextLevel = XpForNextLevel(killer.Level);
 
             killer.MaxHealth = 80 + killer.Forca * 2 + killer.Level * 10;
             killer.Health = killer.MaxHealth;
@@ -348,7 +354,7 @@ partial class GameServer
             var writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
             writerLevelUp.Put(killer.Id);
             writerLevelUp.Put(killer.Level);
-            writerLevelUp.Put(killer.Experience);
+            writerLevelUp.Put((int)Math.Min(int.MaxValue, killer.Experience));
             foreach (var eid in aoi)
             {
                 var p = channel.GetPlayerPeer(eid);
@@ -358,7 +364,7 @@ partial class GameServer
                     writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
                     writerLevelUp.Put(killer.Id);
                     writerLevelUp.Put(killer.Level);
-                    writerLevelUp.Put(killer.Experience);
+                    writerLevelUp.Put((int)Math.Min(int.MaxValue, killer.Experience));
                 }
             }
 
@@ -370,6 +376,9 @@ partial class GameServer
         _db.SaveCharacterXp(killerSession.SelectedCharacter!.Id, killer.Experience);
         _db.SaveCharacterLevel(killerSession.SelectedCharacter.Id, killer.Level);
         _db.SaveCharacterStats(killerSession.SelectedCharacter.Id, killer.BaseForca, killer.BaseAgilidade, killer.BaseDestreza, killer.BaseInteligencia, killer.StatPoints);
+        killerSession.SelectedCharacter.Xp = killer.Experience;
+        killerSession.SelectedCharacter.Level = killer.Level;
+        killerSession.SelectedCharacter.StatPoints = killer.StatPoints;
 
         UpdateQuestKillProgress(killer, mob.PrefabId);
 
@@ -472,21 +481,15 @@ partial class GameServer
         }
         else
         {
-            int slot = player.FindEmptyInventorySlot();
-            var existingItem = player.Items.FirstOrDefault(i => i.ItemId == loot.ItemId && i.Quantity + loot.Quantity <= 999);
+            bool itemAdded = TryAddItemToInventory(player, character.Id, loot.ItemId, loot.Quantity);
 
-            if (existingItem != null)
+            if (!itemAdded)
             {
-                existingItem.Quantity += loot.Quantity;
-                _db.SaveItem(character.Id, existingItem);
-                var wUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
-                wUpdate.Put(existingItem.Slot);
-                wUpdate.Put(existingItem.ItemId);
-                wUpdate.Put(existingItem.Quantity);
-                wUpdate.Put(existingItem.RefineLevel);
-                peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
+                SendSystemMessage(peer, "InventÃ¡rio cheio!");
+                SendInventoryData(peer, player);
+                return;
             }
-            else if (slot >= 0)
+            /* else if (false)
             {
                 var newItem = new ItemInstance { Slot = slot, ItemId = loot.ItemId, Quantity = loot.Quantity };
                 player.Items.Add(newItem);
@@ -498,12 +501,15 @@ partial class GameServer
                 wUpdate.Put(0);
                 peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
             }
-            else
+            else if (false)
             {
                 SendSystemMessage(peer, "Inventário cheio!");
                 return;
             }
+            */
         }
+
+        SendInventoryData(peer, player);
 
         loot.PickedUp = true;
         channel.RemoveLoot(lootId);

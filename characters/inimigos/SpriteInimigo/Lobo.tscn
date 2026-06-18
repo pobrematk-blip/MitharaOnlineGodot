@@ -7,7 +7,7 @@ size = Vector2(30, 48)
 
 [node name="Lobo" type="CharacterBody2D"]
 collision_layer = 4
-collision_mask = 3
+collision_mask = 0
 script = ExtResource("1_script")
 MobType = "lobo"
 AnimPrefix = "lobo_"

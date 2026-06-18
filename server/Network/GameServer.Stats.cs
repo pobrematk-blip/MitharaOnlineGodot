@@ -58,6 +58,13 @@ partial class GameServer
         if (session.SelectedCharacter != null)
             _db.SaveCharacterStats(session.SelectedCharacter.Id, baseForca, baseAgilidade, baseDestreza, baseInteligencia, player.StatPoints);
 
+        SendStatUpdate(peer, player);
+
+        Logger.Info($"[STATS] {player.Name} allocou {statName} (pts restantes: {player.StatPoints})");
+    }
+
+    private void SendStatUpdate(NetPeer peer, PlayerEntity player)
+    {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_StatUpdate);
         writer.Put(player.BaseForca);
         writer.Put(player.BaseAgilidade);
@@ -71,7 +78,5 @@ partial class GameServer
         writer.Put(player.MaxHealth);
         writer.Put(player.MaxMana);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
-
-        Logger.Info($"[STATS] {player.Name} allocou {statName} (pts restantes: {player.StatPoints})");
     }
 }

@@ -30,6 +30,65 @@ partial class GameServer
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
+    private bool TryAddItemToInventory(PlayerEntity player, int characterId, int itemId, int quantity)
+    {
+        if (quantity <= 0) return false;
+
+        var def = ItemDefinitions.Get(itemId);
+        bool stackable = def?.IsStackable == true && def.MaxStack > 1;
+        int maxStack = stackable ? Math.Max(1, def!.MaxStack) : 1;
+        int remaining = quantity;
+
+        var stackAdds = new List<(ItemInstance item, int amount)>();
+        if (stackable)
+        {
+            foreach (var existing in player.Items.Where(i => i.ItemId == itemId && i.Quantity < maxStack).OrderBy(i => i.Slot))
+            {
+                int add = Math.Min(remaining, maxStack - existing.Quantity);
+                if (add <= 0) continue;
+                stackAdds.Add((existing, add));
+                remaining -= add;
+                if (remaining <= 0) break;
+            }
+        }
+
+        var usedSlots = new HashSet<int>(player.Items.Select(i => i.Slot));
+        var newSlots = new List<int>();
+        int newStacksNeeded = stackable
+            ? (int)Math.Ceiling(remaining / (double)maxStack)
+            : remaining;
+
+        for (int slot = 0; slot < 40 && newSlots.Count < newStacksNeeded; slot++)
+        {
+            if (usedSlots.Contains(slot)) continue;
+            usedSlots.Add(slot);
+            newSlots.Add(slot);
+        }
+
+        if (newSlots.Count < newStacksNeeded)
+            return false;
+
+        foreach (var (item, amount) in stackAdds)
+        {
+            item.Quantity += amount;
+            _db.SaveItem(characterId, item);
+        }
+
+        remaining = quantity - stackAdds.Sum(x => x.amount);
+        foreach (int slot in newSlots)
+        {
+            if (remaining <= 0) break;
+
+            int amount = stackable ? Math.Min(remaining, maxStack) : 1;
+            var newItem = new ItemInstance { Slot = slot, ItemId = itemId, Quantity = amount };
+            player.Items.Add(newItem);
+            _db.SaveItem(characterId, newItem);
+            remaining -= amount;
+        }
+
+        return true;
+    }
+
     private void HandleInventoryRequest(NetPeer peer)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
@@ -220,7 +279,6 @@ partial class GameServer
                 _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
             }
         }
-        else
         {
             fromItem.Slot = toSlot;
             if (toItem != null)
@@ -350,48 +408,50 @@ partial class GameServer
 
     private void HandleCollectLocalItem(NetPeer peer, NetDataReader reader)
     {
-        if (!_sessions.TryGetValue(peer, out var session) || session.ChannelId < 0) return;
-        var character = session.SelectedCharacter;
-        if (character == null) return;
+        if (!_sessions.TryGetValue(peer, out var onlineSession) || onlineSession.ChannelId < 0) return;
+        var onlineCharacter = onlineSession.SelectedCharacter;
+        if (onlineCharacter == null) return;
 
-        int itemId = reader.GetInt();
-        int quantity = reader.GetInt();
+        int onlineItemId = reader.GetInt();
+        int onlineQuantity = Math.Clamp(reader.GetInt(), 1, 99);
+        float itemX = reader.AvailableBytes >= 8 ? reader.GetFloat() : 0f;
+        float itemY = reader.AvailableBytes >= 4 ? reader.GetFloat() : 0f;
 
-        var channel = _world.GetChannel(session.ChannelId);
-        if (channel == null) return;
-
-        var player = channel.GetEntity(session.EntityId) as PlayerEntity;
-        if (player == null) return;
-
-        int slot = player.FindEmptyInventorySlot();
-        var existingItem = player.Items.FirstOrDefault(i => i.ItemId == itemId && i.Quantity + quantity <= 999);
-
-        if (existingItem != null)
+        if (ItemDefinitions.Get(onlineItemId) == null)
         {
-            existingItem.Quantity += quantity;
-            _db.SaveItem(character.Id, existingItem);
-            var wUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
-            wUpdate.Put(existingItem.Slot);
-            wUpdate.Put(existingItem.ItemId);
-            wUpdate.Put(existingItem.Quantity);
-            wUpdate.Put(existingItem.RefineLevel);
-            peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
+            SendSystemMessage(peer, "Item invalido.");
+            return;
         }
-        else if (slot >= 0)
+
+        var onlineChannel = _world.GetChannel(onlineSession.ChannelId);
+        if (onlineChannel == null) return;
+
+        var onlinePlayer = onlineChannel.GetEntity(onlineSession.EntityId) as PlayerEntity;
+        if (onlinePlayer == null) return;
+
+        if (itemX != 0f || itemY != 0f)
         {
-            var newItem = new ItemInstance { Slot = slot, ItemId = itemId, Quantity = quantity };
-            player.Items.Add(newItem);
-            _db.SaveItem(character.Id, newItem);
-            var wUpdate = PacketSerializer.WritePacket(PacketId.S2C_ItemUpdate);
-            wUpdate.Put(slot);
-            wUpdate.Put(itemId);
-            wUpdate.Put(quantity);
-            wUpdate.Put(0);
-            peer.Send(wUpdate, DeliveryMethod.ReliableOrdered);
+            float dx = onlinePlayer.X - itemX;
+            float dy = onlinePlayer.Y - itemY;
+            if (MathF.Sqrt(dx * dx + dy * dy) > 100f)
+            {
+                SendSystemMessage(peer, "Item muito longe.");
+                return;
+            }
         }
-        else
+
+        if (!TryAddItemToInventory(onlinePlayer, onlineCharacter.Id, onlineItemId, onlineQuantity))
         {
+            SendSystemMessage(peer, "Inventario cheio!");
+            SendInventoryData(peer, onlinePlayer);
+            return;
+        }
+
+        SendInventoryData(peer, onlinePlayer);
+        return;
+/*
             SendSystemMessage(peer, "Inventário cheio!");
         }
+*/
     }
 }

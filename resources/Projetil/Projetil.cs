@@ -84,52 +84,10 @@ public partial class Projetil : Area2D
             }
             else
             {
-                int danoFinal = CalcularDanoComCritico();
-                bool ehCritico = danoFinal > DanoMax;
-                if (body is Inimigo inimigo)
-                    inimigo.LevarDano(danoFinal);
-                else
-                    body.Call("LevarDano", danoFinal);
-
-                if (ehCritico)
-                    GD.Print($"Critico! {danoFinal} de dano em {body.Name}!");
-                else
-                    GD.Print($"Projetil acertou {body.Name}! {danoFinal} de dano.");
+                GD.PrintErr("[PROJETIL] Dano local bloqueado. O combate deve passar pelo servidor.");
             }
         }
 
         QueueFree();
-    }
-
-    /// <summary>
-    /// Calcula o dano final aplicando variação, chance de crítico e multiplicador de dano crítico
-    /// </summary>
-    private int CalcularDanoComCritico()
-    {
-        // Se não temos acesso ao EquipamentoComponent, retorna dano variado base
-        if (_equipamentoDoPlayer == null)
-        {
-            return (int)(GD.Randi() % (DanoMax - DanoMin + 1)) + DanoMin;
-        }
-
-        // Calcula dano base com variação (min + random entre 0 e max-min)
-        int danoBase = (int)(GD.Randi() % (DanoMax - DanoMin + 1)) + DanoMin;
-
-        // Calcula a chance de crítico (em percentual)
-        float chanceCritica = _equipamentoDoPlayer.ChanceCritica;  // Ex: 5% com 10 de Destreza
-        
-        // Gera número aleatório entre 0 e 100
-        float random = GD.Randf() * 100;
-        
-        // Se for crítico
-        if (random < chanceCritica)
-        {
-            // Aplica o multiplicador de dano crítico sobre o dano variado
-            float multiplicadorCritico = _equipamentoDoPlayer.DanoCritico;  // Ex: 2.0x com itens
-            return (int)(danoBase * multiplicadorCritico);
-        }
-        
-        // Retorna dano base variado se não for crítico
-        return danoBase;
     }
 }

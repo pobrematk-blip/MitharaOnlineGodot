@@ -20,6 +20,7 @@ public partial class SlotUI : Control
     private Label _quantidadeTexto;
     private ColorRect _fundoEscuro;
     private ColorRect _rarityGlow;
+    private const float IconPadding = 2f;
 
     public SlotInventario SlotInterno { get; private set; }
     public int SlotIndex { get; set; }
@@ -32,9 +33,8 @@ public partial class SlotUI : Control
         if (_icone != null)
         {
             _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            _icone.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
-            _icone.CustomMinimumSize = new Vector2(40, 40);
-            _icone.Size = new Vector2(40, 40);
+            _icone.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+            AtualizarDimensoesIcone();
         }
 
         CriarFundoEscuro();
@@ -43,6 +43,39 @@ public partial class SlotUI : Control
 
         MouseEntered += OnMouseEnteredSlot;
         MouseExited += OnMouseExitedSlot;
+    }
+
+    private Vector2 ObterTamanhoSlot()
+    {
+        float slotWidth = Size.X > 0 ? Size.X : CustomMinimumSize.X;
+        float slotHeight = Size.Y > 0 ? Size.Y : CustomMinimumSize.Y;
+
+        if (slotWidth <= 0) slotWidth = 42f;
+        if (slotHeight <= 0) slotHeight = 42f;
+
+        return new Vector2(slotWidth, slotHeight);
+    }
+
+    private Vector2 ObterTamanhoIcone()
+    {
+        Vector2 slotSize = ObterTamanhoSlot();
+        float iconWidth = Mathf.Max(1f, slotSize.X - IconPadding);
+        float iconHeight = Mathf.Max(1f, slotSize.Y - IconPadding);
+        return new Vector2(iconWidth, iconHeight);
+    }
+
+    private void AtualizarDimensoesIcone()
+    {
+        if (_icone == null) return;
+
+        Vector2 slotSize = ObterTamanhoSlot();
+        Vector2 iconSize = ObterTamanhoIcone();
+
+        _icone.Position = (slotSize - iconSize) / 2f;
+        _icone.Size = iconSize;
+        _icone.CustomMinimumSize = Vector2.Zero;
+        _icone.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
     }
 
     private void CriarFundoEscuro()
@@ -218,11 +251,9 @@ public partial class SlotUI : Control
         {
             AtualizarGlow(slotLogico.Item);
 
-            _icone.CustomMinimumSize = new Vector2(40, 40);
+            AtualizarDimensoesIcone();
             _icone.Texture = slotLogico.Item.Icone;
-            _icone.SetDeferred("size", new Vector2(40, 40));
             _icone.SelfModulate = new Color(1, 1, 1, 1);
-            GD.Print($"[SLOT DEBUG] Icone Size={_icone.Size} MinSize={_icone.CustomMinimumSize} Expand={_icone.ExpandMode} Stretch={_icone.StretchMode} TexSize={(slotLogico.Item.Icone?.GetSize() ?? Vector2.Zero)}");
 
             if (slotLogico.Quantidade > 1)
             {
@@ -244,12 +275,13 @@ public partial class SlotUI : Control
     {
         if (SlotInterno == null || SlotInterno.Item == null) return default;
 
+        Vector2 iconSize = ObterTamanhoIcone();
         var preview = new TextureRect
         {
             Texture = SlotInterno.Item.Icone,
-            ExpandMode = TextureRect.ExpandModeEnum.KeepSize,
-            CustomMinimumSize = new Vector2(40, 40),
-            Size = new Vector2(40, 40),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            CustomMinimumSize = iconSize,
+            Size = iconSize,
             StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
             Modulate = new Color(1, 1, 1, 0.7f)
         };

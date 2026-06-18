@@ -137,10 +137,6 @@ public partial class GameNetwork : Node
     {
         try
         {
-            // Força GC para reduzir risco de finalizers durante ChangeSceneToFile
-            System.GC.Collect();
-            System.GC.WaitForPendingFinalizers();
-
             Log("ApplyEnterWorld: ChangeSceneToFile...");
             var err = GetTree().ChangeSceneToFile(SceneConstants.MAIN);
             if (err != Error.Ok)
@@ -384,11 +380,9 @@ public partial class GameNetwork : Node
             if (inv != null && ItemDB != null)
             {
                 inv.AplicarDadosServidor(PendingInventoryData, ItemDB);
-                var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-                if (save != null)
-                    save.SalvarInventario(inv.Slots);
                 GD.Print("[GAME] Pending inventory applied");
             }
+            PendingInventoryData = null;
         }
 
         if (PendingEquipmentData != null)
@@ -396,21 +390,24 @@ public partial class GameNetwork : Node
             var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
             if (equip != null && ItemDB != null)
             {
+                equip.ItensEquipados.Clear();
                 foreach (var entry in PendingEquipmentData)
                 {
                     int slotVal = (int)entry["slot"];
                     int itemId = (int)entry["item_id"];
                     int qty = (int)entry["quantity"];
+                    int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
                     var resource = ItemDB.GetItem(itemId);
                     if (resource != null)
                     {
                         var tipo = (TipoEquipamento)slotVal;
-                        equip.ItensEquipados[tipo] = new SlotInventario(resource, qty);
+                        equip.ItensEquipados[tipo] = new SlotInventario(resource, qty, refineLevel);
                     }
                 }
                 equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
                 GD.Print("[GAME] Pending equipment applied");
             }
+            PendingEquipmentData = null;
         }
 
         if (PendingPetData != null)
@@ -478,12 +475,14 @@ public partial class GameNetwork : Node
         GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId})");
     }
 
-    public void SendCollectLocalItem(int itemId, int quantity)
+    public void SendCollectLocalItem(int itemId, int quantity, Vector2 worldPosition)
     {
         _client?.SendPacket(PacketId.C2S_CollectLocalItem, w =>
         {
             w.Put(itemId);
             w.Put(quantity);
+            w.Put(worldPosition.X);
+            w.Put(worldPosition.Y);
         });
     }
 }

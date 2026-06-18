@@ -77474,7 +77474,7 @@ NpcName = "GuardiÃ£o de Solareth"
 DialogId = "guilda"
 PrefabId = "guarda_solareth"
 
-[node name="Player" parent="." instance=ExtResource("1_rvslj")]
+[node name="Player" parent="World" instance=ExtResource("1_rvslj")]
 position = Vector2(-52, 226)
 
 [node name="HUD" type="CanvasLayer" parent="."]

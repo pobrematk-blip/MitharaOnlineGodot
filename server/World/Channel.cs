@@ -30,6 +30,8 @@ public class Channel
     private bool _initialSpawned = false;
 
     public const float AoiRadius = 1200f;
+    private const float MonsterSeparationRadius = 52f;
+    private const float MonsterSeparationStrength = 0.65f;
 
     public SpawnerManager Spawner => _spawner;
     public event Action<Entity>? EntitySpawned;
@@ -187,6 +189,45 @@ public class Channel
         return follower;
     }
 
+    private (float x, float y) ApplyMonsterSeparation(MonsterEntity mob, float desiredX, float desiredY, float dt, bool usePathfinding)
+    {
+        float pushX = 0f;
+        float pushY = 0f;
+
+        foreach (var other in _entities.Values)
+        {
+            if (other.Id == mob.Id || other is not MonsterEntity otherMob || otherMob.Health <= 0)
+                continue;
+
+            float dx = desiredX - otherMob.X;
+            float dy = desiredY - otherMob.Y;
+            float distSq = dx * dx + dy * dy;
+            if (distSq <= 0.001f || distSq >= MonsterSeparationRadius * MonsterSeparationRadius)
+                continue;
+
+            float dist = MathF.Sqrt(distSq);
+            float weight = (MonsterSeparationRadius - dist) / MonsterSeparationRadius;
+            pushX += dx / dist * weight;
+            pushY += dy / dist * weight;
+        }
+
+        float pushLen = MathF.Sqrt(pushX * pushX + pushY * pushY);
+        if (pushLen <= 0.001f)
+            return (desiredX, desiredY);
+
+        float maxPush = mob.Speed * dt * MonsterSeparationStrength;
+        float adjustedX = desiredX + pushX / pushLen * maxPush;
+        float adjustedY = desiredY + pushY / pushLen * maxPush;
+
+        if (IsInNoMobZone(adjustedX, adjustedY))
+            return (desiredX, desiredY);
+
+        if (usePathfinding && PathGrid != null && !PathGrid.IsWalkableWorld(adjustedX, adjustedY))
+            return (desiredX, desiredY);
+
+        return (adjustedX, adjustedY);
+    }
+
     private void UpdateMonsterAI(float dt, double gameTime)
     {
         foreach (var kv in _entities.ToList())
@@ -262,6 +303,7 @@ public class Channel
                                 continue;
                             }
 
+                            (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
                             mob.X = newX;
                             mob.Y = newY;
                             mob.DirX = dirX;
@@ -281,6 +323,7 @@ public class Channel
                             bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
                             if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
                             {
+                                (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
                                 mob.X = newFx;
                                 mob.Y = newFy;
                                 mob.DirX = dx / dist;
@@ -318,6 +361,7 @@ public class Channel
                             continue;
                         }
 
+                        (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
                         mob.X = newFx;
                         mob.Y = newFy;
                         mob.DirX = dx / dist;
@@ -384,6 +428,7 @@ public class Channel
                                 continue;
                             }
 
+                                (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
                                 mob.X = newX;
                                 mob.Y = newY;
                                 mob.DirX = dirX;
@@ -402,6 +447,7 @@ public class Channel
                                 bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
                                 if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
                                 {
+                                    (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
                                     mob.X = newFx;
                                     mob.Y = newFy;
                                     mob.DirX = dx / dist;
@@ -434,6 +480,7 @@ public class Channel
                             continue;
                         }
 
+                        (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
                         mob.X = newFx;
                         mob.Y = newFy;
                         mob.DirX = dx / dist;

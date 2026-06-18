@@ -142,6 +142,16 @@ public partial class ItemColetavel : Area2D
     {
         if (ItemContido == null) return;
 
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null && net.IsConnected)
+        {
+            net.SendCollectLocalItem(ItemContido.ItemID, 1, GlobalPosition);
+            GD.Print($"[ITEM] Pedido de coleta enviado ao servidor: {ItemContido.Nome}");
+            _tooltip?.Esconder();
+            QueueFree();
+            return;
+        }
+
         var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null) return;
 
@@ -152,16 +162,7 @@ public partial class ItemColetavel : Area2D
         {
             GD.Print($"[MUNDO] Player coletou: {ItemContido.Nome}!");
 
-            var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-            if (net != null && net.IsConnected)
-            {
-                net.SendCollectLocalItem(ItemContido.ItemID, 1);
-            }
-            else
-            {
-                var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-                save?.SalvarInventario(inventario.Slots);
-            }
+            GD.PrintErr("[ITEM] Save local ignorado. O jogo online deve persistir itens pelo servidor.");
 
             _tooltip?.Esconder();
             QueueFree();

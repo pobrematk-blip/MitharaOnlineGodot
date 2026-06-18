@@ -1029,9 +1029,6 @@ public partial class Player : CharacterBody2D
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (gameNet == null || !gameNet.IsConnected) return;
 
-        var entityManager = GetNodeOrNull<EntityManager>("/root/GameNetwork/EntityManager");
-        if (entityManager == null) return;
-
         var lootNodes = GetTree()?.GetNodesInGroup("Loot");
         Node2D? nearest = null;
         float nearestDist = 55f;
@@ -1074,14 +1071,14 @@ public partial class Player : CharacterBody2D
 
     private void UpdateLootPromptVisibility(Node2D lootNode, bool visible)
     {
-        foreach (var child in lootNode.GetChildren())
-        {
-            if (child is Label label && label.Text == "[F]")
-            {
-                label.Visible = visible;
-                return;
-            }
-        }
+        var prompt = lootNode.FindChild("LootPrompt", true, false) as Label;
+        if (prompt == null)
+            prompt = lootNode.FindChild("InteractPrompt", true, false) as Label;
+        if (prompt == null)
+            prompt = lootNode.FindChild("*", true, false) as Label;
+
+        if (prompt != null && prompt.Text == "[F]")
+            prompt.Visible = visible;
     }
 
     // Buff state

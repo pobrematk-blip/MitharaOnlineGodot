@@ -94,6 +94,7 @@ partial class GameNetwork
         var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (equip != null && ItemDB != null)
         {
+            equip.ItensEquipados.Clear();
             foreach (var entry in equipment)
             {
                 int slot = (int)entry["slot"];

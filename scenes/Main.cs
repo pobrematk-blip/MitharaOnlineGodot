@@ -8,7 +8,24 @@ public partial class Main : Node2D
 
         var world = GetNodeOrNull<Node2D>("World");
         if (world != null)
+        {
             world.YSortEnabled = true;
+            GarantirPlayerNoWorld(world);
+        }
+    }
+
+    private void GarantirPlayerNoWorld(Node2D world)
+    {
+        var player = GetNodeOrNull<Node2D>("Player");
+        if (player == null)
+            return;
+
+        Vector2 globalPosition = player.GlobalPosition;
+        player.Reparent(world);
+        player.GlobalPosition = globalPosition;
+        player.ZIndex = 0;
+        player.ZAsRelative = true;
+        GD.Print("[YSORT] Player movido para World para participar da ordenacao por Y.");
     }
 
     private void AplicarTemaGlobal()

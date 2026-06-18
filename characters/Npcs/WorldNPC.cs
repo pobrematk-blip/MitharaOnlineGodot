@@ -12,6 +12,9 @@ public partial class WorldNPC : CharacterBody2D
     public override void _Ready()
     {
         AddToGroup("NPC");
+        ZIndex = 0;
+        ZAsRelative = true;
+        YSortEnabled = false;
         CharacterBody2DDefaultSetup();
 
         string sheetPath = ConstruirPathSprite();

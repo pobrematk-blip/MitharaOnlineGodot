@@ -154,6 +154,14 @@ public partial class GameServer : INetEventListener
                         _db.SaveCharacterXp(session.SelectedCharacter.Id, player.Experience);
                         _db.SaveCharacterLevel(session.SelectedCharacter.Id, player.Level);
                         _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
+                        session.SelectedCharacter.Gold = player.Gold;
+                        session.SelectedCharacter.Xp = player.Experience;
+                        session.SelectedCharacter.Level = player.Level;
+                        session.SelectedCharacter.Forca = player.BaseForca;
+                        session.SelectedCharacter.Agilidade = player.BaseAgilidade;
+                        session.SelectedCharacter.Destreza = player.BaseDestreza;
+                        session.SelectedCharacter.Inteligencia = player.BaseInteligencia;
+                        session.SelectedCharacter.StatPoints = player.StatPoints;
                     }
                 }
             }
@@ -385,7 +393,7 @@ public partial class GameServer : INetEventListener
                 HandleBankRequest(peer, reader);
                 break;
             case PacketId.C2S_MobDropConfig:
-                HandleMobDropConfig(peer, reader);
+                Logger.Info("C2S_MobDropConfig ignorado: drop table e autoridade do servidor.");
                 break;
             case PacketId.C2S_PetCapture:
                 HandlePetCapture(peer, reader);
@@ -398,40 +406,6 @@ public partial class GameServer : INetEventListener
         catch (Exception ex)
         {
             Logger.Error($"HandlePacket ({packetId})", ex);
-        }
-    }
-
-    private void HandleMobDropConfig(NetPeer peer, NetDataReader reader)
-    {
-        if (!_sessions.TryGetValue(peer, out var session)) return;
-
-        int mobCount = reader.GetInt();
-        if (mobCount <= 0 || mobCount > 100) return;
-
-        var dropsByPrefab = new Dictionary<string, List<LootEntry>>();
-        for (int i = 0; i < mobCount; i++)
-        {
-            string prefabId = reader.GetString();
-            int dropCount = reader.GetInt();
-            var drops = new List<LootEntry>(dropCount);
-            for (int j = 0; j < dropCount; j++)
-            {
-                drops.Add(new LootEntry
-                {
-                    ItemId = reader.GetInt(),
-                    DropChance = reader.GetDouble(),
-                    MinQuantity = reader.GetInt(),
-                    MaxQuantity = reader.GetInt(),
-                });
-            }
-            dropsByPrefab[prefabId] = drops;
-        }
-
-        foreach (var channel in _world.GetAllChannels())
-        {
-            var spawner = channel.Spawner;
-            foreach (var kv in dropsByPrefab)
-                spawner.UpdateDropTable(kv.Key, kv.Value);
         }
     }
 

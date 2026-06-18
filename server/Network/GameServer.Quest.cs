@@ -41,24 +41,26 @@ partial class GameServer
         player.Gold += def.Reward.Gold;
 
         // Award items
+        int characterId = session.SelectedCharacter!.Id;
         foreach (var (itemId, quantity) in def.Reward.Items)
         {
-            for (int i = 0; i < quantity; i++)
+            if (!TryAddItemToInventory(player, characterId, itemId, quantity))
             {
-                int slot = player.FindEmptyInventorySlot();
-                if (slot >= 0)
-                {
-                    player.Items.Add(new ItemInstance { Slot = slot, ItemId = itemId, Quantity = 1 });
-                }
+                SendSystemMessage(peer, "Inventario cheio para receber recompensa.");
+                return;
             }
         }
 
-        int characterId = session.SelectedCharacter!.Id;
         _db.UpsertPlayerQuest(characterId, questId,
             JsonSerializer.Serialize(pq.Progress), pq.Completed, pq.Claimed);
 
-        // Save XP/Gold in DB
         _db.SaveCharacterXp(characterId, player.Experience);
+        _db.SaveCharacterGold(characterId, player.Gold);
+        session.SelectedCharacter.Xp = player.Experience;
+        session.SelectedCharacter.Gold = player.Gold;
+
+        SendInventoryData(peer, player);
+        SendGoldUpdate(peer, player.Gold);
 
         SendQuestRewardClaimed(peer, questId, true);
     }

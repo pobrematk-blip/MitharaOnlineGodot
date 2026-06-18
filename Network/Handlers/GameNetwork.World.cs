@@ -44,26 +44,6 @@ partial class GameNetwork
         });
     }
 
-    public void SendMobDropConfig(string[] prefabIds, int[][] itemIds, double[][] chances, int[][] minQtys, int[][] maxQtys)
-    {
-        _client?.SendPacket(PacketId.C2S_MobDropConfig, w =>
-        {
-            w.Put(prefabIds.Length);
-            for (int m = 0; m < prefabIds.Length; m++)
-            {
-                w.Put(prefabIds[m]);
-                w.Put(itemIds[m].Length);
-                for (int d = 0; d < itemIds[m].Length; d++)
-                {
-                    w.Put(itemIds[m][d]);
-                    w.Put(chances[m][d]);
-                    w.Put(minQtys[m][d]);
-                    w.Put(maxQtys[m][d]);
-                }
-            }
-        });
-    }
-
     private void HandleSpawnEntity(NetDataReader r)
     {
         ulong entityId = r.GetULong();

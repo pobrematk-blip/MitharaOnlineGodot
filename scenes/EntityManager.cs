@@ -53,6 +53,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Vector2> _lastDirections = new();
     private readonly Dictionary<ulong, Vector2> _previousPositions = new();
     private const double InterpolationDelay = 0.08;
+    private const int PendingMonsterSpawnBatchSize = 8;
     private Node2D? ObterMundo()
     {
         if (_worldNode == null || !IsInstanceValid(_worldNode))
@@ -77,6 +78,7 @@ public partial class EntityManager : Node
                 _worldNode = current.GetNodeOrNull<Node2D>("World");
                 if (_worldNode != null)
                 {
+                    PrepararWorldParaYSort(_worldNode);
                     GameNetwork.Log($"ObterMundo: encontrado via CurrentScene/{current.Name}");
                     return _worldNode;
                 }
@@ -89,6 +91,7 @@ public partial class EntityManager : Node
                 _worldNode = root.GetNodeOrNull<Node2D>(p);
                 if (_worldNode != null)
                 {
+                    PrepararWorldParaYSort(_worldNode);
                     GameNetwork.Log($"ObterMundo: encontrado via Root/{p}");
                     return _worldNode;
                 }
@@ -101,6 +104,7 @@ public partial class EntityManager : Node
                 _worldNode = child.FindChild("World", true, false) as Node2D;
                 if (_worldNode != null)
                 {
+                    PrepararWorldParaYSort(_worldNode);
                     GameNetwork.Log($"ObterMundo: encontrado via FindChild em {child.Name}");
                     return _worldNode;
                 }
@@ -113,6 +117,20 @@ public partial class EntityManager : Node
             }
         }
         return _worldNode;
+    }
+
+    private static void PrepararWorldParaYSort(Node2D world)
+    {
+        world.YSortEnabled = true;
+        world.ZIndex = 0;
+        world.ZAsRelative = true;
+    }
+
+    private static void PrepararEntidadeYSort(Node2D node)
+    {
+        node.ZIndex = 0;
+        node.ZAsRelative = true;
+        node.YSortEnabled = false;
     }
 
     private const string MetaAnimPrefix = "anim_prefix";
@@ -162,7 +180,6 @@ public partial class EntityManager : Node
             GameNetwork.Log($"OnEnterWorldHandler: CarregarCenasMob falhou: {ex.Message}");
         }
         CallDeferred(nameof(FlushPendingSpawns));
-        CallDeferred(nameof(EnviarDropsParaServidor));
         CallDeferred(nameof(ApplyServerDataAfterEnterWorld));
     }
 
@@ -201,57 +218,6 @@ public partial class EntityManager : Node
         }
     }
 
-    private void EnviarDropsParaServidor()
-    {
-        if (_gameNet == null) return;
-
-        var mobTypes = new System.Collections.Generic.List<string>();
-        var itemIdsList = new System.Collections.Generic.List<int[]>();
-        var chancesList = new System.Collections.Generic.List<double[]>();
-        var minQtysList = new System.Collections.Generic.List<int[]>();
-        var maxQtysList = new System.Collections.Generic.List<int[]>();
-
-        foreach (var kv in _mobScenes)
-        {
-            if (kv.Value == null) continue;
-            var inst = kv.Value.Instantiate<Inimigo>();
-            Inimigo.PreencherDropTable(kv.Key, inst.DropTable);
-            var drops = inst.DropTable;
-            int count = drops.Count;
-            if (count == 0) { inst.QueueFree(); continue; }
-
-            var ids = new int[count];
-            var ch = new double[count];
-            var min = new int[count];
-            var max = new int[count];
-            for (int i = 0; i < count; i++)
-            {
-                ids[i] = drops[i].ItemId;
-                ch[i] = drops[i].Chance;
-                min[i] = drops[i].MinQty;
-                max[i] = drops[i].MaxQty;
-            }
-            mobTypes.Add(kv.Key);
-            itemIdsList.Add(ids);
-            chancesList.Add(ch);
-            minQtysList.Add(min);
-            maxQtysList.Add(max);
-            inst.QueueFree();
-        }
-
-        if (mobTypes.Count > 0)
-        {
-            _gameNet.SendMobDropConfig(
-                mobTypes.ToArray(),
-                itemIdsList.ToArray(),
-                chancesList.ToArray(),
-                minQtysList.ToArray(),
-                maxQtysList.ToArray()
-            );
-            GameNetwork.Log($"Enviados {mobTypes.Count} configs de drops para o servidor");
-        }
-    }
-
     private void FlushPendingSpawns()
     {
         if (_flushRetryCount >= 10)
@@ -271,6 +237,7 @@ public partial class EntityManager : Node
                 {
                     var fallback = new Node2D();
                     fallback.Name = "World";
+                    PrepararWorldParaYSort(fallback);
                     tree.CurrentScene.AddChild(fallback);
                     _worldNode = fallback;
                     world = fallback;
@@ -280,6 +247,7 @@ public partial class EntityManager : Node
                 {
                     var fallback = new Node2D();
                     fallback.Name = "World";
+                    PrepararWorldParaYSort(fallback);
                     AddChild(fallback);
                     _worldNode = fallback;
                     world = fallback;
@@ -346,14 +314,23 @@ public partial class EntityManager : Node
 
             _gameNet?.ApplyPendingInventory();
 
-            foreach (var s in _pendingSpawns)
+            for (int i = _pendingSpawns.Count - 1; i >= 0; i--)
+            {
+                var s = _pendingSpawns[i];
+                if (s.EntityType == "monster" || s.EntityType == "boss")
+                    continue;
+
                 ProcessSpawn(s.EntityId, s.EntityType, s.Name, s.X, s.Y, s.Level, s.Health, s.MaxHealth, s.Extra1, s.Extra2, s.Extra3);
-            _pendingSpawns.Clear();
+                _pendingSpawns.RemoveAt(i);
+            }
 
             // Fechar tela de carregamento
             var loading = GetTree()?.Root.GetNodeOrNull("LoadingScreen");
             if (loading != null)
                 loading.QueueFree();
+
+            if (_pendingSpawns.Count > 0)
+                CallDeferred(nameof(ProcessPendingSpawnBatch));
         }
         catch (System.Exception ex)
         {
@@ -365,6 +342,21 @@ public partial class EntityManager : Node
             else
                 GameNetwork.LogError("FlushPendingSpawns: limite de retentativas atingido");
         }
+    }
+
+    private void ProcessPendingSpawnBatch()
+    {
+        int processed = 0;
+        while (_pendingSpawns.Count > 0 && processed < PendingMonsterSpawnBatchSize)
+        {
+            var s = _pendingSpawns[0];
+            _pendingSpawns.RemoveAt(0);
+            ProcessSpawn(s.EntityId, s.EntityType, s.Name, s.X, s.Y, s.Level, s.Health, s.MaxHealth, s.Extra1, s.Extra2, s.Extra3);
+            processed++;
+        }
+
+        if (_pendingSpawns.Count > 0)
+            CallDeferred(nameof(ProcessPendingSpawnBatch));
     }
 
     private void OnEntitySpawned(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3)
@@ -393,8 +385,6 @@ public partial class EntityManager : Node
 
     private void ProcessSpawn(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3)
     {
-        GD.Print($"[EntityManager] ProcessSpawn: type={entityType} name={name} id={entityId}");
-
         Node2D? node = entityType switch
         {
             "player" => CreatePlayerEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2),
@@ -423,6 +413,7 @@ public partial class EntityManager : Node
         var root = new Node2D();
         root.Position = new Vector2(x, y);
         root.Name = $"Player_{entityId}";
+        PrepararEntidadeYSort(root);
         root.SetMeta("network_id", entityId);
 
         string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(characterClass);
@@ -522,6 +513,7 @@ public partial class EntityManager : Node
             var inimigo = scene.Instantiate<Inimigo>();
             inimigo.Position = new Vector2(x, y);
             inimigo.Name = $"Monster_{entityId}";
+            PrepararEntidadeYSort(inimigo);
             inimigo.NomeDoInimigo = name;
             inimigo.VidaMaxima = maxHealth;
             inimigo.SetVidaAtual(health, maxHealth);
@@ -538,6 +530,7 @@ public partial class EntityManager : Node
         var placeholder = new Node2D();
         placeholder.Position = new Vector2(x, y);
         placeholder.Name = $"Monster_{entityId}";
+        PrepararEntidadeYSort(placeholder);
 
         var icon = new Label
         {
@@ -591,6 +584,7 @@ public partial class EntityManager : Node
                         n2d.SetMeta("network_id", (long)entityId);
                         n2d.SetMeta("dialog_id", dialogId);
                         n2d.SetMeta(MetaAnimPrefix, animPrefix);
+                        PrepararEntidadeYSort(n2d);
                         GD.Print($"[EntityManager] NPC {name} (ID {entityId}) vinculado ao WorldNPC existente '{n2d.Name}'");
                         root = n2d;
                         break;
@@ -604,6 +598,7 @@ public partial class EntityManager : Node
             var body = new CharacterBody2D();
             body.Position = new Vector2(x, y);
             body.Name = $"NPC_{entityId}";
+            PrepararEntidadeYSort(body);
             body.SetMeta("network_id", entityId);
             body.SetMeta("dialog_id", dialogId);
             body.AddToGroup("NPC");
@@ -1099,6 +1094,7 @@ public partial class EntityManager : Node
 
         var prompt = new Label();
         prompt.Text = "[F]";
+        prompt.Name = "LootPrompt";
         prompt.Position = new Vector2(-14, -55);
         prompt.AddThemeFontSizeOverride("font_size", 20);
         prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));

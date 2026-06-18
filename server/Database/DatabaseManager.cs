@@ -142,6 +142,8 @@ public class DatabaseManager
         cmd.ExecuteNonQuery();
 
         TryAddColumns(conn);
+        TryNormalizeItems(conn);
+        TryAddIndexes(conn);
         Logger.Info("Banco de dados PostgreSQL inicializado.");
     }
 
@@ -152,6 +154,7 @@ public class DatabaseManager
             ("accounts", "security_question", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "security_answer", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "salt", "VARCHAR(255) NOT NULL DEFAULT ''"),
+            ("items", "refine_level", "INT NOT NULL DEFAULT 0"),
         };
 
         foreach (var (table, column, type) in columns)
@@ -167,6 +170,50 @@ public class DatabaseManager
             {
                 Logger.Info($"Nao foi possivel adicionar coluna '{column}' em '{table}': {ex.Message}");
             }
+        }
+    }
+
+    private void TryNormalizeItems(NpgsqlConnection conn)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = """
+                DELETE FROM items
+                WHERE id IN (
+                    SELECT id FROM (
+                        SELECT id,
+                               ROW_NUMBER() OVER (
+                                   PARTITION BY character_id, slot
+                                   ORDER BY id DESC
+                               ) AS rn
+                        FROM items
+                    ) t
+                    WHERE t.rn > 1
+                )
+                """;
+            int removed = cmd.ExecuteNonQuery();
+            if (removed > 0)
+                Logger.Info($"Normalizacao de items: {removed} duplicata(s) de slot removida(s).");
+        }
+        catch (Exception ex)
+        {
+            Logger.Info($"Nao foi possivel normalizar items: {ex.Message}");
+        }
+    }
+
+    private void TryAddIndexes(NpgsqlConnection conn)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS ux_items_character_slot ON items(character_id, slot)";
+            cmd.ExecuteNonQuery();
+            Logger.Info("Indice unico ux_items_character_slot verificado.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Info($"Nao foi possivel criar indice unico de items: {ex.Message}");
         }
     }
 
@@ -254,7 +301,7 @@ public class DatabaseManager
                 Class = reader.GetString(3),
                 Race = reader.GetString(4),
                 Level = reader.GetInt32(5),
-                Xp = reader.GetInt32(6),
+                Xp = reader.GetInt64(6),
                 Forca = reader.GetInt32(7),
                 Agilidade = reader.GetInt32(8),
                 Destreza = reader.GetInt32(9),
@@ -412,18 +459,32 @@ public class DatabaseManager
         if (item.DbId > 0)
         {
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "UPDATE items SET slot = @s, quantity = @q, refine_level = @r WHERE id = @i AND character_id = @c";
+            cmd.CommandText = "UPDATE items SET slot = @s, item_id = @ii, quantity = @q, refine_level = @r WHERE id = @i AND character_id = @c";
             cmd.Parameters.AddWithValue("@s", item.Slot);
+            cmd.Parameters.AddWithValue("@ii", item.ItemId);
             cmd.Parameters.AddWithValue("@q", item.Quantity);
             cmd.Parameters.AddWithValue("@r", item.RefineLevel);
             cmd.Parameters.AddWithValue("@i", item.DbId);
             cmd.Parameters.AddWithValue("@c", characterId);
-            cmd.ExecuteNonQuery();
+            int affected = cmd.ExecuteNonQuery();
+            if (affected > 0)
+                return;
+
+            item.DbId = 0;
         }
-        else
+
+        if (item.DbId <= 0)
         {
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "INSERT INTO items (character_id, slot, item_id, quantity, refine_level) VALUES (@c, @s, @ii, @q, @r) RETURNING id";
+            cmd.CommandText = """
+                INSERT INTO items (character_id, slot, item_id, quantity, refine_level)
+                VALUES (@c, @s, @ii, @q, @r)
+                ON CONFLICT (character_id, slot)
+                DO UPDATE SET item_id = EXCLUDED.item_id,
+                              quantity = EXCLUDED.quantity,
+                              refine_level = EXCLUDED.refine_level
+                RETURNING id
+                """;
             cmd.Parameters.AddWithValue("@c", characterId);
             cmd.Parameters.AddWithValue("@s", item.Slot);
             cmd.Parameters.AddWithValue("@ii", item.ItemId);
@@ -1136,7 +1197,7 @@ public class CharacterRow
     public string Class { get; set; } = "";
     public string Race { get; set; } = "";
     public int Level { get; set; } = 1;
-    public int Xp { get; set; }
+    public long Xp { get; set; }
     public int Forca { get; set; }
     public int Agilidade { get; set; }
     public int Destreza { get; set; }

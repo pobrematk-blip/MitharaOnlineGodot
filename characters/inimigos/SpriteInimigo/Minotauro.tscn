@@ -7,7 +7,7 @@ size = Vector2(38, 52)
 
 [node name="Minotauro" type="CharacterBody2D"]
 collision_layer = 4
-collision_mask = 3
+collision_mask = 0
 script = ExtResource("1_script")
 MobType = "minotauro"
 AnimPrefix = "minotauro_"

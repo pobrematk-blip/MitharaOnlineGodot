@@ -16,7 +16,7 @@ offset_right = 41.0
 offset_bottom = 41.0
 mouse_filter = 2
 stretch_mode = 4
-expand_mode = 0
+expand_mode = 1
 
 [node name="Quantidade" type="Label" parent="."]
 layout_mode = 0
