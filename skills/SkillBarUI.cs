@@ -192,8 +192,21 @@ public partial class SkillBarUI : Control
     {
         if (_xpLevelComp == null) return;
 
+        int nivel = _xpLevelComp.Nivel;
+        int xp = _xpLevelComp.ExperienciaAtual;
+
+        // Fallback: tenta ler do GameNetwork se o componente ainda estiver com valores default
+        if (nivel <= 1 && xp <= 0 && (GetNodeOrNull("/root/GameNetwork") is GameNetwork gn))
+        {
+            if (gn._pendingLevel > 1 || gn._pendingXp > 0)
+            {
+                nivel = gn._pendingLevel;
+                xp = (int)gn._pendingXp;
+            }
+        }
+
         _xpBar.Value = _xpLevelComp.ProgressoXp;
-        _xpLabel.Text = $"N\u00edvel {_xpLevelComp.Nivel} | XP {_xpLevelComp.ExperienciaAtual}/{_xpLevelComp.ExperienciaProximoLevel}";
+        _xpLabel.Text = $"N\u00edvel {nivel} | XP {xp}/{_xpLevelComp.ExperienciaProximoLevel}";
     }
 
     private void BuildSlotRows(VBoxContainer parent)
