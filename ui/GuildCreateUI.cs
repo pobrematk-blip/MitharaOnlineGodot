@@ -238,26 +238,6 @@ public partial class GuildCreateUI : Control
     {
         if (success)
         {
-            string guildName = _nomeEdit.Text.Trim();
-            string tag = _tagEdit.Text.Trim();
-            int emblem = _emblemaSelecionado;
-            var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-            string nome = escolhido?.NomePersonagem?.Replace(" ", "_") ?? "default";
-            string path = $"user://guild_data_{nome}.cfg";
-            var cfg = new ConfigFile();
-            cfg.Load(path);
-            cfg.SetValue("Guild", "id", guildId);
-            cfg.SetValue("Guild", "name", guildName);
-            cfg.SetValue("Guild", "tag", tag);
-            cfg.SetValue("Guild", "emblem_index", emblem);
-            cfg.SetValue("Guild", "is_leader", true);
-            cfg.SetValue("Guild", "meu_rank", 0);
-            cfg.SetValue("Guild", "level", 1);
-            cfg.SetValue("Guild", "xp", 0);
-            cfg.SetValue("Guild", "member_count", 1);
-            cfg.SetValue("Guild", "leader_name", escolhido?.NomePersonagem ?? "");
-            cfg.Save(path);
-
             if (_gameNet != null)
             {
                 _gameNet.GuildId = guildId;
@@ -266,7 +246,6 @@ public partial class GuildCreateUI : Control
 
             var guildUI = GetTree().Root.FindChild("GuildUI", true, false) as GuildUI;
             guildUI?.AbrirFechar(true);
-            guildUI?.RecarregarDadosArquivo();
 
             var overhead = GetTree().Root.FindChild("OverheadUI", true, false) as OverheadUI;
             overhead?.RecarregarDadosGuild();

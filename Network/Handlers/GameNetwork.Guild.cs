@@ -133,7 +133,6 @@ partial class GameNetwork
             skills.Add(s);
         }
 
-        SalvarGuildDataLocal(guildId, guildName, guildTag, guildEmblem, liderNome, guildLevel, guildXp, memberCount, meuRank);
         AtualizarOverheadUI();
 
         EmitSignal(SignalName.OnGuildData, guildId, guildName, guildTag, guildEmblem, members, guildLevel, guildXp, skillPoints, skills);
@@ -141,50 +140,18 @@ partial class GameNetwork
 
     private void SalvarGuildDataLocal(int guildId, string guildName, string tag, int emblemIdx, string liderNome = "", int guildLevel = 1, int guildXp = 0, int memberCount = 0, int meuRank = 4)
     {
-        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        string nome = escolhido?.NomePersonagem?.Replace(" ", "_") ?? "default";
-        string path = $"user://guild_data_{nome}.cfg";
-        var cfg = new ConfigFile();
-        cfg.Load(path);
-        cfg.SetValue("Guild", "id", guildId);
-        cfg.SetValue("Guild", "name", guildName);
-        cfg.SetValue("Guild", "tag", tag);
-        cfg.SetValue("Guild", "emblem_index", emblemIdx);
-        cfg.SetValue("Guild", "is_leader", IsGuildLeader);
-        cfg.SetValue("Guild", "leader_name", liderNome);
-        cfg.SetValue("Guild", "level", guildLevel);
-        cfg.SetValue("Guild", "xp", guildXp);
-        cfg.SetValue("Guild", "member_count", memberCount);
-        cfg.SetValue("Guild", "meu_rank", meuRank);
-        cfg.Save(path);
+        GD.Print("[GUILD] Persistencia local desativada. Dados de guilda ficam no servidor.");
     }
 
     private void HandleGuildClear()
     {
         GuildId = -1;
         IsGuildLeader = false;
-        LimparDadosGuildLocal();
         EmitSignal(SignalName.OnGuildCleared);
     }
 
     private void LimparDadosGuildLocal()
     {
-        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        string nome = escolhido?.NomePersonagem?.Replace(" ", "_") ?? "default";
-        string path = $"user://guild_data_{nome}.cfg";
-        var cfg = new ConfigFile();
-        cfg.Load(path);
-        cfg.SetValue("Guild", "id", -1);
-        cfg.SetValue("Guild", "name", "");
-        cfg.SetValue("Guild", "tag", "");
-        cfg.SetValue("Guild", "emblem_index", -1);
-        cfg.SetValue("Guild", "is_leader", false);
-        cfg.SetValue("Guild", "leader_name", "");
-        cfg.SetValue("Guild", "level", 1);
-        cfg.SetValue("Guild", "xp", 0);
-        cfg.SetValue("Guild", "member_count", 0);
-        cfg.SetValue("Guild", "meu_rank", 4);
-        cfg.Save(path);
         AtualizarOverheadUI();
     }
 

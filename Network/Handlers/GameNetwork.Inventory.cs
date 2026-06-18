@@ -144,6 +144,10 @@ partial class GameNetwork
                 inv.Slots[invSlot] = new SlotInventario(oldItem, unequipQuantity, unequipRefineLevel);
             }
         }
+        else if (inv != null && invSlot >= 0 && invSlot < inv.Slots.Count)
+        {
+            inv.Slots[invSlot] = new SlotInventario();
+        }
 
         if (newItem != null)
         {
@@ -156,6 +160,7 @@ partial class GameNetwork
 
         equip.RecalcularBonusEquipamentos();
         equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
+        inv?.NotificarMudancaExterna();
     }
 
     private void HandleItemUpdate(NetDataReader r)

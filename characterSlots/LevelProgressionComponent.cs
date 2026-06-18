@@ -30,31 +30,6 @@ public partial class LevelProgressionComponent : Node
 
     public void AdicionarExperiencia(int quantidade, EquipamentoComponent equipamento)
     {
-        if (quantidade <= 0) return;
-
-        float bonusPercent = equipamento?.BonusExperiencia ?? 0f;
-        int xpFinal = quantidade + (int)(quantidade * bonusPercent / 100f);
-        if (xpFinal <= 0) return;
-
-        _experienciaAtual += xpFinal;
-
-        bool subiu = false;
-        int xpNecessaria = ExperienciaProximoLevel;
-        while (xpNecessaria > 0 && _experienciaAtual >= xpNecessaria)
-        {
-            _experienciaAtual -= xpNecessaria;
-            _nivel++;
-            subiu = true;
-            xpNecessaria = ExperienciaProximoLevel;
-
-            equipamento?.AdicionarPontosDisponiveis(LevelProgressionUtil.PontosPorLevel);
-            EmitSignal(SignalName.SubiuDeLevel, _nivel);
-            GD.Print($"[LEVEL] ★ Nível {_nivel}! +{LevelProgressionUtil.PontosPorLevel} pontos de atributo.");
-        }
-
-        EmitSignal(SignalName.ProgressaoAtualizada);
-
-        if (!subiu)
-            GD.Print($"[LEVEL] +{xpFinal} XP ({_experienciaAtual}/{ExperienciaProximoLevel})");
+        GD.PrintErr("[LEVEL] XP local bloqueado. Progresso deve vir do servidor.");
     }
 }

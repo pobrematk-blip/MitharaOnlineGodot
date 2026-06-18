@@ -233,40 +233,7 @@ public partial class GuildUI : Control
 
     public void RecarregarDadosArquivo()
     {
-        var p = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        string nome = p?.NomePersonagem?.Replace(" ", "_") ?? "default";
-        var cfg = new ConfigFile();
-        if (cfg.Load($"user://guild_data_{nome}.cfg") != Error.Ok) return;
-
-        int id = cfg.GetValue("Guild", "id", -1).AsInt32();
-        if (id <= 0) return;
-
-        _guildId = id;
-        _guildName = cfg.GetValue("Guild", "name", "Guilda").AsString();
-        _guildTag = cfg.GetValue("Guild", "tag", "").AsString();
-        _guildLevel = cfg.GetValue("Guild", "level", 1).AsInt32();
-        _guildXp = cfg.GetValue("Guild", "xp", 0).AsInt32();
-        _guildLiderNome = cfg.GetValue("Guild", "leader_name", "").AsString();
-        int meuRank = cfg.GetValue("Guild", "meu_rank", 4).AsInt32();
-        bool ehLider = cfg.GetValue("Guild", "is_leader", false).AsBool();
-        if (ehLider && meuRank != 0)
-        {
-            meuRank = 0;
-            cfg.SetValue("Guild", "meu_rank", 0);
-            cfg.Save($"user://guild_data_{nome}.cfg");
-        }
-        _membros.Clear();
-        _membros.Add(new Godot.Collections.Dictionary
-        {
-            ["name"] = NomeJogador,
-            ["rank"] = meuRank,
-        });
-
-        int emblemIdx = cfg.GetValue("Guild", "emblem_index", -1).AsInt32();
-        CarregarEmblemaInfo(emblemIdx);
-        AtualizarInfo();
-        AtualizarLista();
-        AtualizarSkills();
+        GD.Print("[GUILD] Cache local de guilda desativado. Dados devem vir do servidor.");
     }
 
     private void TrazerParaFrente()
@@ -379,16 +346,8 @@ public partial class GuildUI : Control
     private void AtualizarInfo()
     {
         int contagemMembros = _membros.Count;
-        if (contagemMembros == 0 && _guildId > 0)
-        {
-            var p = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-            string nome = p?.NomePersonagem?.Replace(" ", "_") ?? "default";
-            var cfg = new ConfigFile();
-            if (cfg.Load($"user://guild_data_{nome}.cfg") == Error.Ok)
-                contagemMembros = cfg.GetValue("Guild", "member_count", 0).AsInt32();
-        }
         _infoNameLabel.Text = _guildId > 0 ? _guildName : "Sem Guilda";
-        _infoTagLabel.Text = _guildId > 0 ? ObterTagSalva() : "";
+        _infoTagLabel.Text = _guildId > 0 ? _guildTag : "";
         _infoLevelLabel.Text = $"Nível: {_guildLevel}";
         _infoMembrosLabel.Text = $"Membros: {contagemMembros}/{MaxSlots()}";
         _infoLiderLabel.Text = $"Líder: {LiderNome()}";
@@ -410,11 +369,7 @@ public partial class GuildUI : Control
 
     private string ObterTagSalva()
     {
-        var p = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        string nome = p?.NomePersonagem?.Replace(" ", "_") ?? "default";
-        var cfg = new ConfigFile();
-        if (cfg.Load($"user://guild_data_{nome}.cfg") != Error.Ok) return "";
-        return cfg.GetValue("Guild", "tag", "").AsString();
+        return _guildTag;
     }
 
     private void OnNetworkGuildMemberUpdate(ulong entityId, string name, int rank, bool joined)

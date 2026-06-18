@@ -80,6 +80,7 @@ public partial class WorldNPC : CharacterBody2D
     {
         var labelName = new Label
         {
+            Name = "NameLabel",
             Text = NpcName,
             Position = new Vector2(-60, -60),
             ZIndex = 2,

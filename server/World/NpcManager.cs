@@ -70,19 +70,8 @@ public class NpcManager
             FactionId = "solari",
         });
 
-        RegisterTemplate(new NpcTemplate
-        {
-            PrefabId = "ferreiro",
-            Name = "Ferreiro",
-            DialogId = "refino",
-            Race = "Humano",
-            AnimPrefix = "padrao",
-            FactionId = "solari",
-        });
-
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1040, Y = 1050, PrefabId = "banqueiro" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1050, PrefabId = "guarda_solareth" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1100, Y = 1050, PrefabId = "ferreiro" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1109, Y = 957, PrefabId = "banqueiro" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1098, Y = 1177, PrefabId = "guarda_solareth" });
     }
 
     private void RegisterDialogs()

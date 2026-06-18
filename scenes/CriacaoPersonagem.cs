@@ -552,7 +552,7 @@ public partial class CriacaoPersonagem : Control
         }
         else
         {
-            GetTree().ChangeSceneToFile(SceneConstants.MAIN);
+            GD.PrintErr("[CRIACAO] Criacao offline bloqueada. Conecte ao servidor para criar personagem.");
         }
     }
 

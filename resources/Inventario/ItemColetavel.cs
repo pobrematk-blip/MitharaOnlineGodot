@@ -24,6 +24,8 @@ public partial class ItemColetavel : Area2D
 
     public override void _Ready()
     {
+        AddToGroup("Loot");
+
         Color rarityColor = Color.FromHtml("#ffffff");
         if (ItemContido != null)
             rarityColor = RarityColors.GetValueOrDefault(ItemContido.Raridade, Color.FromHtml("#ffffff"));
@@ -71,6 +73,7 @@ public partial class ItemColetavel : Area2D
         AddChild(_nameLabel);
 
         _prompt = new Label();
+        _prompt.Name = "LootPrompt";
         _prompt.Text = "[F]";
         _prompt.Position = new Vector2(-14, -65);
         _prompt.AddThemeFontSizeOverride("font_size", 20);
@@ -138,6 +141,11 @@ public partial class ItemColetavel : Area2D
         _tooltip?.Esconder();
     }
 
+    public void Coletar()
+    {
+        TryCollect();
+    }
+
     private void TryCollect()
     {
         if (ItemContido == null) return;
@@ -152,20 +160,6 @@ public partial class ItemColetavel : Area2D
             return;
         }
 
-        var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
-        if (player == null) return;
-
-        var inventario = player.GetNodeOrNull<InventarioComponent>("InventarioComponent");
-        if (inventario == null) return;
-
-        if (inventario.AdicionarItem(ItemContido, 1))
-        {
-            GD.Print($"[MUNDO] Player coletou: {ItemContido.Nome}!");
-
-            GD.PrintErr("[ITEM] Save local ignorado. O jogo online deve persistir itens pelo servidor.");
-
-            _tooltip?.Esconder();
-            QueueFree();
-        }
+        GD.PrintErr("[ITEM] Coleta local bloqueada. Conecte ao servidor para coletar itens.");
     }
 }

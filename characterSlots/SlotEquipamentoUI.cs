@@ -197,30 +197,18 @@ public partial class SlotEquipamentoUI : Control
 
     private void DesequiparItem()
     {
-        var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
-        if (player == null) return;
-
-        var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
-        if (equip == null) return;
-
-        var inventario = player.FindChild("InventarioComponent", true, false) as InventarioComponent;
-        if (inventario == null) return;
-
         var item = SlotLogico.Item;
-        if (inventario.AdicionarItem(item, 1))
+        if (item == null) return;
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet.IsConnected)
         {
-            SlotLogico.Item = null;
-            SlotLogico.Quantidade = 0;
-            equip.RecalcularBonusEquipamentos();
-            equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
-            inventario.NotificarMudancaExterna();
-
-            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-            if (gameNet != null && gameNet.IsConnected)
-                gameNet.SendUnequipItem((int)TipoDeSlot, -1);
-
-            GD.Print($"[EQUIP SLOT] Item '{item.Nome}' desequipado por duplo clique.");
+            gameNet.SendUnequipItem((int)TipoDeSlot, -1);
+            GD.Print($"[EQUIP SLOT] Pedido online para desequipar '{item.Nome}' enviado.");
+            return;
         }
+
+        GD.PrintErr("[EQUIP SLOT] Desequipar local bloqueado. Conecte ao servidor.");
     }
 
     public void AtualizarSlot(SlotInventario slotLogico)
@@ -309,19 +297,15 @@ public partial class SlotEquipamentoUI : Control
                 return;
             }
 
-            var equipamentos = player?.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
-
-            if (equipamentos != null)
-            {
-                equipamentos.Equipar(this.TipoDeSlot, slotOrigem.SlotInterno);
-
-                var inventario = player?.FindChild("InventarioComponent", true, false) as InventarioComponent;
-                inventario?.NotificarMudancaExterna();
-            }
-
             var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
             if (gameNet != null && gameNet.IsConnected)
+            {
                 gameNet.SendEquipItem(slotOrigem.SlotIndex, (int)TipoDeSlot);
+                GD.Print($"[SLOT] Pedido online para equipar '{slotOrigem.SlotInterno.Item.Nome}' enviado por drag.");
+                return;
+            }
+
+            GD.PrintErr("[SLOT] Equipar local bloqueado. Conecte ao servidor.");
         }
     }
 }

@@ -93,6 +93,11 @@ public partial class RecursoNode : StaticBody2D
     {
         if (RecursoData == null || FaseAtual < 5) return;
 
+        MensagemSistema("Coleta de recursos local bloqueada. Recursos devem ser validados pelo servidor.");
+        bool localResourceGatherEnabled = false;
+        if (!localResourceGatherEnabled)
+            return;
+
         if (!TemFerramentaEquipada())
             return;
 
@@ -142,6 +147,11 @@ public partial class RecursoNode : StaticBody2D
 
     private int SoltarItem()
     {
+        GD.PrintErr("[RECURSO] SoltarItem local bloqueado. Drops devem vir do servidor.");
+        bool localResourceDropsEnabled = false;
+        if (!localResourceDropsEnabled)
+            return 0;
+
         if (RecursoData.ItemDropID <= 0) return 0;
 
         var itemDB = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");

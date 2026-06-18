@@ -443,7 +443,7 @@ public partial class ChatUI : Control
 
         if (_net == null || !_net.IsConnected)
         {
-            OnChatReceived((byte)_currentChannel, _playerName, text, "pt");
+            GD.PrintErr("[CHAT] Chat local bloqueado. Conecte ao servidor para enviar mensagens.");
             return;
         }
 

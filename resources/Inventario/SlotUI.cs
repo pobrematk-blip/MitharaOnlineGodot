@@ -370,19 +370,15 @@ public partial class SlotUI : Control
             return;
         }
 
-        var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
-        if (equip == null) return;
-
-        equip.Equipar(item.Tipo, SlotInterno);
-
-        var inv = ObterInventario();
-        inv?.NotificarMudancaExterna();
-
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (gameNet != null && gameNet.IsConnected)
+        {
             gameNet.SendEquipItem(SlotIndex, (int)item.Tipo);
+            GD.Print($"[SLOT] Pedido online para equipar '{item.Nome}' enviado.");
+            return;
+        }
 
-        GD.Print($"[SLOT] Item '{item.Nome}' equipado por duplo clique.");
+        GD.PrintErr("[SLOT] Equipar local bloqueado. Conecte ao servidor para equipar itens.");
     }
 
     private void UsarItemNoSlot()
@@ -404,6 +400,11 @@ public partial class SlotUI : Control
 
     private void TentarCapturarPetComPergaminho()
     {
+        GD.PrintErr("[PERGAMINHO] Captura local bloqueada. Captura de pet deve ser validada pelo servidor.");
+        bool localPetCaptureEnabled = false;
+        if (!localPetCaptureEnabled)
+            return;
+
         var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Node2D;
         if (player == null) return;
 
@@ -542,63 +543,17 @@ public partial class SlotUI : Control
         ulong targetId = (ulong)nearest.GetMeta("network_id").AsInt64();
         GD.Print($"[PERGAMINHO] Revivendo aliado {targetId} (dist={nearestDist:F1})");
 
-        var inventario = ObterInventario();
-        if (inventario == null) return;
-
-        // Consome o pergaminho do inventário
-        SlotInterno.Quantidade--;
-        if (SlotInterno.Quantidade <= 0)
-        {
-            SlotInterno.Item = null;
-            SlotInterno.Quantidade = 0;
-        }
-        inventario.NotificarMudancaExterna();
-
         gameNet.SendRevivePlayer(targetId);
     }
 
     private void RemoverBolsaParaInventario(int indexBolsa)
     {
-        var inventario = ObterInventario();
-        if (inventario == null) return;
-
-        if (!inventario.DesequiparBolsaNoSlot(indexBolsa))
-            return;
-
-        foreach (var slot in inventario.Slots)
-        {
-            if (slot.Item != null) continue;
-            slot.Item = SlotInterno.Item;
-            slot.Quantidade = SlotInterno.Quantidade;
-            SlotInterno.Item = null;
-            SlotInterno.Quantidade = 0;
-            inventario.NotificarMudancaExterna();
-            return;
-        }
-
-        GD.Print("[INVENTÁRIO] âŒ Sem espaço para retirar a bolsa!");
+        GD.PrintErr("[INVENTARIO] Bolsa local bloqueada. Operacao deve passar pelo servidor.");
     }
 
     private void RemoverBolsaParaBanco(int indexBolsa)
     {
-        var banco = ObterBanco();
-        if (banco == null) return;
-
-        if (!banco.DesequiparBolsaNoSlot(indexBolsa))
-            return;
-
-        foreach (var slot in banco.Slots)
-        {
-            if (slot.Item != null) continue;
-            slot.Item = SlotInterno.Item;
-            slot.Quantidade = SlotInterno.Quantidade;
-            SlotInterno.Item = null;
-            SlotInterno.Quantidade = 0;
-            banco.NotificarMudancaExterna();
-            return;
-        }
-
-        GD.Print("[BANCO] âŒ Sem espaço para retirar a bolsa!");
+        GD.PrintErr("[BANCO] Bolsa local bloqueada. Operacao deve passar pelo servidor.");
     }
 
     public override bool _CanDropData(Vector2 position, Variant data)
@@ -625,38 +580,7 @@ public partial class SlotUI : Control
     {
         if (data.AsGodotObject() is SkillBarSlotUI skillBarSlot)
         {
-            var item = skillBarSlot.AssignedItem;
-            if (item != null)
-            {
-                var inv = ObterInventario();
-                if (inv != null)
-                {
-                    for (int i = 0; i < inv.Slots.Count; i++)
-                    {
-                        var s = inv.Slots[i];
-                        if (s.Item != null && s.Item.ItemID == item.ItemID && s.Quantidade < item.QuantidadeMaximaPorSlot)
-                        {
-                            s.Quantidade++;
-                            skillBarSlot.Clear();
-                            inv.NotificarMudancaExterna();
-                            return;
-                        }
-                    }
-
-                    for (int i = 0; i < inv.Slots.Count; i++)
-                    {
-                        var s = inv.Slots[i];
-                        if (s.Item == null)
-                        {
-                            s.Item = item;
-                            s.Quantidade = 1;
-                            skillBarSlot.Clear();
-                            inv.NotificarMudancaExterna();
-                            return;
-                        }
-                    }
-                }
-            }
+            GD.PrintErr("[SLOT] Retornar item da barra localmente foi bloqueado.");
             skillBarSlot.Clear();
             return;
         }
@@ -665,24 +589,14 @@ public partial class SlotUI : Control
         {
             if (slotEquipOrigem.SlotLogico?.Item == null) return;
 
-            var equipamentos = GetTree().CurrentScene.FindChild("Player", true, false)
-                ?.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
-
-            if (equipamentos != null)
-            {
-                SlotInterno.Item = slotEquipOrigem.SlotLogico.Item;
-                SlotInterno.Quantidade = 1;
-                slotEquipOrigem.SlotLogico.Item = null;
-                slotEquipOrigem.SlotLogico.Quantidade = 0;
-                equipamentos.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
-            }
-
-            var inv = ObterInventario();
-            inv?.NotificarMudancaExterna();
-
             var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
             if (gameNet != null && gameNet.IsConnected)
+            {
                 gameNet.SendUnequipItem((int)slotEquipOrigem.TipoDeSlot, SlotIndex);
+                return;
+            }
+
+            GD.PrintErr("[SLOT] Desequipar local bloqueado. Conecte ao servidor para desequipar itens.");
 
             return;
         }
@@ -697,64 +611,37 @@ public partial class SlotUI : Control
         // Equipar bolsa no inventário
         if (EhSlotBolsaInventario)
         {
-            var inventario = ObterInventario();
-            if (inventario == null) return;
-
-            int index = ObterIndiceBolsa();
-            inventario.EquiparBolsaNoSlot(slotOrigem.SlotInterno, index);
-            slotOrigem.SlotInterno.Item = null;
-            slotOrigem.SlotInterno.Quantidade = 0;
-            inventario.NotificarMudancaExterna();
-            ObterBanco()?.NotificarMudancaExterna();
+            GD.PrintErr("[INVENTARIO] Equipar bolsa local bloqueado. Operacao deve passar pelo servidor.");
             return;
         }
 
         // Equipar bolsa no banco
         if (EhSlotBolsaBanco)
         {
-            var banco = ObterBanco();
-            if (banco == null) return;
-
-            int index = ObterIndiceBolsa();
-            banco.EquiparBolsaNoSlot(slotOrigem.SlotInterno, index);
-            slotOrigem.SlotInterno.Item = null;
-            slotOrigem.SlotInterno.Quantidade = 0;
-            banco.NotificarMudancaExterna();
-            ObterInventario()?.NotificarMudancaExterna();
+            GD.PrintErr("[BANCO] Equipar bolsa local bloqueado. Operacao deve passar pelo servidor.");
             return;
         }
 
         // Transferência entre inventário e banco
         if (containerOrigem != containerDestino)
         {
-            if (SlotInterno == null || SlotInterno.Item != null) return;
-
-            if (slotOrigem.EhSlotBolsaInventario)
-            {
-                if (!(ObterInventario()?.DesequiparBolsaNoSlot(slotOrigem.ObterIndiceBolsa()) ?? false))
-                    return;
-            }
-            else if (slotOrigem.EhSlotBolsaBanco)
-            {
-                if (!(ObterBanco()?.DesequiparBolsaNoSlot(slotOrigem.ObterIndiceBolsa()) ?? false))
-                    return;
-            }
-
-            SlotInterno.Item = slotOrigem.SlotInterno.Item;
-            SlotInterno.Quantidade = slotOrigem.SlotInterno.Quantidade;
-            slotOrigem.SlotInterno.Item = null;
-            slotOrigem.SlotInterno.Quantidade = 0;
-
-            ObterInventario()?.NotificarMudancaExterna();
-            ObterBanco()?.NotificarMudancaExterna();
+            GD.PrintErr("[SLOT] Transferencia inventario/banco local bloqueada. Use pacotes do servidor.");
             return;
         }
 
         // Movimentação dentro do mesmo container
         if (containerOrigem == TipoContainerUi.Inventario)
-            MoverDentroDoInventario(slotOrigem);
+        {
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected)
+                gameNet.SendMoveItem(slotOrigem.SlotIndex, SlotIndex);
+            else
+                GD.PrintErr("[INVENTARIO] Mover item local bloqueado. Conecte ao servidor.");
+        }
         else if (containerOrigem == TipoContainerUi.Banco)
-            MoverDentroDoBanco(slotOrigem);
+        {
+            GD.PrintErr("[BANCO] Mover item local bloqueado. Banco deve passar pelo servidor.");
+        }
     }
 
     private void MoverDentroDoInventario(SlotUI slotOrigem)

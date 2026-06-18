@@ -194,22 +194,7 @@ public partial class OverheadUI : Control
 
     private void CarregarDadosGuild()
     {
-        string nome = _nomePersonagem.Replace(" ", "_");
-        string path = $"user://guild_data_{nome}.cfg";
-        var cfg = new ConfigFile();
-        if (cfg.Load(path) != Error.Ok) return;
-        int guildId = cfg.GetValue("Guild", "id", -1).AsInt32();
-        if (guildId <= 0)
-        {
-            _guildTag = "";
-            _guildEmblemIdx = -1;
-            cfg.SetValue("Guild", "tag", "");
-            cfg.SetValue("Guild", "emblem_index", -1);
-            cfg.Save(path);
-            return;
-        }
-        _guildTag = cfg.GetValue("Guild", "tag", "").AsString();
-        _guildEmblemIdx = cfg.GetValue("Guild", "emblem_index", -1).AsInt32();
+        return;
     }
 
     private void AtualizarNomeCompleto()

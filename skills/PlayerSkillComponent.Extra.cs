@@ -47,32 +47,22 @@ public partial class PlayerSkillComponent
             return;
         }
 
-        // Verificar mana/recursos do jogador
-        if (_player != null && skill.ManaCost > 0)
+        if (_player == null)
+            return;
+
+        var gameNet = _player.GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
         {
-            var tryConsume = _player.GetType().GetMethod("TryConsumeMana");
-            if (tryConsume != null)
-            {
-                bool ok = (bool)tryConsume.Invoke(_player, new object[] { skill.ManaCost });
-                if (!ok)
-                {
-                    GD.Print($"[SKILLCOMP] Mana insuficiente para '{skill.Nome}'.");
-                    return;
-                }
-            }
+            GD.PrintErr("[SKILLCOMP] Uso local de skill bloqueado. Conecte ao servidor.");
+            return;
         }
 
-        // Enviar uso de skill para o servidor
-        if (_player != null)
-        {
-            var gameNet = _player.GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-            if (gameNet != null && gameNet.IsConnected)
-            {
-                string dir = _player.CurrentDirection ?? "down";
-                Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
-                gameNet.SendSkillUse(slotIndex, _player.GlobalPosition + dirVec * 50f);
-            }
-        }
+        string dir = _player.CurrentDirection ?? "down";
+        Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
+        gameNet.SendSkillUse(slotIndex, _player.GlobalPosition + dirVec * 50f);
+        bool localSkillEffectsEnabled = false;
+        if (!localSkillEffectsEnabled)
+            return;
 
         // Aplicar cooldown
         EnsureCooldownTimer();
@@ -263,6 +253,11 @@ public partial class PlayerSkillComponent
 
     private void UsarItemDoSlot(int slotIndex)
     {
+        GD.PrintErr("[SKILLCOMP] Uso local de item pela barra bloqueado. Itens devem ser usados pelo servidor.");
+        bool localItemUseEnabled = false;
+        if (!localItemUseEnabled)
+            return;
+
         var item = ItemSlots[slotIndex];
         if (item == null) return;
 
@@ -327,6 +322,11 @@ public partial class PlayerSkillComponent
 
     private void TentarCapturarPet(Player player, ItemResource item)
     {
+        GD.PrintErr("[SKILLCOMP] Captura local de pet bloqueada. Captura deve ser validada pelo servidor.");
+        bool localPetCaptureEnabled = false;
+        if (!localPetCaptureEnabled)
+            return;
+
         var inimigos = GetTree().GetNodesInGroup("Inimigos");
         Inimigo alvo = null;
         float menorDist = 200f;

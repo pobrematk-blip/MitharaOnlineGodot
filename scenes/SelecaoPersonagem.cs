@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class SelecaoPersonagem : Control
@@ -91,15 +92,12 @@ public partial class SelecaoPersonagem : Control
         _cards.Clear();
         _slotSelecionado = null;
 
-        bool online = _net != null && _net.Characters.Count > 0;
+        bool online = _net != null && _net.IsConnected;
 
         if (online)
             PopulatarDeDadosServidor(_net!.Characters);
-        else
-            PopulatarDeSlotsLocais();
 
-        var save = GetNode<SaveManager>("/root/SaveManager");
-        int total = save.SlotsDisponiveis;
+        int total = _net?.Characters.Count > 0 ? Math.Max(_net.Characters.Count, 3) : 3;
         _vazio.Visible = _cards.Count == 0;
         _btnJogar.Disabled = true;
         _btnExcluir.Disabled = true;
@@ -429,8 +427,9 @@ public partial class SelecaoPersonagem : Control
         }
         else
         {
-            if (!escolhido.CarregarSlot(_slotSelecionado.Value)) return;
-            GetTree().ChangeSceneToFile(SceneConstants.MAIN);
+            GD.PrintErr("[SELECAO] O jogo e 100% online. Conecte ao servidor para entrar no mundo.");
+            FecharTelaCarregamento();
+            return;
         }
     }
 
@@ -484,10 +483,8 @@ public partial class SelecaoPersonagem : Control
         }
         else
         {
-            var save = GetNode<SaveManager>("/root/SaveManager");
-            save.DeletarSlot(_slotSelecionado.Value);
             _slotSelecionado = null;
-            PopulatarLista();
+            GD.PrintErr("[SELECAO] Exclusao local bloqueada. Personagens existem apenas no servidor.");
         }
     }
 

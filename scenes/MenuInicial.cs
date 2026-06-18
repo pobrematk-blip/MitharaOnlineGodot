@@ -36,13 +36,7 @@ public partial class MenuInicial : Node
     public void IrParaProximaCena()
     {
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        bool temPersonagem = net != null && net.Characters.Count > 0;
-
-        if (!temPersonagem)
-        {
-            var escolhido = GetNode<PersonagemEscolhido>("/root/PersonagemEscolhido");
-            temPersonagem = escolhido.TotalSlotsOcupados() > 0;
-        }
+        bool temPersonagem = net != null && net.IsConnected && net.Characters.Count > 0;
 
         string proximaCena = temPersonagem
             ? SceneConstants.SELECAO_PERSONAGEM

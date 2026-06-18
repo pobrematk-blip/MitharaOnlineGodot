@@ -275,57 +275,34 @@ public partial class EquipamentoComponent : Node
 
     public void AdicionarPontoForca()
     {
-        if (_pontosDisponiveis > 0)
-        {
-            _forca++;
-            _pontosDisponiveis--;
-            EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] Forca aumentada! Novo valor: {_forca}. Pontos restantes: {_pontosDisponiveis}");
-            SendAllocateStat("forca");
-        }
+        RequestAllocateStat("forca");
     }
 
     public void AdicionarPontoAgilidade()
     {
-        if (_pontosDisponiveis > 0)
-        {
-            _agilidade++;
-            _pontosDisponiveis--;
-            EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] Agilidade aumentada! Novo valor: {_agilidade}. Pontos restantes: {_pontosDisponiveis}");
-            SendAllocateStat("agilidade");
-        }
+        RequestAllocateStat("agilidade");
     }
 
     public void AdicionarPontoDestreza()
     {
-        if (_pontosDisponiveis > 0)
-        {
-            _destreza++;
-            _pontosDisponiveis--;
-            EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] Destreza aumentada! Novo valor: {_destreza}. Pontos restantes: {_pontosDisponiveis}");
-            SendAllocateStat("destreza");
-        }
+        RequestAllocateStat("destreza");
     }
 
     public void AdicionarPontoInteligencia()
     {
-        if (_pontosDisponiveis > 0)
-        {
-            _inteligencia++;
-            _pontosDisponiveis--;
-            EmitSignal(SignalName.EquipamentoAtualizado);
-            GD.Print($"[EQUIPAMENTO] Inteligencia aumentada! Novo valor: {_inteligencia}. Pontos restantes: {_pontosDisponiveis}");
-            SendAllocateStat("inteligencia");
-        }
+        RequestAllocateStat("inteligencia");
     }
 
-    private void SendAllocateStat(string statName)
+    private void RequestAllocateStat(string statName)
     {
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (gameNet != null && gameNet.IsConnected)
+        {
             gameNet.SendAllocateStat(statName);
+            return;
+        }
+
+        GD.PrintErr("[EQUIPAMENTO] Alocacao de atributo local bloqueada. Use o servidor.");
     }
 
     public void AdicionarPontosDisponiveis(int qtd)

@@ -769,35 +769,7 @@ public partial class Player : CharacterBody2D
             return;
         }
 
-        int dano = CalcularDanoFisico();
-        Vector2 direcaoAtaque = DirectionUtil.DirectionToVector(CurrentDirection);
-
-        bool acertou = false;
-        var inimigos = GetTree()?.GetNodesInGroup("Inimigos");
-        if (inimigos != null)
-        {
-            foreach (Node item in inimigos)
-            {
-                if (item is Inimigo inimigo)
-                {
-                    float distancia = GlobalPosition.DistanceTo(inimigo.GlobalPosition);
-                    if (distancia <= MeleeAttackRange)
-                    {
-                        Vector2 paraInimigo = (inimigo.GlobalPosition - GlobalPosition).Normalized();
-                        if (direcaoAtaque.Dot(paraInimigo) >= AttackDotThreshold)
-                        {
-                            inimigo.LevarDano(dano);
-                            GD.Print($"[PLAYER] Acertou {inimigo.NomeDoInimigo}! Dano: {dano}");
-                            acertou = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!acertou)
-            GD.Print("[PLAYER] Ataque melee não acertou nenhum inimigo.");
+        GD.PrintErr("[PLAYER] Dano melee local bloqueado. Combate deve passar pelo servidor.");
     }
 
     private ulong? FindNearestNetworkEntity(GameNetwork gameNet, out float closestDist)
@@ -994,15 +966,9 @@ public partial class Player : CharacterBody2D
             return true;
         }
 
-        if (nearest is WorldNPC worldNpc)
-        {
-            var dialog = GetNodeOrNull<DialogUI>("/root/main/HUD/DialogUI");
-            if (dialog != null)
-                dialog.MostrarDialogoLocal(worldNpc.NpcName, worldNpc.DialogId);
-            return true;
-        }
+        GD.PrintErr("[NPC] Interacao local bloqueada. NPC precisa de network_id e resposta do servidor.");
+        return true;
 
-        return false;
     }
 
     private void UpdateNpcPrompts()
@@ -1053,7 +1019,7 @@ public partial class Player : CharacterBody2D
                         UpdateLootPromptVisibility(n2d, near);
                     }
 
-                    if (near && isServerLoot && (nearest == null || d < nearestDist))
+                    if (near && (isServerLoot || isSceneItem) && (nearest == null || d < nearestDist))
                     {
                         nearestDist = d;
                         nearest = n2d;
@@ -1064,8 +1030,15 @@ public partial class Player : CharacterBody2D
 
         if (nearest != null)
         {
-            ulong lootId = (ulong)nearest.GetMeta("loot_id").AsInt64();
-            gameNet.SendLootPickup(lootId);
+            if (nearest.HasMeta("loot_id"))
+            {
+                ulong lootId = (ulong)nearest.GetMeta("loot_id").AsInt64();
+                gameNet.SendLootPickup(lootId);
+                return;
+            }
+
+            if (nearest is ItemColetavel itemColetavel)
+                itemColetavel.Coletar();
         }
     }
 

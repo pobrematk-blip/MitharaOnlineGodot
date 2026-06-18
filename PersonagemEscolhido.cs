@@ -38,43 +38,27 @@ public partial class PersonagemEscolhido : Node
 
     public bool GarantirDadosCarregados()
     {
-        if (TemPersonagem) return true;
-        return CarregarSalvo(out _, out _);
+        return TemPersonagem;
     }
 
     public bool PossuiArquivoSalvo()
     {
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save == null) return false;
-
-        for (int i = 0; i < save.SlotsDisponiveis; i++)
-        {
-            if (save.SlotOcupado(i)) return true;
-        }
         return false;
     }
 
     public int TotalSlotsOcupados()
     {
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        return save?.TotalSlotsOcupados() ?? 0;
+        return 0;
     }
 
     public Godot.Collections.Array<int> SlotsOcupados()
     {
         var arr = new Godot.Collections.Array<int>();
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save != null)
-            foreach (var s in save.SlotsOcupados())
-                arr.Add(s);
         return arr;
     }
 
     public void ExcluirSalvo()
     {
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        save?.DeletarSlot(SlotAtivo);
-
         ClasseBase = null;
         Raca = null;
         NomePersonagem = "Aventureiro";
@@ -87,108 +71,32 @@ public partial class PersonagemEscolhido : Node
     public bool ObterResumoSalvo(out string resumo)
     {
         resumo = "";
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save == null) return false;
-
-        int slot = save.Conta?.UltimoSlotSelecionado ?? SlotPadrao;
-        if (!save.SlotOcupado(slot))
-        {
-            var ocupados = save.SlotsOcupados();
-            if (ocupados.Count == 0) return false;
-            slot = ocupados[0];
-        }
-
-        var cfg = new ConfigFile();
-        if (cfg.Load(save.SlotPath(slot)) != Error.Ok) return false;
-
-        string pathClasse = cfg.GetValue("personagem", "classe", "").AsString();
-        string pathRaca = cfg.GetValue("personagem", "raca", "").AsString();
-        if (string.IsNullOrEmpty(pathClasse) || string.IsNullOrEmpty(pathRaca)) return false;
-
-        var classe = ResourceLoader.Load<ClasseCustomResource>(pathClasse);
-        var raca = ResourceLoader.Load<RacaResource>(pathRaca);
-        if (classe == null || raca == null) return false;
-
-        string nome = cfg.GetValue("personagem", "nome", "Aventureiro").AsString();
-        resumo = $"{nome} — {raca.ObterNomeFaccao()} | {classe.NomeClasse} ({raca.NomeRaca})";
-        return true;
+        return false;
     }
 
     public void Definir(ClasseCustomResource classe, RacaResource raca, string nome = null)
     {
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save == null)
-        {
-            GD.PrintErr("[PERSONAGEM] SaveManager não encontrado.");
-            return;
-        }
-
-        int slot = save.EncontrarSlotVazio();
-        if (slot < 0)
-        {
-            GD.PrintErr("[PERSONAGEM] Sem slots disponíveis.");
-            return;
-        }
-
-        SlotAtivo = slot;
+        SlotAtivo = SlotPadrao;
         ClasseBase = classe;
         Raca = raca;
         NomePersonagem = string.IsNullOrWhiteSpace(nome) ? "Aventureiro" : nome.Trim();
         ResetarProgressaoSalva();
-
-        save.SalvarSlot(slot, this);
-        GD.Print($"[PERSONAGEM] Personagem criado no slot {slot}: {NomePersonagem}");
+        GD.Print("[PERSONAGEM] Dados temporarios definidos. Persistencia local bloqueada; criacao real deve vir do servidor.");
     }
 
     public void Salvar()
     {
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save != null && TemPersonagem)
-            save.SalvarSlot(SlotAtivo, this);
+        GD.Print("[PERSONAGEM] Salvar local bloqueado. O jogo e 100% online.");
     }
 
     public void SalvarProgressao(LevelProgressionComponent progressao, EquipamentoComponent equipamento)
     {
-        if (!TemPersonagem || progressao == null || equipamento == null) return;
-
-        NivelSalvo = progressao.Nivel;
-        ExperienciaSalva = progressao.ExperienciaAtual;
-        ForcaSalva = equipamento.Forca;
-        AgilidadeSalva = equipamento.Agilidade;
-        DestrezaSalva = equipamento.Destreza;
-        InteligenciaSalva = equipamento.Inteligencia;
-        PontosDisponiveisSalvos = equipamento.PontosDisponiveis;
-        TemProgressaoSalva = true;
-
-        EquipadosSalvos = new Dictionary<TipoEquipamento, int>();
-        foreach (var kv in equipamento.ItensEquipados)
-        {
-            if (kv.Value?.Item != null)
-                EquipadosSalvos[kv.Key] = kv.Value.Item.ItemID;
-        }
-        TemEquipadosSalvos = EquipadosSalvos.Count > 0;
-        Salvar();
+        GD.Print("[PERSONAGEM] Progressao local bloqueada. XP/level/equipamentos devem vir do servidor.");
     }
 
     public void AplicarProgressaoSalva(LevelProgressionComponent progressao, EquipamentoComponent equipamento, ItemDatabase itemDB = null)
     {
-        if (progressao == null || equipamento == null) return;
-
-        if (TemProgressaoSalva)
-        {
-            progressao.DefinirProgresso(NivelSalvo, ExperienciaSalva);
-            equipamento.ImportarEstado(
-                ForcaSalva,
-                AgilidadeSalva,
-                DestrezaSalva,
-                InteligenciaSalva,
-                PontosDisponiveisSalvos);
-        }
-
-        if (TemEquipadosSalvos && itemDB != null)
-        {
-            equipamento.ImportarEquipamentos(EquipadosSalvos, itemDB);
-        }
+        GD.Print("[PERSONAGEM] AplicarProgressaoSalva bloqueado. Estado do personagem vem do servidor.");
     }
 
     public bool CarregarSalvo(out ClasseCustomResource classe, out RacaResource raca)
@@ -196,43 +104,13 @@ public partial class PersonagemEscolhido : Node
         classe = null;
         raca = null;
 
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save == null) return false;
-
-        int slot = save.Conta?.UltimoSlotSelecionado ?? SlotPadrao;
-        if (!save.SlotOcupado(slot))
-        {
-            var ocupados = save.SlotsOcupados();
-            if (ocupados.Count == 0) return false;
-            slot = ocupados[0];
-        }
-
-        if (!CarregarSlot(slot))
-            return false;
-
-        classe = ClasseBase;
-        raca = Raca;
-        return true;
+        return false;
     }
 
     public bool CarregarSlot(int slotIndex)
     {
-        var save = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        if (save == null) return false;
-
-        ClasseBase = null;
-        Raca = null;
-        ResetarProgressaoSalva();
-
-        if (!save.CarregarSlot(slotIndex, this))
-        {
-            GD.Print("[PERSONAGEM] Save inválido (classe ou raça removida). Recrie o personagem.");
-            return false;
-        }
-
-        SlotAtivo = slotIndex;
-        GD.Print($"[PERSONAGEM] Carregado: {NomePersonagem} | {Faccao?.NomeFaccao ?? "?"} | {ClasseBase?.NomeClasse ?? "?"} | {Raca?.NomeRaca ?? "?"}");
-        return true;
+        GD.PrintErr("[PERSONAGEM] Carregamento local bloqueado. Selecione um personagem vindo do servidor.");
+        return false;
     }
 
     public ClasseCustomResource MontarClasseParaPlayer()
