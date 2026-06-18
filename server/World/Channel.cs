@@ -290,7 +290,7 @@ public class Channel
                             }
                             else
                             {
-                                mob.TargetEntityId = null;
+                                _lastPathfindTime[mob.Id] = double.MinValue;
                                 mob.Moving = false;
                             }
                         }
@@ -374,14 +374,15 @@ public class Channel
 
                             if (moving)
                             {
-                                if (IsInNoMobZone(newX, newY))
-                                {
-                                    mob.PatrolTargetX = null;
-                                    mob.PatrolTargetY = null;
-                                    pathFollower.Stop();
-                                    mob.Moving = false;
-                                    continue;
-                                }
+                            if (IsInNoMobZone(newX, newY))
+                            {
+                                mob.PatrolTargetX = null;
+                                mob.PatrolTargetY = null;
+                                mob.PatrolTimer = gameTime + 2.0;
+                                pathFollower.Stop();
+                                mob.Moving = false;
+                                continue;
+                            }
 
                                 mob.X = newX;
                                 mob.Y = newY;
@@ -412,6 +413,7 @@ public class Channel
                                 {
                                     mob.PatrolTargetX = null;
                                     mob.PatrolTargetY = null;
+                                    mob.PatrolTimer = gameTime + 2.0;
                                     mob.Moving = false;
                                 }
                             }
@@ -423,19 +425,20 @@ public class Channel
                             float newFx = mob.X + dx * ratio;
                             float newFy = mob.Y + dy * ratio;
 
-                            if (IsInNoMobZone(newFx, newFy))
-                            {
-                                mob.PatrolTargetX = null;
-                                mob.PatrolTargetY = null;
-                                mob.Moving = false;
-                                continue;
-                            }
+                        if (IsInNoMobZone(newFx, newFy))
+                        {
+                            mob.PatrolTargetX = null;
+                            mob.PatrolTargetY = null;
+                            mob.PatrolTimer = gameTime + 2.0;
+                            mob.Moving = false;
+                            continue;
+                        }
 
-                            mob.X = newFx;
-                            mob.Y = newFy;
-                            mob.DirX = dx / dist;
-                            mob.DirY = dy / dist;
-                            mob.Moving = true;
+                        mob.X = newFx;
+                        mob.Y = newFy;
+                        mob.DirX = dx / dist;
+                        mob.DirY = dy / dist;
+                        mob.Moving = true;
                             _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
                         }
                     }
@@ -457,6 +460,8 @@ public class Channel
                             break;
                         }
                     }
+                    if (!mob.PatrolTargetX.HasValue)
+                        mob.PatrolTimer = gameTime + 2.0;
                     pathFollower?.Stop();
                 }
                 else

@@ -1158,7 +1158,7 @@ public partial class EntityManager : Node
             if (_previousPositions.TryGetValue(kvp.Key, out var prevPos))
             {
                 Vector2 posDelta = cur.Position - prevPos;
-                if (posDelta.LengthSquared() > 1.0f)
+                if (posDelta.LengthSquared() > 25.0f)
                     computedDir = posDelta.Normalized();
             }
             _previousPositions[kvp.Key] = cur.Position;

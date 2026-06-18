@@ -77,7 +77,9 @@ public class PathFollower
             if (_waypointIndex >= _path!.Count)
             {
                 _path = null;
-                return (currentX, currentY, 0, 0, false);
+                float lastDirX = dx / dist;
+                float lastDirY = dy / dist;
+                return (currentX, currentY, lastDirX, lastDirY, false);
             }
 
             var (wgx, wgy) = _path[_waypointIndex];
@@ -91,7 +93,11 @@ public class PathFollower
                 currentY = _targetY;
                 moveDist -= dist;
                 if (moveDist < 0.001f)
-                    return (currentX, currentY, 0, 0, false);
+                {
+                    float lastDirX = dx / dist;
+                    float lastDirY = dy / dist;
+                    return (currentX, currentY, lastDirX, lastDirY, false);
+                }
                 continue;
             }
 
@@ -100,7 +106,9 @@ public class PathFollower
             dist = MathF.Sqrt(dx * dx + dy * dy);
 
             if (dist < 0.001f)
+            {
                 return (currentX, currentY, 0, 0, false);
+            }
 
             float ratio2 = MathF.Min(moveDist / dist, 1f);
             float newX2 = currentX + dx * ratio2;

@@ -592,22 +592,6 @@ public partial class Inimigo : CharacterBody2D
         string cardinal = VectorToCardinal4(direcao);
         cardinal = RemapearDirecao(cardinal);
 
-        if (!moving && _player != null)
-        {
-            float distToPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
-            if (distToPlayer <= DistanciaAtaque + 10f)
-            {
-                Vector2 dirToPlayer = (_player.GlobalPosition - GlobalPosition).Normalized();
-                string atkCardinal = VectorToCardinal4(dirToPlayer);
-                string atkAnim = $"{AnimPrefix}attack_{atkCardinal}";
-                if (_sprite?.SpriteFrames?.HasAnimation(atkAnim) == true)
-                {
-                    _sprite.Play(atkAnim);
-                    return;
-                }
-            }
-        }
-
         string state = moving && direcao.LengthSquared() > 0.01f ? "walk" : "idle";
         string desejada = $"{AnimPrefix}{state}_{cardinal}";
 
