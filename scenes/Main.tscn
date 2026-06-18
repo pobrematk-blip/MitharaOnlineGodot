@@ -1,4 +1,4 @@
-[gd_scene load_steps=85 format=4 uid="uid://c3ocjs01psycc"]
+[gd_scene load_steps=86 format=4 uid="uid://c3ocjs01psycc"]
 
 [ext_resource type="Texture2D" uid="uid://buwum1ed2iflk" path="res://tiles/TileSets/$CL_Buildings (1).png" id="1_agua"]
 [ext_resource type="Texture2D" uid="uid://c2s12g1mrpj68" path="res://tiles/TileSets/$CL_Buildings (6).png" id="1_bjd11"]
@@ -44,6 +44,7 @@
 [ext_resource type="Script" uid="uid://c1fhm5tup4r47" path="res://scenes/Main.cs" id="36_main"]
 [ext_resource type="Script" uid="uid://c2ttbd581nstj" path="res://Itens/Recursos/RecursoNode.cs" id="39_recurso"]
 [ext_resource type="Resource" uid="uid://bwuj47o31au6c" path="res://Itens/Recursos/Arvore.tres" id="40_arvore"]
+[ext_resource type="Resource" path="res://Itens/Arco.tres" id="41_arco"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8b871"]
 texture = ExtResource("1_cmqll")
@@ -77450,6 +77451,10 @@ ItemContido = ExtResource("27_pet")
 position = Vector2(63, 228)
 ItemContido = ExtResource("26_arco")
 EscalaSprite = Vector2(1, 1)
+
+[node name="ArcoSimples" parent="World" instance=ExtResource("5_vcsgt")]
+position = Vector2(155, 228)
+ItemContido = ExtResource("41_arco")
 
 [node name="ItemColetavel" parent="World" instance=ExtResource("5_vcsgt")]
 position = Vector2(272, 211)
