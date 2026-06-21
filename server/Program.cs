@@ -25,6 +25,19 @@ DatabaseMigration.MigrateFromSqlite(sqlitePath, db);
 db.SeedItemDefinitions();
 ItemDefinitions.LoadFromDatabase(db);
 
+if (!ItemDefinitions.Exists(ItemDefinitions.PoeiraEstelar))
+{
+    ItemDefinitions.Register(new ItemDefinition
+    {
+        Id = ItemDefinitions.PoeiraEstelar,
+        Name = "Poeira Estelar",
+        Type = ItemType.Material,
+        MaxStack = 99,
+        IsStackable = true,
+    });
+    Logger.Info("Poeira Estelar (ID 107) registrada como item built-in.");
+}
+
 var server = new GameServer(config, db);
 server.Start();
 

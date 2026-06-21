@@ -1,3 +1,4 @@
+using System.Linq;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Entities;
@@ -785,6 +786,110 @@ partial class GameServer
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CashShopResult);
         writer.Put(success);
+        writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private static readonly int[] RefineSuccessRates = { 100, 80, 70, 60, 50, 40, 30, 20, 10, 5 };
+
+    private void HandleRefineItem(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var player, out var channel)) return;
+
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        int slot = reader.GetInt();
+        int itemId = reader.GetInt();
+
+        var item = player.Items.FirstOrDefault(i => i.Slot == slot && i.ItemId == itemId);
+        if (item == null)
+        {
+            SendRefineResult(peer, false, 0, "Item não encontrado no inventário.");
+            return;
+        }
+
+        var def = ItemDefinitions.Get(itemId);
+        if (def == null)
+        {
+            SendRefineResult(peer, false, 0, "Item inválido.");
+            return;
+        }
+
+        int type = (int)def.Type;
+        if (type < 1 || type > 13)
+        {
+            SendRefineResult(peer, false, 0, "Este item não pode ser refinado.");
+            return;
+        }
+
+        if (item.RefineLevel >= 10)
+        {
+            SendRefineResult(peer, false, item.RefineLevel, "Item já está no nível máximo (+10).");
+            return;
+        }
+
+        int goldCost = (item.RefineLevel + 1) * 1000;
+        int stardustCost = (item.RefineLevel + 1) * 5;
+
+        if (player.Gold < goldCost)
+        {
+            SendRefineResult(peer, false, item.RefineLevel, $"Gold insuficiente. Necessário: {goldCost}");
+            return;
+        }
+
+        int stardustTotal = player.Items
+            .Where(i => i.ItemId == ItemDefinitions.PoeiraEstelar)
+            .Sum(i => i.Quantity);
+
+        if (stardustTotal < stardustCost)
+        {
+            SendRefineResult(peer, false, item.RefineLevel, $"Poeira Estelar insuficiente. Necessário: {stardustCost}");
+            return;
+        }
+
+        int chance = RefineSuccessRates[Math.Min(item.RefineLevel, 9)];
+        bool success = Random.Shared.Next(100) < chance;
+
+        player.Gold -= goldCost;
+        _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
+
+        int remaining = stardustCost;
+        foreach (var sd in player.Items.Where(i => i.ItemId == ItemDefinitions.PoeiraEstelar).OrderBy(i => i.Slot))
+        {
+            if (remaining <= 0) break;
+            int take = Math.Min(remaining, sd.Quantity);
+            sd.Quantity -= take;
+            remaining -= take;
+            _db.SaveItem(session.SelectedCharacter.Id, sd);
+        }
+        player.Items.RemoveAll(i => i.ItemId == ItemDefinitions.PoeiraEstelar && i.Quantity <= 0);
+
+        if (success)
+        {
+            item.RefineLevel++;
+        }
+        else
+        {
+            if (item.RefineLevel > 0)
+                item.RefineLevel--;
+        }
+
+        _db.SaveItem(session.SelectedCharacter.Id, item);
+        RecalculatePlayerStats(player);
+
+        SendRefineResult(peer, success, item.RefineLevel, success
+            ? "Refino bem-sucedido!"
+            : "Refino falhou. O item perdeu um nível.");
+        SendInventoryData(peer, player);
+        SendGoldUpdate(peer, player.Gold);
+    }
+
+    private void SendRefineResult(NetPeer peer, bool success, int newLevel, string message)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_RefineResult);
+        writer.Put(success);
+        writer.Put(newLevel);
         writer.Put(message);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }

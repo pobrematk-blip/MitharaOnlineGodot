@@ -126,6 +126,27 @@ public class Channel
         _grid.MoveEntity(entityId, oldX, oldY, newX, newY);
     }
 
+    private void SetMonsterDirection(MonsterEntity mob, float dx, float dy)
+    {
+        float lenSq = dx * dx + dy * dy;
+        if (lenSq < 0.0025f)
+            return;
+
+        float len = MathF.Sqrt(lenSq);
+        float ndx = dx / len;
+        float ndy = dy / len;
+
+        // Evita microtrocas de direção, mas permite inversões reais de movimento.
+        float currentLenSq = mob.DirX * mob.DirX + mob.DirY * mob.DirY;
+        float dot = ndx * mob.DirX + ndy * mob.DirY;
+
+        if (currentLenSq < 0.0025f || dot < 0.92f)
+        {
+            mob.DirX = ndx;
+            mob.DirY = ndy;
+        }
+    }
+
     public HashSet<ulong> GetEntitiesInAoi(float x, float y)
     {
         return _grid.GetEntitiesInRadius(x, y, AoiRadius);
@@ -300,19 +321,13 @@ public class Channel
 
         if (movedSq < 0.04f)
         {
-            mob.X = oldX;
-            mob.Y = oldY;
             mob.Moving = false;
-            mob.DirX = 0;
-            mob.DirY = 0;
             return;
         }
 
-        float moved = MathF.Sqrt(movedSq);
         mob.X = newX;
         mob.Y = newY;
-        mob.DirX = moveX / moved;
-        mob.DirY = moveY / moved;
+        SetMonsterDirection(mob, moveX, moveY);
         mob.Moving = true;
         _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
     }
@@ -345,11 +360,7 @@ public class Channel
                 {
                     mob.Moving = false;
                     pathFollower?.Stop();
-                    if (dist > 0.001f)
-                    {
-                        mob.DirX = dx / dist;
-                        mob.DirY = dy / dist;
-                    }
+                    SetMonsterDirection(mob, dx, dy);
                     if (gameTime - mob.LastAttackTime >= mob.AttackCooldown)
                     {
                         mob.LastAttackTime = gameTime;
@@ -498,15 +509,15 @@ public class Channel
 
                             if (moving)
                             {
-                            if (IsInNoMobZone(newX, newY))
-                            {
-                                mob.PatrolTargetX = null;
-                                mob.PatrolTargetY = null;
-                                mob.PatrolTimer = gameTime + 2.0;
-                                pathFollower.Stop();
-                                mob.Moving = false;
-                                continue;
-                            }
+                                if (IsInNoMobZone(newX, newY))
+                                {
+                                    mob.PatrolTargetX = null;
+                                    mob.PatrolTargetY = null;
+                                    mob.PatrolTimer = gameTime + 2.0;
+                                    pathFollower.Stop();
+                                    mob.Moving = false;
+                                    continue;
+                                }
 
                                 (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
                                 ApplyMonsterMovement(mob, oldX, oldY, newX, newY);
@@ -545,17 +556,17 @@ public class Channel
                             float newFx = mob.X + dx * ratio;
                             float newFy = mob.Y + dy * ratio;
 
-                        if (IsInNoMobZone(newFx, newFy))
-                        {
-                            mob.PatrolTargetX = null;
-                            mob.PatrolTargetY = null;
-                            mob.PatrolTimer = gameTime + 2.0;
-                            mob.Moving = false;
-                            continue;
-                        }
+                            if (IsInNoMobZone(newFx, newFy))
+                            {
+                                mob.PatrolTargetX = null;
+                                mob.PatrolTargetY = null;
+                                mob.PatrolTimer = gameTime + 2.0;
+                                mob.Moving = false;
+                                continue;
+                            }
 
-                        (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                        ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy);
+                            (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
+                            ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy);
                         }
                     }
                 }

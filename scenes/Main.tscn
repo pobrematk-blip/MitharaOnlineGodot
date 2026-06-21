@@ -38,6 +38,7 @@
 [ext_resource type="Script" uid="uid://bcsjy5cfk15jq" path="res://resources/Inventario/ItemTooltip.cs" id="24_tooltip"]
 [ext_resource type="Script" uid="uid://c55xwjphwjgen" path="res://characterSlots/OverheadUI.cs" id="25_overhead"]
 [ext_resource type="PackedScene" uid="uid://respawnui" path="res://ui/RespawnUI.tscn" id="28_respawnui"]
+
 [ext_resource type="Script" uid="uid://c1fhm5tup4r47" path="res://scenes/Main.cs" id="36_main"]
 [ext_resource type="Script" uid="uid://c2ttbd581nstj" path="res://Itens/Recursos/RecursoNode.cs" id="39_recurso"]
 [ext_resource type="Resource" uid="uid://bwuj47o31au6c" path="res://Itens/Recursos/Arvore.tres" id="40_arvore"]

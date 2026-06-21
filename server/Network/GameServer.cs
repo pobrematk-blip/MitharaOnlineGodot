@@ -480,6 +480,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_CashShopBuy:
                 HandleCashShopBuy(peer, reader);
                 break;
+            case PacketId.C2S_RefineItem:
+                HandleRefineItem(peer, reader);
+                break;
 
             }
         }

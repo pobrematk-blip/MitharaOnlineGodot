@@ -145,8 +145,7 @@ public class NpcManager
                    "Cada nível de refino aumenta os atributos do item permanentemente!",
             Options = new List<DialogOption>
             {
-                new() { Text = "Refinar arma equipada", Action = "refine", ActionData = "weapon" },
-                new() { Text = "Refinar escudo equipado", Action = "refine", ActionData = "shield" },
+                new() { Text = "Abrir Forja de Refino", Action = "open_refine", ActionData = "" },
                 new() { Text = "Sair", Action = "close" },
             },
         };

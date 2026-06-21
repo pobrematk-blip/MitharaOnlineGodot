@@ -70,6 +70,13 @@ public partial class DialogUI : Control
                     return;
                 }
 
+                if (action == "open_refine")
+                {
+                    Fechar();
+                    AbrirRefine();
+                    return;
+                }
+
                 _gameNet?.SendNpcSelectOption(action, actionData);
             };
 
@@ -141,6 +148,32 @@ public partial class DialogUI : Control
             GetTree().CurrentScene.AddChild(ui);
             GD.Print("[GUILD] GuildCreateUI adicionado ao CurrentScene (fallback)!");
         }
+    }
+
+    private void AbrirRefine()
+    {
+        var hud = GetTree().Root.FindChild("HUD", true, false);
+        if (hud == null)
+        {
+            GD.PrintErr("[REFINE] HUD CanvasLayer não encontrado!");
+            return;
+        }
+
+        var existing = hud.FindChild("RefineUI", true, false);
+        if (existing != null)
+        {
+            existing.QueueFree();
+        }
+
+        var scene = ResourceLoader.Load<PackedScene>("res://ui/RefineUI.tscn");
+        if (scene == null)
+        {
+            GD.PrintErr("[REFINE] Cena RefineUI.tscn não encontrada!");
+            return;
+        }
+
+        var ui = scene.Instantiate<Control>();
+        hud.AddChild(ui);
     }
 
     private void Fechar()

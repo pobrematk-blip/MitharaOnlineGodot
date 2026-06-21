@@ -148,10 +148,6 @@ partial class GameServer
                 HandleGuildEnterGvg(peer, player, channel);
                 break;
 
-            case "refine":
-                HandleRefineItem(peer, player, channel, actionData);
-                break;
-
             case "merchant_sell":
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 SendSystemMessage(peer, "Venda ativada! Clique com botão direito nos itens do inventário para vender ao General Merchante.");
@@ -161,52 +157,6 @@ partial class GameServer
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
         }
-    }
-
-    private static int GetRefineCost(int currentLevel)
-    {
-        return (currentLevel * currentLevel + 1) * 500;
-    }
-
-    private void HandleRefineItem(NetPeer peer, PlayerEntity player, Channel channel, string slotType)
-    {
-        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null) return;
-        int equipSlot = slotType == "shield" ? 108 : 107; // 107=Weapon, 108=Shield
-
-        if (!player.Equipment.TryGetValue(equipSlot, out var item))
-        {
-            SendNpcDialog(peer, "Você não tem nada equipado nesse slot!", new List<(string, string, string)> { ("Voltar", "goto", "refino"), ("Sair", "close", "") });
-            return;
-        }
-
-        if (item.RefineLevel >= 10)
-        {
-            SendNpcDialog(peer, "Este item já está no nível máximo de refino (+10)!", new List<(string, string, string)> { ("Voltar", "goto", "refino"), ("Sair", "close", "") });
-            return;
-        }
-
-        int cost = GetRefineCost(item.RefineLevel);
-        if (player.Gold < cost)
-        {
-            SendNpcDialog(peer, $"Você precisa de {cost} gold para refinar este item. Volte quando tiver mais gold!", new List<(string, string, string)> { ("Voltar", "goto", "refino"), ("Sair", "close", "") });
-            return;
-        }
-
-        player.Gold -= cost;
-        item.RefineLevel++;
-
-        _db.SaveItem(session.SelectedCharacter.Id, item);
-        _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
-        RecalculatePlayerStats(player);
-
-        SendGoldUpdate(peer, player.Gold);
-        SendInventoryData(peer, player);
-
-        var def = item.Definition;
-        string itemName = def?.Name ?? "Item";
-        SendNpcDialog(peer, $"Seu {itemName} foi refinado com sucesso para +{item.RefineLevel}!",
-            new List<(string, string, string)> { ("Refinar novamente", "refine", slotType), ("Sair", "close", "") });
-        SendSystemMessage(peer, $"Item {itemName} refinado para +{item.RefineLevel}!");
     }
 
     private void HandleNpcBuyItem(NetPeer peer, NetDataReader reader)

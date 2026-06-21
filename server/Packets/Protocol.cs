@@ -69,6 +69,7 @@ public enum PacketId : ushort
     C2S_TradeCancel = 0x014A,
     C2S_TradeRemoveOffer = 0x014B,
     C2S_CashShopBuy = 0x014C,
+    C2S_RefineItem = 0x0197,
 
     C2S_Ping = 0x01FF,
 
@@ -135,6 +136,7 @@ public enum PacketId : ushort
     S2C_TradePartnerConfirm = 0x029A,
     S2C_TradeEnd = 0x029B,
     S2C_CashShopResult = 0x029C,
+    S2C_RefineResult = 0x029D,
     S2C_PartyInviteReceived = 0x0243,
     S2C_GuildInviteReceived = 0x0255,
     S2C_Pong = 0x02FF,

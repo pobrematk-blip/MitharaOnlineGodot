@@ -101,6 +101,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnTradePartnerConfirmEventHandler(ulong playerSide, bool confirmed);
     [Signal] public delegate void OnTradeEndEventHandler(bool success);
     [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);
+    [Signal] public delegate void OnRefineResultEventHandler(bool success, int newLevel, string message);
     [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
     [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
@@ -403,6 +404,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_CashShopResult:
                 HandleCashShopResult(r);
+                break;
+            case PacketId.S2C_RefineResult:
+                HandleRefineResult(r);
                 break;
         } } catch (System.Exception ex)
         {
