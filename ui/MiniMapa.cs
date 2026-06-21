@@ -337,12 +337,42 @@ public partial class MiniMapa : Control
         }
     }
 
+    private CanvasLayer _hudLayer;
+
+    private CanvasLayer ObterHudLayer()
+    {
+        if (_hudLayer != null && IsInstanceValid(_hudLayer))
+            return _hudLayer;
+
+        var scene = GetTree().CurrentScene;
+        _hudLayer = scene != null ? scene.GetNodeOrNull<CanvasLayer>("HUD") : null;
+        return _hudLayer;
+    }
+
     private void OnCashBtnPressed()
     {
+        var hud = ObterHudLayer();
+        if (hud == null) return;
+
+        var aberta = hud.FindChild("LojaCashUI", true, false) as LojaCashUI;
+        if (aberta != null && IsInstanceValid(aberta))
+        {
+            aberta.Abrir();
+            aberta.Visible = true;
+            aberta.MoveToFront();
+            return;
+        }
+
         var lojaCena = ResourceLoader.Load<PackedScene>(SceneConstants.LOJA_CASH_UI);
         if (lojaCena == null) return;
-        var loja = lojaCena.Instantiate<LojaCashUI>();
-        GetTree().CurrentScene.AddChild(loja);
+        var instancia = lojaCena.Instantiate();
+        if (instancia is not LojaCashUI loja)
+        {
+            GD.PushError("[CASH] A raiz de LojaCashUI.tscn precisa usar o script LojaCashUI.cs.");
+            instancia?.QueueFree();
+            return;
+        }
+        hud.AddChild(loja);
         loja.Abrir();
     }
 

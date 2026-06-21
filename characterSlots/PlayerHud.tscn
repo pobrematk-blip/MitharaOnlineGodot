@@ -76,9 +76,10 @@ theme_override_constants/separation = 6
 
 [node name="PortraitPanel" type="Panel" parent="Background/MainHBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(56, 56)
 size_flags_horizontal = 0
 size_flags_vertical = 4
+clip_contents = true
 theme_override_styles/panel = SubResource("StyleBoxFlat_portrait")
 
 [node name="PortraitIcon" type="TextureRect" parent="Background/MainHBox/PortraitPanel"]
@@ -86,8 +87,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
 grow_horizontal = 2
 grow_vertical = 2
+expand_mode = 1
 stretch_mode = 5
 
 [node name="VBox" type="VBoxContainer" parent="Background/MainHBox"]
@@ -105,6 +111,7 @@ theme_override_colors/font_color = Color(0.9, 0.85, 1, 0.95)
 [node name="HealthBar" type="ProgressBar" parent="Background/MainHBox/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 18)
+size_flags_horizontal = 3
 max_value = 100.0
 value = 100.0
 show_percentage = false
@@ -128,6 +135,7 @@ theme_override_font_sizes/font_size = 10
 [node name="ManaBar" type="ProgressBar" parent="Background/MainHBox/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 18)
+size_flags_horizontal = 3
 max_value = 50.0
 value = 50.0
 show_percentage = false
@@ -151,6 +159,7 @@ theme_override_font_sizes/font_size = 10
 [node name="StaminaBar" type="ProgressBar" parent="Background/MainHBox/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 18)
+size_flags_horizontal = 3
 max_value = 100.0
 value = 100.0
 show_percentage = false

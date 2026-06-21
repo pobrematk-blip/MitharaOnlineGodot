@@ -74,7 +74,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnItemUpdateEventHandler(int slot, int itemId, int quantity);
 
     [Signal] public delegate void OnPartyDataEventHandler(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members);
-    [Signal] public delegate void OnPartyMemberUpdateEventHandler(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined);
+    [Signal] public delegate void OnPartyMemberUpdateEventHandler(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass);
     [Signal] public delegate void OnPartyLeaderUpdateEventHandler(ulong newLeaderId);
 
     [Signal] public delegate void OnGuildDataEventHandler(int guildId, string guildName, string guildTag, int guildEmblem, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills);
@@ -95,6 +95,11 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnDuelRequestedEventHandler(string senderName);
     [Signal] public delegate void OnPartyInviteReceivedEventHandler(string senderName);
     [Signal] public delegate void OnGuildInviteReceivedEventHandler(string senderName);
+    [Signal] public delegate void OnTradeRequestedEventHandler(string senderName);
+    [Signal] public delegate void OnTradeStartEventHandler(ulong partnerId, string partnerName);
+    [Signal] public delegate void OnTradeOfferUpdateEventHandler(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers);
+    [Signal] public delegate void OnTradePartnerConfirmEventHandler(ulong playerSide, bool confirmed);
+    [Signal] public delegate void OnTradeEndEventHandler(bool success);
     [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
     [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
@@ -379,6 +384,21 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_VipStatus:
                 HandleVipStatus(r);
+                break;
+            case PacketId.S2C_TradeRequested:
+                HandleTradeRequested(r);
+                break;
+            case PacketId.S2C_TradeStart:
+                HandleTradeStart(r);
+                break;
+            case PacketId.S2C_TradeOfferUpdate:
+                HandleTradeOfferUpdate(r);
+                break;
+            case PacketId.S2C_TradePartnerConfirm:
+                HandleTradePartnerConfirm(r);
+                break;
+            case PacketId.S2C_TradeEnd:
+                HandleTradeEnd(r);
                 break;
         } } catch (System.Exception ex)
         {

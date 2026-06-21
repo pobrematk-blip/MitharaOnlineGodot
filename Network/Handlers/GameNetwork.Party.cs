@@ -46,6 +46,7 @@ partial class GameNetwork
             int mana = r.GetInt();
             int maxMana = r.GetInt();
             int level = r.GetInt();
+            string charClass = r.GetString();
             var m = new Godot.Collections.Dictionary
             {
                 ["entity_id"] = (long)eid,
@@ -56,6 +57,7 @@ partial class GameNetwork
                 ["mana"] = mana,
                 ["max_mana"] = maxMana,
                 ["level"] = level,
+                ["class"] = charClass,
             };
             members.Add(m);
         }
@@ -73,7 +75,8 @@ partial class GameNetwork
         int maxMana = r.GetInt();
         int level = r.GetInt();
         bool joined = r.GetBool();
-        EmitSignal(SignalName.OnPartyMemberUpdate, entityId, name, hp, maxHp, mana, maxMana, level, joined);
+        string charClass = r.GetString();
+        EmitSignal(SignalName.OnPartyMemberUpdate, entityId, name, hp, maxHp, mana, maxMana, level, joined, charClass);
     }
 
     private void HandlePartyLeaderUpdate(NetDataReader r)

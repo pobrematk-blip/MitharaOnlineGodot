@@ -1,6 +1,7 @@
 ﻿using Godot;
 using System;
 using System.Collections.Generic;
+#nullable enable annotations
 
 public partial class SlotUI : Control
 {

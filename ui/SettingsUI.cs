@@ -101,7 +101,7 @@ public partial class SettingsUI : Control
         _btnVoltarSelecao.Pressed += OnVoltarSelecao;
 
         _applyVideoButton = _tabContainer.GetNode<Button>("Video/ApplyButton");
-        _applyVideoButton.Pressed += OnApplyVideo;
+        _applyVideoButton.Pressed += OnApplyVideoPressed;
         _brightnessSlider.ValueChanged += OnBrightnessChanged;
         _masterVolumeSlider.ValueChanged += OnMasterVolumeChanged;
         _sfxVolumeSlider.ValueChanged += OnSfxVolumeChanged;
@@ -250,6 +250,13 @@ public partial class SettingsUI : Control
         int idx = _resolutionOption.Selected;
         if (idx >= 0 && idx < Resolutions.Length && !fullscreen)
             DisplayServer.WindowSetSize(Resolutions[idx]);
+    }
+
+    private void OnApplyVideoPressed()
+    {
+        OnApplyVideo();
+        SaveSettings();
+        CallDeferred(MethodName.Centralizar);
     }
 
     private void OnBrightnessChanged(double value)

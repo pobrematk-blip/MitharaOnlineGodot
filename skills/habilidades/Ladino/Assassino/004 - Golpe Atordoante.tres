@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/10.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12204
 Nome = "Golpe Atordoante"
 Descricao = "Um ataque preciso que interrompe o inimigo e o deixa vulnerável."
+Icone = ExtResource("2_icon")
 Valor = 100
 CustoMana = 30
 ClasseRestrita = "Ladino"

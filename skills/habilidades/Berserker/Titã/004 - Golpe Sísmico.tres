@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/34.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13304
 Nome = "Golpe Sísmico"
 Descricao = "O Titã golpeia o chão com tamanha força que o impacto se espalha como uma onda sísmica."
+Icone = ExtResource("2_icon")
 Valor = 140
 CustoMana = 20
 ClasseRestrita = "Berserker"

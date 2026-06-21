@@ -44,7 +44,6 @@ public partial class EditorRecursosUI : Control
 
     public override void _Ready()
     {
-        const int margin = 8;
         AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = new Color(0.15f, 0.15f, 0.2f, 0.95f) });
 
         var hbox = new HBoxContainer();

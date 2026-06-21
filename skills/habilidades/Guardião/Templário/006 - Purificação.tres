@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/36.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14306
 Nome = "Purificação"
 Descricao = "O Templário invoca uma luz purificadora capaz de remover energias nocivas de seus aliados."
+Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 20
 ClasseRestrita = "Guardião"

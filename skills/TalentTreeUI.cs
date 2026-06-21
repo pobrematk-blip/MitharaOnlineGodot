@@ -25,15 +25,20 @@ public partial class TalentTreeUI : Control
     private const float SlotSize = 38f;
     private const float AttributeNodeSize = 28f;
     private const float ChoiceNodeWidth = 104f;
+    private const float ChoiceNodeAreaSize = 112f;
     private const float SkillNodeSize = 58f;
+    private const float SkillClusterWidth = 96f;
+    private const float SkillClusterHeight = 98f;
+    private const float SkillStatusNodeSize = 22f;
+    private const float ManualLayoutSpacing = 1.38f;
     private const float UnlockNodeSize = 40f;
     private const float RootNodeSize = 68f;
     private const float RowHeight = 96f;
     private const float ColumnWidth = 108f;
     private const float BoardMargin = 50f;
-    private const float DefaultZoom = 0.48f;
+    private const float DefaultZoom = 0.52f;
     private const float MinZoom = 0.25f;
-    private const float MaxZoom = 1.15f;
+    private const float MaxZoom = 1.25f;
     private const float ZoomStep = 0.08f;
     private float _zoomFactor = DefaultZoom;
 
@@ -205,7 +210,9 @@ public partial class TalentTreeUI : Control
     {
         if (_bgPanel == null) return;
         var viewportSize = GetViewport().GetVisibleRect().Size;
-        var panelSize = viewportSize * new Vector2(0.55f, 0.55f);
+        var panelSize = viewportSize * new Vector2(0.82f, 0.78f);
+        panelSize.X = Mathf.Min(panelSize.X, viewportSize.X - 24f);
+        panelSize.Y = Mathf.Min(panelSize.Y, viewportSize.Y - 24f);
         _bgPanel.Size = panelSize;
         _bgPanel.Position = (viewportSize - panelSize) * 0.5f;
         _bgPanel.ZIndex = 200;
@@ -400,6 +407,11 @@ public partial class TalentTreeUI : Control
         var slotMap = new Dictionary<string, PanelContainer>();
         foreach (var node in nodes)
         {
+            // As escolhas de status são apresentadas como uma coroa sobre cada skill.
+            // O nó lógico continua existindo na árvore para preservar os requisitos.
+            if (node.TemEscolhaDeStatus)
+                continue;
+
             var id = node.NodeId;
             if (!positions.ContainsKey(id)) continue;
             bool unlocked = _talentTreeComponent.TemNoDesbloqueado(id);
@@ -421,39 +433,51 @@ public partial class TalentTreeUI : Control
             _board.AddChild(slot);
             slotMap[id] = slot;
 
-            if (node.TemEscolhaDeStatus)
+            Texture2D nodeIcon = node.Icone ?? node.HabilidadeAtiva?.Icone;
+            if (node.HabilidadeAtiva != null)
             {
-                CriarOpcoesDeStatus(slot, node, unlocked, canUnlock);
+                slot.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
+
+                var skillFrame = new PanelContainer
+                {
+                    Position = new Vector2((SkillClusterWidth - SkillNodeSize) * 0.5f, SkillClusterHeight - SkillNodeSize),
+                    Size = Vector2.One * SkillNodeSize,
+                    CustomMinimumSize = Vector2.One * SkillNodeSize,
+                    MouseFilter = MouseFilterEnum.Pass,
+                };
+                slot.AddChild(skillFrame);
+
+                var icon = new TextureRect
+                {
+                    Texture = nodeIcon,
+                    ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                    MouseFilter = MouseFilterEnum.Ignore,
+                };
+                skillFrame.AddChild(icon);
+                CriarFallbackDeIcone(skillFrame, node, nodeIcon);
+
+                Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
+                Color bg = CorNormal;
+                if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
+                else if (canUnlock) { bg = new Color(0.28f, 0.18f, 0.4f); border = CorDisponivel; }
+                Estilo(skillFrame, bg, border, SkillNodeSize);
+
+                var choiceSource = ObterEscolhaParaSkill(node, nodes);
+                if (choiceSource != null)
+                    CriarCoroaDeStatus(slot, choiceSource, unlocked, canUnlock);
             }
             else
             {
                 var icon = new TextureRect
                 {
-                    Texture = node.Icone,
+                    Texture = nodeIcon,
                     ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                     StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
                     MouseFilter = MouseFilterEnum.Ignore,
                 };
                 slot.AddChild(icon);
-
-                if (node.Icone == null)
-                {
-                    var fallback = new Label
-                    {
-                        Text = node.NodeType switch
-                        {
-                            TalentNodeType.Skill => "?",
-                            TalentNodeType.Unlock => "D",
-                            _ => "+",
-                        },
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        MouseFilter = MouseFilterEnum.Ignore,
-                    };
-                    fallback.AddThemeFontSizeOverride("font_size", node.NodeType == TalentNodeType.Skill ? 22 : 13);
-                    fallback.AddThemeColorOverride("font_color", new Color(0.88f, 0.9f, 0.94f));
-                    slot.AddChild(fallback);
-                }
+                CriarFallbackDeIcone(slot, node, nodeIcon);
 
                 Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
                 Color bg = CorNormal;
@@ -475,7 +499,11 @@ public partial class TalentTreeUI : Control
             var childSlot = slotMap[node.NodeId];
             Vector2 cCenter = childSlot.Position + childSlot.Size / 2;
 
-            foreach (var reqId in node.Requisitos)
+            var visualRequirements = node.Requisitos
+                .SelectMany(reqId => ObterRequisitosVisuais(tree, reqId, slotMap, new HashSet<string>()))
+                .Distinct();
+
+            foreach (var reqId in visualRequirements)
             {
                 if (!slotMap.ContainsKey(reqId)) continue;
                 var parentSlot = slotMap[reqId];
@@ -507,6 +535,28 @@ public partial class TalentTreeUI : Control
         }
     }
 
+    private static IEnumerable<string> ObterRequisitosVisuais(
+        TalentTreeResource tree,
+        string nodeId,
+        IReadOnlyDictionary<string, PanelContainer> visibleSlots,
+        HashSet<string> visited)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId) || !visited.Add(nodeId))
+            yield break;
+        if (visibleSlots.ContainsKey(nodeId))
+        {
+            yield return nodeId;
+            yield break;
+        }
+
+        var hiddenNode = tree.ObterNo(nodeId);
+        if (hiddenNode?.Requisitos == null)
+            yield break;
+        foreach (string parentId in hiddenNode.Requisitos)
+            foreach (string visibleId in ObterRequisitosVisuais(tree, parentId, visibleSlots, visited))
+                yield return visibleId;
+    }
+
     private Dictionary<string, Vector2> CalculateNodePositions(TalentTreeResource tree, TalentNodeResource[] nodes, out int maxDepth)
     {
         if (tree.UsaLayoutPersonalizado && nodes.Any(n => n.Posicao != new Vector2(-1, -1)))
@@ -522,15 +572,18 @@ public partial class TalentTreeUI : Control
         if (tree.BoardSize.X <= 0 || tree.BoardSize.Y <= 0)
             tree.BoardSize = new Vector2(1200, 900);
 
-        _board.CustomMinimumSize = tree.BoardSize;
+        Vector2 originalCenter = tree.BoardSize * 0.5f;
+        _board.CustomMinimumSize = tree.BoardSize * ManualLayoutSpacing;
+        Vector2 expandedCenter = _board.CustomMinimumSize * 0.5f;
 
         foreach (var node in nodes)
         {
             if (node.Posicao == new Vector2(-1, -1))
                 continue;
 
-            positions[node.NodeId] = node.Posicao;
-            var depth = Mathf.RoundToInt((node.Posicao.Y - BoardMargin) / RowHeight);
+            Vector2 expandedPosition = expandedCenter + (node.Posicao - originalCenter) * ManualLayoutSpacing;
+            positions[node.NodeId] = expandedPosition;
+            var depth = Mathf.RoundToInt((expandedPosition.Y - BoardMargin) / RowHeight);
             maxDepth = Mathf.Max(maxDepth, depth);
         }
 
@@ -716,30 +769,124 @@ public partial class TalentTreeUI : Control
     private static Vector2 ObterDimensaoNo(TalentNodeResource node, TalentTreeResource tree)
     {
         if (node.TemEscolhaDeStatus)
-            return new Vector2(ChoiceNodeWidth, AttributeNodeSize);
+            return Vector2.One * ChoiceNodeAreaSize;
         if (tree.RootNodeIds?.Contains(node.NodeId) == true)
             return Vector2.One * RootNodeSize;
+        if (node.HabilidadeAtiva != null)
+            return new Vector2(SkillClusterWidth, SkillClusterHeight);
         float size = node.NodeType switch
         {
-            TalentNodeType.Skill => SkillNodeSize,
             TalentNodeType.Unlock => UnlockNodeSize,
             _ => AttributeNodeSize,
         };
         return Vector2.One * size;
     }
 
-    private static void CriarOpcoesDeStatus(PanelContainer slot, TalentNodeResource node, bool unlocked, bool canUnlock)
+    private static TalentNodeResource ObterEscolhaParaSkill(TalentNodeResource skill, TalentNodeResource[] nodes)
+    {
+        const string marker = "_skill_";
+        int markerIndex = skill.NodeId.LastIndexOf(marker, StringComparison.Ordinal);
+        if (markerIndex < 0) return null;
+
+        string branchPrefix = skill.NodeId[..markerIndex];
+        var choices = nodes
+            .Where(n => n != null && n.TemEscolhaDeStatus && n.NodeId.StartsWith(branchPrefix + "_", StringComparison.Ordinal))
+            .OrderBy(n => n.NodeId, StringComparer.Ordinal)
+            .ToArray();
+        if (choices.Length == 0) return null;
+
+        string numberText = skill.NodeId[(markerIndex + marker.Length)..];
+        int skillNumber = int.TryParse(numberText, out int parsed) ? parsed : 1;
+        return choices[(Math.Max(1, skillNumber) - 1) % choices.Length];
+    }
+
+    private static void CriarCoroaDeStatus(
+        PanelContainer cluster,
+        TalentNodeResource source,
+        bool unlocked,
+        bool canUnlock)
+    {
+        int optionCount = Math.Min(3, source.StatOptionIds.Length);
+        float totalWidth = optionCount * SkillStatusNodeSize + Math.Max(0, optionCount - 1) * 7f;
+        float startX = (SkillClusterWidth - totalWidth) * 0.5f;
+
+        for (int index = 0; index < optionCount; index++)
+        {
+            string statId = source.StatOptionIds[index];
+            float value = source.StatOptionValues != null && index < source.StatOptionValues.Length
+                ? source.StatOptionValues[index]
+                : 0.1f;
+            var option = new PanelContainer
+            {
+                Position = new Vector2(startX + index * (SkillStatusNodeSize + 7f), 5f + Math.Abs(index - 1) * 5f),
+                Size = Vector2.One * SkillStatusNodeSize,
+                CustomMinimumSize = Vector2.One * SkillStatusNodeSize,
+                TooltipText = $"{statId}: {value:+0.0;-0.0}\nOpção de status desta habilidade",
+                MouseFilter = MouseFilterEnum.Pass,
+            };
+
+            Color border = TalentNodeResource.ObterCorTipo(TalentNodeType.Attribute).Darkened(0.35f);
+            Color bg = CorNormal;
+            if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
+            else if (canUnlock) { bg = new Color(0.16f, 0.28f, 0.32f); border = CorDisponivel; }
+            Estilo(option, bg, border, SkillStatusNodeSize);
+
+            var label = new Label
+            {
+                Text = AbreviarStatus(statId),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            label.AddThemeFontSizeOverride("font_size", 7);
+            option.AddChild(label);
+            cluster.AddChild(option);
+        }
+    }
+
+    private static void CriarFallbackDeIcone(Control parent, TalentNodeResource node, Texture2D icon)
+    {
+        if (icon != null) return;
+
+        var fallback = new Label
+        {
+            Text = node.NodeType switch
+            {
+                TalentNodeType.Skill => "?",
+                TalentNodeType.Unlock => "D",
+                _ => "+",
+            },
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        fallback.AddThemeFontSizeOverride("font_size", node.NodeType == TalentNodeType.Skill ? 22 : 13);
+        fallback.AddThemeColorOverride("font_color", new Color(0.88f, 0.9f, 0.94f));
+        parent.AddChild(fallback);
+    }
+
+    private static void CriarOpcoesDeStatus(
+        PanelContainer slot,
+        TalentNodeResource node,
+        bool unlocked,
+        bool canUnlock,
+        Vector2 groupCenter,
+        Vector2 boardCenter)
     {
         slot.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
-        var row = new HBoxContainer
+        var orbitLayer = new Control
         {
-            Alignment = BoxContainer.AlignmentMode.Center,
             MouseFilter = MouseFilterEnum.Pass,
+            CustomMinimumSize = Vector2.One * ChoiceNodeAreaSize,
         };
-        row.AddThemeConstantOverride("separation", 8);
-        slot.AddChild(row);
+        slot.AddChild(orbitLayer);
 
         int optionCount = Math.Min(3, node.StatOptionIds.Length);
+        Vector2 radial = groupCenter - boardCenter;
+        float radius = Mathf.Max(1f, radial.Length());
+        float baseAngle = radius > 1f ? radial.Angle() : -Mathf.Pi * 0.5f;
+        float angleStep = Mathf.Clamp(38f / radius, 0.08f, 0.32f);
+
         for (int index = 0; index < optionCount; index++)
         {
             string statId = node.StatOptionIds[index];
@@ -749,9 +896,18 @@ public partial class TalentTreeUI : Control
             var option = new PanelContainer
             {
                 CustomMinimumSize = Vector2.One * AttributeNodeSize,
+                Size = Vector2.One * AttributeNodeSize,
                 TooltipText = $"{node.Nome}\n{statId}: {value:+0.0;-0.0}\nEscolha exclusiva",
                 MouseFilter = MouseFilterEnum.Stop,
             };
+
+            float centeredIndex = index - (optionCount - 1) * 0.5f;
+            float optionAngle = baseAngle + centeredIndex * angleStep;
+            Vector2 pointOnCircle = boardCenter
+                + new Vector2(Mathf.Cos(optionAngle), Mathf.Sin(optionAngle)) * radius;
+            Vector2 localCenter = ChoiceNodeAreaSize * Vector2.One * 0.5f
+                + (pointOnCircle - groupCenter);
+            option.Position = localCenter - Vector2.One * AttributeNodeSize * 0.5f;
             Color border = TalentNodeResource.ObterCorTipo(TalentNodeType.Attribute).Darkened(0.35f);
             Color bg = CorNormal;
             if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
@@ -767,7 +923,7 @@ public partial class TalentTreeUI : Control
             };
             label.AddThemeFontSizeOverride("font_size", 8);
             option.AddChild(label);
-            row.AddChild(option);
+            orbitLayer.AddChild(option);
         }
     }
 

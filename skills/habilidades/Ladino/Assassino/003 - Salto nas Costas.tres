@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/23.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12203
 Nome = "Salto nas Costas"
 Descricao = "O Assassino salta diretamente para trás do alvo escolhido."
+Icone = ExtResource("2_icon")
 Valor = 130
 CustoMana = 25
 ClasseRestrita = "Ladino"

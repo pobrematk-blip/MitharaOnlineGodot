@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/37.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15103
 Nome = "Cura em Área"
 Descricao = "Ondas de luz restauradora se espalham ao redor do Sacerdote, curando todos os aliados que estiverem dentro do alcance da oração."
+Icone = ExtResource("2_icon")
 Valor = 150
 CustoMana = 35
 ClasseRestrita = "Clérigo"

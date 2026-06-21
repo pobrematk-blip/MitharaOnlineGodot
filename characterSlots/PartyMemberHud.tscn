@@ -1,0 +1,13 @@
+[gd_scene load_steps=1 format=3 uid="uid://c42mxrca6le3e"]
+
+[ext_resource type="Script" path="res://characterSlots/PartyMemberHud.cs" id="1"]
+
+[node name="PartyMemberHud" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 128.0
+offset_right = 260.0
+offset_bottom = 128.0
+mouse_filter = 2
+script = ExtResource("1")

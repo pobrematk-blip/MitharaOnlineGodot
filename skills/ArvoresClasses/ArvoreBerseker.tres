@@ -1,614 +1,698 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
 
-[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
-[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Todas/001 - Segundo Fôlego.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/001 - Fúria.tres" id="sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/002 - Golpes Frenéticos.tres" id="sk_3"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/003 - Sede de Sangue.tres" id="sk_4"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/004 - Força Brutal.tres" id="sk_5"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/005 - Machado Giratório.tres" id="sk_6"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/006 - Frenesi.tres" id="sk_7"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/007 - Carnificina.tres" id="sk_8"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/008 - Berserk.tres" id="sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/009 - Deus da Guerra.tres" id="sk_10"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Todas/002 - Investida Brutal.tres" id="sk_11"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/001 - Corte Devastador.tres" id="sk_12"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/002 - Marca da Morte.tres" id="sk_13"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/003 - Quebra Ossos.tres" id="sk_14"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/004 - Execução.tres" id="sk_15"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/005 - Golpe Impiedoso.tres" id="sk_16"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/006 - Caçador de Gigantes.tres" id="sk_17"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/007 - Ruptura.tres" id="sk_18"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/008 - Máquina de Matar.tres" id="sk_19"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Slayer/009 - Ceifador de Almas.tres" id="sk_20"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Todas/003 - Sangue de Ferro.tres" id="sk_21"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/001 - Pele de Ferro.tres" id="sk_22"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/002 - Regeneração Brutal.tres" id="sk_23"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/003 - Provocação Selvagem.tres" id="sk_24"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/004 - Golpe Sísmico.tres" id="sk_25"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/005 - Resistência Titânica.tres" id="sk_26"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/006 - Tremor de Guerra.tres" id="sk_27"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/007 - Espírito Indomável.tres" id="sk_28"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/008 - Colosso.tres" id="sk_29"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/009 - Titã Ancestral.tres" id="sk_30"]
+[sub_resource type="Resource" id="base"]
+script = ExtResource("2_node")
+NodeId = "ber_base"
+Nome = "Fundamentos do Berserker"
+Descricao = "Nó central que abre as três especializações de Berserker."
+NodeType = 1
+Posicao = Vector2(950, 950)
+CustoPontos = 1
 
-[sub_resource type="Resource" id="ber_n0"]
-script = ExtResource("2")
-NodeId = "ber_01"
-Nome = "Berseker Base"
-Descricao = "Nó de talento nível 0 (Berseker)."
-CustoPontos = 5
+[sub_resource type="Resource" id="barbaro_rota"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_rota"
+Nome = "Bárbaro"
+Descricao = "Caminho de especialização: Bárbaro."
+NodeType = 5
+Posicao = Vector2(950, 830)
+Requisitos = PackedStringArray("ber_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="barbaro_ci1"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_escolha_interna_1"
+Nome = "Escolha de atributos — Bárbaro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(860.8, 782.2)
+Requisitos = PackedStringArray("ber_barbaro_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Forca", "RouboVida", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="barbaro_ci2"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_escolha_interna_2"
+Nome = "Escolha de atributos — Bárbaro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 760)
+Requisitos = PackedStringArray("ber_barbaro_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="barbaro_ci3"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_escolha_interna_3"
+Nome = "Escolha de atributos — Bárbaro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1039.2, 782.2)
+Requisitos = PackedStringArray("ber_barbaro_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "RegeneracaoVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="barbaro_s1"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_1"
+Nome = "Segundo Fôlego"
+Descricao = "O Berserker reúne suas últimas forças, controlando a respiração e forçando o próprio corpo a continuar lutando mesmo após sofrer muitos golpes."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 716.2)
+Requisitos = PackedStringArray("ber_barbaro_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusForca = 6
-BonusVitalidade = 4
-BonusDanoPercent = 0.6
 
-[sub_resource type="Resource" id="ber_n1"]
-script = ExtResource("2")
-NodeId = "ber_02"
-Nome = "Berseker Essencial"
-Descricao = "Nó de talento nível 0 (Berseker)."
-CustoPontos = 5
+[sub_resource type="Resource" id="barbaro_s2"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_2"
+Nome = "Fúria"
+Descricao = "O Bárbaro entra em um estado de fúria selvagem, ignorando a própria dor para destruir seus inimigos com golpes cada vez mais violentos."
+HabilidadeAtiva = ExtResource("sk_2")
+NodeType = 1
+Posicao = Vector2(950, 680)
+Requisitos = PackedStringArray("ber_barbaro_escolha_interna_2")
+CustoPontos = 1
 NivelMinimo = 1
-BonusForca = 6
-BonusVitalidade = 4
 
-[sub_resource type="Resource" id="ber_n2"]
-script = ExtResource("2")
-NodeId = "ber_03"
-Nome = "Berseker Primordial"
-Descricao = "Nó de talento nível 0 (Berseker)."
-CustoPontos = 5
+[sub_resource type="Resource" id="barbaro_s3"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_3"
+Nome = "Golpes Frenéticos"
+Descricao = "O Bárbaro desfere uma sequência de golpes brutais sem se preocupar com técnica, esmagando o alvo pela pura velocidade e agressividade."
+HabilidadeAtiva = ExtResource("sk_3")
+NodeType = 1
+Posicao = Vector2(1085, 716.2)
+Requisitos = PackedStringArray("ber_barbaro_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="barbaro_ul"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Bárbaro"
+Descricao = "Marco de progressão do caminho Bárbaro."
+NodeType = 5
+Posicao = Vector2(830.3, 621.1)
+Requisitos = PackedStringArray("ber_barbaro_skill_1", "ber_barbaro_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="barbaro_ur"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_desbloqueio_direito"
+Nome = "Desbloqueio — Bárbaro"
+Descricao = "Marco de progressão do caminho Bárbaro."
+NodeType = 5
+Posicao = Vector2(1069.7, 621.1)
+Requisitos = PackedStringArray("ber_barbaro_skill_2", "ber_barbaro_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="barbaro_s4"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_4"
+Nome = "Sede de Sangue"
+Descricao = "O cheiro de sangue alimenta o instinto do Bárbaro. Cada golpe acertado fortalece sua vontade de continuar lutando."
+HabilidadeAtiva = ExtResource("sk_4")
+NodeType = 1
+Posicao = Vector2(662.3, 630.4)
+Requisitos = PackedStringArray("ber_barbaro_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 10
+
+[sub_resource type="Resource" id="barbaro_s5"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_5"
+Nome = "Força Brutal"
+Descricao = "O Bárbaro abandona qualquer postura defensiva e concentra toda sua força nos ataques, trocando segurança por poder destrutivo."
+HabilidadeAtiva = ExtResource("sk_5")
+NodeType = 1
+Posicao = Vector2(846, 532.8)
+Requisitos = PackedStringArray("ber_barbaro_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="barbaro_s6"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_6"
+Nome = "Machado Giratório"
+Descricao = "Girando seu machado com força absurda, o Bárbaro atinge todos os inimigos próximos em uma demonstração de pura violência."
+HabilidadeAtiva = ExtResource("sk_6")
+NodeType = 1
+Posicao = Vector2(1054, 532.8)
+Requisitos = PackedStringArray("ber_barbaro_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="barbaro_s7"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_7"
+Nome = "Frenesi"
+Descricao = "A batalha leva o Bárbaro a um estado de loucura controlada, fazendo seus ataques ficarem cada vez mais rápidos."
+HabilidadeAtiva = ExtResource("sk_7")
+NodeType = 1
+Posicao = Vector2(1237.7, 630.4)
+Requisitos = PackedStringArray("ber_barbaro_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="barbaro_ce1"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_escolha_externa_1"
+Nome = "Escolha de atributos — Bárbaro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(687.7, 530.2)
+Requisitos = PackedStringArray("ber_barbaro_skill_4", "ber_barbaro_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "Forca", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="barbaro_ce2"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_escolha_externa_2"
+Nome = "Escolha de atributos — Bárbaro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 455)
+Requisitos = PackedStringArray("ber_barbaro_skill_5", "ber_barbaro_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Evasao", "VelocidadeMovimento", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="barbaro_ce3"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_escolha_externa_3"
+Nome = "Escolha de atributos — Bárbaro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1212.3, 530.2)
+Requisitos = PackedStringArray("ber_barbaro_skill_6", "ber_barbaro_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DefesaFisica", "Hp", "RouboVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="barbaro_s8"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_8"
+Nome = "Carnificina"
+Descricao = "O Bárbaro avança golpeando tudo ao seu redor em uma sequência brutal que transforma o campo de batalha em caos."
+HabilidadeAtiva = ExtResource("sk_8")
+NodeType = 1
+Posicao = Vector2(554, 554)
+Requisitos = PackedStringArray("ber_barbaro_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="barbaro_s9"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_9"
+Nome = "Berserk"
+Descricao = "O Bárbaro perde completamente o medo da morte e entra em um estado de destruição absoluta, atacando com velocidade e força assustadoras."
+HabilidadeAtiva = ExtResource("sk_9")
+NodeType = 1
+Posicao = Vector2(950, 390)
+Requisitos = PackedStringArray("ber_barbaro_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="barbaro_s10"]
+script = ExtResource("2_node")
+NodeId = "ber_barbaro_skill_10"
+Nome = "Deus da Guerra"
+Descricao = "O Bárbaro libera toda sua ferocidade e se torna uma força imparável no campo de batalha, lutando como se cada golpe fosse o último."
+HabilidadeAtiva = ExtResource("sk_10")
+NodeType = 1
+Posicao = Vector2(1346, 554)
+Requisitos = PackedStringArray("ber_barbaro_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="slayer_rota"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_rota"
+Nome = "Slayer"
+Descricao = "Caminho de especialização: Slayer."
+NodeType = 5
+Posicao = Vector2(1053.9, 1010)
+Requisitos = PackedStringArray("ber_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="slayer_ci1"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_escolha_interna_1"
+Nome = "Escolha de atributos — Slayer"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1139.9, 956.6)
+Requisitos = PackedStringArray("ber_slayer_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "RegeneracaoVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="slayer_ci2"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_escolha_interna_2"
+Nome = "Escolha de atributos — Slayer"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1114.5, 1045)
+Requisitos = PackedStringArray("ber_slayer_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "Forca", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="slayer_ci3"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_escolha_interna_3"
+Nome = "Escolha de atributos — Slayer"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1050.7, 1111.1)
+Requisitos = PackedStringArray("ber_slayer_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Evasao", "VelocidadeMovimento", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="slayer_s1"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_1"
+Nome = "Investida Brutal"
+Descricao = "O Berserker baixa o ombro e avança como uma fera, usando o peso do corpo e da armadura para romper a distância até o inimigo."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(1220, 950)
+Requisitos = PackedStringArray("ber_slayer_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusForca = 6
-BonusVitalidade = 4
 
-[sub_resource type="Resource" id="ber_n3"]
-script = ExtResource("2")
-NodeId = "ber_04"
-Nome = "Berseker Fundamental"
-Descricao = "Nó de talento nível 1 (Berseker)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusForca = 5
-BonusVitalidade = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("ber_01", "ber_02")
-
-[sub_resource type="Resource" id="ber_n4"]
-script = ExtResource("2")
-NodeId = "ber_05"
-Nome = "Berseker Natural"
-Descricao = "Nó de talento nível 1 (Berseker)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusForca = 5
-BonusVitalidade = 3
-Requisitos = PackedStringArray("ber_02")
-
-[sub_resource type="Resource" id="ber_n5"]
-script = ExtResource("2")
-NodeId = "ber_06"
-Nome = "Berseker Básico"
-Descricao = "Nó de talento nível 1 (Berseker)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusForca = 5
-BonusVitalidade = 3
-Requisitos = PackedStringArray("ber_03", "ber_01")
-
-[sub_resource type="Resource" id="ber_n6"]
-script = ExtResource("2")
-NodeId = "ber_07"
-Nome = "Berseker Inicial"
-Descricao = "Nó de talento nível 1 (Berseker)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusForca = 5
-BonusVitalidade = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("ber_01")
-
-[sub_resource type="Resource" id="ber_n7"]
-script = ExtResource("2")
-NodeId = "ber_08"
-Nome = "Berseker Concentração"
-Descricao = "Nó de talento nível 1 (Berseker)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusForca = 5
-BonusVitalidade = 3
-Requisitos = PackedStringArray("ber_02", "ber_03")
-
-[sub_resource type="Resource" id="ber_n8"]
-script = ExtResource("2")
-NodeId = "ber_09"
-Nome = "Berseker Foco"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-Requisitos = PackedStringArray("ber_04", "ber_05")
-
-[sub_resource type="Resource" id="ber_n9"]
-script = ExtResource("2")
-NodeId = "ber_10"
-Nome = "Berseker Potencial"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("ber_05")
-
-[sub_resource type="Resource" id="ber_n10"]
-script = ExtResource("2")
-NodeId = "ber_11"
-Nome = "Berseker Expansão"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-Requisitos = PackedStringArray("ber_06", "ber_07")
-
-[sub_resource type="Resource" id="ber_n11"]
-script = ExtResource("2")
-NodeId = "ber_12"
-Nome = "Berseker Crescimento"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-Requisitos = PackedStringArray("ber_07")
-
-[sub_resource type="Resource" id="ber_n12"]
-script = ExtResource("2")
-NodeId = "ber_13"
-Nome = "Berseker Despertar"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("ber_08", "ber_04")
-
-[sub_resource type="Resource" id="ber_n13"]
-script = ExtResource("2")
-NodeId = "ber_14"
-Nome = "Berseker Evolução"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-Requisitos = PackedStringArray("ber_04")
-
-[sub_resource type="Resource" id="ber_n14"]
-script = ExtResource("2")
-NodeId = "ber_15"
-Nome = "Berseker Progresso"
-Descricao = "Nó de talento nível 2 (Berseker)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusForca = 4
-BonusVitalidade = 2
-Requisitos = PackedStringArray("ber_05", "ber_06")
-
-[sub_resource type="Resource" id="ber_n15"]
-script = ExtResource("2")
-NodeId = "ber_16"
-Nome = "Berseker Aprimoramento"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_09", "ber_10")
-
-[sub_resource type="Resource" id="ber_n16"]
-script = ExtResource("2")
-NodeId = "ber_17"
-Nome = "Berseker Avanço"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_10")
-
-[sub_resource type="Resource" id="ber_n17"]
-script = ExtResource("2")
-NodeId = "ber_18"
-Nome = "Berseker Superior"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_11", "ber_12")
-
-[sub_resource type="Resource" id="ber_n18"]
-script = ExtResource("2")
-NodeId = "ber_19"
-Nome = "Berseker Elevado"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_12")
-
-[sub_resource type="Resource" id="ber_n19"]
-script = ExtResource("2")
-NodeId = "ber_20"
-Nome = "Berseker Mestre"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_13", "ber_14")
-
-[sub_resource type="Resource" id="ber_n20"]
-script = ExtResource("2")
-NodeId = "ber_21"
-Nome = "Berseker Supremo"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_14")
-
-[sub_resource type="Resource" id="ber_n21"]
-script = ExtResource("2")
-NodeId = "ber_22"
-Nome = "Berseker Lendário"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_15", "ber_09")
-
-[sub_resource type="Resource" id="ber_n22"]
-script = ExtResource("2")
-NodeId = "ber_23"
-Nome = "Berseker Mítico"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_09")
-
-[sub_resource type="Resource" id="ber_n23"]
-script = ExtResource("2")
-NodeId = "ber_24"
-Nome = "Berseker Divino"
-Descricao = "Nó de talento nível 3 (Berseker)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusForca = 3
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_10", "ber_11")
-
-[sub_resource type="Resource" id="ber_n24"]
-script = ExtResource("2")
-NodeId = "ber_25"
-Nome = "Berseker Épico"
-Descricao = "Nó de talento nível 4 (Berseker)."
+[sub_resource type="Resource" id="slayer_s2"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_2"
+Nome = "Corte Devastador"
+Descricao = "O Slayer concentra toda sua força em um corte pesado, feito para rasgar armaduras e derrubar inimigos resistentes."
+HabilidadeAtiva = ExtResource("sk_12")
+NodeType = 1
+Posicao = Vector2(1183.8, 1085)
+Requisitos = PackedStringArray("ber_slayer_escolha_interna_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_16", "ber_17")
+NivelMinimo = 1
 
-[sub_resource type="Resource" id="ber_n25"]
-script = ExtResource("2")
-NodeId = "ber_26"
-Nome = "Berseker Guerreiro"
-Descricao = "Nó de talento nível 4 (Berseker)."
+[sub_resource type="Resource" id="slayer_s3"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_3"
+Nome = "Marca da Morte"
+Descricao = "O Slayer escolhe um alvo e o marca como sua próxima vítima, concentrando todos os golpes em seus pontos mais vulneráveis."
+HabilidadeAtiva = ExtResource("sk_13")
+NodeType = 1
+Posicao = Vector2(1085, 1183.8)
+Requisitos = PackedStringArray("ber_slayer_escolha_interna_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_17")
+NivelMinimo = 5
 
-[sub_resource type="Resource" id="ber_n26"]
-script = ExtResource("2")
-NodeId = "ber_27"
-Nome = "Berseker Sábio"
-Descricao = "Nó de talento nível 4 (Berseker)."
+[sub_resource type="Resource" id="slayer_ul"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Slayer"
+Descricao = "Marco de progressão do caminho Slayer."
+NodeType = 5
+Posicao = Vector2(1294.7, 1010.8)
+Requisitos = PackedStringArray("ber_slayer_skill_1", "ber_slayer_skill_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_18", "ber_19")
 
-[sub_resource type="Resource" id="ber_n27"]
-script = ExtResource("2")
-NodeId = "ber_28"
-Nome = "Berseker Destemido"
-Descricao = "Nó de talento nível 4 (Berseker)."
+[sub_resource type="Resource" id="slayer_ur"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_desbloqueio_direito"
+Nome = "Desbloqueio — Slayer"
+Descricao = "Marco de progressão do caminho Slayer."
+NodeType = 5
+Posicao = Vector2(1175, 1218.1)
+Requisitos = PackedStringArray("ber_slayer_skill_2", "ber_slayer_skill_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_19")
 
-[sub_resource type="Resource" id="ber_n28"]
-script = ExtResource("2")
-NodeId = "ber_29"
-Nome = "Berseker Poderoso"
-Descricao = "Nó de talento nível 4 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_20", "ber_21")
-
-[sub_resource type="Resource" id="ber_n29"]
-script = ExtResource("2")
-NodeId = "ber_30"
-Nome = "Berseker Ágil"
-Descricao = "Nó de talento nível 4 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_21")
-
-[sub_resource type="Resource" id="ber_n30"]
-script = ExtResource("2")
-NodeId = "ber_31"
-Nome = "Berseker Feroz"
-Descricao = "Nó de talento nível 4 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_22", "ber_23")
-
-[sub_resource type="Resource" id="ber_n31"]
-script = ExtResource("2")
-NodeId = "ber_32"
-Nome = "Berseker Sombrio"
-Descricao = "Nó de talento nível 4 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_23")
-
-[sub_resource type="Resource" id="ber_n32"]
-script = ExtResource("2")
-NodeId = "ber_33"
-Nome = "Berseker Sagrado"
-Descricao = "Nó de talento nível 4 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusForca = 2
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_24", "ber_16")
-
-[sub_resource type="Resource" id="ber_n33"]
-script = ExtResource("2")
-NodeId = "ber_34"
-Nome = "Berseker Arcana"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="slayer_s4"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_4"
+Nome = "Quebra Ossos"
+Descricao = "Um golpe brutal mira juntas e pontos frágeis, reduzindo a capacidade ofensiva do inimigo."
+HabilidadeAtiva = ExtResource("sk_14")
+NodeType = 1
+Posicao = Vector2(1370.6, 860.6)
+Requisitos = PackedStringArray("ber_slayer_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_25", "ber_26")
 
-[sub_resource type="Resource" id="ber_n34"]
-script = ExtResource("2")
-NodeId = "ber_35"
-Nome = "Berseker Rápido"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="slayer_s5"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_5"
+Nome = "Execução"
+Descricao = "O Slayer desfere um golpe cruel que se torna mais mortal contra inimigos enfraquecidos."
+HabilidadeAtiva = ExtResource("sk_15")
+NodeType = 1
+Posicao = Vector2(1363.3, 1068.5)
+Requisitos = PackedStringArray("ber_slayer_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="slayer_s6"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_6"
+Nome = "Golpe Impiedoso"
+Descricao = "Um ataque direto e cruel feito para atravessar defesas e atingir o corpo do inimigo sem piedade."
+HabilidadeAtiva = ExtResource("sk_16")
+NodeType = 1
+Posicao = Vector2(1259.3, 1248.7)
+Requisitos = PackedStringArray("ber_slayer_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="slayer_s7"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_7"
+Nome = "Caçador de Gigantes"
+Descricao = "O Slayer entra em estado de concentração absoluta contra inimigos poderosos, estudando seus movimentos para atacar com precisão brutal."
+HabilidadeAtiva = ExtResource("sk_17")
+NodeType = 1
+Posicao = Vector2(1082.9, 1359)
+Requisitos = PackedStringArray("ber_slayer_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="slayer_ce1"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_escolha_externa_1"
+Nome = "Escolha de atributos — Slayer"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1444.7, 932.7)
+Requisitos = PackedStringArray("ber_slayer_skill_4", "ber_slayer_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DefesaFisica", "Hp", "RouboVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="slayer_ce2"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_escolha_externa_2"
+Nome = "Escolha de atributos — Slayer"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1378.7, 1197.5)
+Requisitos = PackedStringArray("ber_slayer_skill_5", "ber_slayer_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Forca", "RouboVida", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="slayer_ce3"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_escolha_externa_3"
+Nome = "Escolha de atributos — Slayer"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1182.4, 1387.1)
+Requisitos = PackedStringArray("ber_slayer_skill_6", "ber_slayer_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="slayer_s8"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_8"
+Nome = "Ruptura"
+Descricao = "O Slayer abre uma ferida profunda no inimigo, fazendo-o sangrar enquanto continua lutando."
+HabilidadeAtiva = ExtResource("sk_18")
+NodeType = 1
+Posicao = Vector2(1490.9, 805.1)
+Requisitos = PackedStringArray("ber_slayer_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="slayer_s9"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_9"
+Nome = "Máquina de Matar"
+Descricao = "O Slayer entra em um estado frio e implacável, eliminando distrações e focando apenas em destruir o alvo marcado."
+HabilidadeAtiva = ExtResource("sk_19")
+NodeType = 1
+Posicao = Vector2(1435, 1230)
+Requisitos = PackedStringArray("ber_slayer_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="slayer_s10"]
+script = ExtResource("2_node")
+NodeId = "ber_slayer_skill_10"
+Nome = "Ceifador de Almas"
+Descricao = "O Slayer ergue o machado e desfere um golpe lendário, carregado com toda a força acumulada durante a batalha."
+HabilidadeAtiva = ExtResource("sk_20")
+NodeType = 1
+Posicao = Vector2(1094.9, 1490.9)
+Requisitos = PackedStringArray("ber_slayer_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="tita_rota"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_rota"
+Nome = "Titã"
+Descricao = "Caminho de especialização: Titã."
+NodeType = 5
+Posicao = Vector2(846.1, 1010)
+Requisitos = PackedStringArray("ber_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="tita_ci1"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_escolha_interna_1"
+Nome = "Escolha de atributos — Titã"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(849.3, 1111.1)
+Requisitos = PackedStringArray("ber_tita_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Evasao", "VelocidadeMovimento", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="tita_ci2"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_escolha_interna_2"
+Nome = "Escolha de atributos — Titã"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(785.5, 1045)
+Requisitos = PackedStringArray("ber_tita_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DefesaFisica", "Hp", "RouboVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="tita_ci3"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_escolha_interna_3"
+Nome = "Escolha de atributos — Titã"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(760.1, 956.6)
+Requisitos = PackedStringArray("ber_tita_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Forca", "RouboVida", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="tita_s1"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_1"
+Nome = "Sangue de Ferro"
+Descricao = "A dor desperta a resistência natural do Berserker. Seus músculos endurecem e seu corpo passa a suportar melhor os golpes recebidos."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(815, 1183.8)
+Requisitos = PackedStringArray("ber_tita_escolha_interna_1")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="tita_s2"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_2"
+Nome = "Pele de Ferro"
+Descricao = "O Titã endurece o corpo como metal, suportando golpes que derrubariam guerreiros comuns."
+HabilidadeAtiva = ExtResource("sk_22")
+NodeType = 1
+Posicao = Vector2(716.2, 1085)
+Requisitos = PackedStringArray("ber_tita_escolha_interna_2")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="tita_s3"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_3"
+Nome = "Regeneração Brutal"
+Descricao = "Os ferimentos do Titã se fecham rapidamente, como se sua própria raiva costurasse carne e ossos."
+HabilidadeAtiva = ExtResource("sk_23")
+NodeType = 1
+Posicao = Vector2(680, 950)
+Requisitos = PackedStringArray("ber_tita_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="tita_ul"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Titã"
+Descricao = "Marco de progressão do caminho Titã."
+NodeType = 5
+Posicao = Vector2(725, 1218.1)
+Requisitos = PackedStringArray("ber_tita_skill_1", "ber_tita_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="tita_ur"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_desbloqueio_direito"
+Nome = "Desbloqueio — Titã"
+Descricao = "Marco de progressão do caminho Titã."
+NodeType = 5
+Posicao = Vector2(605.3, 1010.8)
+Requisitos = PackedStringArray("ber_tita_skill_2", "ber_tita_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="tita_s4"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_4"
+Nome = "Provocação Selvagem"
+Descricao = "O Titã ruge com violência, atraindo a atenção dos inimigos próximos para si."
+HabilidadeAtiva = ExtResource("sk_24")
+NodeType = 1
+Posicao = Vector2(817.1, 1359)
+Requisitos = PackedStringArray("ber_tita_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_26")
 
-[sub_resource type="Resource" id="ber_n35"]
-script = ExtResource("2")
-NodeId = "ber_36"
-Nome = "Berseker Resistente"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="tita_s5"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_5"
+Nome = "Golpe Sísmico"
+Descricao = "O Titã golpeia o chão com tamanha força que o impacto se espalha como uma onda sísmica."
+HabilidadeAtiva = ExtResource("sk_25")
+NodeType = 1
+Posicao = Vector2(640.7, 1248.7)
+Requisitos = PackedStringArray("ber_tita_desbloqueio_esquerdo")
 CustoPontos = 1
-NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_27", "ber_28")
+NivelMinimo = 15
 
-[sub_resource type="Resource" id="ber_n36"]
-script = ExtResource("2")
-NodeId = "ber_37"
-Nome = "Berseker Letal"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="tita_s6"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_6"
+Nome = "Resistência Titânica"
+Descricao = "O Titã fortalece corpo e espírito, tornando-se mais resistente contra qualquer tipo de dano."
+HabilidadeAtiva = ExtResource("sk_26")
+NodeType = 1
+Posicao = Vector2(536.7, 1068.5)
+Requisitos = PackedStringArray("ber_tita_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_28")
+NivelMinimo = 20
 
-[sub_resource type="Resource" id="ber_n37"]
-script = ExtResource("2")
-NodeId = "ber_38"
-Nome = "Berseker Preciso"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="tita_s7"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_7"
+Nome = "Tremor de Guerra"
+Descricao = "O Titã causa um tremor violento ao seu redor, desestabilizando todos os inimigos próximos."
+HabilidadeAtiva = ExtResource("sk_27")
+NodeType = 1
+Posicao = Vector2(529.4, 860.6)
+Requisitos = PackedStringArray("ber_tita_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_29", "ber_30")
+NivelMinimo = 30
 
-[sub_resource type="Resource" id="ber_n38"]
-script = ExtResource("2")
-NodeId = "ber_39"
-Nome = "Berseker Brutal"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="tita_ce1"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_escolha_externa_1"
+Nome = "Escolha de atributos — Titã"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(717.6, 1387.1)
+Requisitos = PackedStringArray("ber_tita_skill_4", "ber_tita_skill_5")
 CustoPontos = 1
-NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_30")
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="ber_n39"]
-script = ExtResource("2")
-NodeId = "ber_40"
-Nome = "Berseker Sutil"
-Descricao = "Nó de talento nível 5 (Berseker)."
+[sub_resource type="Resource" id="tita_ce2"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_escolha_externa_2"
+Nome = "Escolha de atributos — Titã"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(521.3, 1197.5)
+Requisitos = PackedStringArray("ber_tita_skill_5", "ber_tita_skill_6")
 CustoPontos = 1
-NivelMinimo = 10
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_31", "ber_32")
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "RegeneracaoVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="ber_n40"]
-script = ExtResource("2")
-NodeId = "ber_41"
-Nome = "Berseker Gélido"
-Descricao = "Nó de talento nível 6 (Berseker)."
+[sub_resource type="Resource" id="tita_ce3"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_escolha_externa_3"
+Nome = "Escolha de atributos — Titã"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(455.3, 932.7)
+Requisitos = PackedStringArray("ber_tita_skill_6", "ber_tita_skill_7")
 CustoPontos = 1
-NivelMinimo = 12
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_34", "ber_35")
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "Forca", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="ber_n41"]
-script = ExtResource("2")
-NodeId = "ber_42"
-Nome = "Berseker Flamejante"
-Descricao = "Nó de talento nível 6 (Berseker)."
+[sub_resource type="Resource" id="tita_s8"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_8"
+Nome = "Espírito Indomável"
+Descricao = "Mesmo cercado e ferido, o Titã se recusa a cair. Sua vontade reduz a força dos golpes recebidos."
+HabilidadeAtiva = ExtResource("sk_28")
+NodeType = 1
+Posicao = Vector2(805.1, 1490.9)
+Requisitos = PackedStringArray("ber_tita_escolha_externa_1")
 CustoPontos = 1
-NivelMinimo = 12
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_35")
+NivelMinimo = 40
 
-[sub_resource type="Resource" id="ber_n42"]
-script = ExtResource("2")
-NodeId = "ber_43"
-Nome = "Berseker Tempestuoso"
-Descricao = "Nó de talento nível 6 (Berseker)."
+[sub_resource type="Resource" id="tita_s9"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_9"
+Nome = "Colosso"
+Descricao = "O Titã assume a presença de um gigante ancestral, expandindo sua vitalidade e impondo medo aos inimigos."
+HabilidadeAtiva = ExtResource("sk_29")
+NodeType = 1
+Posicao = Vector2(465, 1230)
+Requisitos = PackedStringArray("ber_tita_escolha_externa_2")
 CustoPontos = 1
-NivelMinimo = 12
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_36", "ber_37")
+NivelMinimo = 50
 
-[sub_resource type="Resource" id="ber_n43"]
-script = ExtResource("2")
-NodeId = "ber_44"
-Nome = "Berseker Venenoso"
-Descricao = "Nó de talento nível 6 (Berseker)."
+[sub_resource type="Resource" id="tita_s10"]
+script = ExtResource("2_node")
+NodeId = "ber_tita_skill_10"
+Nome = "Titã Ancestral"
+Descricao = "O Berserker desperta o sangue dos gigantes antigos e se transforma em uma muralha viva de carne, aço e fúria."
+HabilidadeAtiva = ExtResource("sk_30")
+NodeType = 1
+Posicao = Vector2(409.1, 805.1)
+Requisitos = PackedStringArray("ber_tita_escolha_externa_3")
 CustoPontos = 1
-NivelMinimo = 12
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_37")
-
-[sub_resource type="Resource" id="ber_n44"]
-script = ExtResource("2")
-NodeId = "ber_45"
-Nome = "Berseker Sangrento"
-Descricao = "Nó de talento nível 6 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 12
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_38", "ber_39")
-
-[sub_resource type="Resource" id="ber_n45"]
-script = ExtResource("2")
-NodeId = "ber_46"
-Nome = "Berseker Eterno"
-Descricao = "Nó de talento nível 7 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_41", "ber_42")
-
-[sub_resource type="Resource" id="ber_n46"]
-script = ExtResource("2")
-NodeId = "ber_47"
-Nome = "Berseker Celestial"
-Descricao = "Nó de talento nível 7 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_42")
-
-[sub_resource type="Resource" id="ber_n47"]
-script = ExtResource("2")
-NodeId = "ber_48"
-Nome = "Berseker Abissal"
-Descricao = "Nó de talento nível 7 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_43", "ber_44")
-
-[sub_resource type="Resource" id="ber_n48"]
-script = ExtResource("2")
-NodeId = "ber_49"
-Nome = "Berseker Primordial"
-Descricao = "Nó de talento nível 8 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_46", "ber_47")
-
-[sub_resource type="Resource" id="ber_n49"]
-script = ExtResource("2")
-NodeId = "ber_50"
-Nome = "Berseker Final"
-Descricao = "Nó de talento nível 8 (Berseker)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusForca = 1
-BonusVitalidade = 1
-Requisitos = PackedStringArray("ber_47")
+NivelMinimo = 70
 
 [resource]
-script = ExtResource("1")
-NomeArvore = "Árvore Berseker"
-RootNodeIds = PackedStringArray("ber_01", "ber_02", "ber_03")
-
-Nodes = Array[Resource]([
-	SubResource("ber_n0"),
-	SubResource("ber_n1"),
-	SubResource("ber_n2"),
-	SubResource("ber_n3"),
-	SubResource("ber_n4"),
-	SubResource("ber_n5"),
-	SubResource("ber_n6"),
-	SubResource("ber_n7"),
-	SubResource("ber_n8"),
-	SubResource("ber_n9"),
-	SubResource("ber_n10"),
-	SubResource("ber_n11"),
-	SubResource("ber_n12"),
-	SubResource("ber_n13"),
-	SubResource("ber_n14"),
-	SubResource("ber_n15"),
-	SubResource("ber_n16"),
-	SubResource("ber_n17"),
-	SubResource("ber_n18"),
-	SubResource("ber_n19"),
-	SubResource("ber_n20"),
-	SubResource("ber_n21"),
-	SubResource("ber_n22"),
-	SubResource("ber_n23"),
-	SubResource("ber_n24"),
-	SubResource("ber_n25"),
-	SubResource("ber_n26"),
-	SubResource("ber_n27"),
-	SubResource("ber_n28"),
-	SubResource("ber_n29"),
-	SubResource("ber_n30"),
-	SubResource("ber_n31"),
-	SubResource("ber_n32"),
-	SubResource("ber_n33"),
-	SubResource("ber_n34"),
-	SubResource("ber_n35"),
-	SubResource("ber_n36"),
-	SubResource("ber_n37"),
-	SubResource("ber_n38"),
-	SubResource("ber_n39"),
-	SubResource("ber_n40"),
-	SubResource("ber_n41"),
-	SubResource("ber_n42"),
-	SubResource("ber_n43"),
-	SubResource("ber_n44"),
-	SubResource("ber_n45"),
-	SubResource("ber_n46"),
-	SubResource("ber_n47"),
-	SubResource("ber_n48"),
-	SubResource("ber_n49")
-])
+script = ExtResource("1_tree")
+NomeArvore = "Árvore do Berserker"
+Nodes = Array[Resource]([SubResource("base"), SubResource("barbaro_rota"), SubResource("barbaro_ci1"), SubResource("barbaro_ci2"), SubResource("barbaro_ci3"), SubResource("barbaro_s1"), SubResource("barbaro_s2"), SubResource("barbaro_s3"), SubResource("barbaro_ul"), SubResource("barbaro_ur"), SubResource("barbaro_s4"), SubResource("barbaro_s5"), SubResource("barbaro_s6"), SubResource("barbaro_s7"), SubResource("barbaro_ce1"), SubResource("barbaro_ce2"), SubResource("barbaro_ce3"), SubResource("barbaro_s8"), SubResource("barbaro_s9"), SubResource("barbaro_s10"), SubResource("slayer_rota"), SubResource("slayer_ci1"), SubResource("slayer_ci2"), SubResource("slayer_ci3"), SubResource("slayer_s1"), SubResource("slayer_s2"), SubResource("slayer_s3"), SubResource("slayer_ul"), SubResource("slayer_ur"), SubResource("slayer_s4"), SubResource("slayer_s5"), SubResource("slayer_s6"), SubResource("slayer_s7"), SubResource("slayer_ce1"), SubResource("slayer_ce2"), SubResource("slayer_ce3"), SubResource("slayer_s8"), SubResource("slayer_s9"), SubResource("slayer_s10"), SubResource("tita_rota"), SubResource("tita_ci1"), SubResource("tita_ci2"), SubResource("tita_ci3"), SubResource("tita_s1"), SubResource("tita_s2"), SubResource("tita_s3"), SubResource("tita_ul"), SubResource("tita_ur"), SubResource("tita_s4"), SubResource("tita_s5"), SubResource("tita_s6"), SubResource("tita_s7"), SubResource("tita_ce1"), SubResource("tita_ce2"), SubResource("tita_ce3"), SubResource("tita_s8"), SubResource("tita_s9"), SubResource("tita_s10")])
+RootNodeIds = PackedStringArray("ber_base")
+UsaLayoutPersonalizado = true
+BoardSize = Vector2(1900, 1900)

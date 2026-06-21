@@ -1,614 +1,698 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
 
-[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
-[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Todas/001 - Segundo Fôlego.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/001 - Bola de Fogo.tres" id="sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/002 - Lança de Gelo.tres" id="sk_3"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/003 - Raio Estático.tres" id="sk_4"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/004 - Tornado.tres" id="sk_5"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/005 - Prisão de Gelo.tres" id="sk_6"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/006 - Tempestade Elétrica.tres" id="sk_7"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/007 - Explosão Vulcânica.tres" id="sk_8"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/008 - Fúria Elemental.tres" id="sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Elementalista/009 - Chuva de Meteoros.tres" id="sk_10"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Todas/002 - Teleporte Arcano.tres" id="sk_11"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/001 - Seta Sombria.tres" id="sk_12"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/002 - Maldição da Fraqueza.tres" id="sk_13"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/003 - Drenar Vida.tres" id="sk_14"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/004 - Escuridão Profunda.tres" id="sk_15"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/005 - Correntes das Trevas.tres" id="sk_16"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/006 - Praga Sombria.tres" id="sk_17"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/007 - Explosão Negra.tres" id="sk_18"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/008 - Forma das Sombras.tres" id="sk_19"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Mago Negro/009 - Apocalipse Sombrio.tres" id="sk_20"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Todas/003 - Escudo Arcano.tres" id="sk_21"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/001 - Familiar Arcano.tres" id="sk_22"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/002 - Comando Arcano.tres" id="sk_23"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/003 - Invocar Golem.tres" id="sk_24"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/004 - Transferência Vital.tres" id="sk_25"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/005 - Espírito Elemental.tres" id="sk_26"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/006 - Fortalecer Invocação.tres" id="sk_27"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/007 - Sacrifício Arcano.tres" id="sk_28"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/008 - Exército Arcano.tres" id="sk_29"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/009 - Senhor das Invocações.tres" id="sk_30"]
+[sub_resource type="Resource" id="base"]
+script = ExtResource("2_node")
+NodeId = "mag_base"
+Nome = "Fundamentos do Mago"
+Descricao = "Nó central que abre as três especializações de Mago."
+NodeType = 1
+Posicao = Vector2(950, 950)
+CustoPontos = 1
 
-[sub_resource type="Resource" id="mago_n0"]
-script = ExtResource("2")
-NodeId = "mago_01"
-Nome = "Mago Base"
-Descricao = "Nó de talento nível 0 (Mago)."
-CustoPontos = 5
+[sub_resource type="Resource" id="elementalista_rota"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_rota"
+Nome = "Elementalista"
+Descricao = "Caminho de especialização: Elementalista."
+NodeType = 5
+Posicao = Vector2(950, 830)
+Requisitos = PackedStringArray("mag_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="elementalista_ci1"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_escolha_interna_1"
+Nome = "Escolha de atributos — Elementalista"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(860.8, 782.2)
+Requisitos = PackedStringArray("mag_elementalista_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Inteligencia", "Mana", "RegeneracaoMana")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="elementalista_ci2"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_escolha_interna_2"
+Nome = "Escolha de atributos — Elementalista"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 760)
+Requisitos = PackedStringArray("mag_elementalista_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DanoMagico", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="elementalista_ci3"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_escolha_interna_3"
+Nome = "Escolha de atributos — Elementalista"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1039.2, 782.2)
+Requisitos = PackedStringArray("mag_elementalista_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("ReducaoCooldown", "RouboMana", "Hp")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="elementalista_s1"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_1"
+Nome = "Segundo Fôlego"
+Descricao = "Recupera HP e Mana."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 716.2)
+Requisitos = PackedStringArray("mag_elementalista_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusInteligencia = 6
-BonusManaPercent = 4
-BonusDanoPercent = 0.6
 
-[sub_resource type="Resource" id="mago_n1"]
-script = ExtResource("2")
-NodeId = "mago_02"
-Nome = "Mago Essencial"
-Descricao = "Nó de talento nível 0 (Mago)."
-CustoPontos = 5
+[sub_resource type="Resource" id="elementalista_s2"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_2"
+Nome = "Bola de Fogo"
+Descricao = "Projétil de fogo."
+HabilidadeAtiva = ExtResource("sk_2")
+NodeType = 1
+Posicao = Vector2(950, 680)
+Requisitos = PackedStringArray("mag_elementalista_escolha_interna_2")
+CustoPontos = 1
 NivelMinimo = 1
-BonusInteligencia = 6
-BonusManaPercent = 4
 
-[sub_resource type="Resource" id="mago_n2"]
-script = ExtResource("2")
-NodeId = "mago_03"
-Nome = "Mago Primordial"
-Descricao = "Nó de talento nível 0 (Mago)."
-CustoPontos = 5
+[sub_resource type="Resource" id="elementalista_s3"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_3"
+Nome = "Lança de Gelo"
+Descricao = "Lança de gelo."
+HabilidadeAtiva = ExtResource("sk_3")
+NodeType = 1
+Posicao = Vector2(1085, 716.2)
+Requisitos = PackedStringArray("mag_elementalista_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="elementalista_ul"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Elementalista"
+Descricao = "Marco de progressão do caminho Elementalista."
+NodeType = 5
+Posicao = Vector2(830.3, 621.1)
+Requisitos = PackedStringArray("mag_elementalista_skill_1", "mag_elementalista_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="elementalista_ur"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_desbloqueio_direito"
+Nome = "Desbloqueio — Elementalista"
+Descricao = "Marco de progressão do caminho Elementalista."
+NodeType = 5
+Posicao = Vector2(1069.7, 621.1)
+Requisitos = PackedStringArray("mag_elementalista_skill_2", "mag_elementalista_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="elementalista_s4"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_4"
+Nome = "Raio Estático"
+Descricao = "Raio elétrico."
+HabilidadeAtiva = ExtResource("sk_4")
+NodeType = 1
+Posicao = Vector2(662.3, 630.4)
+Requisitos = PackedStringArray("mag_elementalista_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 10
+
+[sub_resource type="Resource" id="elementalista_s5"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_5"
+Nome = "Tornado"
+Descricao = "Invoca tornado."
+HabilidadeAtiva = ExtResource("sk_5")
+NodeType = 1
+Posicao = Vector2(846, 532.8)
+Requisitos = PackedStringArray("mag_elementalista_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="elementalista_s6"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_6"
+Nome = "Prisão de Gelo"
+Descricao = "Congela alvo."
+HabilidadeAtiva = ExtResource("sk_6")
+NodeType = 1
+Posicao = Vector2(1054, 532.8)
+Requisitos = PackedStringArray("mag_elementalista_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="elementalista_s7"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_7"
+Nome = "Tempestade Elétrica"
+Descricao = "Raios em cadeia."
+HabilidadeAtiva = ExtResource("sk_7")
+NodeType = 1
+Posicao = Vector2(1237.7, 630.4)
+Requisitos = PackedStringArray("mag_elementalista_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="elementalista_ce1"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_escolha_externa_1"
+Nome = "Escolha de atributos — Elementalista"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(687.7, 530.2)
+Requisitos = PackedStringArray("mag_elementalista_skill_4", "mag_elementalista_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DanoCriticoBonus", "Inteligencia", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="elementalista_ce2"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_escolha_externa_2"
+Nome = "Escolha de atributos — Elementalista"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 455)
+Requisitos = PackedStringArray("mag_elementalista_skill_5", "mag_elementalista_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="elementalista_ce3"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_escolha_externa_3"
+Nome = "Escolha de atributos — Elementalista"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1212.3, 530.2)
+Requisitos = PackedStringArray("mag_elementalista_skill_6", "mag_elementalista_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "VelocidadeMovimento")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="elementalista_s8"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_8"
+Nome = "Explosão Vulcânica"
+Descricao = "Explosão de fogo."
+HabilidadeAtiva = ExtResource("sk_8")
+NodeType = 1
+Posicao = Vector2(554, 554)
+Requisitos = PackedStringArray("mag_elementalista_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="elementalista_s9"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_9"
+Nome = "Fúria Elemental"
+Descricao = "Amplifica elementos."
+HabilidadeAtiva = ExtResource("sk_9")
+NodeType = 1
+Posicao = Vector2(950, 390)
+Requisitos = PackedStringArray("mag_elementalista_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="elementalista_s10"]
+script = ExtResource("2_node")
+NodeId = "mag_elementalista_skill_10"
+Nome = "Chuva de Meteoros"
+Descricao = "Meteoros devastadores."
+HabilidadeAtiva = ExtResource("sk_10")
+NodeType = 1
+Posicao = Vector2(1346, 554)
+Requisitos = PackedStringArray("mag_elementalista_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="mago_negro_rota"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_rota"
+Nome = "Mago Negro"
+Descricao = "Caminho de especialização: Mago Negro."
+NodeType = 5
+Posicao = Vector2(1053.9, 1010)
+Requisitos = PackedStringArray("mag_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="mago_negro_ci1"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_escolha_interna_1"
+Nome = "Escolha de atributos — Mago Negro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1139.9, 956.6)
+Requisitos = PackedStringArray("mag_mago_negro_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("ReducaoCooldown", "RouboMana", "Hp")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="mago_negro_ci2"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_escolha_interna_2"
+Nome = "Escolha de atributos — Mago Negro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1114.5, 1045)
+Requisitos = PackedStringArray("mag_mago_negro_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DanoCriticoBonus", "Inteligencia", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="mago_negro_ci3"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_escolha_interna_3"
+Nome = "Escolha de atributos — Mago Negro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1050.7, 1111.1)
+Requisitos = PackedStringArray("mag_mago_negro_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="mago_negro_s1"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_1"
+Nome = "Teleporte Arcano"
+Descricao = "Teleporta 4 tiles."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(1220, 950)
+Requisitos = PackedStringArray("mag_mago_negro_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusInteligencia = 6
-BonusManaPercent = 4
 
-[sub_resource type="Resource" id="mago_n3"]
-script = ExtResource("2")
-NodeId = "mago_04"
-Nome = "Mago Fundamental"
-Descricao = "Nó de talento nível 1 (Mago)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusInteligencia = 5
-BonusManaPercent = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("mago_01", "mago_02")
-
-[sub_resource type="Resource" id="mago_n4"]
-script = ExtResource("2")
-NodeId = "mago_05"
-Nome = "Mago Natural"
-Descricao = "Nó de talento nível 1 (Mago)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusInteligencia = 5
-BonusManaPercent = 3
-Requisitos = PackedStringArray("mago_02")
-
-[sub_resource type="Resource" id="mago_n5"]
-script = ExtResource("2")
-NodeId = "mago_06"
-Nome = "Mago Básico"
-Descricao = "Nó de talento nível 1 (Mago)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusInteligencia = 5
-BonusManaPercent = 3
-Requisitos = PackedStringArray("mago_03", "mago_01")
-
-[sub_resource type="Resource" id="mago_n6"]
-script = ExtResource("2")
-NodeId = "mago_07"
-Nome = "Mago Inicial"
-Descricao = "Nó de talento nível 1 (Mago)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusInteligencia = 5
-BonusManaPercent = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("mago_01")
-
-[sub_resource type="Resource" id="mago_n7"]
-script = ExtResource("2")
-NodeId = "mago_08"
-Nome = "Mago Concentração"
-Descricao = "Nó de talento nível 1 (Mago)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusInteligencia = 5
-BonusManaPercent = 3
-Requisitos = PackedStringArray("mago_02", "mago_03")
-
-[sub_resource type="Resource" id="mago_n8"]
-script = ExtResource("2")
-NodeId = "mago_09"
-Nome = "Mago Foco"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-Requisitos = PackedStringArray("mago_04", "mago_05")
-
-[sub_resource type="Resource" id="mago_n9"]
-script = ExtResource("2")
-NodeId = "mago_10"
-Nome = "Mago Potencial"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("mago_05")
-
-[sub_resource type="Resource" id="mago_n10"]
-script = ExtResource("2")
-NodeId = "mago_11"
-Nome = "Mago Expansão"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-Requisitos = PackedStringArray("mago_06", "mago_07")
-
-[sub_resource type="Resource" id="mago_n11"]
-script = ExtResource("2")
-NodeId = "mago_12"
-Nome = "Mago Crescimento"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-Requisitos = PackedStringArray("mago_07")
-
-[sub_resource type="Resource" id="mago_n12"]
-script = ExtResource("2")
-NodeId = "mago_13"
-Nome = "Mago Despertar"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("mago_08", "mago_04")
-
-[sub_resource type="Resource" id="mago_n13"]
-script = ExtResource("2")
-NodeId = "mago_14"
-Nome = "Mago Evolução"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-Requisitos = PackedStringArray("mago_04")
-
-[sub_resource type="Resource" id="mago_n14"]
-script = ExtResource("2")
-NodeId = "mago_15"
-Nome = "Mago Progresso"
-Descricao = "Nó de talento nível 2 (Mago)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusInteligencia = 4
-BonusManaPercent = 2
-Requisitos = PackedStringArray("mago_05", "mago_06")
-
-[sub_resource type="Resource" id="mago_n15"]
-script = ExtResource("2")
-NodeId = "mago_16"
-Nome = "Mago Aprimoramento"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_09", "mago_10")
-
-[sub_resource type="Resource" id="mago_n16"]
-script = ExtResource("2")
-NodeId = "mago_17"
-Nome = "Mago Avanço"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_10")
-
-[sub_resource type="Resource" id="mago_n17"]
-script = ExtResource("2")
-NodeId = "mago_18"
-Nome = "Mago Superior"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_11", "mago_12")
-
-[sub_resource type="Resource" id="mago_n18"]
-script = ExtResource("2")
-NodeId = "mago_19"
-Nome = "Mago Elevado"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_12")
-
-[sub_resource type="Resource" id="mago_n19"]
-script = ExtResource("2")
-NodeId = "mago_20"
-Nome = "Mago Mestre"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_13", "mago_14")
-
-[sub_resource type="Resource" id="mago_n20"]
-script = ExtResource("2")
-NodeId = "mago_21"
-Nome = "Mago Supremo"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_14")
-
-[sub_resource type="Resource" id="mago_n21"]
-script = ExtResource("2")
-NodeId = "mago_22"
-Nome = "Mago Lendário"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_15", "mago_09")
-
-[sub_resource type="Resource" id="mago_n22"]
-script = ExtResource("2")
-NodeId = "mago_23"
-Nome = "Mago Mítico"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_09")
-
-[sub_resource type="Resource" id="mago_n23"]
-script = ExtResource("2")
-NodeId = "mago_24"
-Nome = "Mago Divino"
-Descricao = "Nó de talento nível 3 (Mago)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusInteligencia = 3
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_10", "mago_11")
-
-[sub_resource type="Resource" id="mago_n24"]
-script = ExtResource("2")
-NodeId = "mago_25"
-Nome = "Mago Épico"
-Descricao = "Nó de talento nível 4 (Mago)."
+[sub_resource type="Resource" id="mago_negro_s2"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_2"
+Nome = "Seta Sombria"
+Descricao = "Projétil sombrio."
+HabilidadeAtiva = ExtResource("sk_12")
+NodeType = 1
+Posicao = Vector2(1183.8, 1085)
+Requisitos = PackedStringArray("mag_mago_negro_escolha_interna_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_16", "mago_17")
+NivelMinimo = 1
 
-[sub_resource type="Resource" id="mago_n25"]
-script = ExtResource("2")
-NodeId = "mago_26"
-Nome = "Mago Guerreiro"
-Descricao = "Nó de talento nível 4 (Mago)."
+[sub_resource type="Resource" id="mago_negro_s3"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_3"
+Nome = "Maldição da Fraqueza"
+Descricao = "Enfraquece alvo."
+HabilidadeAtiva = ExtResource("sk_13")
+NodeType = 1
+Posicao = Vector2(1085, 1183.8)
+Requisitos = PackedStringArray("mag_mago_negro_escolha_interna_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_17")
+NivelMinimo = 5
 
-[sub_resource type="Resource" id="mago_n26"]
-script = ExtResource("2")
-NodeId = "mago_27"
-Nome = "Mago Sábio"
-Descricao = "Nó de talento nível 4 (Mago)."
+[sub_resource type="Resource" id="mago_negro_ul"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Mago Negro"
+Descricao = "Marco de progressão do caminho Mago Negro."
+NodeType = 5
+Posicao = Vector2(1294.7, 1010.8)
+Requisitos = PackedStringArray("mag_mago_negro_skill_1", "mag_mago_negro_skill_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_18", "mago_19")
 
-[sub_resource type="Resource" id="mago_n27"]
-script = ExtResource("2")
-NodeId = "mago_28"
-Nome = "Mago Destemido"
-Descricao = "Nó de talento nível 4 (Mago)."
+[sub_resource type="Resource" id="mago_negro_ur"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_desbloqueio_direito"
+Nome = "Desbloqueio — Mago Negro"
+Descricao = "Marco de progressão do caminho Mago Negro."
+NodeType = 5
+Posicao = Vector2(1175, 1218.1)
+Requisitos = PackedStringArray("mag_mago_negro_skill_2", "mag_mago_negro_skill_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_19")
 
-[sub_resource type="Resource" id="mago_n28"]
-script = ExtResource("2")
-NodeId = "mago_29"
-Nome = "Mago Poderoso"
-Descricao = "Nó de talento nível 4 (Mago)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_20", "mago_21")
-
-[sub_resource type="Resource" id="mago_n29"]
-script = ExtResource("2")
-NodeId = "mago_30"
-Nome = "Mago Ágil"
-Descricao = "Nó de talento nível 4 (Mago)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_21")
-
-[sub_resource type="Resource" id="mago_n30"]
-script = ExtResource("2")
-NodeId = "mago_31"
-Nome = "Mago Feroz"
-Descricao = "Nó de talento nível 4 (Mago)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_22", "mago_23")
-
-[sub_resource type="Resource" id="mago_n31"]
-script = ExtResource("2")
-NodeId = "mago_32"
-Nome = "Mago Sombrio"
-Descricao = "Nó de talento nível 4 (Mago)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_23")
-
-[sub_resource type="Resource" id="mago_n32"]
-script = ExtResource("2")
-NodeId = "mago_33"
-Nome = "Mago Sagrado"
-Descricao = "Nó de talento nível 4 (Mago)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusInteligencia = 2
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_24", "mago_16")
-
-[sub_resource type="Resource" id="mago_n33"]
-script = ExtResource("2")
-NodeId = "mago_34"
-Nome = "Mago Arcana"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="mago_negro_s4"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_4"
+Nome = "Drenar Vida"
+Descricao = "Rouba vida do alvo."
+HabilidadeAtiva = ExtResource("sk_14")
+NodeType = 1
+Posicao = Vector2(1370.6, 860.6)
+Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_25", "mago_26")
 
-[sub_resource type="Resource" id="mago_n34"]
-script = ExtResource("2")
-NodeId = "mago_35"
-Nome = "Mago Rápido"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="mago_negro_s5"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_5"
+Nome = "Escuridão Profunda"
+Descricao = "Reduz precisão."
+HabilidadeAtiva = ExtResource("sk_15")
+NodeType = 1
+Posicao = Vector2(1363.3, 1068.5)
+Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="mago_negro_s6"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_6"
+Nome = "Correntes das Trevas"
+Descricao = "Imobiliza alvo."
+HabilidadeAtiva = ExtResource("sk_16")
+NodeType = 1
+Posicao = Vector2(1259.3, 1248.7)
+Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="mago_negro_s7"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_7"
+Nome = "Praga Sombria"
+Descricao = "Dano contínuo."
+HabilidadeAtiva = ExtResource("sk_17")
+NodeType = 1
+Posicao = Vector2(1082.9, 1359)
+Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="mago_negro_ce1"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_escolha_externa_1"
+Nome = "Escolha de atributos — Mago Negro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1444.7, 932.7)
+Requisitos = PackedStringArray("mag_mago_negro_skill_4", "mag_mago_negro_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "VelocidadeMovimento")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="mago_negro_ce2"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_escolha_externa_2"
+Nome = "Escolha de atributos — Mago Negro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1378.7, 1197.5)
+Requisitos = PackedStringArray("mag_mago_negro_skill_5", "mag_mago_negro_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Inteligencia", "Mana", "RegeneracaoMana")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="mago_negro_ce3"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_escolha_externa_3"
+Nome = "Escolha de atributos — Mago Negro"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1182.4, 1387.1)
+Requisitos = PackedStringArray("mag_mago_negro_skill_6", "mag_mago_negro_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DanoMagico", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="mago_negro_s8"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_8"
+Nome = "Explosão Negra"
+Descricao = "Explosão sombria."
+HabilidadeAtiva = ExtResource("sk_18")
+NodeType = 1
+Posicao = Vector2(1490.9, 805.1)
+Requisitos = PackedStringArray("mag_mago_negro_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="mago_negro_s9"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_9"
+Nome = "Forma das Sombras"
+Descricao = "Fortalece magia negra."
+HabilidadeAtiva = ExtResource("sk_19")
+NodeType = 1
+Posicao = Vector2(1435, 1230)
+Requisitos = PackedStringArray("mag_mago_negro_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="mago_negro_s10"]
+script = ExtResource("2_node")
+NodeId = "mag_mago_negro_skill_10"
+Nome = "Apocalipse Sombrio"
+Descricao = "Onda de trevas."
+HabilidadeAtiva = ExtResource("sk_20")
+NodeType = 1
+Posicao = Vector2(1094.9, 1490.9)
+Requisitos = PackedStringArray("mag_mago_negro_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="summoner_rota"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_rota"
+Nome = "Summoner"
+Descricao = "Caminho de especialização: Summoner."
+NodeType = 5
+Posicao = Vector2(846.1, 1010)
+Requisitos = PackedStringArray("mag_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="summoner_ci1"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_escolha_interna_1"
+Nome = "Escolha de atributos — Summoner"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(849.3, 1111.1)
+Requisitos = PackedStringArray("mag_summoner_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="summoner_ci2"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_escolha_interna_2"
+Nome = "Escolha de atributos — Summoner"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(785.5, 1045)
+Requisitos = PackedStringArray("mag_summoner_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "VelocidadeMovimento")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="summoner_ci3"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_escolha_interna_3"
+Nome = "Escolha de atributos — Summoner"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(760.1, 956.6)
+Requisitos = PackedStringArray("mag_summoner_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Inteligencia", "Mana", "RegeneracaoMana")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="summoner_s1"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_1"
+Nome = "Escudo Arcano"
+Descricao = "Escudo de mana."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(815, 1183.8)
+Requisitos = PackedStringArray("mag_summoner_escolha_interna_1")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="summoner_s2"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_2"
+Nome = "Familiar Arcano"
+Descricao = "Invoca familiar mágico."
+HabilidadeAtiva = ExtResource("sk_22")
+NodeType = 1
+Posicao = Vector2(716.2, 1085)
+Requisitos = PackedStringArray("mag_summoner_escolha_interna_2")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="summoner_s3"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_3"
+Nome = "Comando Arcano"
+Descricao = "Ordena ataque."
+HabilidadeAtiva = ExtResource("sk_23")
+NodeType = 1
+Posicao = Vector2(680, 950)
+Requisitos = PackedStringArray("mag_summoner_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="summoner_ul"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Summoner"
+Descricao = "Marco de progressão do caminho Summoner."
+NodeType = 5
+Posicao = Vector2(725, 1218.1)
+Requisitos = PackedStringArray("mag_summoner_skill_1", "mag_summoner_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="summoner_ur"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_desbloqueio_direito"
+Nome = "Desbloqueio — Summoner"
+Descricao = "Marco de progressão do caminho Summoner."
+NodeType = 5
+Posicao = Vector2(605.3, 1010.8)
+Requisitos = PackedStringArray("mag_summoner_skill_2", "mag_summoner_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="summoner_s4"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_4"
+Nome = "Invocar Golem"
+Descricao = "Invoca golem."
+HabilidadeAtiva = ExtResource("sk_24")
+NodeType = 1
+Posicao = Vector2(817.1, 1359)
+Requisitos = PackedStringArray("mag_summoner_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_26")
 
-[sub_resource type="Resource" id="mago_n35"]
-script = ExtResource("2")
-NodeId = "mago_36"
-Nome = "Mago Resistente"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="summoner_s5"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_5"
+Nome = "Transferência Vital"
+Descricao = "Transfere vida."
+HabilidadeAtiva = ExtResource("sk_25")
+NodeType = 1
+Posicao = Vector2(640.7, 1248.7)
+Requisitos = PackedStringArray("mag_summoner_desbloqueio_esquerdo")
 CustoPontos = 1
-NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_27", "mago_28")
+NivelMinimo = 15
 
-[sub_resource type="Resource" id="mago_n36"]
-script = ExtResource("2")
-NodeId = "mago_37"
-Nome = "Mago Letal"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="summoner_s6"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_6"
+Nome = "Espírito Elemental"
+Descricao = "Invoca elemental."
+HabilidadeAtiva = ExtResource("sk_26")
+NodeType = 1
+Posicao = Vector2(536.7, 1068.5)
+Requisitos = PackedStringArray("mag_summoner_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_28")
+NivelMinimo = 20
 
-[sub_resource type="Resource" id="mago_n37"]
-script = ExtResource("2")
-NodeId = "mago_38"
-Nome = "Mago Preciso"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="summoner_s7"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_7"
+Nome = "Fortalecer Invocação"
+Descricao = "Fortalece invocações."
+HabilidadeAtiva = ExtResource("sk_27")
+NodeType = 1
+Posicao = Vector2(529.4, 860.6)
+Requisitos = PackedStringArray("mag_summoner_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_29", "mago_30")
+NivelMinimo = 30
 
-[sub_resource type="Resource" id="mago_n38"]
-script = ExtResource("2")
-NodeId = "mago_39"
-Nome = "Mago Brutal"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="summoner_ce1"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_escolha_externa_1"
+Nome = "Escolha de atributos — Summoner"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(717.6, 1387.1)
+Requisitos = PackedStringArray("mag_summoner_skill_4", "mag_summoner_skill_5")
 CustoPontos = 1
-NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_30")
+StatOptionIds = PackedStringArray("DanoMagico", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="mago_n39"]
-script = ExtResource("2")
-NodeId = "mago_40"
-Nome = "Mago Sutil"
-Descricao = "Nó de talento nível 5 (Mago)."
+[sub_resource type="Resource" id="summoner_ce2"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_escolha_externa_2"
+Nome = "Escolha de atributos — Summoner"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(521.3, 1197.5)
+Requisitos = PackedStringArray("mag_summoner_skill_5", "mag_summoner_skill_6")
 CustoPontos = 1
-NivelMinimo = 10
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_31", "mago_32")
+StatOptionIds = PackedStringArray("ReducaoCooldown", "RouboMana", "Hp")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="mago_n40"]
-script = ExtResource("2")
-NodeId = "mago_41"
-Nome = "Mago Gélido"
-Descricao = "Nó de talento nível 6 (Mago)."
+[sub_resource type="Resource" id="summoner_ce3"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_escolha_externa_3"
+Nome = "Escolha de atributos — Summoner"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(455.3, 932.7)
+Requisitos = PackedStringArray("mag_summoner_skill_6", "mag_summoner_skill_7")
 CustoPontos = 1
-NivelMinimo = 12
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_34", "mago_35")
+StatOptionIds = PackedStringArray("DanoCriticoBonus", "Inteligencia", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="mago_n41"]
-script = ExtResource("2")
-NodeId = "mago_42"
-Nome = "Mago Flamejante"
-Descricao = "Nó de talento nível 6 (Mago)."
+[sub_resource type="Resource" id="summoner_s8"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_8"
+Nome = "Sacrifício Arcano"
+Descricao = "Sacrifica invocação."
+HabilidadeAtiva = ExtResource("sk_28")
+NodeType = 1
+Posicao = Vector2(805.1, 1490.9)
+Requisitos = PackedStringArray("mag_summoner_escolha_externa_1")
 CustoPontos = 1
-NivelMinimo = 12
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_35")
+NivelMinimo = 40
 
-[sub_resource type="Resource" id="mago_n42"]
-script = ExtResource("2")
-NodeId = "mago_43"
-Nome = "Mago Tempestuoso"
-Descricao = "Nó de talento nível 6 (Mago)."
+[sub_resource type="Resource" id="summoner_s9"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_9"
+Nome = "Exército Arcano"
+Descricao = "Invoca vários servos."
+HabilidadeAtiva = ExtResource("sk_29")
+NodeType = 1
+Posicao = Vector2(465, 1230)
+Requisitos = PackedStringArray("mag_summoner_escolha_externa_2")
 CustoPontos = 1
-NivelMinimo = 12
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_36", "mago_37")
+NivelMinimo = 50
 
-[sub_resource type="Resource" id="mago_n43"]
-script = ExtResource("2")
-NodeId = "mago_44"
-Nome = "Mago Venenoso"
-Descricao = "Nó de talento nível 6 (Mago)."
+[sub_resource type="Resource" id="summoner_s10"]
+script = ExtResource("2_node")
+NodeId = "mag_summoner_skill_10"
+Nome = "Senhor das Invocações"
+Descricao = "Fortalece todas as invocações."
+HabilidadeAtiva = ExtResource("sk_30")
+NodeType = 1
+Posicao = Vector2(409.1, 805.1)
+Requisitos = PackedStringArray("mag_summoner_escolha_externa_3")
 CustoPontos = 1
-NivelMinimo = 12
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_37")
-
-[sub_resource type="Resource" id="mago_n44"]
-script = ExtResource("2")
-NodeId = "mago_45"
-Nome = "Mago Sangrento"
-Descricao = "Nó de talento nível 6 (Mago)."
-CustoPontos = 1
-NivelMinimo = 12
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_38", "mago_39")
-
-[sub_resource type="Resource" id="mago_n45"]
-script = ExtResource("2")
-NodeId = "mago_46"
-Nome = "Mago Eterno"
-Descricao = "Nó de talento nível 7 (Mago)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_41", "mago_42")
-
-[sub_resource type="Resource" id="mago_n46"]
-script = ExtResource("2")
-NodeId = "mago_47"
-Nome = "Mago Celestial"
-Descricao = "Nó de talento nível 7 (Mago)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_42")
-
-[sub_resource type="Resource" id="mago_n47"]
-script = ExtResource("2")
-NodeId = "mago_48"
-Nome = "Mago Abissal"
-Descricao = "Nó de talento nível 7 (Mago)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_43", "mago_44")
-
-[sub_resource type="Resource" id="mago_n48"]
-script = ExtResource("2")
-NodeId = "mago_49"
-Nome = "Mago Primordial"
-Descricao = "Nó de talento nível 8 (Mago)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_46", "mago_47")
-
-[sub_resource type="Resource" id="mago_n49"]
-script = ExtResource("2")
-NodeId = "mago_50"
-Nome = "Mago Final"
-Descricao = "Nó de talento nível 8 (Mago)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusInteligencia = 1
-BonusManaPercent = 1
-Requisitos = PackedStringArray("mago_47")
+NivelMinimo = 70
 
 [resource]
-script = ExtResource("1")
-NomeArvore = "Árvore Mago"
-RootNodeIds = PackedStringArray("mago_01", "mago_02", "mago_03")
-
-Nodes = Array[Resource]([
-	SubResource("mago_n0"),
-	SubResource("mago_n1"),
-	SubResource("mago_n2"),
-	SubResource("mago_n3"),
-	SubResource("mago_n4"),
-	SubResource("mago_n5"),
-	SubResource("mago_n6"),
-	SubResource("mago_n7"),
-	SubResource("mago_n8"),
-	SubResource("mago_n9"),
-	SubResource("mago_n10"),
-	SubResource("mago_n11"),
-	SubResource("mago_n12"),
-	SubResource("mago_n13"),
-	SubResource("mago_n14"),
-	SubResource("mago_n15"),
-	SubResource("mago_n16"),
-	SubResource("mago_n17"),
-	SubResource("mago_n18"),
-	SubResource("mago_n19"),
-	SubResource("mago_n20"),
-	SubResource("mago_n21"),
-	SubResource("mago_n22"),
-	SubResource("mago_n23"),
-	SubResource("mago_n24"),
-	SubResource("mago_n25"),
-	SubResource("mago_n26"),
-	SubResource("mago_n27"),
-	SubResource("mago_n28"),
-	SubResource("mago_n29"),
-	SubResource("mago_n30"),
-	SubResource("mago_n31"),
-	SubResource("mago_n32"),
-	SubResource("mago_n33"),
-	SubResource("mago_n34"),
-	SubResource("mago_n35"),
-	SubResource("mago_n36"),
-	SubResource("mago_n37"),
-	SubResource("mago_n38"),
-	SubResource("mago_n39"),
-	SubResource("mago_n40"),
-	SubResource("mago_n41"),
-	SubResource("mago_n42"),
-	SubResource("mago_n43"),
-	SubResource("mago_n44"),
-	SubResource("mago_n45"),
-	SubResource("mago_n46"),
-	SubResource("mago_n47"),
-	SubResource("mago_n48"),
-	SubResource("mago_n49")
-])
+script = ExtResource("1_tree")
+NomeArvore = "Árvore do Mago"
+Nodes = Array[Resource]([SubResource("base"), SubResource("elementalista_rota"), SubResource("elementalista_ci1"), SubResource("elementalista_ci2"), SubResource("elementalista_ci3"), SubResource("elementalista_s1"), SubResource("elementalista_s2"), SubResource("elementalista_s3"), SubResource("elementalista_ul"), SubResource("elementalista_ur"), SubResource("elementalista_s4"), SubResource("elementalista_s5"), SubResource("elementalista_s6"), SubResource("elementalista_s7"), SubResource("elementalista_ce1"), SubResource("elementalista_ce2"), SubResource("elementalista_ce3"), SubResource("elementalista_s8"), SubResource("elementalista_s9"), SubResource("elementalista_s10"), SubResource("mago_negro_rota"), SubResource("mago_negro_ci1"), SubResource("mago_negro_ci2"), SubResource("mago_negro_ci3"), SubResource("mago_negro_s1"), SubResource("mago_negro_s2"), SubResource("mago_negro_s3"), SubResource("mago_negro_ul"), SubResource("mago_negro_ur"), SubResource("mago_negro_s4"), SubResource("mago_negro_s5"), SubResource("mago_negro_s6"), SubResource("mago_negro_s7"), SubResource("mago_negro_ce1"), SubResource("mago_negro_ce2"), SubResource("mago_negro_ce3"), SubResource("mago_negro_s8"), SubResource("mago_negro_s9"), SubResource("mago_negro_s10"), SubResource("summoner_rota"), SubResource("summoner_ci1"), SubResource("summoner_ci2"), SubResource("summoner_ci3"), SubResource("summoner_s1"), SubResource("summoner_s2"), SubResource("summoner_s3"), SubResource("summoner_ul"), SubResource("summoner_ur"), SubResource("summoner_s4"), SubResource("summoner_s5"), SubResource("summoner_s6"), SubResource("summoner_s7"), SubResource("summoner_ce1"), SubResource("summoner_ce2"), SubResource("summoner_ce3"), SubResource("summoner_s8"), SubResource("summoner_s9"), SubResource("summoner_s10")])
+RootNodeIds = PackedStringArray("mag_base")
+UsaLayoutPersonalizado = true
+BoardSize = Vector2(1900, 1900)

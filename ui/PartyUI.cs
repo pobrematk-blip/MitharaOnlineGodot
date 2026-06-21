@@ -160,7 +160,7 @@ public partial class PartyUI : Control
         NotificarPartyHUD();
     }
 
-    private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined)
+    private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
     {
         if (joined)
         {
@@ -174,6 +174,7 @@ public partial class PartyUI : Control
                 ["mana"] = mana,
                 ["max_mana"] = maxMana,
                 ["level"] = level,
+                ["class"] = characterClass,
             });
         }
         else

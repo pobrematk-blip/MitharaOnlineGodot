@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/47.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15003
 Nome = "Bênção Divina"
 Descricao = "Uma aura de proteção celestial envolve o Clérigo, formando uma barreira luminosa capaz de absorver parte do dano recebido."
+Icone = ExtResource("2_icon")
 Valor = 15
 CustoMana = 25
 ClasseRestrita = "Clérigo"

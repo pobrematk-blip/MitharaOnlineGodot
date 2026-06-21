@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="RacaResource" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://Editor/RacaResource.cs" id="1"]
-[ext_resource type="Texture2D" uid="uid://d1n2qwvnuxmse" path="res://characters/Player/SpritePlayer/Humano.png" id="2"]
+[ext_resource type="Texture2D" path="res://characters/Player/SpritePlayer/Humano.png" id="2"]
 [ext_resource type="Resource" path="res://Faccoes/Solari.tres" id="3"]
 
 [resource]

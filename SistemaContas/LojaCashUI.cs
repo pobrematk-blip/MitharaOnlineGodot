@@ -10,6 +10,9 @@ public partial class LojaCashUI : Control
     private CashManager _cash;
     private LojaCashData _lojaData;
     private GameNetwork _net;
+    private Label _tituloLabel;
+    private bool _arrastando;
+    private Vector2 _pontoCliqueOriginal;
 
     private static readonly string LojaDataPath = "res://SistemaContas/LojaCashData.tres";
 
@@ -20,14 +23,36 @@ public partial class LojaCashUI : Control
         _feedback = GetNode<Control>("%Feedback");
         _feedbackLabel = GetNode<Label>("%FeedbackLabel");
         _itensContainer = GetNode<VBoxContainer>("%ItensContainer");
+        _tituloLabel = GetNode<Label>("%TituloLabel");
 
         _cash = GetNode<CashManager>("/root/CashManager");
         _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
 
         _fecharBtn.Pressed += OnFechar;
+        _tituloLabel.GuiInput += OnTituloGuiInput;
 
+        Centralizar();
         CarregarDados();
         AtualizarUI();
+    }
+
+    private void Centralizar()
+    {
+        Vector2 tela = GetViewportRect().Size;
+        Position = (tela / 2) - (Size / 2);
+    }
+
+    private void OnTituloGuiInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
+        {
+            _arrastando = mouseEvent.Pressed;
+            if (mouseEvent.Pressed) _pontoCliqueOriginal = mouseEvent.Position;
+        }
+        else if (@event is InputEventMouseMotion mouseMotion && _arrastando)
+        {
+            Position += mouseMotion.Position - _pontoCliqueOriginal;
+        }
     }
 
     private void CarregarDados()
@@ -200,11 +225,14 @@ public partial class LojaCashUI : Control
     public void Abrir()
     {
         var parent = GetTree().CurrentScene;
-        if (parent != null)
+        if (parent != null && GetParent() == null)
         {
             parent.AddChild(this);
-            CarregarDados();
-            AtualizarUI();
         }
+        CarregarDados();
+        AtualizarUI();
+        Visible = true;
+        CallDeferred(MethodName.Centralizar);
+        MoveToFront();
     }
 }

@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/41.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15309
 Nome = "Apocalipse Sagrado"
 Descricao = "O céu se abre em luz devastadora, castigando inimigos em uma ampla área e marcando-os com julgamento divino."
+Icone = ExtResource("2_icon")
 Valor = 350
 CustoMana = 80
 ClasseRestrita = "Clérigo"

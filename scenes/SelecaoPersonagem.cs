@@ -5,24 +5,24 @@ using System.Collections.Generic;
 
 public partial class SelecaoPersonagem : Control
 {
-    private Label _subTitulo;
-    private VBoxContainer _listaContainer;
-    private Button _btnJogar;
-    private Button _btnCriarNovo;
+    private Label _subTitulo = null!;
+    private VBoxContainer _listaContainer = null!;
+    private Button _btnJogar = null!;
+    private Button _btnCriarNovo = null!;
 
-    private Button _btnExcluir;
-    private AcceptDialog _confirmacaoExcluir;
-    private Control _vazio;
-    private Control _personagemPreview;
-    private AnimatedSprite2D _previewSprite;
-    private Control _previewInfo;
-    private Label _previewNome;
-    private Label _previewNivel;
-    private Label _previewClasse;
-    private Label _previewRaca;
-    private Label _previewFaccao;
-    private TextureRect _previewEmblema;
-    private Control _areaSprite;
+    private Button _btnExcluir = null!;
+    private AcceptDialog _confirmacaoExcluir = null!;
+    private Control _vazio = null!;
+    private Control _personagemPreview = null!;
+    private AnimatedSprite2D _previewSprite = null!;
+    private Control _previewInfo = null!;
+    private Label _previewNome = null!;
+    private Label _previewNivel = null!;
+    private Label _previewClasse = null!;
+    private Label _previewRaca = null!;
+    private Label _previewFaccao = null!;
+    private TextureRect _previewEmblema = null!;
+    private Control _areaSprite = null!;
 
     private readonly List<CharacterCard> _cards = new();
     private int? _slotSelecionado;
@@ -32,15 +32,15 @@ public partial class SelecaoPersonagem : Control
     private class CharacterCard
     {
         public int SlotIndex;
-        public string Nome;
+        public string Nome = "";
         public int Nivel;
-        public PanelContainer Panel;
-        public Label NomeLabel;
-        public Label ClasseLabel;
-        public Label NivelLabel;
-        public Label FaccaoLabel;
-        public string ClassePath;
-        public string RacaPath;
+        public PanelContainer Panel = null!;
+        public Label NomeLabel = null!;
+        public Label ClasseLabel = null!;
+        public Label NivelLabel = null!;
+        public Label FaccaoLabel = null!;
+        public string ClassePath = "";
+        public string RacaPath = "";
     }
 
     public override void _Ready()

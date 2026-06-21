@@ -34,6 +34,9 @@ partial class GameServer
         target.Health -= damage;
         if (target.Health < 0) target.Health = 0;
 
+        if (target is PlayerEntity)
+            BroadcastPartyMemberUpdateForEntity(target.Id);
+
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
         writer.Put(mob.Id);
         writer.Put(target.Id);
@@ -263,6 +266,9 @@ partial class GameServer
 
         target.Health -= damage;
         if (target.Health < 0) target.Health = 0;
+
+        if (target is PlayerEntity)
+            BroadcastPartyMemberUpdateForEntity(target.Id);
 
         if (target is MonsterEntity hitMob)
         {

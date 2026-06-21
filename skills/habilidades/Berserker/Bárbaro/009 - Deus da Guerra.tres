@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/26.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13109
 Nome = "Deus da Guerra"
 Descricao = "O Bárbaro libera toda sua ferocidade e se torna uma força imparável no campo de batalha, lutando como se cada golpe fosse o último."
+Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 80
 ClasseRestrita = "Berserker"

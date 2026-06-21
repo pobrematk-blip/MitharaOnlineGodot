@@ -1,614 +1,696 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
 
-[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
-[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Compartilhadas/002 - Passo Sombrio.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/001 - Golpe Sombrio.tres" id="sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/002 - Invisibilidade Profunda.tres" id="sk_3"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/003 - Salto nas Costas.tres" id="sk_4"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/004 - Golpe Atordoante.tres" id="sk_5"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/005 - Punhalada nas Costas.tres" id="sk_6"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/006 - Marca da Morte.tres" id="sk_7"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/007 - Sequência Mortal.tres" id="sk_8"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/008 - Reflexos Assassinos.tres" id="sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/009 - Execução Final.tres" id="sk_10"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/001 - Lâmina Envenenada.tres" id="sk_11"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/002 - Bomba de Fumaça.tres" id="sk_12"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/003 - Nuvem Tóxica.tres" id="sk_13"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/004 - Armadilha Venenosa.tres" id="sk_14"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/005 - Sangramento Profundo.tres" id="sk_15"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/006 - Enfraquecer.tres" id="sk_16"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/007 - Roubo de Energia.tres" id="sk_17"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/008 - Mestre dos Venenos.tres" id="sk_18"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Gatuno/009 - Praga do Submundo.tres" id="sk_19"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/001 - Shuriken Rápida.tres" id="sk_20"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/002 - Passos Relâmpago.tres" id="sk_21"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/003 - Shuriken Dupla.tres" id="sk_22"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/004 - Clone das Sombras.tres" id="sk_23"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/005 - Corte Fantasma.tres" id="sk_24"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/006 - Chuva de Shurikens.tres" id="sk_25"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/007 - Troca de Lugar.tres" id="sk_26"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/008 - Dança das Lâminas.tres" id="sk_27"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/009 - Tempestade Ninja.tres" id="sk_28"]
+[sub_resource type="Resource" id="base"]
+script = ExtResource("2_node")
+NodeId = "lad_base"
+Nome = "Fundamentos do Ladino"
+Descricao = "Nó central que abre as três especializações de Ladino."
+NodeType = 1
+Posicao = Vector2(950, 950)
+CustoPontos = 1
 
-[sub_resource type="Resource" id="lad_n0"]
-script = ExtResource("2")
-NodeId = "lad_01"
-Nome = "Ladino Base"
-Descricao = "Nó de talento nível 0 (Ladino)."
-CustoPontos = 5
+[sub_resource type="Resource" id="assassino_rota"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_rota"
+Nome = "Assassino"
+Descricao = "Caminho de especialização: Assassino."
+NodeType = 5
+Posicao = Vector2(950, 830)
+Requisitos = PackedStringArray("lad_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="assassino_ci1"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_escolha_interna_1"
+Nome = "Escolha de atributos — Assassino"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(860.8, 782.2)
+Requisitos = PackedStringArray("lad_assassino_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "Agilidade", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="assassino_ci2"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_escolha_interna_2"
+Nome = "Escolha de atributos — Assassino"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 760)
+Requisitos = PackedStringArray("lad_assassino_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="assassino_ci3"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_escolha_interna_3"
+Nome = "Escolha de atributos — Assassino"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1039.2, 782.2)
+Requisitos = PackedStringArray("lad_assassino_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("VelocidadeAtaque", "VelocidadeMovimento", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="assassino_s1"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_1"
+Nome = "Passo Sombrio"
+Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 716.2)
+Requisitos = PackedStringArray("lad_assassino_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusAgilidade = 6
-BonusDestreza = 4
-BonusDanoPercent = 0.6
 
-[sub_resource type="Resource" id="lad_n1"]
-script = ExtResource("2")
-NodeId = "lad_02"
-Nome = "Ladino Essencial"
-Descricao = "Nó de talento nível 0 (Ladino)."
-CustoPontos = 5
+[sub_resource type="Resource" id="assassino_s2"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_2"
+Nome = "Golpe Sombrio"
+Descricao = "Um corte rápido e silencioso feito para iniciar o combate."
+HabilidadeAtiva = ExtResource("sk_2")
+NodeType = 1
+Posicao = Vector2(950, 680)
+Requisitos = PackedStringArray("lad_assassino_escolha_interna_2")
+CustoPontos = 1
 NivelMinimo = 1
-BonusAgilidade = 6
-BonusDestreza = 4
 
-[sub_resource type="Resource" id="lad_n2"]
-script = ExtResource("2")
-NodeId = "lad_03"
-Nome = "Ladino Primordial"
-Descricao = "Nó de talento nível 0 (Ladino)."
-CustoPontos = 5
+[sub_resource type="Resource" id="assassino_s3"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_3"
+Nome = "Invisibilidade Profunda"
+Descricao = "O Assassino desaparece completamente nas sombras por mais tempo que o Passo Sombrio."
+HabilidadeAtiva = ExtResource("sk_3")
+NodeType = 1
+Posicao = Vector2(1085, 716.2)
+Requisitos = PackedStringArray("lad_assassino_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="assassino_ul"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Assassino"
+Descricao = "Marco de progressão do caminho Assassino."
+NodeType = 5
+Posicao = Vector2(830.3, 621.1)
+Requisitos = PackedStringArray("lad_assassino_skill_1", "lad_assassino_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="assassino_ur"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_desbloqueio_direito"
+Nome = "Desbloqueio — Assassino"
+Descricao = "Marco de progressão do caminho Assassino."
+NodeType = 5
+Posicao = Vector2(1069.7, 621.1)
+Requisitos = PackedStringArray("lad_assassino_skill_2", "lad_assassino_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="assassino_s4"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_4"
+Nome = "Salto nas Costas"
+Descricao = "O Assassino salta diretamente para trás do alvo escolhido."
+HabilidadeAtiva = ExtResource("sk_4")
+NodeType = 1
+Posicao = Vector2(662.3, 630.4)
+Requisitos = PackedStringArray("lad_assassino_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 10
+
+[sub_resource type="Resource" id="assassino_s5"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_5"
+Nome = "Golpe Atordoante"
+Descricao = "Um ataque preciso que interrompe o inimigo e o deixa vulnerável."
+HabilidadeAtiva = ExtResource("sk_5")
+NodeType = 1
+Posicao = Vector2(846, 532.8)
+Requisitos = PackedStringArray("lad_assassino_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="assassino_s6"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_6"
+Nome = "Punhalada nas Costas"
+Descricao = "Uma facada brutal nas costas que atinge pontos vitais."
+HabilidadeAtiva = ExtResource("sk_6")
+NodeType = 1
+Posicao = Vector2(1054, 532.8)
+Requisitos = PackedStringArray("lad_assassino_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="assassino_s7"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_7"
+Nome = "Marca da Morte"
+Descricao = "Marca a vítima para receber ataques letais."
+HabilidadeAtiva = ExtResource("sk_7")
+NodeType = 1
+Posicao = Vector2(1237.7, 630.4)
+Requisitos = PackedStringArray("lad_assassino_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="assassino_ce1"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_escolha_externa_1"
+Nome = "Escolha de atributos — Assassino"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(687.7, 530.2)
+Requisitos = PackedStringArray("lad_assassino_skill_4", "lad_assassino_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("RouboVida", "RouboMana", "Hp")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="assassino_ce2"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_escolha_externa_2"
+Nome = "Escolha de atributos — Assassino"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 455)
+Requisitos = PackedStringArray("lad_assassino_skill_5", "lad_assassino_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "ChanceCritica", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="assassino_ce3"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_escolha_externa_3"
+Nome = "Escolha de atributos — Assassino"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1212.3, 530.2)
+Requisitos = PackedStringArray("lad_assassino_skill_6", "lad_assassino_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Evasao", "Precisao", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="assassino_s8"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_8"
+Nome = "Sequência Mortal"
+Descricao = "Uma sequência veloz de cortes contra o mesmo alvo."
+HabilidadeAtiva = ExtResource("sk_8")
+NodeType = 1
+Posicao = Vector2(554, 554)
+Requisitos = PackedStringArray("lad_assassino_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="assassino_s9"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_9"
+Nome = "Reflexos Assassinos"
+Descricao = "O Assassino entra em estado de foco mortal."
+HabilidadeAtiva = ExtResource("sk_9")
+NodeType = 1
+Posicao = Vector2(950, 390)
+Requisitos = PackedStringArray("lad_assassino_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="assassino_s10"]
+script = ExtResource("2_node")
+NodeId = "lad_assassino_skill_10"
+Nome = "Execução Final"
+Descricao = "O golpe definitivo do Assassino, usado para finalizar vítimas vulneráveis."
+HabilidadeAtiva = ExtResource("sk_10")
+NodeType = 1
+Posicao = Vector2(1346, 554)
+Requisitos = PackedStringArray("lad_assassino_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="gatuno_rota"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_rota"
+Nome = "Gatuno"
+Descricao = "Caminho de especialização: Gatuno."
+NodeType = 5
+Posicao = Vector2(1053.9, 1010)
+Requisitos = PackedStringArray("lad_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="gatuno_ci1"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_escolha_interna_1"
+Nome = "Escolha de atributos — Gatuno"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1139.9, 956.6)
+Requisitos = PackedStringArray("lad_gatuno_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("VelocidadeAtaque", "VelocidadeMovimento", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="gatuno_ci2"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_escolha_interna_2"
+Nome = "Escolha de atributos — Gatuno"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1114.5, 1045)
+Requisitos = PackedStringArray("lad_gatuno_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("RouboVida", "RouboMana", "Hp")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="gatuno_ci3"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_escolha_interna_3"
+Nome = "Escolha de atributos — Gatuno"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1050.7, 1111.1)
+Requisitos = PackedStringArray("lad_gatuno_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "ChanceCritica", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="gatuno_s1"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_1"
+Nome = "Passo Sombrio"
+Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(1220, 950)
+Requisitos = PackedStringArray("lad_gatuno_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusAgilidade = 6
-BonusDestreza = 4
 
-[sub_resource type="Resource" id="lad_n3"]
-script = ExtResource("2")
-NodeId = "lad_04"
-Nome = "Ladino Fundamental"
-Descricao = "Nó de talento nível 1 (Ladino)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusAgilidade = 5
-BonusDestreza = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("lad_01", "lad_02")
-
-[sub_resource type="Resource" id="lad_n4"]
-script = ExtResource("2")
-NodeId = "lad_05"
-Nome = "Ladino Natural"
-Descricao = "Nó de talento nível 1 (Ladino)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusAgilidade = 5
-BonusDestreza = 3
-Requisitos = PackedStringArray("lad_02")
-
-[sub_resource type="Resource" id="lad_n5"]
-script = ExtResource("2")
-NodeId = "lad_06"
-Nome = "Ladino Básico"
-Descricao = "Nó de talento nível 1 (Ladino)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusAgilidade = 5
-BonusDestreza = 3
-Requisitos = PackedStringArray("lad_03", "lad_01")
-
-[sub_resource type="Resource" id="lad_n6"]
-script = ExtResource("2")
-NodeId = "lad_07"
-Nome = "Ladino Inicial"
-Descricao = "Nó de talento nível 1 (Ladino)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusAgilidade = 5
-BonusDestreza = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("lad_01")
-
-[sub_resource type="Resource" id="lad_n7"]
-script = ExtResource("2")
-NodeId = "lad_08"
-Nome = "Ladino Concentração"
-Descricao = "Nó de talento nível 1 (Ladino)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusAgilidade = 5
-BonusDestreza = 3
-Requisitos = PackedStringArray("lad_02", "lad_03")
-
-[sub_resource type="Resource" id="lad_n8"]
-script = ExtResource("2")
-NodeId = "lad_09"
-Nome = "Ladino Foco"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-Requisitos = PackedStringArray("lad_04", "lad_05")
-
-[sub_resource type="Resource" id="lad_n9"]
-script = ExtResource("2")
-NodeId = "lad_10"
-Nome = "Ladino Potencial"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("lad_05")
-
-[sub_resource type="Resource" id="lad_n10"]
-script = ExtResource("2")
-NodeId = "lad_11"
-Nome = "Ladino Expansão"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-Requisitos = PackedStringArray("lad_06", "lad_07")
-
-[sub_resource type="Resource" id="lad_n11"]
-script = ExtResource("2")
-NodeId = "lad_12"
-Nome = "Ladino Crescimento"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-Requisitos = PackedStringArray("lad_07")
-
-[sub_resource type="Resource" id="lad_n12"]
-script = ExtResource("2")
-NodeId = "lad_13"
-Nome = "Ladino Despertar"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("lad_08", "lad_04")
-
-[sub_resource type="Resource" id="lad_n13"]
-script = ExtResource("2")
-NodeId = "lad_14"
-Nome = "Ladino Evolução"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-Requisitos = PackedStringArray("lad_04")
-
-[sub_resource type="Resource" id="lad_n14"]
-script = ExtResource("2")
-NodeId = "lad_15"
-Nome = "Ladino Progresso"
-Descricao = "Nó de talento nível 2 (Ladino)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusAgilidade = 4
-BonusDestreza = 2
-Requisitos = PackedStringArray("lad_05", "lad_06")
-
-[sub_resource type="Resource" id="lad_n15"]
-script = ExtResource("2")
-NodeId = "lad_16"
-Nome = "Ladino Aprimoramento"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_09", "lad_10")
-
-[sub_resource type="Resource" id="lad_n16"]
-script = ExtResource("2")
-NodeId = "lad_17"
-Nome = "Ladino Avanço"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_10")
-
-[sub_resource type="Resource" id="lad_n17"]
-script = ExtResource("2")
-NodeId = "lad_18"
-Nome = "Ladino Superior"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_11", "lad_12")
-
-[sub_resource type="Resource" id="lad_n18"]
-script = ExtResource("2")
-NodeId = "lad_19"
-Nome = "Ladino Elevado"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_12")
-
-[sub_resource type="Resource" id="lad_n19"]
-script = ExtResource("2")
-NodeId = "lad_20"
-Nome = "Ladino Mestre"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_13", "lad_14")
-
-[sub_resource type="Resource" id="lad_n20"]
-script = ExtResource("2")
-NodeId = "lad_21"
-Nome = "Ladino Supremo"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_14")
-
-[sub_resource type="Resource" id="lad_n21"]
-script = ExtResource("2")
-NodeId = "lad_22"
-Nome = "Ladino Lendário"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_15", "lad_09")
-
-[sub_resource type="Resource" id="lad_n22"]
-script = ExtResource("2")
-NodeId = "lad_23"
-Nome = "Ladino Mítico"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_09")
-
-[sub_resource type="Resource" id="lad_n23"]
-script = ExtResource("2")
-NodeId = "lad_24"
-Nome = "Ladino Divino"
-Descricao = "Nó de talento nível 3 (Ladino)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusAgilidade = 3
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_10", "lad_11")
-
-[sub_resource type="Resource" id="lad_n24"]
-script = ExtResource("2")
-NodeId = "lad_25"
-Nome = "Ladino Épico"
-Descricao = "Nó de talento nível 4 (Ladino)."
+[sub_resource type="Resource" id="gatuno_s2"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_2"
+Nome = "Lâmina Envenenada"
+Descricao = "Reveste a adaga com veneno antes de atacar."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(1183.8, 1085)
+Requisitos = PackedStringArray("lad_gatuno_escolha_interna_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_16", "lad_17")
+NivelMinimo = 1
 
-[sub_resource type="Resource" id="lad_n25"]
-script = ExtResource("2")
-NodeId = "lad_26"
-Nome = "Ladino Guerreiro"
-Descricao = "Nó de talento nível 4 (Ladino)."
+[sub_resource type="Resource" id="gatuno_s3"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_3"
+Nome = "Bomba de Fumaça"
+Descricao = "Lança uma bomba de fumaça que atrapalha os inimigos próximos."
+HabilidadeAtiva = ExtResource("sk_12")
+NodeType = 1
+Posicao = Vector2(1085, 1183.8)
+Requisitos = PackedStringArray("lad_gatuno_escolha_interna_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_17")
+NivelMinimo = 5
 
-[sub_resource type="Resource" id="lad_n26"]
-script = ExtResource("2")
-NodeId = "lad_27"
-Nome = "Ladino Sábio"
-Descricao = "Nó de talento nível 4 (Ladino)."
+[sub_resource type="Resource" id="gatuno_ul"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Gatuno"
+Descricao = "Marco de progressão do caminho Gatuno."
+NodeType = 5
+Posicao = Vector2(1294.7, 1010.8)
+Requisitos = PackedStringArray("lad_gatuno_skill_1", "lad_gatuno_skill_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_18", "lad_19")
 
-[sub_resource type="Resource" id="lad_n27"]
-script = ExtResource("2")
-NodeId = "lad_28"
-Nome = "Ladino Destemido"
-Descricao = "Nó de talento nível 4 (Ladino)."
+[sub_resource type="Resource" id="gatuno_ur"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_desbloqueio_direito"
+Nome = "Desbloqueio — Gatuno"
+Descricao = "Marco de progressão do caminho Gatuno."
+NodeType = 5
+Posicao = Vector2(1175, 1218.1)
+Requisitos = PackedStringArray("lad_gatuno_skill_2", "lad_gatuno_skill_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_19")
 
-[sub_resource type="Resource" id="lad_n28"]
-script = ExtResource("2")
-NodeId = "lad_29"
-Nome = "Ladino Poderoso"
-Descricao = "Nó de talento nível 4 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_20", "lad_21")
-
-[sub_resource type="Resource" id="lad_n29"]
-script = ExtResource("2")
-NodeId = "lad_30"
-Nome = "Ladino Ágil"
-Descricao = "Nó de talento nível 4 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_21")
-
-[sub_resource type="Resource" id="lad_n30"]
-script = ExtResource("2")
-NodeId = "lad_31"
-Nome = "Ladino Feroz"
-Descricao = "Nó de talento nível 4 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_22", "lad_23")
-
-[sub_resource type="Resource" id="lad_n31"]
-script = ExtResource("2")
-NodeId = "lad_32"
-Nome = "Ladino Sombrio"
-Descricao = "Nó de talento nível 4 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_23")
-
-[sub_resource type="Resource" id="lad_n32"]
-script = ExtResource("2")
-NodeId = "lad_33"
-Nome = "Ladino Sagrado"
-Descricao = "Nó de talento nível 4 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusAgilidade = 2
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_24", "lad_16")
-
-[sub_resource type="Resource" id="lad_n33"]
-script = ExtResource("2")
-NodeId = "lad_34"
-Nome = "Ladino Arcana"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="gatuno_s4"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_4"
+Nome = "Nuvem Tóxica"
+Descricao = "Cria uma nuvem venenosa em uma área."
+HabilidadeAtiva = ExtResource("sk_13")
+NodeType = 1
+Posicao = Vector2(1370.6, 860.6)
+Requisitos = PackedStringArray("lad_gatuno_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_25", "lad_26")
 
-[sub_resource type="Resource" id="lad_n34"]
-script = ExtResource("2")
-NodeId = "lad_35"
-Nome = "Ladino Rápido"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="gatuno_s5"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_5"
+Nome = "Armadilha Venenosa"
+Descricao = "Coloca uma armadilha que libera veneno ao ser ativada."
+HabilidadeAtiva = ExtResource("sk_14")
+NodeType = 1
+Posicao = Vector2(1363.3, 1068.5)
+Requisitos = PackedStringArray("lad_gatuno_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="gatuno_s6"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_6"
+Nome = "Sangramento Profundo"
+Descricao = "Um corte calculado que faz o alvo sangrar."
+HabilidadeAtiva = ExtResource("sk_15")
+NodeType = 1
+Posicao = Vector2(1259.3, 1248.7)
+Requisitos = PackedStringArray("lad_gatuno_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="gatuno_s7"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_7"
+Nome = "Enfraquecer"
+Descricao = "O Gatuno ataca pontos de pressão para reduzir a força do inimigo."
+HabilidadeAtiva = ExtResource("sk_16")
+NodeType = 1
+Posicao = Vector2(1082.9, 1359)
+Requisitos = PackedStringArray("lad_gatuno_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="gatuno_ce1"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_escolha_externa_1"
+Nome = "Escolha de atributos — Gatuno"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1444.7, 932.7)
+Requisitos = PackedStringArray("lad_gatuno_skill_4", "lad_gatuno_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Evasao", "Precisao", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="gatuno_ce2"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_escolha_externa_2"
+Nome = "Escolha de atributos — Gatuno"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1378.7, 1197.5)
+Requisitos = PackedStringArray("lad_gatuno_skill_5", "lad_gatuno_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "Agilidade", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="gatuno_ce3"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_escolha_externa_3"
+Nome = "Escolha de atributos — Gatuno"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1182.4, 1387.1)
+Requisitos = PackedStringArray("lad_gatuno_skill_6", "lad_gatuno_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="gatuno_s8"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_8"
+Nome = "Roubo de Energia"
+Descricao = "O Gatuno drena energia vital e mágica do inimigo."
+HabilidadeAtiva = ExtResource("sk_17")
+NodeType = 1
+Posicao = Vector2(1490.9, 805.1)
+Requisitos = PackedStringArray("lad_gatuno_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="gatuno_s9"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_9"
+Nome = "Mestre dos Venenos"
+Descricao = "O Gatuno aprimora todos os seus venenos temporariamente."
+HabilidadeAtiva = ExtResource("sk_18")
+NodeType = 1
+Posicao = Vector2(1435, 1230)
+Requisitos = PackedStringArray("lad_gatuno_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="gatuno_s10"]
+script = ExtResource("2_node")
+NodeId = "lad_gatuno_skill_10"
+Nome = "Praga do Submundo"
+Descricao = "Espalha uma praga tóxica devastadora que corrói os inimigos afetados."
+HabilidadeAtiva = ExtResource("sk_19")
+NodeType = 1
+Posicao = Vector2(1094.9, 1490.9)
+Requisitos = PackedStringArray("lad_gatuno_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="ninja_rota"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_rota"
+Nome = "Ninja"
+Descricao = "Caminho de especialização: Ninja."
+NodeType = 5
+Posicao = Vector2(846.1, 1010)
+Requisitos = PackedStringArray("lad_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="ninja_ci1"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_escolha_interna_1"
+Nome = "Escolha de atributos — Ninja"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(849.3, 1111.1)
+Requisitos = PackedStringArray("lad_ninja_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "ChanceCritica", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ninja_ci2"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_escolha_interna_2"
+Nome = "Escolha de atributos — Ninja"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(785.5, 1045)
+Requisitos = PackedStringArray("lad_ninja_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Evasao", "Precisao", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ninja_ci3"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_escolha_interna_3"
+Nome = "Escolha de atributos — Ninja"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(760.1, 956.6)
+Requisitos = PackedStringArray("lad_ninja_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "Agilidade", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ninja_s1"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_1"
+Nome = "Passo Sombrio"
+Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 1183.8)
+Requisitos = PackedStringArray("lad_ninja_escolha_interna_1")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="ninja_s2"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_2"
+Nome = "Shuriken Rápida"
+Descricao = "O Ninja arremessa uma shuriken em alta velocidade."
+HabilidadeAtiva = ExtResource("sk_20")
+NodeType = 1
+Posicao = Vector2(716.2, 1085)
+Requisitos = PackedStringArray("lad_ninja_escolha_interna_2")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="ninja_s3"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_3"
+Nome = "Passos Relâmpago"
+Descricao = "O Ninja acelera seus movimentos e ataca com mais velocidade."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(680, 950)
+Requisitos = PackedStringArray("lad_ninja_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="ninja_ul"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Ninja"
+Descricao = "Marco de progressão do caminho Ninja."
+NodeType = 5
+Posicao = Vector2(725, 1218.1)
+Requisitos = PackedStringArray("lad_ninja_skill_1", "lad_ninja_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="ninja_ur"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_desbloqueio_direito"
+Nome = "Desbloqueio — Ninja"
+Descricao = "Marco de progressão do caminho Ninja."
+NodeType = 5
+Posicao = Vector2(605.3, 1010.8)
+Requisitos = PackedStringArray("lad_ninja_skill_2", "lad_ninja_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="ninja_s4"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_4"
+Nome = "Shuriken Dupla"
+Descricao = "Arremessa duas shurikens em rápida sequência."
+HabilidadeAtiva = ExtResource("sk_22")
+NodeType = 1
+Posicao = Vector2(817.1, 1359)
+Requisitos = PackedStringArray("lad_ninja_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_26")
 
-[sub_resource type="Resource" id="lad_n35"]
-script = ExtResource("2")
-NodeId = "lad_36"
-Nome = "Ladino Resistente"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="ninja_s5"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_5"
+Nome = "Clone das Sombras"
+Descricao = "Cria um clone ilusório que confunde os inimigos."
+HabilidadeAtiva = ExtResource("sk_23")
+NodeType = 1
+Posicao = Vector2(640.7, 1248.7)
+Requisitos = PackedStringArray("lad_ninja_desbloqueio_esquerdo")
 CustoPontos = 1
-NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_27", "lad_28")
+NivelMinimo = 15
 
-[sub_resource type="Resource" id="lad_n36"]
-script = ExtResource("2")
-NodeId = "lad_37"
-Nome = "Ladino Letal"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="ninja_s6"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_6"
+Nome = "Corte Fantasma"
+Descricao = "O Ninja atravessa o alvo com um corte rápido."
+HabilidadeAtiva = ExtResource("sk_24")
+NodeType = 1
+Posicao = Vector2(536.7, 1068.5)
+Requisitos = PackedStringArray("lad_ninja_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_28")
+NivelMinimo = 20
 
-[sub_resource type="Resource" id="lad_n37"]
-script = ExtResource("2")
-NodeId = "lad_38"
-Nome = "Ladino Preciso"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="ninja_s7"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_7"
+Nome = "Chuva de Shurikens"
+Descricao = "Lança várias shurikens ao redor em rápida sucessão."
+HabilidadeAtiva = ExtResource("sk_25")
+NodeType = 1
+Posicao = Vector2(529.4, 860.6)
+Requisitos = PackedStringArray("lad_ninja_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_29", "lad_30")
+NivelMinimo = 30
 
-[sub_resource type="Resource" id="lad_n38"]
-script = ExtResource("2")
-NodeId = "lad_39"
-Nome = "Ladino Brutal"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="ninja_ce1"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_escolha_externa_1"
+Nome = "Escolha de atributos — Ninja"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(717.6, 1387.1)
+Requisitos = PackedStringArray("lad_ninja_skill_4", "lad_ninja_skill_5")
 CustoPontos = 1
-NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_30")
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="lad_n39"]
-script = ExtResource("2")
-NodeId = "lad_40"
-Nome = "Ladino Sutil"
-Descricao = "Nó de talento nível 5 (Ladino)."
+[sub_resource type="Resource" id="ninja_ce2"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_escolha_externa_2"
+Nome = "Escolha de atributos — Ninja"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(521.3, 1197.5)
+Requisitos = PackedStringArray("lad_ninja_skill_5", "lad_ninja_skill_6")
 CustoPontos = 1
-NivelMinimo = 10
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_31", "lad_32")
+StatOptionIds = PackedStringArray("VelocidadeAtaque", "VelocidadeMovimento", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="lad_n40"]
-script = ExtResource("2")
-NodeId = "lad_41"
-Nome = "Ladino Gélido"
-Descricao = "Nó de talento nível 6 (Ladino)."
+[sub_resource type="Resource" id="ninja_ce3"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_escolha_externa_3"
+Nome = "Escolha de atributos — Ninja"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(455.3, 932.7)
+Requisitos = PackedStringArray("lad_ninja_skill_6", "lad_ninja_skill_7")
 CustoPontos = 1
-NivelMinimo = 12
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_34", "lad_35")
+StatOptionIds = PackedStringArray("RouboVida", "RouboMana", "Hp")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="lad_n41"]
-script = ExtResource("2")
-NodeId = "lad_42"
-Nome = "Ladino Flamejante"
-Descricao = "Nó de talento nível 6 (Ladino)."
+[sub_resource type="Resource" id="ninja_s8"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_8"
+Nome = "Troca de Lugar"
+Descricao = "O Ninja troca de posição com seu clone ativo."
+HabilidadeAtiva = ExtResource("sk_26")
+NodeType = 1
+Posicao = Vector2(805.1, 1490.9)
+Requisitos = PackedStringArray("lad_ninja_escolha_externa_1")
 CustoPontos = 1
-NivelMinimo = 12
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_35")
+NivelMinimo = 40
 
-[sub_resource type="Resource" id="lad_n42"]
-script = ExtResource("2")
-NodeId = "lad_43"
-Nome = "Ladino Tempestuoso"
-Descricao = "Nó de talento nível 6 (Ladino)."
+[sub_resource type="Resource" id="ninja_s9"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_9"
+Nome = "Dança das Lâminas"
+Descricao = "O Ninja entra em um fluxo de ataques contínuos."
+HabilidadeAtiva = ExtResource("sk_27")
+NodeType = 1
+Posicao = Vector2(465, 1230)
+Requisitos = PackedStringArray("lad_ninja_escolha_externa_2")
 CustoPontos = 1
-NivelMinimo = 12
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_36", "lad_37")
+NivelMinimo = 50
 
-[sub_resource type="Resource" id="lad_n43"]
-script = ExtResource("2")
-NodeId = "lad_44"
-Nome = "Ladino Venenoso"
-Descricao = "Nó de talento nível 6 (Ladino)."
+[sub_resource type="Resource" id="ninja_s10"]
+script = ExtResource("2_node")
+NodeId = "lad_ninja_skill_10"
+Nome = "Tempestade Ninja"
+Descricao = "O Ninja se move como um vulto, atacando múltiplos inimigos em alta velocidade."
+HabilidadeAtiva = ExtResource("sk_28")
+NodeType = 1
+Posicao = Vector2(409.1, 805.1)
+Requisitos = PackedStringArray("lad_ninja_escolha_externa_3")
 CustoPontos = 1
-NivelMinimo = 12
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_37")
-
-[sub_resource type="Resource" id="lad_n44"]
-script = ExtResource("2")
-NodeId = "lad_45"
-Nome = "Ladino Sangrento"
-Descricao = "Nó de talento nível 6 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 12
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_38", "lad_39")
-
-[sub_resource type="Resource" id="lad_n45"]
-script = ExtResource("2")
-NodeId = "lad_46"
-Nome = "Ladino Eterno"
-Descricao = "Nó de talento nível 7 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_41", "lad_42")
-
-[sub_resource type="Resource" id="lad_n46"]
-script = ExtResource("2")
-NodeId = "lad_47"
-Nome = "Ladino Celestial"
-Descricao = "Nó de talento nível 7 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_42")
-
-[sub_resource type="Resource" id="lad_n47"]
-script = ExtResource("2")
-NodeId = "lad_48"
-Nome = "Ladino Abissal"
-Descricao = "Nó de talento nível 7 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_43", "lad_44")
-
-[sub_resource type="Resource" id="lad_n48"]
-script = ExtResource("2")
-NodeId = "lad_49"
-Nome = "Ladino Primordial"
-Descricao = "Nó de talento nível 8 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_46", "lad_47")
-
-[sub_resource type="Resource" id="lad_n49"]
-script = ExtResource("2")
-NodeId = "lad_50"
-Nome = "Ladino Final"
-Descricao = "Nó de talento nível 8 (Ladino)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusAgilidade = 1
-BonusDestreza = 1
-Requisitos = PackedStringArray("lad_47")
+NivelMinimo = 70
 
 [resource]
-script = ExtResource("1")
-NomeArvore = "Árvore Ladino"
-RootNodeIds = PackedStringArray("lad_01", "lad_02", "lad_03")
-
-Nodes = Array[Resource]([
-	SubResource("lad_n0"),
-	SubResource("lad_n1"),
-	SubResource("lad_n2"),
-	SubResource("lad_n3"),
-	SubResource("lad_n4"),
-	SubResource("lad_n5"),
-	SubResource("lad_n6"),
-	SubResource("lad_n7"),
-	SubResource("lad_n8"),
-	SubResource("lad_n9"),
-	SubResource("lad_n10"),
-	SubResource("lad_n11"),
-	SubResource("lad_n12"),
-	SubResource("lad_n13"),
-	SubResource("lad_n14"),
-	SubResource("lad_n15"),
-	SubResource("lad_n16"),
-	SubResource("lad_n17"),
-	SubResource("lad_n18"),
-	SubResource("lad_n19"),
-	SubResource("lad_n20"),
-	SubResource("lad_n21"),
-	SubResource("lad_n22"),
-	SubResource("lad_n23"),
-	SubResource("lad_n24"),
-	SubResource("lad_n25"),
-	SubResource("lad_n26"),
-	SubResource("lad_n27"),
-	SubResource("lad_n28"),
-	SubResource("lad_n29"),
-	SubResource("lad_n30"),
-	SubResource("lad_n31"),
-	SubResource("lad_n32"),
-	SubResource("lad_n33"),
-	SubResource("lad_n34"),
-	SubResource("lad_n35"),
-	SubResource("lad_n36"),
-	SubResource("lad_n37"),
-	SubResource("lad_n38"),
-	SubResource("lad_n39"),
-	SubResource("lad_n40"),
-	SubResource("lad_n41"),
-	SubResource("lad_n42"),
-	SubResource("lad_n43"),
-	SubResource("lad_n44"),
-	SubResource("lad_n45"),
-	SubResource("lad_n46"),
-	SubResource("lad_n47"),
-	SubResource("lad_n48"),
-	SubResource("lad_n49")
-])
+script = ExtResource("1_tree")
+NomeArvore = "Árvore do Ladino"
+Nodes = Array[Resource]([SubResource("base"), SubResource("assassino_rota"), SubResource("assassino_ci1"), SubResource("assassino_ci2"), SubResource("assassino_ci3"), SubResource("assassino_s1"), SubResource("assassino_s2"), SubResource("assassino_s3"), SubResource("assassino_ul"), SubResource("assassino_ur"), SubResource("assassino_s4"), SubResource("assassino_s5"), SubResource("assassino_s6"), SubResource("assassino_s7"), SubResource("assassino_ce1"), SubResource("assassino_ce2"), SubResource("assassino_ce3"), SubResource("assassino_s8"), SubResource("assassino_s9"), SubResource("assassino_s10"), SubResource("gatuno_rota"), SubResource("gatuno_ci1"), SubResource("gatuno_ci2"), SubResource("gatuno_ci3"), SubResource("gatuno_s1"), SubResource("gatuno_s2"), SubResource("gatuno_s3"), SubResource("gatuno_ul"), SubResource("gatuno_ur"), SubResource("gatuno_s4"), SubResource("gatuno_s5"), SubResource("gatuno_s6"), SubResource("gatuno_s7"), SubResource("gatuno_ce1"), SubResource("gatuno_ce2"), SubResource("gatuno_ce3"), SubResource("gatuno_s8"), SubResource("gatuno_s9"), SubResource("gatuno_s10"), SubResource("ninja_rota"), SubResource("ninja_ci1"), SubResource("ninja_ci2"), SubResource("ninja_ci3"), SubResource("ninja_s1"), SubResource("ninja_s2"), SubResource("ninja_s3"), SubResource("ninja_ul"), SubResource("ninja_ur"), SubResource("ninja_s4"), SubResource("ninja_s5"), SubResource("ninja_s6"), SubResource("ninja_s7"), SubResource("ninja_ce1"), SubResource("ninja_ce2"), SubResource("ninja_ce3"), SubResource("ninja_s8"), SubResource("ninja_s9"), SubResource("ninja_s10")])
+RootNodeIds = PackedStringArray("lad_base")
+UsaLayoutPersonalizado = true
+BoardSize = Vector2(1900, 1900)

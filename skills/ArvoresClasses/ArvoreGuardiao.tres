@@ -1,614 +1,698 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
 
-[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
-[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/001 - Segundo Fôlego.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/001 - Provocação.tres" id="sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/002 - Escudo Protetor.tres" id="sk_3"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/003 - Golpe de Escudo.tres" id="sk_4"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/004 - Guardião dos Fracos.tres" id="sk_5"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/005 - Muralha Humana.tres" id="sk_6"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/006 - Desafio.tres" id="sk_7"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/007 - Fortificação.tres" id="sk_8"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/008 - Bastião.tres" id="sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/009 - Muralha Inabalável.tres" id="sk_10"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/002 - Investida.tres" id="sk_11"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/001 - Impacto Brutal.tres" id="sk_12"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/002 - Onda de Choque.tres" id="sk_13"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/003 - Pisotear.tres" id="sk_14"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/004 - Golpe Atordoante.tres" id="sk_15"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/005 - Quebra Defesa.tres" id="sk_16"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/006 - Investida Devastadora.tres" id="sk_17"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/007 - Tremor de Guerra.tres" id="sk_18"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/008 - Comandante de Batalha.tres" id="sk_19"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Vanguarda/009 - Colapso da Terra.tres" id="sk_20"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/003 - Postura Defensiva.tres" id="sk_21"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/001 - Golpe Sagrado.tres" id="sk_22"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/002 - Luz Protetora.tres" id="sk_23"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/003 - Julgamento.tres" id="sk_24"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/004 - Escudo da Fé.tres" id="sk_25"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/005 - Martelo Divino.tres" id="sk_26"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/006 - Purificação.tres" id="sk_27"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/007 - Aura Sagrada.tres" id="sk_28"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/008 - Guardião Celestial.tres" id="sk_29"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/009 - Avatar do Templo.tres" id="sk_30"]
+[sub_resource type="Resource" id="base"]
+script = ExtResource("2_node")
+NodeId = "gua_base"
+Nome = "Fundamentos do Guardião"
+Descricao = "Nó central que abre as três especializações de Guardião."
+NodeType = 1
+Posicao = Vector2(950, 950)
+CustoPontos = 1
 
-[sub_resource type="Resource" id="gua_n0"]
-script = ExtResource("2")
-NodeId = "gua_01"
-Nome = "Guardiao Base"
-Descricao = "Nó de talento nível 0 (Guardiao)."
-CustoPontos = 5
+[sub_resource type="Resource" id="protetor_rota"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_rota"
+Nome = "Protetor"
+Descricao = "Caminho de especialização: Protetor."
+NodeType = 5
+Posicao = Vector2(950, 830)
+Requisitos = PackedStringArray("gua_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="protetor_ci1"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_escolha_interna_1"
+Nome = "Escolha de atributos — Protetor"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(860.8, 782.2)
+Requisitos = PackedStringArray("gua_protetor_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "DefesaFisica", "Tenacidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="protetor_ci2"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_escolha_interna_2"
+Nome = "Escolha de atributos — Protetor"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 760)
+Requisitos = PackedStringArray("gua_protetor_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Forca", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="protetor_ci3"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_escolha_interna_3"
+Nome = "Escolha de atributos — Protetor"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1039.2, 782.2)
+Requisitos = PackedStringArray("gua_protetor_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("RegeneracaoVida", "Hp", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="protetor_s1"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_1"
+Nome = "Segundo Fôlego"
+Descricao = "O Guardião reúne suas forças no meio da batalha, respirando fundo para recuperar parte de sua vitalidade e energia."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 716.2)
+Requisitos = PackedStringArray("gua_protetor_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusVidaPercent = 6
-BonusForca = 4
-BonusDanoPercent = 0.6
 
-[sub_resource type="Resource" id="gua_n1"]
-script = ExtResource("2")
-NodeId = "gua_02"
-Nome = "Guardiao Essencial"
-Descricao = "Nó de talento nível 0 (Guardiao)."
-CustoPontos = 5
+[sub_resource type="Resource" id="protetor_s2"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_2"
+Nome = "Provocação"
+Descricao = "O Protetor ergue seu escudo e desafia os inimigos próximos, forçando-os a encará-lo como a maior ameaça do campo de batalha."
+HabilidadeAtiva = ExtResource("sk_2")
+NodeType = 1
+Posicao = Vector2(950, 680)
+Requisitos = PackedStringArray("gua_protetor_escolha_interna_2")
+CustoPontos = 1
 NivelMinimo = 1
-BonusVidaPercent = 6
-BonusForca = 4
 
-[sub_resource type="Resource" id="gua_n2"]
-script = ExtResource("2")
-NodeId = "gua_03"
-Nome = "Guardiao Primordial"
-Descricao = "Nó de talento nível 0 (Guardiao)."
-CustoPontos = 5
+[sub_resource type="Resource" id="protetor_s3"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_3"
+Nome = "Escudo Protetor"
+Descricao = "O Protetor posiciona seu escudo à frente do corpo, absorvendo parte do impacto de ataques recebidos."
+HabilidadeAtiva = ExtResource("sk_3")
+NodeType = 1
+Posicao = Vector2(1085, 716.2)
+Requisitos = PackedStringArray("gua_protetor_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="protetor_ul"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Protetor"
+Descricao = "Marco de progressão do caminho Protetor."
+NodeType = 5
+Posicao = Vector2(830.3, 621.1)
+Requisitos = PackedStringArray("gua_protetor_skill_1", "gua_protetor_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="protetor_ur"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_desbloqueio_direito"
+Nome = "Desbloqueio — Protetor"
+Descricao = "Marco de progressão do caminho Protetor."
+NodeType = 5
+Posicao = Vector2(1069.7, 621.1)
+Requisitos = PackedStringArray("gua_protetor_skill_2", "gua_protetor_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="protetor_s4"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_4"
+Nome = "Golpe de Escudo"
+Descricao = "Um impacto brutal com o escudo atinge o inimigo de frente, quebrando seu equilíbrio e interrompendo sua ofensiva."
+HabilidadeAtiva = ExtResource("sk_4")
+NodeType = 1
+Posicao = Vector2(662.3, 630.4)
+Requisitos = PackedStringArray("gua_protetor_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 10
+
+[sub_resource type="Resource" id="protetor_s5"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_5"
+Nome = "Guardião dos Fracos"
+Descricao = "O Protetor cria um juramento de proteção sobre aliados próximos, assumindo parte dos danos que eles receberiam."
+HabilidadeAtiva = ExtResource("sk_5")
+NodeType = 1
+Posicao = Vector2(846, 532.8)
+Requisitos = PackedStringArray("gua_protetor_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="protetor_s6"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_6"
+Nome = "Muralha Humana"
+Descricao = "O Guardião transforma seu corpo em uma muralha viva, resistindo a ataques que derrubariam guerreiros comuns."
+HabilidadeAtiva = ExtResource("sk_6")
+NodeType = 1
+Posicao = Vector2(1054, 532.8)
+Requisitos = PackedStringArray("gua_protetor_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="protetor_s7"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_7"
+Nome = "Desafio"
+Descricao = "O Protetor bate sua arma contra o escudo e emite um desafio ensurdecedor, atraindo a atenção de todos ao redor."
+HabilidadeAtiva = ExtResource("sk_7")
+NodeType = 1
+Posicao = Vector2(1237.7, 630.4)
+Requisitos = PackedStringArray("gua_protetor_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="protetor_ce1"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_escolha_externa_1"
+Nome = "Escolha de atributos — Protetor"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(687.7, 530.2)
+Requisitos = PackedStringArray("gua_protetor_skill_4", "gua_protetor_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "Forca", "RouboVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="protetor_ce2"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_escolha_externa_2"
+Nome = "Escolha de atributos — Protetor"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 455)
+Requisitos = PackedStringArray("gua_protetor_skill_5", "gua_protetor_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DefesaFisica", "Tenacidade", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="protetor_ce3"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_escolha_externa_3"
+Nome = "Escolha de atributos — Protetor"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1212.3, 530.2)
+Requisitos = PackedStringArray("gua_protetor_skill_6", "gua_protetor_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="protetor_s8"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_8"
+Nome = "Fortificação"
+Descricao = "O Protetor endurece sua postura e fortalece sua armadura com disciplina absoluta."
+HabilidadeAtiva = ExtResource("sk_8")
+NodeType = 1
+Posicao = Vector2(554, 554)
+Requisitos = PackedStringArray("gua_protetor_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="protetor_s9"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_9"
+Nome = "Bastião"
+Descricao = "O Guardião se torna o centro de uma formação defensiva, protegendo aliados que lutam próximos a ele."
+HabilidadeAtiva = ExtResource("sk_9")
+NodeType = 1
+Posicao = Vector2(950, 390)
+Requisitos = PackedStringArray("gua_protetor_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="protetor_s10"]
+script = ExtResource("2_node")
+NodeId = "gua_protetor_skill_10"
+Nome = "Muralha Inabalável"
+Descricao = "O Protetor desperta sua determinação máxima e se torna uma fortaleza impossível de ignorar."
+HabilidadeAtiva = ExtResource("sk_10")
+NodeType = 1
+Posicao = Vector2(1346, 554)
+Requisitos = PackedStringArray("gua_protetor_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="vanguarda_rota"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_rota"
+Nome = "Vanguarda"
+Descricao = "Caminho de especialização: Vanguarda."
+NodeType = 5
+Posicao = Vector2(1053.9, 1010)
+Requisitos = PackedStringArray("gua_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="vanguarda_ci1"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_escolha_interna_1"
+Nome = "Escolha de atributos — Vanguarda"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1139.9, 956.6)
+Requisitos = PackedStringArray("gua_vanguarda_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("RegeneracaoVida", "Hp", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="vanguarda_ci2"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_escolha_interna_2"
+Nome = "Escolha de atributos — Vanguarda"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1114.5, 1045)
+Requisitos = PackedStringArray("gua_vanguarda_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "Forca", "RouboVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="vanguarda_ci3"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_escolha_interna_3"
+Nome = "Escolha de atributos — Vanguarda"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1050.7, 1111.1)
+Requisitos = PackedStringArray("gua_vanguarda_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DefesaFisica", "Tenacidade", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="vanguarda_s1"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_1"
+Nome = "Investida"
+Descricao = "O Guardião abaixa o escudo e avança com todo o peso de sua armadura, abrindo caminho até o inimigo."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(1220, 950)
+Requisitos = PackedStringArray("gua_vanguarda_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusVidaPercent = 6
-BonusForca = 4
 
-[sub_resource type="Resource" id="gua_n3"]
-script = ExtResource("2")
-NodeId = "gua_04"
-Nome = "Guardiao Fundamental"
-Descricao = "Nó de talento nível 1 (Guardiao)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusVidaPercent = 5
-BonusForca = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("gua_01", "gua_02")
-
-[sub_resource type="Resource" id="gua_n4"]
-script = ExtResource("2")
-NodeId = "gua_05"
-Nome = "Guardiao Natural"
-Descricao = "Nó de talento nível 1 (Guardiao)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusVidaPercent = 5
-BonusForca = 3
-Requisitos = PackedStringArray("gua_02")
-
-[sub_resource type="Resource" id="gua_n5"]
-script = ExtResource("2")
-NodeId = "gua_06"
-Nome = "Guardiao Básico"
-Descricao = "Nó de talento nível 1 (Guardiao)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusVidaPercent = 5
-BonusForca = 3
-Requisitos = PackedStringArray("gua_03", "gua_01")
-
-[sub_resource type="Resource" id="gua_n6"]
-script = ExtResource("2")
-NodeId = "gua_07"
-Nome = "Guardiao Inicial"
-Descricao = "Nó de talento nível 1 (Guardiao)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusVidaPercent = 5
-BonusForca = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("gua_01")
-
-[sub_resource type="Resource" id="gua_n7"]
-script = ExtResource("2")
-NodeId = "gua_08"
-Nome = "Guardiao Concentração"
-Descricao = "Nó de talento nível 1 (Guardiao)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusVidaPercent = 5
-BonusForca = 3
-Requisitos = PackedStringArray("gua_02", "gua_03")
-
-[sub_resource type="Resource" id="gua_n8"]
-script = ExtResource("2")
-NodeId = "gua_09"
-Nome = "Guardiao Foco"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-Requisitos = PackedStringArray("gua_04", "gua_05")
-
-[sub_resource type="Resource" id="gua_n9"]
-script = ExtResource("2")
-NodeId = "gua_10"
-Nome = "Guardiao Potencial"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("gua_05")
-
-[sub_resource type="Resource" id="gua_n10"]
-script = ExtResource("2")
-NodeId = "gua_11"
-Nome = "Guardiao Expansão"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-Requisitos = PackedStringArray("gua_06", "gua_07")
-
-[sub_resource type="Resource" id="gua_n11"]
-script = ExtResource("2")
-NodeId = "gua_12"
-Nome = "Guardiao Crescimento"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-Requisitos = PackedStringArray("gua_07")
-
-[sub_resource type="Resource" id="gua_n12"]
-script = ExtResource("2")
-NodeId = "gua_13"
-Nome = "Guardiao Despertar"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("gua_08", "gua_04")
-
-[sub_resource type="Resource" id="gua_n13"]
-script = ExtResource("2")
-NodeId = "gua_14"
-Nome = "Guardiao Evolução"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-Requisitos = PackedStringArray("gua_04")
-
-[sub_resource type="Resource" id="gua_n14"]
-script = ExtResource("2")
-NodeId = "gua_15"
-Nome = "Guardiao Progresso"
-Descricao = "Nó de talento nível 2 (Guardiao)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusVidaPercent = 4
-BonusForca = 2
-Requisitos = PackedStringArray("gua_05", "gua_06")
-
-[sub_resource type="Resource" id="gua_n15"]
-script = ExtResource("2")
-NodeId = "gua_16"
-Nome = "Guardiao Aprimoramento"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_09", "gua_10")
-
-[sub_resource type="Resource" id="gua_n16"]
-script = ExtResource("2")
-NodeId = "gua_17"
-Nome = "Guardiao Avanço"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_10")
-
-[sub_resource type="Resource" id="gua_n17"]
-script = ExtResource("2")
-NodeId = "gua_18"
-Nome = "Guardiao Superior"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_11", "gua_12")
-
-[sub_resource type="Resource" id="gua_n18"]
-script = ExtResource("2")
-NodeId = "gua_19"
-Nome = "Guardiao Elevado"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_12")
-
-[sub_resource type="Resource" id="gua_n19"]
-script = ExtResource("2")
-NodeId = "gua_20"
-Nome = "Guardiao Mestre"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_13", "gua_14")
-
-[sub_resource type="Resource" id="gua_n20"]
-script = ExtResource("2")
-NodeId = "gua_21"
-Nome = "Guardiao Supremo"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_14")
-
-[sub_resource type="Resource" id="gua_n21"]
-script = ExtResource("2")
-NodeId = "gua_22"
-Nome = "Guardiao Lendário"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_15", "gua_09")
-
-[sub_resource type="Resource" id="gua_n22"]
-script = ExtResource("2")
-NodeId = "gua_23"
-Nome = "Guardiao Mítico"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_09")
-
-[sub_resource type="Resource" id="gua_n23"]
-script = ExtResource("2")
-NodeId = "gua_24"
-Nome = "Guardiao Divino"
-Descricao = "Nó de talento nível 3 (Guardiao)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusVidaPercent = 3
-BonusForca = 1
-Requisitos = PackedStringArray("gua_10", "gua_11")
-
-[sub_resource type="Resource" id="gua_n24"]
-script = ExtResource("2")
-NodeId = "gua_25"
-Nome = "Guardiao Épico"
-Descricao = "Nó de talento nível 4 (Guardiao)."
+[sub_resource type="Resource" id="vanguarda_s2"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_2"
+Nome = "Impacto Brutal"
+Descricao = "A Vanguarda desfere um golpe pesado capaz de deslocar o inimigo pela força do impacto."
+HabilidadeAtiva = ExtResource("sk_12")
+NodeType = 1
+Posicao = Vector2(1183.8, 1085)
+Requisitos = PackedStringArray("gua_vanguarda_escolha_interna_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_16", "gua_17")
+NivelMinimo = 1
 
-[sub_resource type="Resource" id="gua_n25"]
-script = ExtResource("2")
-NodeId = "gua_26"
-Nome = "Guardiao Guerreiro"
-Descricao = "Nó de talento nível 4 (Guardiao)."
+[sub_resource type="Resource" id="vanguarda_s3"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_3"
+Nome = "Onda de Choque"
+Descricao = "O Guardião golpeia o chão com o escudo, criando uma onda de impacto que se espalha à sua frente."
+HabilidadeAtiva = ExtResource("sk_13")
+NodeType = 1
+Posicao = Vector2(1085, 1183.8)
+Requisitos = PackedStringArray("gua_vanguarda_escolha_interna_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_17")
+NivelMinimo = 5
 
-[sub_resource type="Resource" id="gua_n26"]
-script = ExtResource("2")
-NodeId = "gua_27"
-Nome = "Guardiao Sábio"
-Descricao = "Nó de talento nível 4 (Guardiao)."
+[sub_resource type="Resource" id="vanguarda_ul"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Vanguarda"
+Descricao = "Marco de progressão do caminho Vanguarda."
+NodeType = 5
+Posicao = Vector2(1294.7, 1010.8)
+Requisitos = PackedStringArray("gua_vanguarda_skill_1", "gua_vanguarda_skill_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_18", "gua_19")
 
-[sub_resource type="Resource" id="gua_n27"]
-script = ExtResource("2")
-NodeId = "gua_28"
-Nome = "Guardiao Destemido"
-Descricao = "Nó de talento nível 4 (Guardiao)."
+[sub_resource type="Resource" id="vanguarda_ur"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_desbloqueio_direito"
+Nome = "Desbloqueio — Vanguarda"
+Descricao = "Marco de progressão do caminho Vanguarda."
+NodeType = 5
+Posicao = Vector2(1175, 1218.1)
+Requisitos = PackedStringArray("gua_vanguarda_skill_2", "gua_vanguarda_skill_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_19")
 
-[sub_resource type="Resource" id="gua_n28"]
-script = ExtResource("2")
-NodeId = "gua_29"
-Nome = "Guardiao Poderoso"
-Descricao = "Nó de talento nível 4 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_20", "gua_21")
-
-[sub_resource type="Resource" id="gua_n29"]
-script = ExtResource("2")
-NodeId = "gua_30"
-Nome = "Guardiao Ágil"
-Descricao = "Nó de talento nível 4 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_21")
-
-[sub_resource type="Resource" id="gua_n30"]
-script = ExtResource("2")
-NodeId = "gua_31"
-Nome = "Guardiao Feroz"
-Descricao = "Nó de talento nível 4 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_22", "gua_23")
-
-[sub_resource type="Resource" id="gua_n31"]
-script = ExtResource("2")
-NodeId = "gua_32"
-Nome = "Guardiao Sombrio"
-Descricao = "Nó de talento nível 4 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_23")
-
-[sub_resource type="Resource" id="gua_n32"]
-script = ExtResource("2")
-NodeId = "gua_33"
-Nome = "Guardiao Sagrado"
-Descricao = "Nó de talento nível 4 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusVidaPercent = 2
-BonusForca = 1
-Requisitos = PackedStringArray("gua_24", "gua_16")
-
-[sub_resource type="Resource" id="gua_n33"]
-script = ExtResource("2")
-NodeId = "gua_34"
-Nome = "Guardiao Arcana"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="vanguarda_s4"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_4"
+Nome = "Pisotear"
+Descricao = "A Vanguarda pisa violentamente no solo, abalando a área ao redor e dificultando o avanço dos inimigos."
+HabilidadeAtiva = ExtResource("sk_14")
+NodeType = 1
+Posicao = Vector2(1370.6, 860.6)
+Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_25", "gua_26")
 
-[sub_resource type="Resource" id="gua_n34"]
-script = ExtResource("2")
-NodeId = "gua_35"
-Nome = "Guardiao Rápido"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="vanguarda_s5"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_5"
+Nome = "Golpe Atordoante"
+Descricao = "Um golpe calculado atinge um ponto vulnerável do inimigo, deixando-o desnorteado por alguns instantes."
+HabilidadeAtiva = ExtResource("sk_15")
+NodeType = 1
+Posicao = Vector2(1363.3, 1068.5)
+Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="vanguarda_s6"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_6"
+Nome = "Quebra Defesa"
+Descricao = "A Vanguarda golpeia a proteção do inimigo com precisão, abrindo falhas em sua guarda."
+HabilidadeAtiva = ExtResource("sk_16")
+NodeType = 1
+Posicao = Vector2(1259.3, 1248.7)
+Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="vanguarda_s7"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_7"
+Nome = "Investida Devastadora"
+Descricao = "O Guardião avança como um aríete vivo, atingindo todos os inimigos em sua trajetória."
+HabilidadeAtiva = ExtResource("sk_17")
+NodeType = 1
+Posicao = Vector2(1082.9, 1359)
+Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="vanguarda_ce1"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_escolha_externa_1"
+Nome = "Escolha de atributos — Vanguarda"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1444.7, 932.7)
+Requisitos = PackedStringArray("gua_vanguarda_skill_4", "gua_vanguarda_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="vanguarda_ce2"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_escolha_externa_2"
+Nome = "Escolha de atributos — Vanguarda"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1378.7, 1197.5)
+Requisitos = PackedStringArray("gua_vanguarda_skill_5", "gua_vanguarda_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "DefesaFisica", "Tenacidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="vanguarda_ce3"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_escolha_externa_3"
+Nome = "Escolha de atributos — Vanguarda"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1182.4, 1387.1)
+Requisitos = PackedStringArray("gua_vanguarda_skill_6", "gua_vanguarda_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Forca", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="vanguarda_s8"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_8"
+Nome = "Tremor de Guerra"
+Descricao = "A Vanguarda golpeia o chão com força suficiente para rachar a terra e abalar todos ao redor."
+HabilidadeAtiva = ExtResource("sk_18")
+NodeType = 1
+Posicao = Vector2(1490.9, 805.1)
+Requisitos = PackedStringArray("gua_vanguarda_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="vanguarda_s9"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_9"
+Nome = "Comandante de Batalha"
+Descricao = "A presença da Vanguarda inspira aliados próximos, fortalecendo sua resistência e coragem."
+HabilidadeAtiva = ExtResource("sk_19")
+NodeType = 1
+Posicao = Vector2(1435, 1230)
+Requisitos = PackedStringArray("gua_vanguarda_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="vanguarda_s10"]
+script = ExtResource("2_node")
+NodeId = "gua_vanguarda_skill_10"
+Nome = "Colapso da Terra"
+Descricao = "A Vanguarda concentra toda sua força em um golpe devastador que faz o campo de batalha ruir."
+HabilidadeAtiva = ExtResource("sk_20")
+NodeType = 1
+Posicao = Vector2(1094.9, 1490.9)
+Requisitos = PackedStringArray("gua_vanguarda_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="templario_rota"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_rota"
+Nome = "Templário"
+Descricao = "Caminho de especialização: Templário."
+NodeType = 5
+Posicao = Vector2(846.1, 1010)
+Requisitos = PackedStringArray("gua_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="templario_ci1"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_escolha_interna_1"
+Nome = "Escolha de atributos — Templário"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(849.3, 1111.1)
+Requisitos = PackedStringArray("gua_templario_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DefesaFisica", "Tenacidade", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="templario_ci2"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_escolha_interna_2"
+Nome = "Escolha de atributos — Templário"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(785.5, 1045)
+Requisitos = PackedStringArray("gua_templario_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="templario_ci3"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_escolha_interna_3"
+Nome = "Escolha de atributos — Templário"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(760.1, 956.6)
+Requisitos = PackedStringArray("gua_templario_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "DefesaFisica", "Tenacidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="templario_s1"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_1"
+Nome = "Postura Defensiva"
+Descricao = "O Guardião finca os pés no chão e assume uma posição de defesa total, preparando-se para receber grandes impactos."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(815, 1183.8)
+Requisitos = PackedStringArray("gua_templario_escolha_interna_1")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="templario_s2"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_2"
+Nome = "Golpe Sagrado"
+Descricao = "O Templário canaliza energia sagrada na lâmina e desfere um golpe purificador contra o inimigo."
+HabilidadeAtiva = ExtResource("sk_22")
+NodeType = 1
+Posicao = Vector2(716.2, 1085)
+Requisitos = PackedStringArray("gua_templario_escolha_interna_2")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="templario_s3"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_3"
+Nome = "Luz Protetora"
+Descricao = "Uma luz divina envolve um aliado, formando uma camada protetora contra ataques futuros."
+HabilidadeAtiva = ExtResource("sk_23")
+NodeType = 1
+Posicao = Vector2(680, 950)
+Requisitos = PackedStringArray("gua_templario_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="templario_ul"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_desbloqueio_esquerdo"
+Nome = "Desbloqueio — Templário"
+Descricao = "Marco de progressão do caminho Templário."
+NodeType = 5
+Posicao = Vector2(725, 1218.1)
+Requisitos = PackedStringArray("gua_templario_skill_1", "gua_templario_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="templario_ur"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_desbloqueio_direito"
+Nome = "Desbloqueio — Templário"
+Descricao = "Marco de progressão do caminho Templário."
+NodeType = 5
+Posicao = Vector2(605.3, 1010.8)
+Requisitos = PackedStringArray("gua_templario_skill_2", "gua_templario_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="templario_s4"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_4"
+Nome = "Julgamento"
+Descricao = "O Templário julga um inimigo diante da luz, castigando suas falhas e marcando-o para punição."
+HabilidadeAtiva = ExtResource("sk_24")
+NodeType = 1
+Posicao = Vector2(817.1, 1359)
+Requisitos = PackedStringArray("gua_templario_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_26")
 
-[sub_resource type="Resource" id="gua_n35"]
-script = ExtResource("2")
-NodeId = "gua_36"
-Nome = "Guardiao Resistente"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="templario_s5"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_5"
+Nome = "Escudo da Fé"
+Descricao = "A fé do Templário fortalece sua alma e sua armadura contra ataques mágicos."
+HabilidadeAtiva = ExtResource("sk_25")
+NodeType = 1
+Posicao = Vector2(640.7, 1248.7)
+Requisitos = PackedStringArray("gua_templario_desbloqueio_esquerdo")
 CustoPontos = 1
-NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_27", "gua_28")
+NivelMinimo = 15
 
-[sub_resource type="Resource" id="gua_n36"]
-script = ExtResource("2")
-NodeId = "gua_37"
-Nome = "Guardiao Letal"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="templario_s6"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_6"
+Nome = "Martelo Divino"
+Descricao = "Um martelo de luz desce dos céus esmagando os inimigos em uma pequena área."
+HabilidadeAtiva = ExtResource("sk_26")
+NodeType = 1
+Posicao = Vector2(536.7, 1068.5)
+Requisitos = PackedStringArray("gua_templario_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_28")
+NivelMinimo = 20
 
-[sub_resource type="Resource" id="gua_n37"]
-script = ExtResource("2")
-NodeId = "gua_38"
-Nome = "Guardiao Preciso"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="templario_s7"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_7"
+Nome = "Purificação"
+Descricao = "O Templário invoca uma luz purificadora capaz de remover energias nocivas de seus aliados."
+HabilidadeAtiva = ExtResource("sk_27")
+NodeType = 1
+Posicao = Vector2(529.4, 860.6)
+Requisitos = PackedStringArray("gua_templario_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_29", "gua_30")
+NivelMinimo = 30
 
-[sub_resource type="Resource" id="gua_n38"]
-script = ExtResource("2")
-NodeId = "gua_39"
-Nome = "Guardiao Brutal"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="templario_ce1"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_escolha_externa_1"
+Nome = "Escolha de atributos — Templário"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(717.6, 1387.1)
+Requisitos = PackedStringArray("gua_templario_skill_4", "gua_templario_skill_5")
 CustoPontos = 1
-NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_30")
+StatOptionIds = PackedStringArray("Forca", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="gua_n39"]
-script = ExtResource("2")
-NodeId = "gua_40"
-Nome = "Guardiao Sutil"
-Descricao = "Nó de talento nível 5 (Guardiao)."
+[sub_resource type="Resource" id="templario_ce2"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_escolha_externa_2"
+Nome = "Escolha de atributos — Templário"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(521.3, 1197.5)
+Requisitos = PackedStringArray("gua_templario_skill_5", "gua_templario_skill_6")
 CustoPontos = 1
-NivelMinimo = 10
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_31", "gua_32")
+StatOptionIds = PackedStringArray("RegeneracaoVida", "Hp", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="gua_n40"]
-script = ExtResource("2")
-NodeId = "gua_41"
-Nome = "Guardiao Gélido"
-Descricao = "Nó de talento nível 6 (Guardiao)."
+[sub_resource type="Resource" id="templario_ce3"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_escolha_externa_3"
+Nome = "Escolha de atributos — Templário"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(455.3, 932.7)
+Requisitos = PackedStringArray("gua_templario_skill_6", "gua_templario_skill_7")
 CustoPontos = 1
-NivelMinimo = 12
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_34", "gua_35")
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "Forca", "RouboVida")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="gua_n41"]
-script = ExtResource("2")
-NodeId = "gua_42"
-Nome = "Guardiao Flamejante"
-Descricao = "Nó de talento nível 6 (Guardiao)."
+[sub_resource type="Resource" id="templario_s8"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_8"
+Nome = "Aura Sagrada"
+Descricao = "Uma aura de fé envolve o Templário e fortalece todos os aliados próximos."
+HabilidadeAtiva = ExtResource("sk_28")
+NodeType = 1
+Posicao = Vector2(805.1, 1490.9)
+Requisitos = PackedStringArray("gua_templario_escolha_externa_1")
 CustoPontos = 1
-NivelMinimo = 12
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_35")
+NivelMinimo = 40
 
-[sub_resource type="Resource" id="gua_n42"]
-script = ExtResource("2")
-NodeId = "gua_43"
-Nome = "Guardiao Tempestuoso"
-Descricao = "Nó de talento nível 6 (Guardiao)."
+[sub_resource type="Resource" id="templario_s9"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_9"
+Nome = "Guardião Celestial"
+Descricao = "O Templário invoca uma proteção celestial sobre o grupo, reduzindo o impacto de ataques inimigos."
+HabilidadeAtiva = ExtResource("sk_29")
+NodeType = 1
+Posicao = Vector2(465, 1230)
+Requisitos = PackedStringArray("gua_templario_escolha_externa_2")
 CustoPontos = 1
-NivelMinimo = 12
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_36", "gua_37")
+NivelMinimo = 50
 
-[sub_resource type="Resource" id="gua_n43"]
-script = ExtResource("2")
-NodeId = "gua_44"
-Nome = "Guardiao Venenoso"
-Descricao = "Nó de talento nível 6 (Guardiao)."
+[sub_resource type="Resource" id="templario_s10"]
+script = ExtResource("2_node")
+NodeId = "gua_templario_skill_10"
+Nome = "Avatar do Templo"
+Descricao = "O Templário assume a forma de um campeão sagrado, unindo força, fé e proteção em um único corpo."
+HabilidadeAtiva = ExtResource("sk_30")
+NodeType = 1
+Posicao = Vector2(409.1, 805.1)
+Requisitos = PackedStringArray("gua_templario_escolha_externa_3")
 CustoPontos = 1
-NivelMinimo = 12
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_37")
-
-[sub_resource type="Resource" id="gua_n44"]
-script = ExtResource("2")
-NodeId = "gua_45"
-Nome = "Guardiao Sangrento"
-Descricao = "Nó de talento nível 6 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 12
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_38", "gua_39")
-
-[sub_resource type="Resource" id="gua_n45"]
-script = ExtResource("2")
-NodeId = "gua_46"
-Nome = "Guardiao Eterno"
-Descricao = "Nó de talento nível 7 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_41", "gua_42")
-
-[sub_resource type="Resource" id="gua_n46"]
-script = ExtResource("2")
-NodeId = "gua_47"
-Nome = "Guardiao Celestial"
-Descricao = "Nó de talento nível 7 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_42")
-
-[sub_resource type="Resource" id="gua_n47"]
-script = ExtResource("2")
-NodeId = "gua_48"
-Nome = "Guardiao Abissal"
-Descricao = "Nó de talento nível 7 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_43", "gua_44")
-
-[sub_resource type="Resource" id="gua_n48"]
-script = ExtResource("2")
-NodeId = "gua_49"
-Nome = "Guardiao Primordial"
-Descricao = "Nó de talento nível 8 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_46", "gua_47")
-
-[sub_resource type="Resource" id="gua_n49"]
-script = ExtResource("2")
-NodeId = "gua_50"
-Nome = "Guardiao Final"
-Descricao = "Nó de talento nível 8 (Guardiao)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusVidaPercent = 1
-BonusForca = 1
-Requisitos = PackedStringArray("gua_47")
+NivelMinimo = 70
 
 [resource]
-script = ExtResource("1")
-NomeArvore = "Árvore Guardiao"
-RootNodeIds = PackedStringArray("gua_01", "gua_02", "gua_03")
-
-Nodes = Array[Resource]([
-	SubResource("gua_n0"),
-	SubResource("gua_n1"),
-	SubResource("gua_n2"),
-	SubResource("gua_n3"),
-	SubResource("gua_n4"),
-	SubResource("gua_n5"),
-	SubResource("gua_n6"),
-	SubResource("gua_n7"),
-	SubResource("gua_n8"),
-	SubResource("gua_n9"),
-	SubResource("gua_n10"),
-	SubResource("gua_n11"),
-	SubResource("gua_n12"),
-	SubResource("gua_n13"),
-	SubResource("gua_n14"),
-	SubResource("gua_n15"),
-	SubResource("gua_n16"),
-	SubResource("gua_n17"),
-	SubResource("gua_n18"),
-	SubResource("gua_n19"),
-	SubResource("gua_n20"),
-	SubResource("gua_n21"),
-	SubResource("gua_n22"),
-	SubResource("gua_n23"),
-	SubResource("gua_n24"),
-	SubResource("gua_n25"),
-	SubResource("gua_n26"),
-	SubResource("gua_n27"),
-	SubResource("gua_n28"),
-	SubResource("gua_n29"),
-	SubResource("gua_n30"),
-	SubResource("gua_n31"),
-	SubResource("gua_n32"),
-	SubResource("gua_n33"),
-	SubResource("gua_n34"),
-	SubResource("gua_n35"),
-	SubResource("gua_n36"),
-	SubResource("gua_n37"),
-	SubResource("gua_n38"),
-	SubResource("gua_n39"),
-	SubResource("gua_n40"),
-	SubResource("gua_n41"),
-	SubResource("gua_n42"),
-	SubResource("gua_n43"),
-	SubResource("gua_n44"),
-	SubResource("gua_n45"),
-	SubResource("gua_n46"),
-	SubResource("gua_n47"),
-	SubResource("gua_n48"),
-	SubResource("gua_n49")
-])
+script = ExtResource("1_tree")
+NomeArvore = "Árvore do Guardião"
+Nodes = Array[Resource]([SubResource("base"), SubResource("protetor_rota"), SubResource("protetor_ci1"), SubResource("protetor_ci2"), SubResource("protetor_ci3"), SubResource("protetor_s1"), SubResource("protetor_s2"), SubResource("protetor_s3"), SubResource("protetor_ul"), SubResource("protetor_ur"), SubResource("protetor_s4"), SubResource("protetor_s5"), SubResource("protetor_s6"), SubResource("protetor_s7"), SubResource("protetor_ce1"), SubResource("protetor_ce2"), SubResource("protetor_ce3"), SubResource("protetor_s8"), SubResource("protetor_s9"), SubResource("protetor_s10"), SubResource("vanguarda_rota"), SubResource("vanguarda_ci1"), SubResource("vanguarda_ci2"), SubResource("vanguarda_ci3"), SubResource("vanguarda_s1"), SubResource("vanguarda_s2"), SubResource("vanguarda_s3"), SubResource("vanguarda_ul"), SubResource("vanguarda_ur"), SubResource("vanguarda_s4"), SubResource("vanguarda_s5"), SubResource("vanguarda_s6"), SubResource("vanguarda_s7"), SubResource("vanguarda_ce1"), SubResource("vanguarda_ce2"), SubResource("vanguarda_ce3"), SubResource("vanguarda_s8"), SubResource("vanguarda_s9"), SubResource("vanguarda_s10"), SubResource("templario_rota"), SubResource("templario_ci1"), SubResource("templario_ci2"), SubResource("templario_ci3"), SubResource("templario_s1"), SubResource("templario_s2"), SubResource("templario_s3"), SubResource("templario_ul"), SubResource("templario_ur"), SubResource("templario_s4"), SubResource("templario_s5"), SubResource("templario_s6"), SubResource("templario_s7"), SubResource("templario_ce1"), SubResource("templario_ce2"), SubResource("templario_ce3"), SubResource("templario_s8"), SubResource("templario_s9"), SubResource("templario_s10")])
+RootNodeIds = PackedStringArray("gua_base")
+UsaLayoutPersonalizado = true
+BoardSize = Vector2(1900, 1900)

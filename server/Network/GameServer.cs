@@ -31,6 +31,9 @@ public partial class GameServer : INetEventListener
     internal readonly ConcurrentQueue<Action> _mainThreadActions = new();
     internal readonly Dictionary<ulong, ulong> _partyInvites = new();
     internal readonly Dictionary<ulong, ulong> _guildInvites = new();
+    internal readonly Dictionary<ulong, ulong> _tradeInvites = new();
+    internal readonly Dictionary<ulong, TradeSession> _activeTrades = new();
+    internal int _nextTradeId = 1;
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
     internal readonly Dictionary<string, double> _loginCooldowns = new();
@@ -452,6 +455,27 @@ public partial class GameServer : INetEventListener
                 break;
             case PacketId.C2S_ProjectileFire:
                 HandleProjectileFire(peer, reader);
+                break;
+            case PacketId.C2S_TradeRequest:
+                HandleTradeRequestPacket(peer, reader);
+                break;
+            case PacketId.C2S_TradeAccept:
+                HandleTradeAcceptPacket(peer, reader);
+                break;
+            case PacketId.C2S_TradeDecline:
+                HandleTradeDeclinePacket(peer, reader);
+                break;
+            case PacketId.C2S_TradeUpdateOffer:
+                HandleTradeUpdateOfferPacket(peer, reader);
+                break;
+            case PacketId.C2S_TradeConfirm:
+                HandleTradeConfirmPacket(peer, reader);
+                break;
+            case PacketId.C2S_TradeCancel:
+                HandleTradeCancelPacket(peer, reader);
+                break;
+            case PacketId.C2S_TradeRemoveOffer:
+                HandleTradeRemoveOfferPacket(peer, reader);
                 break;
 
             }

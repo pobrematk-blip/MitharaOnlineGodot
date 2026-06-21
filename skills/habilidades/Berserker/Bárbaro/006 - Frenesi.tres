@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/36.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13106
 Nome = "Frenesi"
 Descricao = "A batalha leva o Bárbaro a um estado de loucura controlada, fazendo seus ataques ficarem cada vez mais rápidos."
+Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 30
 ClasseRestrita = "Berserker"

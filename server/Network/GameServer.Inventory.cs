@@ -519,6 +519,7 @@ partial class GameServer
                 return;
             }
             player.Health += restoredHealth;
+            BroadcastPartyMemberUpdateForEntity(player.Id);
         }
         else if (item.ItemId == ItemDefinitions.PocaoMana && def.Mana > 0)
         {
@@ -529,6 +530,7 @@ partial class GameServer
                 return;
             }
             player.Mana += restoredMana;
+            BroadcastPartyMemberUpdateForEntity(player.Id);
         }
         else if (item.ItemId is ItemDefinitions.PergaminhoVip7Dias or ItemDefinitions.PergaminhoVip15Dias or ItemDefinitions.PergaminhoVip30Dias or ItemDefinitions.PergaminhoVip7DiasTrial)
         {

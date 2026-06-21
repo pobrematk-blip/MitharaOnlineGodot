@@ -711,7 +711,7 @@ public partial class EntityManager : Node
     {
         var existing = GetTree()?.GetNodesInGroup("NPC");
         GD.Print($"[EntityManager] CreateNpcEntity({entityId}, {name}, {x}, {y}) — {existing?.Count ?? 0} NPCs no grupo");
-        Node2D root = null;
+        Node2D? root = null;
 
         if (existing != null)
         {
@@ -907,7 +907,7 @@ public partial class EntityManager : Node
         }
 
         // Update target health (including local player)
-        Node2D targetNode = null;
+        Node2D? targetNode = null;
         if (targetId == _gameNet?.LocalPlayerId)
         {
             targetNode = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
@@ -1125,7 +1125,7 @@ public partial class EntityManager : Node
 
     private void OnProjectileSpawn(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType)
     {
-        if (entityId == _gameNet.LocalPlayerId) return;
+        if (_gameNet == null || entityId == _gameNet.LocalPlayerId) return;
         if (!_networkNodes.TryGetValue(entityId, out var _)) return;
 
         string scenePath = projectileType switch
@@ -1496,7 +1496,7 @@ public partial class EntityManager : Node
         }
     }
 
-    private static Font _boldFont;
+    private static Font _boldFont = null!;
     private static Font GetBoldFont()
     {
         if (_boldFont != null) return _boldFont;

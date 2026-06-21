@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/24.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 18
 Nome = "Olho da Águia"
 Descricao = "Os sentidos do Sniper atingem seu auge, aumentando Precisão, Chance Crítica e Penetração de Armadura."
+Icone = ExtResource("2_icon")
 Valor = 10
 CustoMana = 40
 ClasseRestrita = "Arqueiro"

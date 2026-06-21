@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/44.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15107
 Nome = "Luz Restauradora"
 Descricao = "Uma poderosa coluna de luz desce sobre o aliado ferido, restaurando uma grande quantidade de vida em um único instante."
+Icone = ExtResource("2_icon")
 Valor = 220
 CustoMana = 55
 ClasseRestrita = "Clérigo"

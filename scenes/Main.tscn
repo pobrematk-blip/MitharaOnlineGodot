@@ -1,4 +1,4 @@
-[gd_scene load_steps=84 format=4 uid="uid://c3ocjs01psycc"]
+[gd_scene load_steps=86 format=4 uid="uid://c3ocjs01psycc"]
 
 [ext_resource type="Texture2D" uid="uid://buwum1ed2iflk" path="res://tiles/TileSets/$CL_Buildings (1).png" id="1_agua"]
 [ext_resource type="Texture2D" uid="uid://c2s12g1mrpj68" path="res://tiles/TileSets/$CL_Buildings (6).png" id="1_bjd11"]
@@ -29,7 +29,9 @@
 [ext_resource type="PackedScene" uid="uid://friendsui" path="res://ui/FriendsUI.tscn" id="17_friends"]
 [ext_resource type="Texture2D" uid="uid://c8ervjy2a6kpx" path="res://tiles/TileSets/6.png" id="17_pdwbg"]
 [ext_resource type="PackedScene" uid="uid://guildui" path="res://ui/GuildUI.tscn" id="18_guild"]
+[ext_resource type="PackedScene" path="res://characterSlots/PartyMemberHud.tscn" id="18_partymemberhud"]
 [ext_resource type="PackedScene" uid="uid://partyui" path="res://ui/PartyUI.tscn" id="19_party"]
+[ext_resource type="PackedScene" path="res://ui/TradeUI.tscn" id="19_tradeui"]
 [ext_resource type="PackedScene" uid="uid://questui" path="res://ui/QuestUI.tscn" id="20_quest"]
 [ext_resource type="PackedScene" uid="uid://partyhud" path="res://ui/PartyHUD.tscn" id="21_partyhud"]
 [ext_resource type="PackedScene" uid="uid://dialogui" path="res://ui/DialogUI.tscn" id="22_dialog"]
@@ -78420,7 +78422,7 @@ script = ExtResource("39_recurso")
 RecursoData = ExtResource("41_palmeira")
 
 [node name="PalmeiraGuarda4" type="StaticBody2D" parent="World"]
-position = Vector2(2039, 3043)
+position = Vector2(2458, 3095)
 script = ExtResource("39_recurso")
 RecursoData = ExtResource("41_palmeira")
 
@@ -78460,7 +78462,7 @@ script = ExtResource("39_recurso")
 RecursoData = ExtResource("41_palmeira")
 
 [node name="PalmeiraGuarda19" type="StaticBody2D" parent="World"]
-position = Vector2(2082, 1797)
+position = Vector2(1157, 2460)
 script = ExtResource("39_recurso")
 RecursoData = ExtResource("41_palmeira")
 
@@ -78480,7 +78482,7 @@ script = ExtResource("39_recurso")
 RecursoData = ExtResource("41_palmeira")
 
 [node name="PalmeiraGuarda6" type="StaticBody2D" parent="World"]
-position = Vector2(2416, 1378)
+position = Vector2(2765, 1204)
 script = ExtResource("39_recurso")
 RecursoData = ExtResource("41_palmeira")
 
@@ -78494,7 +78496,7 @@ position = Vector2(-4925, 2427)
 
 [node name="SlimeSpawn_Online5" type="Marker2D" parent="World"]
 editor_description = "Spawn visual do servidor: copie esta posição para server/server_config.json em SpawnPoints[2].X/Y."
-position = Vector2(319, 2126)
+position = Vector2(75, 1934)
 
 [node name="SlimeSpawn_Online3" type="Marker2D" parent="World"]
 editor_description = "Spawn visual do servidor: copie esta posição para server/server_config.json em SpawnPoints[3].X/Y."
@@ -78540,6 +78542,12 @@ position = Vector2(-52, 226)
 [node name="BancoUi" parent="HUD" instance=ExtResource("7_banco")]
 
 [node name="PlayerHud" parent="HUD" instance=ExtResource("8_playerhud")]
+
+[node name="PartyMemberHud" parent="HUD" instance=ExtResource("18_partymemberhud")]
+
+[node name="TradeUI" parent="HUD" instance=ExtResource("19_tradeui")]
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="TalentTreeUI" parent="HUD" instance=ExtResource("11_talenttree")]
 grow_horizontal = 2
@@ -78599,10 +78607,10 @@ grow_vertical = 0
 [node name="MiniMapa" parent="UI" instance=ExtResource("10_minimapa")]
 layout_mode = 3
 anchors_preset = 1
-offset_left = -220.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 230.0
+offset_left = -249.0
+offset_top = 2.0
+offset_right = -1.0
+offset_bottom = 234.0
 grow_horizontal = 0
 
 [node name="ItemTooltip" type="Panel" parent="UI"]

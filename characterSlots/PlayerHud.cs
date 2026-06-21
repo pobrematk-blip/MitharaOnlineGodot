@@ -23,6 +23,9 @@ public partial class PlayerHud : Control
         _staminaLabel = GetNode<Label>("Background/MainHBox/VBox/StaminaBar/StaminaBarLabel");
         _nameLevelLabel = GetNode<Label>("Background/MainHBox/VBox/NameLevelLabel");
         _portraitIcon = GetNode<TextureRect>("Background/MainHBox/PortraitPanel/PortraitIcon");
+        _portraitIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _portraitIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _portraitIcon.CustomMinimumSize = Vector2.Zero;
 
         CallDeferred(nameof(ConnectPlayer));
     }

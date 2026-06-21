@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/44.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14201
 Nome = "Impacto Brutal"
 Descricao = "A Vanguarda desfere um golpe pesado capaz de deslocar o inimigo pela força do impacto."
+Icone = ExtResource("2_icon")
 Valor = 120
 CustoMana = 15
 ClasseRestrita = "Guardião"

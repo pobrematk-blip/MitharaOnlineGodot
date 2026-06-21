@@ -88,10 +88,10 @@ theme_override_font_sizes/font_size = 11
 
 [node name="CashBtn" type="TextureButton" parent="."]
 anchors_preset = 0
-offset_left = 210.0
-offset_top = 230.0
-offset_right = 246.0
-offset_bottom = 266.0
+offset_left = 105.0
+offset_top = 217.0
+offset_right = 141.0
+offset_bottom = 253.0
 texture_normal = ExtResource("3")
 expand = true
 stretch_mode = 1

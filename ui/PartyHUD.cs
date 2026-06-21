@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public partial class PartyHUD : Control
 {
-    private VBoxContainer _container;
+    private VBoxContainer _container = null!;
     private List<Godot.Collections.Dictionary> _members = new();
     private int _partyId;
     private ulong _leaderId;
@@ -52,7 +52,7 @@ public partial class PartyHUD : Control
         Refresh();
     }
 
-    private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined)
+    private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
     {
         var existing = _members.Find(m => (ulong)(long)m["entity_id"] == entityId);
         if (joined)
@@ -65,6 +65,7 @@ public partial class PartyHUD : Control
                 existing["mana"] = mana;
                 existing["max_mana"] = maxMana;
                 existing["level"] = level;
+                existing["class"] = characterClass;
             }
             else
             {
@@ -78,6 +79,7 @@ public partial class PartyHUD : Control
                     ["mana"] = mana,
                     ["max_mana"] = maxMana,
                     ["level"] = level,
+                    ["class"] = characterClass,
                 });
             }
         }
@@ -150,6 +152,19 @@ public partial class PartyHUD : Control
             var topRow = new HBoxContainer();
             topRow.MouseFilter = MouseFilterEnum.Ignore;
 
+            string charClass = m.ContainsKey("class") ? (string)m["class"] : "";
+            Texture2D? classIcon = CarregarIconeClasse(charClass);
+            if (classIcon != null)
+            {
+                var iconRect = new TextureRect();
+                iconRect.Texture = classIcon;
+                iconRect.CustomMinimumSize = new Vector2(18, 18);
+                iconRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+                iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+                iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+                topRow.AddChild(iconRect);
+            }
+
             var nameLabel = new Label();
             string prefix = isLeader ? "[color=yellow](L)[/color] " : "";
             nameLabel.Text = $"{prefix}{nome}";
@@ -174,7 +189,7 @@ public partial class PartyHUD : Control
             var hpBar = new ColorRect();
             hpBar.CustomMinimumSize = new Vector2(0, 4);
             hpBar.Size = new Vector2(200 * hpPct, 4);
-            hpBar.Color = new Color(1f - hpPct, hpPct, 0, 0.9f);
+            hpBar.Color = new Color(0.9f, 0.12f, 0.12f, 0.92f);
             bars.AddChild(hpBar);
 
             float mpPct = maxMp > 0 ? Mathf.Clamp((float)mp / maxMp, 0, 1) : 1f;
@@ -199,6 +214,24 @@ public partial class PartyHUD : Control
 
             _container.AddChild(memberPanel);
         }
+    }
+
+    private static Texture2D? CarregarIconeClasse(string classe)
+    {
+        string iconPath = classe.ToLowerInvariant() switch
+        {
+            "arqueiro" => "res://Itens/Incones/Arco do Atirador.png",
+            "assassino" or "ladino" => "res://Itens/Incones/Adaga Sombria.png",
+            "guerreiro" => "res://Itens/Incones/Machados Perdisos 1.png",
+            "berserker" => "res://Itens/Incones/Machados Perdisos 2.png",
+            "mago" => "res://Itens/Incones/1.png",
+            "clerigo" => "res://Itens/Incones/Martelo quebrada.png",
+            "guardiao" => "res://Itens/Incones/Escudo de Goglin.png",
+            _ => "",
+        };
+        if (!string.IsNullOrEmpty(iconPath) && ResourceLoader.Exists(iconPath))
+            return ResourceLoader.Load<Texture2D>(iconPath);
+        return null;
     }
 
     private void MostrarMenuContexto(ulong targetId, string targetName, bool isSelf, Vector2 screenPos)

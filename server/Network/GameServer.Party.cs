@@ -123,10 +123,58 @@ partial class GameServer
             return;
         }
 
+        if (leader is PlayerEntity leaderPlayer)
+            leaderPlayer.PartyId = party.Id;
         player.PartyId = party.Id;
-        if (sender is PlayerEntity p) p.PartyId = party.Id;
+        BroadcastPartyData(party);
+    }
 
-        BroadcastPartyMemberUpdate(party, sender.Id, sender.Name, true);
+    private string GetPlayerClass(ulong entityId)
+    {
+        foreach (var ch in _world.GetAllChannels())
+        {
+            var e = ch.GetEntity(entityId);
+            if (e is PlayerEntity pe) return pe.CharacterClass;
+        }
+        return "";
+    }
+
+    private void BroadcastPartyMemberUpdateForEntity(ulong entityId)
+    {
+        int hp = 0, maxHp = 0, mana = 0, maxMana = 0, level = 1;
+        string name = "?";
+        string charClass = "";
+        int partyId = -1;
+        foreach (var ch in _world.GetAllChannels())
+        {
+            var e = ch.GetEntity(entityId);
+            if (e != null)
+            {
+                name = e.Name;
+                hp = e.Health; maxHp = e.MaxHealth; mana = e.Mana; maxMana = e.MaxMana; level = e.Level;
+                if (e is PlayerEntity pe) { charClass = pe.CharacterClass; partyId = pe.PartyId; }
+                break;
+            }
+        }
+        if (partyId < 0 || string.IsNullOrEmpty(charClass)) return;
+        var party = _world.Parties.GetParty(partyId);
+        if (party == null) return;
+        foreach (var eid in party.Members)
+        {
+            var peer = FindPeerByEntityId(eid);
+            if (peer == null) continue;
+            var w = PacketSerializer.WritePacket(PacketId.S2C_PartyMemberUpdate);
+            w.Put(entityId);
+            w.Put(name);
+            w.Put(hp);
+            w.Put(maxHp);
+            w.Put(mana);
+            w.Put(maxMana);
+            w.Put(level);
+            w.Put(true);
+            w.Put(charClass);
+            peer.Send(w, DeliveryMethod.ReliableOrdered);
+        }
     }
 
     private void HandlePartyLeave(Entity sender)
@@ -166,6 +214,7 @@ partial class GameServer
         {
             writer.Put(eid);
             var (name, hp, maxHp, mana, maxMana, level) = GetEntityDisplayData(eid);
+            string charClass = GetPlayerClass(eid);
             writer.Put(name);
             writer.Put(eid == party.LeaderEntityId);
             writer.Put(hp);
@@ -173,6 +222,7 @@ partial class GameServer
             writer.Put(mana);
             writer.Put(maxMana);
             writer.Put(level);
+            writer.Put(charClass);
         }
 
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
@@ -191,12 +241,14 @@ partial class GameServer
     private void BroadcastPartyMemberUpdate(Party party, ulong entityId, string name, bool joined)
     {
         int hp = 0, maxHp = 0, mana = 0, maxMana = 0, level = 1;
+        string charClass = "";
         foreach (var ch in _world.GetAllChannels())
         {
             var e = ch.GetEntity(entityId);
             if (e != null)
             {
                 hp = e.Health; maxHp = e.MaxHealth; mana = e.Mana; maxMana = e.MaxMana; level = e.Level;
+                if (e is PlayerEntity pe) charClass = pe.CharacterClass;
                 break;
             }
         }
@@ -214,6 +266,7 @@ partial class GameServer
             w.Put(maxMana);
             w.Put(level);
             w.Put(joined);
+            w.Put(charClass);
             peer.Send(w, DeliveryMethod.ReliableOrdered);
         }
     }
