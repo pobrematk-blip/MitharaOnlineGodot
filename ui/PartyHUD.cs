@@ -42,6 +42,7 @@ public partial class PartyHUD : Control
     private void OnNetworkPartyData(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members)
     {
         _partyId = partyId;
+        _leaderId = 0;
         _members.Clear();
         foreach (var m in members)
         {
@@ -118,9 +119,14 @@ public partial class PartyHUD : Control
             return;
         }
 
-        if (HiddenByUser) return;
+        if (HiddenByUser)
+        {
+            Visible = false;
+            return;
+        }
 
         Visible = true;
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
 
         foreach (var m in _members)
         {
@@ -202,10 +208,11 @@ public partial class PartyHUD : Control
             vbox.AddChild(bars);
 
             memberPanel.MouseFilter = MouseFilterEnum.Pass;
-            bool isSelf = nome == NomeJogador;
+            bool isSelf = net != null && eid == net.LocalPlayerId;
             memberPanel.GuiInput += (InputEvent @event) =>
             {
-                if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Right)
+                if (@event is InputEventMouseButton mb && mb.Pressed &&
+                    (mb.ButtonIndex == MouseButton.Left || mb.ButtonIndex == MouseButton.Right))
                 {
                     MostrarMenuContexto(eid, nome, isSelf, memberPanel.GetGlobalMousePosition());
                     GetViewport()?.SetInputAsHandled();
@@ -243,15 +250,28 @@ public partial class PartyHUD : Control
         if (net == null) return;
 
         var menu = new Panel();
-        menu.CustomMinimumSize = new Vector2(160, 0);
+        menu.CustomMinimumSize = new Vector2(178, isSelf ? 38 : (_leaderId == net.LocalPlayerId ? 66 : 38));
+        menu.Size = menu.CustomMinimumSize;
+        menu.MouseFilter = MouseFilterEnum.Stop;
 
         var style = new StyleBoxFlat();
         style.BgColor = new Color(0, 0, 0, 0.75f);
         style.SetCornerRadiusAll(4);
+        style.BorderColor = new Color(0.3f, 0.3f, 0.45f, 0.8f);
+        style.SetBorderWidthAll(1);
         menu.AddThemeStyleboxOverride("panel", style);
 
+        var margin = new MarginContainer();
+        margin.SetAnchorsPreset(LayoutPreset.FullRect);
+        margin.AddThemeConstantOverride("margin_left", 4);
+        margin.AddThemeConstantOverride("margin_top", 4);
+        margin.AddThemeConstantOverride("margin_right", 4);
+        margin.AddThemeConstantOverride("margin_bottom", 4);
+        menu.AddChild(margin);
+
         var vbox = new VBoxContainer();
-        menu.AddChild(vbox);
+        vbox.AddThemeConstantOverride("separation", 2);
+        margin.AddChild(vbox);
 
         if (isSelf)
         {
@@ -288,24 +308,14 @@ public partial class PartyHUD : Control
             });
         }
 
-        menu.Position = screenPos;
+        Vector2 viewportSize = GetViewportRect().Size;
+        Vector2 desiredGlobal = new(
+            Mathf.Clamp(screenPos.X, 8f, Mathf.Max(8f, viewportSize.X - menu.Size.X - 8f)),
+            Mathf.Clamp(screenPos.Y, 8f, Mathf.Max(8f, viewportSize.Y - menu.Size.Y - 8f)));
+        menu.Position = desiredGlobal - GlobalPosition;
         AddChild(menu);
+        menu.MoveToFront();
         _activeMenu = menu;
-
-        // Close menu on left-click
-        var catcher = new Control();
-        catcher.MouseFilter = MouseFilterEnum.Pass;
-        catcher.SetAnchorsPreset(LayoutPreset.FullRect);
-        catcher.GuiInput += (InputEvent ev) =>
-        {
-            if (ev is InputEventMouseButton mb2 && mb2.Pressed && mb2.ButtonIndex == MouseButton.Left)
-            {
-                if (IsInstanceValid(menu)) menu.QueueFree();
-                if (IsInstanceValid(catcher)) catcher.QueueFree();
-                _activeMenu = null;
-            }
-        };
-        GetTree().CurrentScene?.AddChild(catcher);
     }
 
     private static void AdicionarOpcao(VBoxContainer parent, string text, System.Action action)

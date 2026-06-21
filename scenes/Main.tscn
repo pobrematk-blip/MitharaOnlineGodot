@@ -29,7 +29,6 @@
 [ext_resource type="PackedScene" uid="uid://friendsui" path="res://ui/FriendsUI.tscn" id="17_friends"]
 [ext_resource type="Texture2D" uid="uid://c8ervjy2a6kpx" path="res://tiles/TileSets/6.png" id="17_pdwbg"]
 [ext_resource type="PackedScene" uid="uid://guildui" path="res://ui/GuildUI.tscn" id="18_guild"]
-[ext_resource type="PackedScene" path="res://characterSlots/PartyMemberHud.tscn" id="18_partymemberhud"]
 [ext_resource type="PackedScene" uid="uid://partyui" path="res://ui/PartyUI.tscn" id="19_party"]
 [ext_resource type="PackedScene" path="res://ui/TradeUI.tscn" id="19_tradeui"]
 [ext_resource type="PackedScene" uid="uid://questui" path="res://ui/QuestUI.tscn" id="20_quest"]
@@ -78543,8 +78542,6 @@ position = Vector2(-52, 226)
 
 [node name="PlayerHud" parent="HUD" instance=ExtResource("8_playerhud")]
 
-[node name="PartyMemberHud" parent="HUD" instance=ExtResource("18_partymemberhud")]
-
 [node name="TradeUI" parent="HUD" instance=ExtResource("19_tradeui")]
 grow_horizontal = 2
 grow_vertical = 2
@@ -78586,13 +78583,14 @@ grow_vertical = 0
 [node name="QuestUI" parent="HUD" instance=ExtResource("20_quest")]
 
 [node name="PartyHUD" parent="HUD" instance=ExtResource("21_partyhud")]
-layout_mode = 3
-anchors_preset = 3
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = -202.0
-offset_top = 0.0
-offset_right = 0.0
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -210.0
+offset_top = 120.0
+offset_right = -8.0
+offset_bottom = 120.0
 grow_horizontal = 2
 grow_vertical = 0
 

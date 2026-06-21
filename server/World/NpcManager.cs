@@ -70,8 +70,31 @@ public class NpcManager
             FactionId = "solari",
         });
 
+        RegisterTemplate(new NpcTemplate
+        {
+            PrefabId = "general_merchant",
+            Name = "General Merchante",
+            DialogId = "general_merchant",
+            ShopId = "general_merchant_shop",
+            Race = "Mercador Geral",
+            AnimPrefix = "padrao",
+            FactionId = "solari",
+        });
+
+        RegisterTemplate(new NpcTemplate
+        {
+            PrefabId = "refiner",
+            Name = "Refinador",
+            DialogId = "refino",
+            Race = "Cidadão",
+            AnimPrefix = "padrao",
+            FactionId = "solari",
+        });
+
         _spawnPoints.Add(new NpcSpawnPoint { X = 1109, Y = 957, PrefabId = "banqueiro" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1098, Y = 1177, PrefabId = "guarda_solareth" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1130, Y = 1040, PrefabId = "general_merchant" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1025, PrefabId = "refiner" });
     }
 
     private void RegisterDialogs()
@@ -102,6 +125,19 @@ public class NpcManager
             },
         };
 
+        _dialogs["general_merchant"] = new DialogNode
+        {
+            Id = "general_merchant",
+            Text = "Bem-vindo à loja geral! Compro itens de aventureiros e vendo suprimentos. " +
+                   "O que você deseja?",
+            Options = new List<DialogOption>
+            {
+                new() { Text = "Comprar itens", Action = "shop", ActionData = "general_merchant_shop" },
+                new() { Text = "Vender itens nível 1", Action = "merchant_sell", ActionData = "" },
+                new() { Text = "Sair", Action = "close" },
+            },
+        };
+
         _dialogs["refino"] = new DialogNode
         {
             Id = "refino",
@@ -119,6 +155,10 @@ public class NpcManager
 
     private void RegisterShops()
     {
+        _shops["general_merchant_shop"] = new List<ShopEntry>
+        {
+            // Itens serão adicionados pelo usuário posteriormente
+        };
     }
 
     public void RegisterTemplate(NpcTemplate template)

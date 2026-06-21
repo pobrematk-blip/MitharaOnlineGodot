@@ -232,7 +232,7 @@ public partial class GameServer : INetEventListener
                             if (session.SelectedCharacter != null)
                                 _db.SaveCharacterFull(session.SelectedCharacter.Id, player, session.SelectedCharacter.BankGold);
                             if (player.PartyId >= 0)
-                                _world.Parties.RemoveMember(session.EntityId);
+                                HandlePartyLeave(player);
                         }
                     }
 
@@ -476,6 +476,9 @@ public partial class GameServer : INetEventListener
                 break;
             case PacketId.C2S_TradeRemoveOffer:
                 HandleTradeRemoveOfferPacket(peer, reader);
+                break;
+            case PacketId.C2S_CashShopBuy:
+                HandleCashShopBuy(peer, reader);
                 break;
 
             }

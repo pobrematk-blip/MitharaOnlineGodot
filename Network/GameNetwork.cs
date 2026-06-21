@@ -100,6 +100,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnTradeOfferUpdateEventHandler(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers);
     [Signal] public delegate void OnTradePartnerConfirmEventHandler(ulong playerSide, bool confirmed);
     [Signal] public delegate void OnTradeEndEventHandler(bool success);
+    [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);
     [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
     [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
@@ -399,6 +400,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_TradeEnd:
                 HandleTradeEnd(r);
+                break;
+            case PacketId.S2C_CashShopResult:
+                HandleCashShopResult(r);
                 break;
         } } catch (System.Exception ex)
         {

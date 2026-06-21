@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://ui/MiniMapa.cs" id="1_xthpk"]
 [ext_resource type="Shader" path="res://shaders/minimapa_circular.gdshader" id="2_jyx4n"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Moeda de Gold.png" id="3"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Loja de Cash.png" id="3_lojacash"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p5mtm"]
 shader = ExtResource("2_jyx4n")
@@ -92,7 +92,7 @@ offset_left = 105.0
 offset_top = 217.0
 offset_right = 141.0
 offset_bottom = 253.0
-texture_normal = ExtResource("3")
+texture_normal = ExtResource("3_lojacash")
 expand = true
 stretch_mode = 1
 mouse_default_cursor_shape = 2

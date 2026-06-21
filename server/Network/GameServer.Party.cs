@@ -42,10 +42,15 @@ partial class GameServer
 
         if (!party.Members.Contains(target.Id))
         { SendSystemMessage(peer, "Este jogador não está no grupo."); return; }
+        if (target.Id == sender.Id)
+        { SendSystemMessage(peer, "Use a opção de sair do grupo."); return; }
 
-        BroadcastPartyMemberUpdate(party, target.Id, target.Name, false);
+        int partyId = party.Id;
+        var previousMembers = party.Members.ToArray();
         _world.Parties.RemoveMember(target.Id);
         target.PartyId = -1;
+        SendEmptyPartyData(targetPeer);
+        AtualizarPartyAposRemocao(partyId, previousMembers, target.Id);
         SendSystemMessage(peer, $"{target.Name} foi expulso do grupo.");
         if (targetPeer != null)
             SendSystemMessage(targetPeer, "Você foi expulso do grupo.");
@@ -182,26 +187,41 @@ partial class GameServer
         if (sender is not PlayerEntity player || player.PartyId < 0) return;
 
         int partyId = player.PartyId;
-        string senderName = sender.Name;
+        var partyBeforeRemoval = _world.Parties.GetParty(partyId);
+        var previousMembers = partyBeforeRemoval?.Members.ToArray() ?? new[] { sender.Id };
         _world.Parties.RemoveMember(sender.Id);
         player.PartyId = -1;
+        SendEmptyPartyData(FindPeerByEntityId(sender.Id));
+        AtualizarPartyAposRemocao(partyId, previousMembers, sender.Id);
+    }
 
-        var party = _world.Parties.GetParty(partyId);
-        if (party != null)
+    private void AtualizarPartyAposRemocao(int partyId, IEnumerable<ulong> previousMembers, ulong removedId)
+    {
+        var remainingParty = _world.Parties.GetParty(partyId);
+        if (remainingParty != null)
         {
-            BroadcastPartyMemberUpdate(party, sender.Id, senderName, false);
+            BroadcastPartyData(remainingParty);
+            return;
         }
-        else
+
+        // O PartyManager dissolve automaticamente grupos que ficam com um membro.
+        foreach (ulong entityId in previousMembers)
         {
-            var selfPeer = FindPeerByEntityId(sender.Id);
-            if (selfPeer != null)
-            {
-                var w = PacketSerializer.WritePacket(PacketId.S2C_PartyData);
-                w.Put(0);
-                w.Put((byte)0);
-                selfPeer.Send(w, DeliveryMethod.ReliableOrdered);
-            }
+            if (entityId == removedId) continue;
+            var entity = FindEntityById(entityId, out var peer, out _);
+            if (entity is PlayerEntity remainingPlayer)
+                remainingPlayer.PartyId = -1;
+            SendEmptyPartyData(peer);
         }
+    }
+
+    private static void SendEmptyPartyData(NetPeer? peer)
+    {
+        if (peer == null) return;
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_PartyData);
+        writer.Put(0);
+        writer.Put((byte)0);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
     private void SendPartyDataToPeer(NetPeer peer, Party party)

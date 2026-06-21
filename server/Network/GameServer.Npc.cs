@@ -152,6 +152,11 @@ partial class GameServer
                 HandleRefineItem(peer, player, channel, actionData);
                 break;
 
+            case "merchant_sell":
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                SendSystemMessage(peer, "Venda ativada! Clique com botão direito nos itens do inventário para vender ao General Merchante.");
+                break;
+
             case "close":
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
@@ -273,7 +278,19 @@ partial class GameServer
         }
 
         var itemDef = GetItemDef(item.ItemId);
-        int sellPrice = (itemDef?.BuyPrice ?? 20) / 4;
+        if (itemDef == null)
+        {
+            SendNpcSellResult(peer, false, "Item desconhecido.");
+            return;
+        }
+
+        if (itemDef.RequiredLevel != 1)
+        {
+            SendNpcSellResult(peer, false, "Só compro itens de nível 1.");
+            return;
+        }
+
+        int sellPrice = itemDef.BuyPrice / 4;
         if (sellPrice < 1) sellPrice = 1;
 
         int totalGold = sellPrice * quantity;

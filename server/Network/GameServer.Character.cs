@@ -135,7 +135,7 @@ partial class GameServer
                 _db.SaveCharacterFull(session.SelectedCharacter.Id, player, session.SelectedCharacter.BankGold);
 
             if (player?.PartyId >= 0)
-                _world.Parties.RemoveMember(session.EntityId);
+                HandlePartyLeave(player);
 
             if (channel != null)
             {

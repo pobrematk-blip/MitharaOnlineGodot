@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cuju5pex3fo50"
-path="res://.godot/imported/Moedas de Ouro.png-34e4c08e117a9705ec005c8308b81057.ctex"
+uid="uid://dq5cnsxb1nb3"
+path="res://.godot/imported/loja de cash.png-1dc0a2f6a82ad47b675e9a6db10dd51d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Itens/Incones/Moedas de Ouro.png"
-dest_files=["res://.godot/imported/Moedas de Ouro.png-34e4c08e117a9705ec005c8308b81057.ctex"]
+source_file="res://Itens/Incones/loja de cash.png"
+dest_files=["res://.godot/imported/loja de cash.png-1dc0a2f6a82ad47b675e9a6db10dd51d.ctex"]
 
 [params]
 

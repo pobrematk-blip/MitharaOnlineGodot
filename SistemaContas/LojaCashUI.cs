@@ -13,8 +13,10 @@ public partial class LojaCashUI : Control
     private Label _tituloLabel;
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
+    private Texture2D _coinIcon;
 
     private static readonly string LojaDataPath = "res://SistemaContas/LojaCashData.tres";
+    private static readonly string CoinIconPath = "res://Itens/Incones/Loja de Cash.png";
 
     public override void _Ready()
     {
@@ -27,13 +29,34 @@ public partial class LojaCashUI : Control
 
         _cash = GetNode<CashManager>("/root/CashManager");
         _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        _coinIcon = ResourceLoader.Load<Texture2D>(CoinIconPath);
 
         _fecharBtn.Pressed += OnFechar;
         _tituloLabel.GuiInput += OnTituloGuiInput;
 
+        if (_net != null)
+            _net.Connect(GameNetwork.SignalName.OnCashShopResult, Callable.From((bool success, string message) => OnCashShopResult(success, message)));
+
+        SubstituirDiamantePorIcone();
         Centralizar();
         CarregarDados();
         AtualizarUI();
+    }
+
+    private void SubstituirDiamantePorIcone()
+    {
+        if (_coinIcon == null) return;
+        var topo = _diamantesLabel.GetParent() as HBoxContainer;
+        if (topo == null) return;
+
+        var icon = new TextureRect();
+        icon.Texture = _coinIcon;
+        icon.CustomMinimumSize = new Vector2(16, 16);
+        icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        topo.AddChild(icon);
+        topo.MoveChild(icon, _diamantesLabel.GetIndex());
+
+        _diamantesLabel.Text = $"{_cash?.Diamantes ?? 0}";
     }
 
     private void Centralizar()
@@ -121,12 +144,23 @@ public partial class LojaCashUI : Control
                 infoVbox.AddChild(descLabel);
             }
 
+            var precoHbox = new HBoxContainer();
+            precoHbox.AddThemeConstantOverride("separation", 4);
+            if (_coinIcon != null)
+            {
+                var coinIcon = new TextureRect();
+                coinIcon.Texture = _coinIcon;
+                coinIcon.CustomMinimumSize = new Vector2(16, 16);
+                coinIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+                precoHbox.AddChild(coinIcon);
+            }
             var precoLabel = new Label();
-            precoLabel.Text = $"💎 {entry.PrecoDiamantes}";
+            precoLabel.Text = $"{entry.PrecoDiamantes}";
             precoLabel.AddThemeFontSizeOverride("font_size", 16);
             precoLabel.AddThemeColorOverride("font_color", new Color(0.91f, 0.77f, 0.28f));
             precoLabel.VerticalAlignment = VerticalAlignment.Center;
-            hbox.AddChild(precoLabel);
+            precoHbox.AddChild(precoLabel);
+            hbox.AddChild(precoHbox);
 
             var comprarBtn = new Button();
             comprarBtn.Text = "Comprar";
@@ -152,7 +186,7 @@ public partial class LojaCashUI : Control
     private void AtualizarUI()
     {
         if (_cash == null) return;
-        _diamantesLabel.Text = $"💎 {_cash.Diamantes}";
+        _diamantesLabel.Text = $"{_cash.Diamantes}";
     }
 
     private void OnComprarItem(int itemId, int preco)
@@ -165,41 +199,49 @@ public partial class LojaCashUI : Control
             return;
         }
 
-        if (!_cash.GastarDiamantes(preco))
+        if (itemId == -1)
         {
-            MostrarFeedback("❌ Erro ao processar compra!", new Color(0.9f, 0.3f, 0.3f));
+            if (!_cash.ComprarSlotPersonagem())
+                MostrarFeedback("❌ Erro ao comprar slot!", new Color(0.9f, 0.3f, 0.3f));
+            else
+            {
+                _cash.GastarDiamantes(preco);
+                MostrarFeedback("✓ Slot comprado!", new Color(0.3f, 0.8f, 0.4f));
+                AtualizarUI();
+            }
             return;
         }
 
-        ProcessarItemComprado(itemId);
-        MostrarFeedback("✓ Item comprado!", new Color(0.3f, 0.8f, 0.4f));
-        AtualizarUI();
+        MostrarFeedback("⏳ Solicitando compra...", new Color(0.9f, 0.9f, 0.3f));
+
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null || !net.IsConnected)
+        {
+            MostrarFeedback("❌ Sem conexão com o servidor!", new Color(0.9f, 0.3f, 0.3f));
+            return;
+        }
+
+        net.SendCashShopBuy(itemId, preco);
+        _ultimoItemComprado = itemId;
+        _ultimoPrecoCompra = preco;
     }
 
-    private void ProcessarItemComprado(int itemId)
+    private int _ultimoItemComprado;
+    private int _ultimoPrecoCompra;
+
+    private void OnCashShopResult(bool success, string message)
     {
-        var saveManager = GetNodeOrNull<SaveManager>("/root/SaveManager");
-        var itemDB = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
-
-        switch (itemId)
+        if (success)
         {
-            case -1:
-                if (saveManager != null)
-                    saveManager.ComprarSlot();
-                break;
-
-            default:
-                if (itemDB != null && saveManager != null)
-                {
-                    var item = itemDB.GetItem(itemId);
-                    if (item != null)
-                    {
-                        var inventario = GetNodeOrNull<InventarioComponent>("/root/main/Player/InventarioComponent");
-                        if (inventario != null)
-                            inventario.AdicionarItem(item, 1);
-                    }
-                }
-                break;
+            if (_cash != null && _cash.GastarDiamantes(_ultimoPrecoCompra))
+            {
+                MostrarFeedback("✓ Item comprado!", new Color(0.3f, 0.8f, 0.4f));
+                AtualizarUI();
+            }
+        }
+        else
+        {
+            MostrarFeedback($"❌ {message}", new Color(0.9f, 0.3f, 0.3f));
         }
     }
 

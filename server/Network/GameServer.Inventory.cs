@@ -749,8 +749,43 @@ partial class GameServer
         SendInventoryData(peer, onlinePlayer);
         return;
 /*
-            SendSystemMessage(peer, "Inventário cheio!");
-        }
+    SendSystemMessage(peer, "Inventário cheio!");
+}
 */
+    }
+
+    private void HandleCashShopBuy(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var player, out var channel)) return;
+
+        int itemId = reader.GetInt();
+        int preco = reader.GetInt();
+
+        if (!_sessions.TryGetValue(peer, out var cashSession) || cashSession.SelectedCharacter == null)
+            return;
+
+        var def = ItemDefinitions.Get(itemId);
+        if (def == null)
+        {
+            SendCashShopResult(peer, false, "Item inválido.");
+            return;
+        }
+
+        if (!TryAddItemToInventory(player, cashSession.SelectedCharacter.Id, itemId, 1))
+        {
+            SendCashShopResult(peer, false, "Inventário cheio.");
+            return;
+        }
+
+        SendCashShopResult(peer, true, "Compra realizada!");
+        SendInventoryData(peer, player);
+    }
+
+    private void SendCashShopResult(NetPeer peer, bool success, string message)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CashShopResult);
+        writer.Put(success);
+        writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }
