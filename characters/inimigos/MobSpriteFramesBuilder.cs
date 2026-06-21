@@ -56,13 +56,13 @@ public static class MobSpriteFramesBuilder
 
         if (!Configs.TryGetValue(mobType, out var config))
         {
-            GD.PrintErr($"[MobSpriteFramesBuilder] Config nao encontrado para: {mobType}");
+            GD.PrintErr($"[MobSpriteFramesBuilder] Config n?o encontrado para: {mobType}");
             return new SpriteFrames();
         }
 
         if (!ResourceLoader.Exists(config.SheetPath))
         {
-            GD.PrintErr($"[MobSpriteFramesBuilder] Sprite sheet nao encontrado: {config.SheetPath}");
+            GD.PrintErr($"[MobSpriteFramesBuilder] Sprite sheet n?o encontrado: {config.SheetPath}");
             return new SpriteFrames();
         }
 

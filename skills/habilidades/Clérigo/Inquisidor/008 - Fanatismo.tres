@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15308
+Nome = "Fanatismo"
+Descricao = "Tomado por fervor absoluto, o Inquisidor aumenta sua velocidade de conjuração e o poder de suas punições sagradas."
+Valor = 0
+CustoMana = 55
+ClasseRestrita = "Clérigo"
+Cooldown = 60
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Inquisidor"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Buff"
+EfeitoPrincipal = "Aumenta dano sagrado e velocidade de ataque/conjuração."
+DanoEscala = ""
+BuffDebuff = "+15% → +30% dano sagrado"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = +15%; Lv10 = +30%."
+Observacoes = "Buff ofensivo principal."

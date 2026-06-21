@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300374
+Nome = "Couraça do Eclipse de Mitthara"
+Descricao = "Forjada nas oficinas de Eclipse de Mitthara, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 2
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 96
+HpMin = 82
+HpMax = 111
+Mana = 17
+ManaMin = 15
+ManaMax = 20
+DefesaFisica = 72
+DefesaFisicaMin = 61
+DefesaFisicaMax = 83
+DefesaMagica = 22
+DefesaMagicaMin = 19
+DefesaMagicaMax = 26
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

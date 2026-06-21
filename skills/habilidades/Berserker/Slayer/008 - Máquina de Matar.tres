@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13208
+Nome = "Máquina de Matar"
+Descricao = "O Slayer entra em um estado frio e implacável, eliminando distrações e focando apenas em destruir o alvo marcado."
+Valor = 0
+CustoMana = 40
+ClasseRestrita = "Berserker"
+Cooldown = 60
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Slayer"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Buff Ofensivo"
+EfeitoPrincipal = "Aumenta Chance Crítica e Dano contra o alvo atual."
+DanoEscala = ""
+BuffDebuff = "+15% → +30% Crítico; +10% → +20% Dano"
+DuracaoTexto = "15s"
+Progressao = "Skill possui 10 níveis. Bônus escalam e respeitam o cap global de crítico."
+Observacoes = "Fortíssimo quando usado após Marca da Morte."

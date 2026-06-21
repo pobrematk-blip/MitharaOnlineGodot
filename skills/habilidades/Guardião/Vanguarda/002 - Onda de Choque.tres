@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14202
+Nome = "Onda de Choque"
+Descricao = "O Guardião golpeia o chão com o escudo, criando uma onda de impacto que se espalha à sua frente."
+Valor = 130
+CustoMana = 20
+ClasseRestrita = "Guardião"
+Cooldown = 12
+Duracao = 4
+TargetType = 2
+EffectType = 12
+Especializacao = "Vanguarda"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Área / Controle"
+EfeitoPrincipal = "Causa dano em cone frontal e reduz a velocidade dos inimigos atingidos."
+DanoEscala = "130% → 240% do dano da arma"
+BuffDebuff = "Slow 20% → 35%"
+DuracaoTexto = "4s"
+Progressao = "Dano e lentidão escalam por nível."
+Observacoes = "Ótima para controlar grupos."

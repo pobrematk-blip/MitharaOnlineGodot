@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300255
+Nome = "Gibão da Ascensão"
+Descricao = "Curtida e ajustada por batedores de Ascensão, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 96
+HpMin = 82
+HpMax = 111
+Mana = 52
+ManaMin = 45
+ManaMax = 60
+DefesaFisica = 56
+DefesaFisicaMin = 48
+DefesaFisicaMax = 65
+DefesaMagica = 56
+DefesaMagicaMin = 48
+DefesaMagicaMax = 65
+Evasao = 2.62
+EvasaoMin = 2.23
+EvasaoMax = 3.01

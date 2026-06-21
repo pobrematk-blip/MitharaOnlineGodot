@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300081
+Nome = "Passos de Umbra Alta"
+Descricao = "Tecida com fios arcanos de Umbra Alta, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 6
+CategoriaPeso = 0
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 15
+HpMin = 13
+HpMax = 17
+Mana = 20
+ManaMin = 17
+ManaMax = 23
+DefesaFisica = 7
+DefesaFisicaMin = 6
+DefesaFisicaMax = 8
+DefesaMagica = 14
+DefesaMagicaMin = 12
+DefesaMagicaMax = 17
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

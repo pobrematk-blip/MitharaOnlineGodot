@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300369
+Nome = "Botas de Aço Estelar"
+Descricao = "Forjada nas oficinas de Aço Estelar, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 6
+CategoriaPeso = 2
+TipoItem = 1
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 32
+HpMin = 27
+HpMax = 37
+Mana = 5
+ManaMin = 5
+ManaMax = 6
+DefesaFisica = 23
+DefesaFisicaMin = 20
+DefesaFisicaMax = 27
+DefesaMagica = 7
+DefesaMagicaMin = 6
+DefesaMagicaMax = 9
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

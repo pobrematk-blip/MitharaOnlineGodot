@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11095
+Nome = "Escudo do Arcebispo"
+Descricao = "Usado por líderes espirituais que também conhecem o peso da guerra."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 50
+DefesaFisicaMin = 41
+DefesaFisicaMax = 59
+DefesaMagica = 54
+DefesaMagicaMin = 46
+DefesaMagicaMax = 63
+Hp = 106
+HpMin = 85
+HpMax = 127
+Forca = 16
+ForcaMin = 13
+ForcaMax = 19
+Inteligencia = 16
+InteligenciaMin = 13
+InteligenciaMax = 19

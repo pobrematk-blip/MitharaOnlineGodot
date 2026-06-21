@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11062
+Nome = "Escudo do Campeão da Guarda"
+Descricao = "Carregado por guardiões reconhecidos por sobreviver ao impossível."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 58
+DefesaFisicaMin = 50
+DefesaFisicaMax = 67
+Hp = 126
+HpMin = 101
+HpMax = 152
+Forca = 16
+ForcaMin = 13
+ForcaMax = 19
+Agilidade = 13
+AgilidadeMin = 11
+AgilidadeMax = 15

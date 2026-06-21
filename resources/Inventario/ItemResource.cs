@@ -30,6 +30,8 @@ public enum TipoAfixo
     Forca,
     Destreza,
     Inteligencia,
+    ReflexaoDano,
+    ResistenciaControle,
 }
 
 [GlobalClass]
@@ -154,6 +156,12 @@ public partial class ItemResource : Resource
     [Export] public float ChanceDropAumentada { get; set; }
     [Export] public float ChanceDropAumentadaMin { get; set; }
     [Export] public float ChanceDropAumentadaMax { get; set; }
+    [Export] public int ReflexaoDano { get; set; }
+    [Export] public int ReflexaoDanoMin { get; set; }
+    [Export] public int ReflexaoDanoMax { get; set; }
+    [Export] public float ResistenciaControle { get; set; }
+    [Export] public float ResistenciaControleMin { get; set; }
+    [Export] public float ResistenciaControleMax { get; set; }
 
     [ExportGroup("Visual")]
     [Export] public Texture2D SpritesheetEquipamento { get; set; }

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300269
+Nome = "Grevas do Despertar"
+Descricao = "Forjada nas oficinas de aldeias iniciais, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 2
+TipoItem = 1
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 6
+HpMin = 5
+HpMax = 7
+Mana = 1
+ManaMin = 1
+ManaMax = 2
+DefesaFisica = 3
+DefesaFisicaMin = 3
+DefesaFisicaMax = 4
+DefesaMagica = 1
+DefesaMagicaMin = 1
+DefesaMagicaMax = 2
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

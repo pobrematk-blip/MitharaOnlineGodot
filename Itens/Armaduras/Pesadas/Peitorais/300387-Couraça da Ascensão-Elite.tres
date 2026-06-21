@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300387
+Nome = "Couraça da Ascensão"
+Descricao = "Forjada nas oficinas de Ascensão, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 2
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 127
+HpMin = 108
+HpMax = 146
+Mana = 26
+ManaMin = 22
+ManaMax = 30
+DefesaFisica = 96
+DefesaFisicaMin = 82
+DefesaFisicaMax = 111
+DefesaMagica = 30
+DefesaMagicaMin = 26
+DefesaMagicaMax = 35
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

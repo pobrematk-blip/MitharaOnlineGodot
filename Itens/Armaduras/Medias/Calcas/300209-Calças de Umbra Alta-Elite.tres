@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300209
+Nome = "Calças de Umbra Alta"
+Descricao = "Curtida e ajustada por batedores de Umbra Alta, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 44
+HpMin = 38
+HpMax = 51
+Mana = 26
+ManaMin = 22
+ManaMax = 30
+DefesaFisica = 26
+DefesaFisicaMin = 22
+DefesaFisicaMax = 30
+DefesaMagica = 26
+DefesaMagicaMin = 22
+DefesaMagicaMax = 30
+Evasao = 1.155
+EvasaoMin = 0.98
+EvasaoMax = 1.33

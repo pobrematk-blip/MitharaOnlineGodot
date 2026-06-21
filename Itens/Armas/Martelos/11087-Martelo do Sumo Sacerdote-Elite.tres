@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo quebrada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11087
+Nome = "Martelo do Sumo Sacerdote"
+Descricao = "Um símbolo de fé e força, feito para quem sustenta o grupo quando tudo cai."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 100
+DanoFisicoMin = 88
+DanoFisicoMax = 112
+Forca = 30
+ForcaMin = 26
+ForcaMax = 35
+Inteligencia = 30
+InteligenciaMin = 26
+InteligenciaMax = 35

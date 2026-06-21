@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300108
+Nome = "Véu do Eclipse de Mitthara"
+Descricao = "Tecida com fios arcanos de Eclipse de Mitthara, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 1
+CategoriaPeso = 0
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 20
+HpMin = 17
+HpMax = 23
+Mana = 28
+ManaMin = 24
+ManaMax = 33
+DefesaFisica = 9
+DefesaFisicaMin = 8
+DefesaFisicaMax = 11
+DefesaMagica = 19
+DefesaMagicaMin = 16
+DefesaMagicaMax = 22
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

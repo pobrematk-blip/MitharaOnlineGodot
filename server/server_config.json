@@ -11,13 +11,83 @@
   "PgUser": "mithara",
   "PgPassword": "Tk7142536@",
   "NoMobZones": [
-    { "X": 700, "Y": 700, "Width": 350, "Height": 350 }
+    { "X": 350, "Y": 700, "Width": 1050, "Height": 700 },
+    { "X": 1475, "Y": 700, "Width": 1050, "Height": 700 }
   ],
-  "PathfindingGridWidth": 200,
-  "PathfindingGridHeight": 200,
+  "SpawnPoints": [
+    {
+      "X": -8336,
+      "Y": 1790,
+      "Radius": 1400,
+      "PrefabId": "slime",
+      "MaxCount": 15,
+      "RespawnDelay": 2,
+      "ElitePrefabId": "slimeElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": -3899,
+      "Y": 2368,
+      "Radius": 1400,
+      "PrefabId": "slime",
+      "MaxCount": 15,
+      "RespawnDelay": 2,
+      "ElitePrefabId": "slimeElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 748,
+      "Y": 3367,
+      "Radius": 1400,
+      "PrefabId": "slime",
+      "MaxCount": 15,
+      "RespawnDelay": 2,
+      "ElitePrefabId": "slimeElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 10252,
+      "Y": -616,
+      "Radius": 1400,
+      "PrefabId": "slime",
+      "MaxCount": 15,
+      "RespawnDelay": 2,
+      "ElitePrefabId": "slimeElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 5874,
+      "Y": 3128,
+      "Radius": 1400,
+      "PrefabId": "slime",
+      "MaxCount": 15,
+      "RespawnDelay": 2,
+      "ElitePrefabId": "slimeElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 8884,
+      "Y": 1706,
+      "Radius": 250,
+      "PrefabId": "slimeBoss",
+      "MaxCount": 1,
+      "RespawnDelay": 3600
+    }
+  ],
+  "NpcSpawnPoints": [
+    { "X": 1109, "Y": 957, "PrefabId": "banqueiro" },
+    { "X": 1098, "Y": 1177, "PrefabId": "guarda_solareth" }
+  ],
+  "PathfindingGridWidth": 700,
+  "PathfindingGridHeight": 340,
   "PathfindingCellSize": 32,
-  "PathfindingOriginX": 0,
-  "PathfindingOriginY": 0,
+  "PathfindingOriginX": -10000,
+  "PathfindingOriginY": -3000,
   "BlockedAreas": [
     { "X": 400, "Y": 400, "Width": 64, "Height": 64 },
     { "X": 800, "Y": 800, "Width": 128, "Height": 128 },

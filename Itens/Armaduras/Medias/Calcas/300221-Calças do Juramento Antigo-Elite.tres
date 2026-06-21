@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300221
+Nome = "Calças do Juramento Antigo"
+Descricao = "Curtida e ajustada por batedores de Juramento Antigo, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 52
+HpMin = 44
+HpMax = 60
+Mana = 28
+ManaMin = 24
+ManaMax = 33
+DefesaFisica = 30
+DefesaFisicaMin = 26
+DefesaFisicaMax = 35
+DefesaMagica = 30
+DefesaMagicaMin = 26
+DefesaMagicaMax = 35
+Evasao = 1.295
+EvasaoMin = 1.1
+EvasaoMax = 1.49

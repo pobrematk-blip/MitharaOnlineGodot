@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10204
+Nome = "Tiro Paralisante"
+Descricao = "Atordoa alvo."
+Valor = 100
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 0
+Duracao = 2
+TargetType = 2
+EffectType = 8
+Especializacao = "Sniper"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Stun 2s"
+DanoEscala = "100%"
+BuffDebuff = "Stun"
+DuracaoTexto = "2s"
+Progressao = ""
+Observacoes = ""

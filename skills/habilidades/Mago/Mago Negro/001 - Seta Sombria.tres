@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11301
+Nome = "Seta Sombria"
+Descricao = "Projétil sombrio."
+Valor = 120
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Mago Negro"
+NivelRequerido = 1
+Ordem = 1
+Escopo = "Especialização"
+Tipo = "Dano"
+EfeitoPrincipal = "Dano mágico"
+DanoEscala = "120%-220%"
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = ""
+Observacoes = ""

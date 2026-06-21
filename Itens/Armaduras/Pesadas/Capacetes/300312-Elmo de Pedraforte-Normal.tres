@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300312
+Nome = "Elmo de Pedraforte"
+Descricao = "Forjada nas oficinas de Pedraforte, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 1
+CategoriaPeso = 2
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 15
+HpMin = 13
+HpMax = 18
+Mana = 3
+ManaMin = 3
+ManaMax = 3
+DefesaFisica = 12
+DefesaFisicaMin = 10
+DefesaFisicaMax = 14
+DefesaMagica = 3
+DefesaMagicaMin = 3
+DefesaMagicaMax = 4
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

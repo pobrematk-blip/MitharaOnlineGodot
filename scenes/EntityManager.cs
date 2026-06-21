@@ -20,12 +20,17 @@ public partial class EntityManager : Node
         ["Porco"] = "porco",
         ["minotauro"] = "minotauro",
         ["Minotauro"] = "minotauro",
-        ["slime"] = "goblin",
-        ["Slime"] = "goblin",
+        ["slime"] = "slime",
+        ["Slime"] = "slime",
+        ["slimeElite"] = "slimeElite",
+        ["SlimeElite"] = "slimeElite",
+        ["Slime Elite"] = "slimeElite",
         ["skeleton"] = "goblin",
         ["Esqueleto"] = "goblin",
         ["Demon Lord"] = "minotauro",
         ["boss_demon"] = "minotauro",
+        ["slimeBoss"] = "slimeBoss",
+        ["Slime Boss"] = "slimeBoss",
     };
     private readonly Dictionary<ulong, Node2D> _networkNodes = new();
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
@@ -46,6 +51,7 @@ public partial class EntityManager : Node
         public Vector2 Position;
         public Vector2 Direction;
         public bool Moving;
+        public bool Sprinting;
         public double Timestamp;
     }
 
@@ -54,6 +60,9 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Vector2> _previousPositions = new();
     private const double InterpolationDelay = 0.08;
     private const int PendingMonsterSpawnBatchSize = 8;
+    private const float VisibilityCullMargin = 320f;
+    private const double VisibilityCullInterval = 0.15;
+    private double _visibilityCullAccumulator;
     private Node2D? ObterMundo()
     {
         if (_worldNode == null || !IsInstanceValid(_worldNode))
@@ -113,7 +122,7 @@ public partial class EntityManager : Node
             if (_worldNode == null)
             {
                 int rootChildCount = root.GetChildCount();
-                GameNetwork.LogError($"ObterMundo: 'World' nao encontrado (Root tem {rootChildCount} filhos)");
+                GameNetwork.LogError($"ObterMundo: 'World' n?o encontrado (Root tem {rootChildCount} filhos)");
             }
         }
         return _worldNode;
@@ -139,6 +148,7 @@ public partial class EntityManager : Node
     private bool _sceneReady;
     private readonly List<SpawnEvent> _pendingSpawns = new();
     private int _flushRetryCount;
+    private int _serverDataApplyRetryCount;
 
     private struct SpawnEvent
     {
@@ -149,6 +159,10 @@ public partial class EntityManager : Node
         public int Level, Health, MaxHealth;
         public string Extra1, Extra2, Extra3;
     }
+
+    private CanvasLayer? _uiOverlay;
+    private PlayerContextMenu? _contextMenu;
+    private InvitePopupUI? _invitePopup;
 
     public override void _Ready()
     {
@@ -166,11 +180,89 @@ public partial class EntityManager : Node
         _gameNet.OnLootSpawn += OnLootSpawn;
         _gameNet.OnLootDespawn += OnLootDespawn;
         _gameNet.OnStatUpdate += OnStatUpdate;
+        _gameNet.OnProjectileSpawn += OnProjectileSpawn;
+
+        CriarUI();
+    }
+
+    private void CriarUI()
+    {
+        _uiOverlay = new CanvasLayer { Layer = 100, Name = "EntityManagerUI" };
+        AddChild(_uiOverlay);
+
+        _contextMenu = new PlayerContextMenu();
+        _contextMenu.Name = "PlayerContextMenu";
+        _uiOverlay.AddChild(_contextMenu);
+
+        _invitePopup = new InvitePopupUI();
+        _invitePopup.Name = "InvitePopupUI";
+        _uiOverlay.AddChild(_invitePopup);
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mb && mb.Pressed)
+        {
+            if (mb.ButtonIndex == MouseButton.Left)
+            {
+                PlayerContextMenu.HideMenu();
+                return;
+            }
+            if (mb.ButtonIndex == MouseButton.Right)
+            {
+                PlayerContextMenu.HideMenu();
+                RaycastRemotePlayer(mb.GlobalPosition);
+                GetViewport()?.SetInputAsHandled();
+            }
+        }
+    }
+
+    private void RaycastRemotePlayer(Vector2 screenPos)
+    {
+        var world = ObterMundo();
+        if (world == null || _gameNet == null) return;
+
+        Vector2 worldPos;
+        var cam = world.GetViewport()?.GetCamera2D();
+        if (cam is Camera2D camera2D)
+        {
+            var vpSize = world.GetViewport()!.GetVisibleRect().Size;
+            worldPos = camera2D.GetScreenCenterPosition() + (screenPos - vpSize / 2) / camera2D.Zoom;
+        }
+        else
+            worldPos = screenPos;
+
+        Node2D? closest = null;
+        float closestDist = float.MaxValue;
+
+        foreach (var kvp in _networkNodes)
+        {
+            if (kvp.Value == null || !IsInstanceValid(kvp.Value)) continue;
+            if (kvp.Key == _gameNet.LocalPlayerId) continue;
+            if (!kvp.Value.HasMeta("player_name")) continue;
+
+            float dist = kvp.Value.GlobalPosition.DistanceTo(worldPos);
+            if (dist < 30f && dist < closestDist)
+            {
+                closestDist = dist;
+                closest = kvp.Value;
+            }
+        }
+
+        if (closest != null)
+        {
+            string pName = (string)closest.GetMeta("player_name");
+            ulong pId = (ulong)closest.GetMeta("network_id");
+            PlayerContextMenu.ShowAt(pId, pName, screenPos);
+        }
     }
 
     private void OnEnterWorldHandler()
     {
         _flushRetryCount = 0;
+        _serverDataApplyRetryCount = 0;
+        _sceneReady = false;
+        _worldNode = null;
         try
         {
             CarregarCenasMob();
@@ -189,7 +281,8 @@ public partial class EntityManager : Node
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null)
         {
-            GameNetwork.Log("ApplyServerDataAfterEnterWorld: Player nao encontrado na cena");
+            GameNetwork.Log("ApplyServerDataAfterEnterWorld: Player n?o encontrado na cena");
+            RetryApplyServerDataAfterEnterWorld();
             return;
         }
 
@@ -214,8 +307,19 @@ public partial class EntityManager : Node
         }
         else
         {
-            GameNetwork.Log("ApplyServerDataAfterEnterWorld: LevelProgressionComponent nao encontrado!");
+            GameNetwork.Log("ApplyServerDataAfterEnterWorld: LevelProgressionComponent n?o encontrado!");
+            RetryApplyServerDataAfterEnterWorld();
         }
+
+        _gameNet.ApplyPendingInventory();
+    }
+
+    private void RetryApplyServerDataAfterEnterWorld()
+    {
+        if (_serverDataApplyRetryCount++ >= 20)
+            return;
+
+        CallDeferred(nameof(ApplyServerDataAfterEnterWorld));
     }
 
     private void FlushPendingSpawns()
@@ -229,30 +333,14 @@ public partial class EntityManager : Node
         {
             var world = ObterMundo();
 
-            // Se World nao encontrado, criar fallback
             if (world == null)
             {
-                var tree = GetTree();
-                if (tree?.CurrentScene != null)
-                {
-                    var fallback = new Node2D();
-                    fallback.Name = "World";
-                    PrepararWorldParaYSort(fallback);
-                    tree.CurrentScene.AddChild(fallback);
-                    _worldNode = fallback;
-                    world = fallback;
-                    GameNetwork.Log("FlushPendingSpawns: World fallback criado em CurrentScene");
-                }
+                _flushRetryCount++;
+                if (_flushRetryCount < 120)
+                    CallDeferred(nameof(FlushPendingSpawns));
                 else
-                {
-                    var fallback = new Node2D();
-                    fallback.Name = "World";
-                    PrepararWorldParaYSort(fallback);
-                    AddChild(fallback);
-                    _worldNode = fallback;
-                    world = fallback;
-                    GameNetwork.Log("FlushPendingSpawns: World fallback criado no EntityManager");
-                }
+                    GameNetwork.LogError("FlushPendingSpawns: World real n?o encontrado ap?s esperar a Main.tscn");
+                return;
             }
 
             _sceneReady = true;
@@ -292,7 +380,7 @@ public partial class EntityManager : Node
             }
             else
             {
-                GameNetwork.Log("HUD nao encontrado");
+                GameNetwork.Log("HUD n?o encontrado");
             }
 
             if (_gameNet != null)
@@ -308,7 +396,7 @@ public partial class EntityManager : Node
                         GameNetwork.Log($"Player posicionado em {spawnPos}");
                     }
                     else
-                        GameNetwork.Log("Player nao encontrado no World para posicionar");
+                        GameNetwork.Log("Player n?o encontrado no World para posicionar");
                 }
             }
 
@@ -367,6 +455,19 @@ public partial class EntityManager : Node
             return;
         }
 
+        int pendingIndex = _pendingSpawns.FindIndex(spawn => spawn.EntityId == entityId);
+        if (pendingIndex >= 0)
+        {
+            _pendingSpawns[pendingIndex] = new SpawnEvent
+            {
+                EntityId = entityId, EntityType = entityType, Name = name,
+                X = x, Y = y, Level = level, Health = health, MaxHealth = maxHealth,
+                Extra1 = extraData1, Extra2 = extraData2, Extra3 = extraData3,
+            };
+            GameNetwork.Log($"OnEntitySpawned: atualizando spawn pendente {entityType} '{name}' ({entityId})");
+            return;
+        }
+
         if (!_sceneReady)
         {
             GameNetwork.Log($"Cena nao pronta, buffering spawn {entityType} '{name}' ({entityId})");
@@ -385,9 +486,12 @@ public partial class EntityManager : Node
 
     private void ProcessSpawn(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3)
     {
+        if (_networkNodes.ContainsKey(entityId))
+            return;
+
         Node2D? node = entityType switch
         {
-            "player" => CreatePlayerEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2),
+            "player" => CreatePlayerEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3),
             "monster" or "boss" => CreateMonsterEntity(entityId, name, x, y, level, health, maxHealth, extraData1, entityType == "boss"),
             "npc" => CreateNpcEntity(entityId, name, x, y, extraData1, extraData2, extraData3),
             _ => null,
@@ -400,7 +504,7 @@ public partial class EntityManager : Node
         }
     }
 
-    private Node2D CreatePlayerEntity(ulong entityId, string name, float x, float y, int level, int health, int maxHealth, string characterClass, string race)
+    private Node2D CreatePlayerEntity(ulong entityId, string name, float x, float y, int level, int health, int maxHealth, string characterClass, string race, string overheadData)
     {
         if (entityId == _gameNet?.LocalPlayerId)
         {
@@ -415,6 +519,7 @@ public partial class EntityManager : Node
         root.Name = $"Player_{entityId}";
         PrepararEntidadeYSort(root);
         root.SetMeta("network_id", entityId);
+        root.SetMeta("player_name", name);
 
         string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(characterClass);
         root.SetMeta(MetaAnimPrefix, animPrefix);
@@ -455,17 +560,30 @@ public partial class EntityManager : Node
 
         root.AddChild(sprite);
 
-        var labelName = new Label
+        long xp = 0;
+        long xpMax = 1;
+        string guildName = "";
+        string guildTag = "";
+        int guildEmblem = -1;
+        if (!string.IsNullOrWhiteSpace(overheadData))
         {
-            Text = name,
-            Position = new Vector2(-30, -60),
-            ZIndex = 2,
+            var data = Json.ParseString(overheadData).AsGodotDictionary();
+            xp = (long)data.GetValueOrDefault("xp", 0L);
+            xpMax = (long)data.GetValueOrDefault("xp_max", 1L);
+            guildName = (string)data.GetValueOrDefault("guild_name", "");
+            guildTag = (string)data.GetValueOrDefault("guild_tag", "");
+            guildEmblem = (int)data.GetValueOrDefault("guild_emblem", -1);
+        }
+
+        var overhead = new OverheadUI
+        {
+            Name = "OverheadUI_Remoto",
+            Position = new Vector2(-60, -90),
+            ZIndex = 10,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        labelName.AddThemeFontSizeOverride("font_size", 14);
-        labelName.AddThemeColorOverride("font_color", Colors.White);
-        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
-        labelName.AddThemeConstantOverride("outline_size", 2);
-        root.AddChild(labelName);
+        overhead.ConfigurarRemoto(name, guildName, guildTag, guildEmblem, xp, xpMax);
+        root.AddChild(overhead);
 
         var parent = ObterMundo();
         if (parent != null)
@@ -481,6 +599,13 @@ public partial class EntityManager : Node
         return root;
     }
 
+    public void AtualizarOverheadRemoto(ulong entityId, string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
+    {
+        if (!_networkNodes.TryGetValue(entityId, out var node)) return;
+        var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
+        overhead?.AtualizarDadosRemotos(nome, guildName, guildTag, guildEmblem, xp, xpMax);
+    }
+
     private void CarregarCenasMob()
     {
         _inimigoScene = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Inimigo.tscn");
@@ -488,6 +613,9 @@ public partial class EntityManager : Node
         _mobScenes["lobo"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Lobo.tscn");
         _mobScenes["porco"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Porco.tscn");
         _mobScenes["minotauro"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Minotauro.tscn");
+        _mobScenes["slime"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Slime.tscn");
+        _mobScenes["slimeElite"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/SlimeElite.tscn");
+        _mobScenes["slimeBoss"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/SlimeBoss.tscn");
     }
 
     private PackedScene? ObterCenaMob(string prefabId)
@@ -523,6 +651,24 @@ public partial class EntityManager : Node
             inimigo.SetMeta("network_id", entityId);
             inimigo.SetMeta(MetaAnimPrefix, inimigo.AnimPrefix);
             inimigo.NetworkTargetPos = new Vector2(x, y);
+
+            string levelTag = isBoss
+                ? $"[color=yellow]Lv.{level}[/color] [color=red]BOSS[/color] {name}"
+                : $"[color=yellow]Lv.{level}[/color] {name}";
+            var labelNome = new RichTextLabel
+            {
+                Text = levelTag,
+                Position = new Vector2(-50, -62),
+                ZIndex = 5,
+                BbcodeEnabled = true,
+                FitContent = true,
+                AutowrapMode = TextServer.AutowrapMode.Off,
+                MouseFilter = Control.MouseFilterEnum.Ignore,
+            };
+            labelNome.AddThemeFontSizeOverride("normal_font_size", 12);
+            labelNome.AddThemeColorOverride("default_color", Colors.White);
+            inimigo.AddChild(labelNome);
+
             { var _p = ObterMundo(); if (_p != null) _p.AddChild(inimigo); else AddChild(inimigo); }
             return inimigo;
         }
@@ -743,16 +889,21 @@ public partial class EntityManager : Node
             GD.Print(msg);
         }
 
-        // Trigger attack animation on the attacking mob
+        // Reproduz o ataque de qualquer entidade remota.
         if (attackerId != _gameNet?.LocalPlayerId &&
             _networkNodes.TryGetValue(attackerId, out var attackerNode) &&
-            IsInstanceValid(attackerNode) &&
-            attackerNode is Inimigo attackerMob &&
-            _networkNodes.TryGetValue(targetId, out var animTargetNode) &&
-            IsInstanceValid(animTargetNode))
+            IsInstanceValid(attackerNode))
         {
-            Vector2 dirToTarget = (animTargetNode.Position - attackerNode.Position).Normalized();
-            attackerMob.TriggerAttackAnimation(dirToTarget);
+            Node2D? animTargetNode = targetId == _gameNet?.LocalPlayerId
+                ? GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D
+                : (_networkNodes.TryGetValue(targetId, out var remoteTarget) ? remoteTarget : null);
+
+            if (animTargetNode != null && IsInstanceValid(animTargetNode))
+            {
+                Vector2 dirToTarget = (animTargetNode.Position - attackerNode.Position).Normalized();
+                if (attackerNode is Inimigo attackerMob)
+                    attackerMob.TriggerAttackAnimation(dirToTarget);
+            }
         }
 
         // Update target health (including local player)
@@ -775,6 +926,8 @@ public partial class EntityManager : Node
             else if (targetHealth <= 0)
                 SetRemotePlayerDowned(targetNode);
 
+            bool isPlayerTakingDamage = targetId == _gameNet?.LocalPlayerId;
+
             var damageLabel = new Label
             {
                 Text = damage.ToString(),
@@ -786,17 +939,17 @@ public partial class EntityManager : Node
             if (isCrit)
             {
                 damageLabel.Text = $"{damage}!";
-                damageLabel.AddThemeFontSizeOverride("font_size", 26);
+                damageLabel.AddThemeFontSizeOverride("font_size", 32);
                 damageLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.85f, 0.1f));
                 damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
-                damageLabel.AddThemeConstantOverride("outline_size", 4);
+                damageLabel.AddThemeConstantOverride("outline_size", 6);
             }
             else
             {
-                damageLabel.AddThemeFontSizeOverride("font_size", 20);
+                damageLabel.AddThemeFontSizeOverride("font_size", 26);
                 damageLabel.AddThemeColorOverride("font_color", Colors.White);
                 damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
-                damageLabel.AddThemeConstantOverride("outline_size", 4);
+                damageLabel.AddThemeConstantOverride("outline_size", 5);
             }
 
             targetNode.AddChild(damageLabel);
@@ -881,97 +1034,6 @@ public partial class EntityManager : Node
             }
         }
 
-        if (player != null)
-        {
-            var container = new Node2D();
-            container.Name = "LevelUpContainer";
-            container.ZIndex = 10;
-            player.AddChild(container);
-
-            var sprite = CriarLevelUpSprite();
-            if (sprite != null)
-            {
-                sprite.Position = new Vector2(0, -120);
-                sprite.Scale = Vector2.Zero;
-                sprite.Name = "LevelUpSprite";
-                container.AddChild(sprite);
-
-                var tween = CreateTween();
-                tween.SetParallel(true);
-                tween.TweenProperty(sprite, "scale", new Vector2(2.0f, 2.0f), 0.8f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
-                tween.TweenProperty(sprite, "self_modulate", new Color(1, 1, 1, 0), 0.8f).SetDelay(1.3f);
-            }
-
-            for (int i = 0; i < 6; i++)
-            {
-                var spark = new Label();
-                spark.Text = "\u2726";
-                spark.AddThemeFontSizeOverride("font_size", 16);
-                spark.AddThemeColorOverride("font_color", new Color(1, 0.9f, 0.2f));
-                spark.AddThemeConstantOverride("shadow_offset_x", 1);
-                spark.AddThemeConstantOverride("shadow_offset_y", 1);
-                spark.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
-                spark.ZIndex = 10;
-                float angle = (float)(i * (Mathf.Pi * 2 / 6));
-                float dist = 40f;
-                container.AddChild(spark);
-
-                var sparkTween = CreateTween().SetParallel(true);
-                sparkTween.TweenProperty(spark, "position", new Vector2(Mathf.Cos(angle) * dist, -120 + Mathf.Sin(angle) * dist), 0.6f).SetEase(Tween.EaseType.Out);
-                sparkTween.TweenProperty(spark, "scale", Vector2.One * 0.3f, 0.6f).SetEase(Tween.EaseType.In);
-                sparkTween.TweenProperty(spark, "self_modulate", new Color(1, 0.9f, 0.2f, 0), 0.4f).SetDelay(0.3f);
-                sparkTween.Play();
-            }
-
-            var levelUpText = new Label();
-            levelUpText.Text = $"LEVEL UP! [{newLevel}]";
-            levelUpText.Position = new Vector2(-80, -200);
-            levelUpText.AddThemeFontSizeOverride("font_size", 22);
-            levelUpText.AddThemeColorOverride("font_color", new Color(1, 0.85f, 0));
-            levelUpText.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
-            levelUpText.AddThemeConstantOverride("outline_size", 6);
-            levelUpText.ZIndex = 10;
-            container.AddChild(levelUpText);
-
-            var textTween = CreateTween().SetParallel(true);
-            textTween.TweenProperty(levelUpText, "position", levelUpText.Position + new Vector2(0, -40), 1.5f).SetEase(Tween.EaseType.Out);
-            textTween.TweenProperty(levelUpText, "self_modulate", new Color(1, 0.85f, 0, 0), 0.6f).SetDelay(0.9f);
-            textTween.TweenCallback(Callable.From(() =>
-            {
-                if (IsInstanceValid(container)) container.QueueFree();
-            })).SetDelay(2.0f);
-            textTween.Play();
-        }
-    }
-
-    private static Texture2D? _levelUpTexCache;
-    private static Sprite2D? CriarLevelUpSprite()
-    {
-        if (_levelUpTexCache != null)
-            return new Sprite2D { Texture = _levelUpTexCache };
-
-        var tex = ResourceLoader.Load<Texture2D>("res://tiles/AnimaçõesdeMapa/LevelUp.png");
-        if (tex == null) return null;
-
-        var image = tex.GetImage();
-        if (image == null)
-        {
-            image = new Image();
-            var err = image.Load("res://tiles/AnimaçõesdeMapa/LevelUp.png");
-            if (err != Error.Ok) return null;
-        }
-
-        // Use the last (most complete) frame: region at (62, 822, 899, 123)
-        var region = new Rect2I(62, 822, 899, 123);
-        int canvasW = 1024;
-        int canvasH = 256;
-        var frameImg = Image.CreateEmpty(canvasW, canvasH, false, Image.Format.Rgba8);
-        int offsetX = (canvasW - region.Size.X) / 2;
-        int offsetY = (canvasH - region.Size.Y) / 2;
-        frameImg.BlitRect(image, region, new Vector2I(offsetX, offsetY));
-        _levelUpTexCache = ImageTexture.CreateFromImage(frameImg);
-
-        return new Sprite2D { Texture = _levelUpTexCache };
     }
 
     private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana)
@@ -996,7 +1058,7 @@ public partial class EntityManager : Node
         }
     }
 
-    public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving)
+    public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving, bool sprinting = false)
     {
         if (!IsInstanceValid(entity)) return;
 
@@ -1010,7 +1072,9 @@ public partial class EntityManager : Node
         if (sprite == null || sprite.SpriteFrames == null) return;
 
         string currentAnim = sprite.Animation.ToString();
-        if (currentAnim.Contains("attack")) return;
+        if (currentAnim.Contains("attack") &&
+            sprite.Frame < sprite.SpriteFrames.GetFrameCount(currentAnim) - 1)
+            return;
 
         string dirName = DirectionUtil.VectorToCardinal(direction);
 
@@ -1018,11 +1082,72 @@ public partial class EntityManager : Node
         if (entity.HasMeta("anim_prefix"))
             prefix = entity.GetMeta("anim_prefix").AsString();
 
-        string state = moving && direction.LengthSquared() > 0.01f ? "walk" : "idle";
-        string targetAnim = $"{prefix}{state}_{dirName}";
+        string state = moving && direction.LengthSquared() > 0.01f
+            ? (sprinting ? "run" : "walk")
+            : "idle";
+        string targetAnim = $"{state}_{dirName}";
 
         if (sprite.SpriteFrames.HasAnimation(targetAnim) && currentAnim != targetAnim)
             sprite.Play(targetAnim);
+    }
+
+    private static void TriggerRemotePlayerAttack(Node2D entity, Vector2 direction)
+    {
+        var sprite = entity.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        if (sprite?.SpriteFrames == null) return;
+
+        string prefix = entity.HasMeta("anim_prefix")
+            ? entity.GetMeta("anim_prefix").AsString()
+            : "guerreiro";
+        string dirName = DirectionUtil.VectorToCardinal(direction);
+        string animation = $"{prefix}_attack_{dirName}";
+        if (sprite.SpriteFrames.HasAnimation(animation))
+        {
+            sprite.SpeedScale = 2.0f;
+            sprite.Play(animation);
+            if (!sprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => sprite.SpeedScale = 1.0f)))
+                sprite.AnimationFinished += () => sprite.SpeedScale = 1.0f;
+        }
+    }
+
+    public void HandleRemoteAction(ulong entityId, byte actionType, Vector2 direction)
+    {
+        if (actionType != 1) return;
+        if (!_networkNodes.TryGetValue(entityId, out var entity) || !IsInstanceValid(entity)) return;
+
+        if (direction.LengthSquared() < 0.001f && _lastDirections.TryGetValue(entityId, out var lastDirection))
+            direction = lastDirection;
+        if (direction.LengthSquared() < 0.001f)
+            direction = Vector2.Down;
+
+        TriggerRemotePlayerAttack(entity, direction.Normalized());
+    }
+
+    private void OnProjectileSpawn(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType)
+    {
+        if (entityId == _gameNet.LocalPlayerId) return;
+        if (!_networkNodes.TryGetValue(entityId, out var _)) return;
+
+        string scenePath = projectileType switch
+        {
+            0 => "res://resources/Projetil/ProjetilArqueiro.tscn",
+            1 => "res://resources/Projetil/ProjetilMage.tscn",
+            _ => "res://resources/Projetil/Projetil.tscn",
+        };
+
+        var scene = GD.Load<PackedScene>(scenePath);
+        if (scene == null) return;
+
+        var projetil = scene.Instantiate<Node2D>();
+        if (projetil == null) return;
+
+        projetil.GlobalPosition = new Vector2(originX, originY);
+        GetTree().CurrentScene.AddChild(projetil);
+
+        if (projetil is Projetil proj)
+        {
+            proj.DefinirDirecao(new Vector2(dirX, dirY));
+        }
     }
 
     private void OnLootSpawn(ulong lootId, float x, float y, int itemId, int quantity)
@@ -1043,59 +1168,62 @@ public partial class EntityManager : Node
         root.AddChild(col);
 
         Color rarityColor = new Color(1.0f, 0.9f, 0.0f);
+        ItemResource? itemRes = null;
         if (itemId > 0 && _gameNet?.ItemDB != null)
         {
-            var itemRes = _gameNet.ItemDB.GetItem(itemId);
+            itemRes = _gameNet.ItemDB.GetItem(itemId);
             if (itemRes != null)
                 rarityColor = RarityColors.GetValueOrDefault(itemRes.Raridade, rarityColor);
         }
 
-        var icon = new Label();
-        icon.Text = "\u2666";
-        icon.Position = new Vector2(-8, -14);
-        icon.AddThemeFontSizeOverride("font_size", 28);
-        icon.AddThemeColorOverride("font_color", new Color(1.0f, 0.9f, 0.0f));
-        icon.AddThemeConstantOverride("shadow_offset_x", 1);
-        icon.AddThemeConstantOverride("shadow_offset_y", 1);
-        icon.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
-        icon.AddThemeColorOverride("font_outline_color", rarityColor);
-        icon.AddThemeConstantOverride("outline_size", 6);
-        root.AddChild(icon);
-
         var visuals = new Node2D();
         visuals.Name = "Visuals";
         root.AddChild(visuals);
-        icon.Reparent(visuals);
+
+        Texture2D? iconTexture = itemRes?.Icone ?? GD.Load<Texture2D>("res://Itens/Incones/1.png");
+        if (iconTexture != null)
+        {
+            var icon = new Sprite2D
+            {
+                Name = "ItemIcon",
+                Texture = iconTexture,
+                Position = new Vector2(0, -12),
+                ZIndex = 2,
+            };
+
+            float maxSide = Mathf.Max(iconTexture.GetWidth(), iconTexture.GetHeight());
+            if (maxSide > 0f)
+            {
+                float iconScale = 48f / maxSide;
+                icon.Scale = new Vector2(iconScale, iconScale);
+            }
+
+            visuals.AddChild(icon);
+        }
 
         var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         spawnTween.TweenProperty(root, "scale", Vector2.One * 1.15f, 0.25f);
         spawnTween.TweenProperty(root, "scale", Vector2.One, 0.1f);
 
-        var floatTween = root.CreateTween().SetLoops().SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-        floatTween.TweenProperty(visuals, "position:y", -6f, 1.2f);
-        floatTween.TweenProperty(visuals, "position:y", 0f, 1.2f);
-
-        if (itemId > 0 && _gameNet?.ItemDB != null)
+        if (itemRes != null)
         {
-            var itemRes = _gameNet.ItemDB.GetItem(itemId);
-            if (itemRes != null)
-            {
-                var labelName = new Label();
-                labelName.Text = $"{itemRes.Nome} x{quantity}";
-                labelName.Position = new Vector2(-40, 8);
-                labelName.AddThemeFontSizeOverride("font_size", 14);
-                labelName.AddThemeColorOverride("font_color", rarityColor);
-                labelName.AddThemeConstantOverride("shadow_offset_x", 1);
-                labelName.AddThemeConstantOverride("shadow_offset_y", 1);
-                labelName.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
-                visuals.AddChild(labelName);
-            }
+            var labelName = new Label();
+            labelName.Text = $"{itemRes.Nome} x{quantity}";
+            labelName.Position = new Vector2(-40, 8);
+            labelName.ZIndex = 3;
+            labelName.AddThemeFontSizeOverride("font_size", 14);
+            labelName.AddThemeColorOverride("font_color", rarityColor);
+            labelName.AddThemeConstantOverride("shadow_offset_x", 1);
+            labelName.AddThemeConstantOverride("shadow_offset_y", 1);
+            labelName.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
+            visuals.AddChild(labelName);
         }
 
         var prompt = new Label();
         prompt.Text = "[F]";
         prompt.Name = "LootPrompt";
         prompt.Position = new Vector2(-14, -55);
+        prompt.ZIndex = 4;
         prompt.AddThemeFontSizeOverride("font_size", 20);
         prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
         prompt.AddThemeConstantOverride("shadow_offset_x", 1);
@@ -1134,13 +1262,14 @@ public partial class EntityManager : Node
         _lootNodes.Remove(lootId);
     }
 
-    public void PushRemotePosition(ulong entityId, Vector2 position, Vector2 direction, bool moving)
+    public void PushRemotePosition(ulong entityId, Vector2 position, Vector2 direction, bool moving, bool sprinting)
     {
         _remoteStates[entityId] = new RemoteState
         {
             Position = position,
             Direction = direction,
             Moving = moving,
+            Sprinting = sprinting,
             Timestamp = Time.GetTicksMsec() / 1000.0,
         };
     }
@@ -1169,9 +1298,11 @@ public partial class EntityManager : Node
 
             RemoteState cur = kvp.Value;
 
-            // Computar direcao a partir do delta de posicao (fallback p/ servidores que nao enviam DirX/DirY)
+            // Use a direção autoritativa do servidor. O delta é apenas fallback.
             Vector2 computedDir = cur.Direction;
-            if (_previousPositions.TryGetValue(kvp.Key, out var prevPos))
+            if (computedDir.LengthSquared() < 0.001f &&
+                cur.Moving &&
+                _previousPositions.TryGetValue(kvp.Key, out var prevPos))
             {
                 Vector2 posDelta = cur.Position - prevPos;
                 if (posDelta.LengthSquared() > 25.0f)
@@ -1187,12 +1318,7 @@ public partial class EntityManager : Node
 
             if (node is Inimigo inimigo)
             {
-                Vector2 predicted = cur.Position;
-                if (cur.Moving && computedDir.LengthSquared() > 0.001f && elapsed < 0.5)
-                {
-                    predicted += computedDir * inimigo.Velocidade * (float)elapsed;
-                }
-                inimigo.NetworkTargetPos = predicted;
+                inimigo.NetworkTargetPos = cur.Position;
             }
             else
             {
@@ -1205,7 +1331,97 @@ public partial class EntityManager : Node
             if (animDir.LengthSquared() < 0.001f && _lastDirections.TryGetValue(kvp.Key, out var lastDir))
                 animDir = lastDir;
 
-            UpdateRemoteAnimation(node, animDir, cur.Moving);
+            UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
+        }
+
+        UpdateVisibilityCulling(delta);
+    }
+
+    private void UpdateVisibilityCulling(double delta)
+    {
+        _visibilityCullAccumulator += delta;
+        if (_visibilityCullAccumulator < VisibilityCullInterval)
+            return;
+
+        _visibilityCullAccumulator = 0;
+
+        if (!TryGetCameraWorldRect(out var visibleRect))
+            return;
+
+        foreach (var kvp in _networkNodes)
+        {
+            var node = kvp.Value;
+            if (!IsInstanceValid(node))
+                continue;
+
+            if (kvp.Key == _gameNet?.LocalPlayerId)
+                continue;
+
+            ApplyVisibilityCull(node, visibleRect.HasPoint(node.GlobalPosition));
+        }
+
+        foreach (var kvp in _lootNodes)
+        {
+            var node = kvp.Value;
+            if (!IsInstanceValid(node))
+                continue;
+
+            ApplyVisibilityCull(node, visibleRect.HasPoint(node.GlobalPosition));
+        }
+    }
+
+    private bool TryGetCameraWorldRect(out Rect2 rect)
+    {
+        rect = default;
+
+        var viewport = GetViewport();
+        if (viewport == null)
+            return false;
+
+        Vector2 viewportSize = viewport.GetVisibleRect().Size;
+        if (viewportSize.X <= 0 || viewportSize.Y <= 0)
+            return false;
+
+        var camera = viewport.GetCamera2D();
+        Vector2 center;
+        Vector2 zoom = Vector2.One;
+
+        if (camera != null && IsInstanceValid(camera))
+        {
+            center = camera.GlobalPosition;
+            zoom = new Vector2(
+                Mathf.IsZeroApprox(camera.Zoom.X) ? 1f : camera.Zoom.X,
+                Mathf.IsZeroApprox(camera.Zoom.Y) ? 1f : camera.Zoom.Y);
+        }
+        else
+        {
+            var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (player == null || !IsInstanceValid(player))
+                return false;
+
+            center = player.GlobalPosition;
+        }
+
+        Vector2 worldSize = viewportSize / zoom;
+        rect = new Rect2(center - worldSize * 0.5f, worldSize).Grow(VisibilityCullMargin);
+        return true;
+    }
+
+    private static void ApplyVisibilityCull(Node2D node, bool shouldBeVisible)
+    {
+        if (node.Visible == shouldBeVisible)
+            return;
+
+        node.Visible = shouldBeVisible;
+        foreach (var child in node.FindChildren("*", "AnimatedSprite2D", true, false))
+        {
+            if (child is not AnimatedSprite2D sprite)
+                continue;
+
+            if (shouldBeVisible)
+                sprite.Play();
+            else
+                sprite.Stop();
         }
     }
 
@@ -1227,7 +1443,37 @@ public partial class EntityManager : Node
         _remoteStates.Clear();
         _lastDirections.Clear();
         _previousPositions.Clear();
+        _pendingSpawns.Clear();
+        _worldNode = null;
+        _flushRetryCount = 0;
+        _serverDataApplyRetryCount = 0;
         _sceneReady = false;
+    }
+
+    public void RemoveNetworkEntity(ulong entityId)
+    {
+        if (_networkNodes.TryGetValue(entityId, out var registered) && IsInstanceValid(registered))
+            registered.QueueFree();
+
+        _networkNodes.Remove(entityId);
+        _remoteStates.Remove(entityId);
+        _lastDirections.Remove(entityId);
+        _previousPositions.Remove(entityId);
+        _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
+
+        // Remove também cópias órfãs criadas por pacotes duplicados de versões antigas.
+        var root = GetTree()?.Root;
+        if (root == null) return;
+
+        foreach (var candidate in root.FindChildren("*", "Node2D", true, false))
+        {
+            if (candidate is not Node2D node || !IsInstanceValid(node) || !node.HasMeta("network_id"))
+                continue;
+
+            ulong candidateId = node.GetMeta("network_id").AsUInt64();
+            if (candidateId == entityId)
+                node.QueueFree();
+        }
     }
 
     public override void _ExitTree()
@@ -1246,6 +1492,7 @@ public partial class EntityManager : Node
             _gameNet.OnLootSpawn -= OnLootSpawn;
             _gameNet.OnLootDespawn -= OnLootDespawn;
             _gameNet.OnStatUpdate -= OnStatUpdate;
+            _gameNet.OnProjectileSpawn -= OnProjectileSpawn;
         }
     }
 

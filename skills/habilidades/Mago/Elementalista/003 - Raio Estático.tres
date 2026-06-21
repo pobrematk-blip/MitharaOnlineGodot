@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11203
+Nome = "Raio Estático"
+Descricao = "Raio elétrico."
+Valor = 150
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 1.5
+TargetType = 2
+EffectType = 8
+Especializacao = "Elementalista"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Stun"
+DanoEscala = "150%-260%"
+BuffDebuff = "Stun"
+DuracaoTexto = "1.5s"
+Progressao = ""
+Observacoes = ""

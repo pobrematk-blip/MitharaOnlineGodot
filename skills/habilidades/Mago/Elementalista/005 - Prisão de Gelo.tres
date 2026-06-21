@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11205
+Nome = "Prisão de Gelo"
+Descricao = "Congela alvo."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 2
+TargetType = 2
+EffectType = 16
+Especializacao = "Elementalista"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Congelamento"
+DanoEscala = ""
+BuffDebuff = "Freeze"
+DuracaoTexto = "2s"
+Progressao = ""
+Observacoes = ""

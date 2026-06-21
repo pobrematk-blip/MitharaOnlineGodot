@@ -28,5 +28,5 @@ public partial class RecursoResource : Resource
     [Export] public int QuantidadeMaxima { get; set; } = 1;
 
     [ExportGroup("Coleta")]
-    [Export] public int FerramentaNecessariaID { get; set; }
+    [Export] public ItemResource FerramentaNecessaria { get; set; }
 }

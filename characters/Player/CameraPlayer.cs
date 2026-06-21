@@ -15,7 +15,7 @@ public partial class CameraPlayer : Camera2D
 
         if (_alvo != null)
         {
-            GD.Print("[CÂMERA] Alvo travado no Player com sucesso!");
+            GD.Print("[CMERA] Alvo travado no Player com sucesso!");
             
             // Força a câmera a começar exatamente em cima do Player
             GlobalPosition = _alvo.GlobalPosition;
@@ -23,7 +23,7 @@ public partial class CameraPlayer : Camera2D
         }
         else
         {
-            GD.PrintErr("[CÂMERA] Erro: Não foi possível encontrar o nó do Player acima da câmera!");
+            GD.PrintErr("[CMERA] Erro: Não foi possível encontrar o nó do Player acima da câmera!");
         }
     }
 

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machados Perdisos 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11043
+Nome = "Machado do Berserker Lendário"
+Descricao = "Um machado comum apenas no nome; nas mãos certas, parece uma calamidade."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,PenetracaoArmadura,RouboVida,Tenacidade,Precisao"
+DanoFisico = 133
+DanoFisicoMin = 118
+DanoFisicoMax = 148
+Forca = 41
+ForcaMin = 35
+ForcaMax = 47

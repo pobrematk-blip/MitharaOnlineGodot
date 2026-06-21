@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13305
+Nome = "Resistência Titânica"
+Descricao = "O Titã fortalece corpo e espírito, tornando-se mais resistente contra qualquer tipo de dano."
+Valor = 0
+CustoMana = 25
+ClasseRestrita = "Berserker"
+Cooldown = 30
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Titã"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Buff Defensivo"
+EfeitoPrincipal = "Aumenta Defesa Física e Defesa Mágica."
+DanoEscala = ""
+BuffDebuff = "+15% → +35% Defesas"
+DuracaoTexto = "15s"
+Progressao = "Skill possui 10 níveis. Bônus escala até +35%."
+Observacoes = "Ajuda a compensar a baixa defesa mágica da armadura pesada."

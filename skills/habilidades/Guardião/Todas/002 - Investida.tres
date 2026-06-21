@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14002
+Nome = "Investida"
+Descricao = "O Guardião abaixa o escudo e avança com todo o peso de sua armadura, abrindo caminho até o inimigo."
+Valor = 80
+CustoMana = 15
+ClasseRestrita = "Guardião"
+Cooldown = 15
+Duracao = 0
+TargetType = 0
+EffectType = 2
+Especializacao = "Todas"
+NivelRequerido = 1
+Ordem = 2
+Escopo = "Compartilhada da Classe"
+Tipo = "Mobilidade"
+EfeitoPrincipal = "Avança 4 tiles em linha reta, causa dano leve e interrompe conjurações do alvo atingido."
+DanoEscala = "80% → 150% do dano da arma"
+BuffDebuff = "Interrupção"
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 80%; Lv10 = 150%."
+Observacoes = "Não atravessa paredes. Pode ser bloqueada por obstáculos."

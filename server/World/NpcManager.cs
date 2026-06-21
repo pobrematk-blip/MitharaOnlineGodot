@@ -146,6 +146,23 @@ public class NpcManager
 
     public List<NpcSpawnPoint> GetSpawnPoints() => _spawnPoints;
 
+    public void ConfigureSpawnPoints(IEnumerable<NpcSpawnPoint> spawnPoints)
+    {
+        _spawnPoints.Clear();
+        foreach (var point in spawnPoints)
+        {
+            if (string.IsNullOrWhiteSpace(point.PrefabId))
+                continue;
+
+            _spawnPoints.Add(new NpcSpawnPoint
+            {
+                X = point.X,
+                Y = point.Y,
+                PrefabId = point.PrefabId,
+            });
+        }
+    }
+
     public NPCEntity? CreateNpc(NpcSpawnPoint point)
     {
         var template = GetTemplate(point.PrefabId);

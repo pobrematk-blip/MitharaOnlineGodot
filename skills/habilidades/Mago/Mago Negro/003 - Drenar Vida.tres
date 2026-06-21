@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11303
+Nome = "Drenar Vida"
+Descricao = "Rouba vida do alvo."
+Valor = 150
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 0
+TargetType = 0
+EffectType = 1
+Especializacao = "Mago Negro"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Roubo de Vida"
+EfeitoPrincipal = "Cura baseada no dano"
+DanoEscala = "150%"
+BuffDebuff = "Roubo"
+DuracaoTexto = ""
+Progressao = ""
+Observacoes = ""

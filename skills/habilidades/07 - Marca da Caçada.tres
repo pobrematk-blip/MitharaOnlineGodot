@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 7
+Nome = "Marca da Caçada"
+Descricao = "Marca um inimigo como presa, fazendo-o receber dano aumentado do caçador e seu companheiro."
+Valor = 10
+CustoMana = 20
+ClasseRestrita = "Arqueiro"
+Cooldown = 12.0
+Duracao = 12
+TargetType = 2
+EffectType = 24

@@ -1,614 +1,697 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=53 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=61 format=3]
 
-[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1"]
-[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2"]
+[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
+[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/01 - Segundo Fôlego.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/02 - Invocar Sherigan.tres" id="sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/03 - Armadilha de Aprisionamento.tres" id="sk_3"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/04 - Comando de Ataque.tres" id="sk_4"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/05 - Instinto de Sobrevivência.tres" id="sk_5"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/06 - Armadilha Explosiva.tres" id="sk_6"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/07 - Marca da Caçada.tres" id="sk_7"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/08 - Rede de Caça.tres" id="sk_8"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/09 - Uivo de Guerra.tres" id="sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/10 - Rei da Selva.tres" id="sk_10"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/11 - Tiro Preciso.tres" id="sk_11"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/12 - Mira Apurada.tres" id="sk_12"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/13 - Tiro Penetrante.tres" id="sk_13"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/14 - Tiro Paralisante.tres" id="sk_14"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/15 - Disparo Crítico.tres" id="sk_15"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/16 - Marca do Executor.tres" id="sk_16"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/17 - Impacto Repulsor.tres" id="sk_17"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/18 - Olho da Águia.tres" id="sk_18"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/19 - Tiro da Execução.tres" id="sk_19"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/21 - Disparo Múltiplo.tres" id="sk_21"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/22 - Flecha Envenenada.tres" id="sk_22"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/23 - Chuva de Flechas.tres" id="sk_23"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/24 - Flechas Perfurantes.tres" id="sk_24"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/25 - Flecha Explosiva.tres" id="sk_25"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/26 - Tiro Ricochete.tres" id="sk_26"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/27 - Disparo em Leque.tres" id="sk_27"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/28 - Olho do Falcão.tres" id="sk_28"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/29 - Postura do Mestre Ranger.tres" id="sk_29"]
 
-[sub_resource type="Resource" id="arq_n0"]
-script = ExtResource("2")
-NodeId = "arq_01"
-Nome = "Arqueiro Base"
-Descricao = "Nó de talento nível 0 (Arqueiro)."
-CustoPontos = 5
+[sub_resource type="Resource" id="base"]
+script = ExtResource("2_node")
+NodeId = "arq_base"
+Nome = "Fundamentos do Arqueiro"
+Descricao = "Habilidade central que abre as três especializações."
+NodeType = 1
+Posicao = Vector2(950, 950)
+CustoPontos = 1
+
+[sub_resource type="Resource" id="cacador_rota"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_rota"
+Nome = "Caçador"
+Descricao = "Pets de combate, armadilhas, sobrevivência e bônus de grupo."
+NodeType = 5
+Posicao = Vector2(950, 830)
+Requisitos = PackedStringArray("arq_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="cacador_ci1"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_escolha_interna_1"
+Nome = "Escolha Caçador 1"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(860.8, 782.2)
+Requisitos = PackedStringArray("arq_cacador_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Agilidade", "Evasao", "Destreza")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="cacador_ci2"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_escolha_interna_2"
+Nome = "Escolha Caçador 2"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(950, 760)
+Requisitos = PackedStringArray("arq_cacador_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Tenacidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="cacador_ci3"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_escolha_interna_3"
+Nome = "Escolha Caçador 3"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1039.2, 782.2)
+Requisitos = PackedStringArray("arq_cacador_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Precisao", "VelocidadeAtaque", "VelocidadeMovimento")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="cacador_s1"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_1"
+Nome = "Segundo Fôlego"
+Descricao = "Recupera 15% do HP e Mana máximos."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 716.2)
+Requisitos = PackedStringArray("arq_cacador_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusDestreza = 6
-BonusAgilidade = 4
-BonusDanoPercent = 0.6
 
-[sub_resource type="Resource" id="arq_n1"]
-script = ExtResource("2")
-NodeId = "arq_02"
-Nome = "Arqueiro Essencial"
-Descricao = "Nó de talento nível 0 (Arqueiro)."
-CustoPontos = 5
+[sub_resource type="Resource" id="cacador_s2"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_2"
+Nome = "Invocar Sherigan"
+Descricao = "Invoca o lobo espiritual Sherigan para lutar ao lado do Caçador."
+HabilidadeAtiva = ExtResource("sk_2")
+NodeType = 1
+Posicao = Vector2(950, 680)
+Requisitos = PackedStringArray("arq_cacador_escolha_interna_2")
+CustoPontos = 1
 NivelMinimo = 1
-BonusDestreza = 6
-BonusAgilidade = 4
 
-[sub_resource type="Resource" id="arq_n2"]
-script = ExtResource("2")
-NodeId = "arq_03"
-Nome = "Arqueiro Primordial"
-Descricao = "Nó de talento nível 0 (Arqueiro)."
-CustoPontos = 5
+[sub_resource type="Resource" id="cacador_s3"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_3"
+Nome = "Armadilha de Aprisionamento"
+Descricao = "Posiciona uma armadilha invisível que prende o primeiro inimigo que pisar nela."
+HabilidadeAtiva = ExtResource("sk_3")
+NodeType = 1
+Posicao = Vector2(1085, 716.2)
+Requisitos = PackedStringArray("arq_cacador_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="cacador_ul"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_desbloqueio_esquerdo"
+Nome = "Desbloqueio Caçador A"
+Descricao = "Libera a próxima camada desta especialização."
+NodeType = 5
+Posicao = Vector2(830.3, 621.1)
+Requisitos = PackedStringArray("arq_cacador_skill_1", "arq_cacador_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="cacador_ur"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_desbloqueio_direito"
+Nome = "Desbloqueio Caçador B"
+Descricao = "Libera a próxima camada desta especialização."
+NodeType = 5
+Posicao = Vector2(1069.7, 621.1)
+Requisitos = PackedStringArray("arq_cacador_skill_2", "arq_cacador_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="cacador_s4"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_4"
+Nome = "Comando de Ataque"
+Descricao = "Ordena que seu companheiro ataque o alvo selecionado causando dano aumentado."
+HabilidadeAtiva = ExtResource("sk_4")
+NodeType = 1
+Posicao = Vector2(662.3, 630.4)
+Requisitos = PackedStringArray("arq_cacador_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 10
+
+[sub_resource type="Resource" id="cacador_s5"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_5"
+Nome = "Instinto de Sobrevivência"
+Descricao = "Recupera HP e Mana usando experiência em ambientes hostis."
+HabilidadeAtiva = ExtResource("sk_5")
+NodeType = 1
+Posicao = Vector2(846, 532.8)
+Requisitos = PackedStringArray("arq_cacador_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="cacador_s6"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_6"
+Nome = "Armadilha Explosiva"
+Descricao = "Posiciona uma armadilha explosiva que causa dano físico em área."
+HabilidadeAtiva = ExtResource("sk_6")
+NodeType = 1
+Posicao = Vector2(1054, 532.8)
+Requisitos = PackedStringArray("arq_cacador_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="cacador_s7"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_7"
+Nome = "Marca da Caçada"
+Descricao = "Marca um inimigo como presa. O alvo recebe dano aumentado do caçador e seu companheiro."
+HabilidadeAtiva = ExtResource("sk_7")
+NodeType = 1
+Posicao = Vector2(1237.7, 630.4)
+Requisitos = PackedStringArray("arq_cacador_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="cacador_ce1"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_escolha_externa_1"
+Nome = "Aprimoramento Caçador 1"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(687.7, 530.2)
+Requisitos = PackedStringArray("arq_cacador_skill_4", "arq_cacador_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "DefesaFisica", "Evasao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="cacador_ce2"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_escolha_externa_2"
+Nome = "Aprimoramento Caçador 2"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(950, 455)
+Requisitos = PackedStringArray("arq_cacador_skill_5", "arq_cacador_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="cacador_ce3"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_escolha_externa_3"
+Nome = "Aprimoramento Caçador 3"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(1212.3, 530.2)
+Requisitos = PackedStringArray("arq_cacador_skill_6", "arq_cacador_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Tenacidade", "Precisao", "Destreza")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="cacador_s8"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_8"
+Nome = "Rede de Caça"
+Descricao = "Arremessa uma rede que reduz drasticamente a velocidade de movimento dos alvos."
+HabilidadeAtiva = ExtResource("sk_8")
+NodeType = 1
+Posicao = Vector2(554, 554)
+Requisitos = PackedStringArray("arq_cacador_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="cacador_s9"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_9"
+Nome = "Uivo de Guerra"
+Descricao = "Seu companheiro emite um uivo que aumenta o dano físico do grupo."
+HabilidadeAtiva = ExtResource("sk_9")
+NodeType = 1
+Posicao = Vector2(950, 390)
+Requisitos = PackedStringArray("arq_cacador_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="cacador_s10"]
+script = ExtResource("2_node")
+NodeId = "arq_cacador_skill_10"
+Nome = "Rei da Selva"
+Descricao = "Aumenta significativamente os atributos do pet e concede bônus ao caçador."
+HabilidadeAtiva = ExtResource("sk_10")
+NodeType = 1
+Posicao = Vector2(1346, 554)
+Requisitos = PackedStringArray("arq_cacador_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="ranger_rota"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_rota"
+Nome = "Ranger"
+Descricao = "Ataques em área, chuva de flechas e pressão contra grupos."
+NodeType = 5
+Posicao = Vector2(1053.9, 1010)
+Requisitos = PackedStringArray("arq_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="ranger_ci1"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_escolha_interna_1"
+Nome = "Escolha Ranger 1"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1139.9, 956.6)
+Requisitos = PackedStringArray("arq_ranger_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "VelocidadeAtaque", "Agilidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ranger_ci2"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_escolha_interna_2"
+Nome = "Escolha Ranger 2"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1114.5, 1045)
+Requisitos = PackedStringArray("arq_ranger_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("PenetracaoArmadura", "ChanceCritica", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ranger_ci3"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_escolha_interna_3"
+Nome = "Escolha Ranger 3"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(1050.7, 1111.1)
+Requisitos = PackedStringArray("arq_ranger_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "Evasao", "VelocidadeMovimento")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ranger_s1"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_1"
+Nome = "Segundo Fôlego"
+Descricao = "Recupera 15% do HP e Mana máximos."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(1220, 950)
+Requisitos = PackedStringArray("arq_ranger_escolha_interna_1")
+CustoPontos = 1
 NivelMinimo = 1
-BonusDestreza = 6
-BonusAgilidade = 4
 
-[sub_resource type="Resource" id="arq_n3"]
-script = ExtResource("2")
-NodeId = "arq_04"
-Nome = "Arqueiro Fundamental"
-Descricao = "Nó de talento nível 1 (Arqueiro)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusDestreza = 5
-BonusAgilidade = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("arq_01", "arq_02")
-
-[sub_resource type="Resource" id="arq_n4"]
-script = ExtResource("2")
-NodeId = "arq_05"
-Nome = "Arqueiro Natural"
-Descricao = "Nó de talento nível 1 (Arqueiro)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusDestreza = 5
-BonusAgilidade = 3
-Requisitos = PackedStringArray("arq_02")
-
-[sub_resource type="Resource" id="arq_n5"]
-script = ExtResource("2")
-NodeId = "arq_06"
-Nome = "Arqueiro Básico"
-Descricao = "Nó de talento nível 1 (Arqueiro)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusDestreza = 5
-BonusAgilidade = 3
-Requisitos = PackedStringArray("arq_03", "arq_01")
-
-[sub_resource type="Resource" id="arq_n6"]
-script = ExtResource("2")
-NodeId = "arq_07"
-Nome = "Arqueiro Inicial"
-Descricao = "Nó de talento nível 1 (Arqueiro)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusDestreza = 5
-BonusAgilidade = 3
-BonusDanoPercent = 0.4
-Requisitos = PackedStringArray("arq_01")
-
-[sub_resource type="Resource" id="arq_n7"]
-script = ExtResource("2")
-NodeId = "arq_08"
-Nome = "Arqueiro Concentração"
-Descricao = "Nó de talento nível 1 (Arqueiro)."
-CustoPontos = 4
-NivelMinimo = 2
-BonusDestreza = 5
-BonusAgilidade = 3
-Requisitos = PackedStringArray("arq_02", "arq_03")
-
-[sub_resource type="Resource" id="arq_n8"]
-script = ExtResource("2")
-NodeId = "arq_09"
-Nome = "Arqueiro Foco"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-Requisitos = PackedStringArray("arq_04", "arq_05")
-
-[sub_resource type="Resource" id="arq_n9"]
-script = ExtResource("2")
-NodeId = "arq_10"
-Nome = "Arqueiro Potencial"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("arq_05")
-
-[sub_resource type="Resource" id="arq_n10"]
-script = ExtResource("2")
-NodeId = "arq_11"
-Nome = "Arqueiro Expansão"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-Requisitos = PackedStringArray("arq_06", "arq_07")
-
-[sub_resource type="Resource" id="arq_n11"]
-script = ExtResource("2")
-NodeId = "arq_12"
-Nome = "Arqueiro Crescimento"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-Requisitos = PackedStringArray("arq_07")
-
-[sub_resource type="Resource" id="arq_n12"]
-script = ExtResource("2")
-NodeId = "arq_13"
-Nome = "Arqueiro Despertar"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-BonusDanoPercent = 0.2
-Requisitos = PackedStringArray("arq_08", "arq_04")
-
-[sub_resource type="Resource" id="arq_n13"]
-script = ExtResource("2")
-NodeId = "arq_14"
-Nome = "Arqueiro Evolução"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-Requisitos = PackedStringArray("arq_04")
-
-[sub_resource type="Resource" id="arq_n14"]
-script = ExtResource("2")
-NodeId = "arq_15"
-Nome = "Arqueiro Progresso"
-Descricao = "Nó de talento nível 2 (Arqueiro)."
-CustoPontos = 3
-NivelMinimo = 4
-BonusDestreza = 4
-BonusAgilidade = 2
-Requisitos = PackedStringArray("arq_05", "arq_06")
-
-[sub_resource type="Resource" id="arq_n15"]
-script = ExtResource("2")
-NodeId = "arq_16"
-Nome = "Arqueiro Aprimoramento"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_09", "arq_10")
-
-[sub_resource type="Resource" id="arq_n16"]
-script = ExtResource("2")
-NodeId = "arq_17"
-Nome = "Arqueiro Avanço"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_10")
-
-[sub_resource type="Resource" id="arq_n17"]
-script = ExtResource("2")
-NodeId = "arq_18"
-Nome = "Arqueiro Superior"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_11", "arq_12")
-
-[sub_resource type="Resource" id="arq_n18"]
-script = ExtResource("2")
-NodeId = "arq_19"
-Nome = "Arqueiro Elevado"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_12")
-
-[sub_resource type="Resource" id="arq_n19"]
-script = ExtResource("2")
-NodeId = "arq_20"
-Nome = "Arqueiro Mestre"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_13", "arq_14")
-
-[sub_resource type="Resource" id="arq_n20"]
-script = ExtResource("2")
-NodeId = "arq_21"
-Nome = "Arqueiro Supremo"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_14")
-
-[sub_resource type="Resource" id="arq_n21"]
-script = ExtResource("2")
-NodeId = "arq_22"
-Nome = "Arqueiro Lendário"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_15", "arq_09")
-
-[sub_resource type="Resource" id="arq_n22"]
-script = ExtResource("2")
-NodeId = "arq_23"
-Nome = "Arqueiro Mítico"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_09")
-
-[sub_resource type="Resource" id="arq_n23"]
-script = ExtResource("2")
-NodeId = "arq_24"
-Nome = "Arqueiro Divino"
-Descricao = "Nó de talento nível 3 (Arqueiro)."
-CustoPontos = 2
-NivelMinimo = 6
-BonusDestreza = 3
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_10", "arq_11")
-
-[sub_resource type="Resource" id="arq_n24"]
-script = ExtResource("2")
-NodeId = "arq_25"
-Nome = "Arqueiro Épico"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
+[sub_resource type="Resource" id="ranger_s2"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_2"
+Nome = "Disparo Múltiplo"
+Descricao = "Dispara três flechas simultaneamente em formato de V. 90% do dano da arma cada."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(1183.8, 1085)
+Requisitos = PackedStringArray("arq_ranger_escolha_interna_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_16", "arq_17")
+NivelMinimo = 1
 
-[sub_resource type="Resource" id="arq_n25"]
-script = ExtResource("2")
-NodeId = "arq_26"
-Nome = "Arqueiro Guerreiro"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
+[sub_resource type="Resource" id="ranger_s3"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_3"
+Nome = "Flecha Envenenada"
+Descricao = "Uma flecha coberta por toxinas naturais. 120% do dano da arma e veneno por 8 segundos."
+HabilidadeAtiva = ExtResource("sk_22")
+NodeType = 1
+Posicao = Vector2(1085, 1183.8)
+Requisitos = PackedStringArray("arq_ranger_escolha_interna_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_17")
+NivelMinimo = 5
 
-[sub_resource type="Resource" id="arq_n26"]
-script = ExtResource("2")
-NodeId = "arq_27"
-Nome = "Arqueiro Sábio"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
+[sub_resource type="Resource" id="ranger_ul"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_desbloqueio_esquerdo"
+Nome = "Desbloqueio Ranger A"
+Descricao = "Libera a próxima camada desta especialização."
+NodeType = 5
+Posicao = Vector2(1294.7, 1010.8)
+Requisitos = PackedStringArray("arq_ranger_skill_1", "arq_ranger_skill_2")
 CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_18", "arq_19")
 
-[sub_resource type="Resource" id="arq_n27"]
-script = ExtResource("2")
-NodeId = "arq_28"
-Nome = "Arqueiro Destemido"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
+[sub_resource type="Resource" id="ranger_ur"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_desbloqueio_direito"
+Nome = "Desbloqueio Ranger B"
+Descricao = "Libera a próxima camada desta especialização."
+NodeType = 5
+Posicao = Vector2(1175, 1218.1)
+Requisitos = PackedStringArray("arq_ranger_skill_2", "arq_ranger_skill_3")
 CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_19")
 
-[sub_resource type="Resource" id="arq_n28"]
-script = ExtResource("2")
-NodeId = "arq_29"
-Nome = "Arqueiro Poderoso"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_20", "arq_21")
-
-[sub_resource type="Resource" id="arq_n29"]
-script = ExtResource("2")
-NodeId = "arq_30"
-Nome = "Arqueiro Ágil"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_21")
-
-[sub_resource type="Resource" id="arq_n30"]
-script = ExtResource("2")
-NodeId = "arq_31"
-Nome = "Arqueiro Feroz"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_22", "arq_23")
-
-[sub_resource type="Resource" id="arq_n31"]
-script = ExtResource("2")
-NodeId = "arq_32"
-Nome = "Arqueiro Sombrio"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_23")
-
-[sub_resource type="Resource" id="arq_n32"]
-script = ExtResource("2")
-NodeId = "arq_33"
-Nome = "Arqueiro Sagrado"
-Descricao = "Nó de talento nível 4 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 8
-BonusDestreza = 2
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_24", "arq_16")
-
-[sub_resource type="Resource" id="arq_n33"]
-script = ExtResource("2")
-NodeId = "arq_34"
-Nome = "Arqueiro Arcana"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="ranger_s4"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_4"
+Nome = "Chuva de Flechas"
+Descricao = "Dispara dezenas de flechas para o céu. Área de dano contínuo durante 5 segundos."
+HabilidadeAtiva = ExtResource("sk_23")
+NodeType = 1
+Posicao = Vector2(1370.6, 860.6)
+Requisitos = PackedStringArray("arq_ranger_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_25", "arq_26")
 
-[sub_resource type="Resource" id="arq_n34"]
-script = ExtResource("2")
-NodeId = "arq_35"
-Nome = "Arqueiro Rápido"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="ranger_s5"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_5"
+Nome = "Flechas Perfurantes"
+Descricao = "Sequência de flechas que atravessa inimigos alinhados. 130% do dano, até 5 inimigos."
+HabilidadeAtiva = ExtResource("sk_24")
+NodeType = 1
+Posicao = Vector2(1363.3, 1068.5)
+Requisitos = PackedStringArray("arq_ranger_desbloqueio_esquerdo")
+CustoPontos = 1
+NivelMinimo = 15
+
+[sub_resource type="Resource" id="ranger_s6"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_6"
+Nome = "Flecha Explosiva"
+Descricao = "Uma flecha explosiva que causa dano em área. 150% do dano da arma."
+HabilidadeAtiva = ExtResource("sk_25")
+NodeType = 1
+Posicao = Vector2(1259.3, 1248.7)
+Requisitos = PackedStringArray("arq_ranger_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 20
+
+[sub_resource type="Resource" id="ranger_s7"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_7"
+Nome = "Tiro Ricochete"
+Descricao = "A flecha salta entre vários inimigos próximos. Até 5 alvos."
+HabilidadeAtiva = ExtResource("sk_26")
+NodeType = 1
+Posicao = Vector2(1082.9, 1359)
+Requisitos = PackedStringArray("arq_ranger_desbloqueio_direito")
+CustoPontos = 1
+NivelMinimo = 30
+
+[sub_resource type="Resource" id="ranger_ce1"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_escolha_externa_1"
+Nome = "Aprimoramento Ranger 1"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(1444.7, 932.7)
+Requisitos = PackedStringArray("arq_ranger_skill_4", "arq_ranger_skill_5")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DanoCriticoBonus", "PenetracaoArmadura", "Destreza")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ranger_ce2"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_escolha_externa_2"
+Nome = "Aprimoramento Ranger 2"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(1378.7, 1197.5)
+Requisitos = PackedStringArray("arq_ranger_skill_5", "arq_ranger_skill_6")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ranger_ce3"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_escolha_externa_3"
+Nome = "Aprimoramento Ranger 3"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(1182.4, 1387.1)
+Requisitos = PackedStringArray("arq_ranger_skill_6", "arq_ranger_skill_7")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Hp", "DefesaFisica", "Tenacidade")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="ranger_s8"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_8"
+Nome = "Disparo em Leque"
+Descricao = "Dispara uma rajada de 7 flechas em cone. 80% do dano da arma por flecha."
+HabilidadeAtiva = ExtResource("sk_27")
+NodeType = 1
+Posicao = Vector2(1490.9, 805.1)
+Requisitos = PackedStringArray("arq_ranger_escolha_externa_1")
+CustoPontos = 1
+NivelMinimo = 40
+
+[sub_resource type="Resource" id="ranger_s9"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_9"
+Nome = "Olho do Falcão"
+Descricao = "Aumenta os reflexos e a velocidade do Ranger. +Precisão e +Velocidade de Ataque."
+HabilidadeAtiva = ExtResource("sk_28")
+NodeType = 1
+Posicao = Vector2(1435, 1230)
+Requisitos = PackedStringArray("arq_ranger_escolha_externa_2")
+CustoPontos = 1
+NivelMinimo = 50
+
+[sub_resource type="Resource" id="ranger_s10"]
+script = ExtResource("2_node")
+NodeId = "arq_ranger_skill_10"
+Nome = "Postura do Mestre Ranger"
+Descricao = "Estado de combate perfeito. +30% Vel. Ataque, +20% Precisão, +20% Dano em Área, -20% Recarga."
+HabilidadeAtiva = ExtResource("sk_29")
+NodeType = 1
+Posicao = Vector2(1094.9, 1490.9)
+Requisitos = PackedStringArray("arq_ranger_escolha_externa_3")
+CustoPontos = 1
+NivelMinimo = 70
+
+[sub_resource type="Resource" id="sniper_rota"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_rota"
+Nome = "Sniper"
+Descricao = "Dano físico elevado em alvo único, precisão e golpes críticos."
+NodeType = 5
+Posicao = Vector2(846.1, 1010)
+Requisitos = PackedStringArray("arq_base")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="sniper_ci1"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_escolha_interna_1"
+Nome = "Escolha Sniper 1"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(849.3, 1111.1)
+Requisitos = PackedStringArray("arq_sniper_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Destreza", "Precisao", "ChanceCritica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="sniper_ci2"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_escolha_interna_2"
+Nome = "Escolha Sniper 2"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(785.5, 1045)
+Requisitos = PackedStringArray("arq_sniper_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("DanoCriticoBonus", "PenetracaoArmadura", "Destreza")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="sniper_ci3"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_escolha_interna_3"
+Nome = "Escolha Sniper 3"
+Descricao = "Escolha um dos três atributos deste grupo."
+Posicao = Vector2(760.1, 956.6)
+Requisitos = PackedStringArray("arq_sniper_rota")
+CustoPontos = 1
+StatOptionIds = PackedStringArray("Agilidade", "Evasao", "VelocidadeAtaque")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
+
+[sub_resource type="Resource" id="sniper_s1"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_1"
+Nome = "Segundo Fôlego"
+Descricao = "Recupera 15% do HP e Mana máximos."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(815, 1183.8)
+Requisitos = PackedStringArray("arq_sniper_escolha_interna_1")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="sniper_s2"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_2"
+Nome = "Tiro Preciso"
+Descricao = "Dispara uma flecha precisa causando 120% do dano da arma."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(716.2, 1085)
+Requisitos = PackedStringArray("arq_sniper_escolha_interna_2")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="sniper_s3"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_3"
+Nome = "Mira Apurada"
+Descricao = "Aumenta Precisão e Chance Crítica por 15 segundos."
+HabilidadeAtiva = ExtResource("sk_12")
+NodeType = 1
+Posicao = Vector2(680, 950)
+Requisitos = PackedStringArray("arq_sniper_escolha_interna_3")
+CustoPontos = 1
+NivelMinimo = 5
+
+[sub_resource type="Resource" id="sniper_ul"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_desbloqueio_esquerdo"
+Nome = "Desbloqueio Sniper A"
+Descricao = "Libera a próxima camada desta especialização."
+NodeType = 5
+Posicao = Vector2(725, 1218.1)
+Requisitos = PackedStringArray("arq_sniper_skill_1", "arq_sniper_skill_2")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="sniper_ur"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_desbloqueio_direito"
+Nome = "Desbloqueio Sniper B"
+Descricao = "Libera a próxima camada desta especialização."
+NodeType = 5
+Posicao = Vector2(605.3, 1010.8)
+Requisitos = PackedStringArray("arq_sniper_skill_2", "arq_sniper_skill_3")
+CustoPontos = 1
+
+[sub_resource type="Resource" id="sniper_s4"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_4"
+Nome = "Tiro Penetrante"
+Descricao = "Flecha reforçada que causa 150% do dano e ignora 10% da Defesa Física."
+HabilidadeAtiva = ExtResource("sk_13")
+NodeType = 1
+Posicao = Vector2(817.1, 1359)
+Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
 CustoPontos = 1
 NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_26")
 
-[sub_resource type="Resource" id="arq_n35"]
-script = ExtResource("2")
-NodeId = "arq_36"
-Nome = "Arqueiro Resistente"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_s5"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_5"
+Nome = "Tiro Paralisante"
+Descricao = "Flecha certeira que causa dano e atordoa o alvo por 2 segundos."
+HabilidadeAtiva = ExtResource("sk_14")
+NodeType = 1
+Posicao = Vector2(640.7, 1248.7)
+Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
 CustoPontos = 1
-NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_27", "arq_28")
+NivelMinimo = 15
 
-[sub_resource type="Resource" id="arq_n36"]
-script = ExtResource("2")
-NodeId = "arq_37"
-Nome = "Arqueiro Letal"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_s6"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_6"
+Nome = "Disparo Crítico"
+Descricao = "Disparo mortal causando 180% do dano com bônus de Chance Crítica."
+HabilidadeAtiva = ExtResource("sk_15")
+NodeType = 1
+Posicao = Vector2(536.7, 1068.5)
+Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_28")
+NivelMinimo = 20
 
-[sub_resource type="Resource" id="arq_n37"]
-script = ExtResource("2")
-NodeId = "arq_38"
-Nome = "Arqueiro Preciso"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_s7"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_7"
+Nome = "Marca do Executor"
+Descricao = "Marca a vítima para receber dano aumentado das habilidades do Sniper."
+HabilidadeAtiva = ExtResource("sk_16")
+NodeType = 1
+Posicao = Vector2(529.4, 860.6)
+Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
 CustoPontos = 1
-NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_29", "arq_30")
+NivelMinimo = 30
 
-[sub_resource type="Resource" id="arq_n38"]
-script = ExtResource("2")
-NodeId = "arq_39"
-Nome = "Arqueiro Brutal"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_ce1"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_escolha_externa_1"
+Nome = "Aprimoramento Sniper 1"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(717.6, 1387.1)
+Requisitos = PackedStringArray("arq_sniper_skill_4", "arq_sniper_skill_5")
 CustoPontos = 1
-NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_30")
+StatOptionIds = PackedStringArray("ChanceCritica", "DanoCriticoBonus", "Precisao")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="arq_n39"]
-script = ExtResource("2")
-NodeId = "arq_40"
-Nome = "Arqueiro Sutil"
-Descricao = "Nó de talento nível 5 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_ce2"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_escolha_externa_2"
+Nome = "Aprimoramento Sniper 2"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(521.3, 1197.5)
+Requisitos = PackedStringArray("arq_sniper_skill_5", "arq_sniper_skill_6")
 CustoPontos = 1
-NivelMinimo = 10
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_31", "arq_32")
+StatOptionIds = PackedStringArray("Hp", "Tenacidade", "DefesaFisica")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="arq_n40"]
-script = ExtResource("2")
-NodeId = "arq_41"
-Nome = "Arqueiro Gélido"
-Descricao = "Nó de talento nível 6 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_ce3"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_escolha_externa_3"
+Nome = "Aprimoramento Sniper 3"
+Descricao = "Escolha um dos três atributos antes da camada final."
+Posicao = Vector2(455.3, 932.7)
+Requisitos = PackedStringArray("arq_sniper_skill_6", "arq_sniper_skill_7")
 CustoPontos = 1
-NivelMinimo = 12
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_34", "arq_35")
+StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "PenetracaoArmadura")
+StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
-[sub_resource type="Resource" id="arq_n41"]
-script = ExtResource("2")
-NodeId = "arq_42"
-Nome = "Arqueiro Flamejante"
-Descricao = "Nó de talento nível 6 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_s8"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_8"
+Nome = "Impacto Repulsor"
+Descricao = "Flecha pesada que causa 140% do dano e empurra o inimigo para trás."
+HabilidadeAtiva = ExtResource("sk_17")
+NodeType = 1
+Posicao = Vector2(805.1, 1490.9)
+Requisitos = PackedStringArray("arq_sniper_escolha_externa_1")
 CustoPontos = 1
-NivelMinimo = 12
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_35")
+NivelMinimo = 40
 
-[sub_resource type="Resource" id="arq_n42"]
-script = ExtResource("2")
-NodeId = "arq_43"
-Nome = "Arqueiro Tempestuoso"
-Descricao = "Nó de talento nível 6 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_s9"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_9"
+Nome = "Olho da Águia"
+Descricao = "Aumenta Precisão, Chance Crítica e Penetração de Armadura."
+HabilidadeAtiva = ExtResource("sk_18")
+NodeType = 1
+Posicao = Vector2(465, 1230)
+Requisitos = PackedStringArray("arq_sniper_escolha_externa_2")
 CustoPontos = 1
-NivelMinimo = 12
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_36", "arq_37")
+NivelMinimo = 50
 
-[sub_resource type="Resource" id="arq_n43"]
-script = ExtResource("2")
-NodeId = "arq_44"
-Nome = "Arqueiro Venenoso"
-Descricao = "Nó de talento nível 6 (Arqueiro)."
+[sub_resource type="Resource" id="sniper_s10"]
+script = ExtResource("2_node")
+NodeId = "arq_sniper_skill_10"
+Nome = "Tiro da Execução"
+Descricao = "Causa 350% do dano. Alvos abaixo de 30% de HP recebem 50% de dano adicional."
+HabilidadeAtiva = ExtResource("sk_19")
+NodeType = 1
+Posicao = Vector2(409.1, 805.1)
+Requisitos = PackedStringArray("arq_sniper_escolha_externa_3")
 CustoPontos = 1
-NivelMinimo = 12
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_37")
-
-[sub_resource type="Resource" id="arq_n44"]
-script = ExtResource("2")
-NodeId = "arq_45"
-Nome = "Arqueiro Sangrento"
-Descricao = "Nó de talento nível 6 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 12
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_38", "arq_39")
-
-[sub_resource type="Resource" id="arq_n45"]
-script = ExtResource("2")
-NodeId = "arq_46"
-Nome = "Arqueiro Eterno"
-Descricao = "Nó de talento nível 7 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_41", "arq_42")
-
-[sub_resource type="Resource" id="arq_n46"]
-script = ExtResource("2")
-NodeId = "arq_47"
-Nome = "Arqueiro Celestial"
-Descricao = "Nó de talento nível 7 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_42")
-
-[sub_resource type="Resource" id="arq_n47"]
-script = ExtResource("2")
-NodeId = "arq_48"
-Nome = "Arqueiro Abissal"
-Descricao = "Nó de talento nível 7 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 14
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_43", "arq_44")
-
-[sub_resource type="Resource" id="arq_n48"]
-script = ExtResource("2")
-NodeId = "arq_49"
-Nome = "Arqueiro Primordial"
-Descricao = "Nó de talento nível 8 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_46", "arq_47")
-
-[sub_resource type="Resource" id="arq_n49"]
-script = ExtResource("2")
-NodeId = "arq_50"
-Nome = "Arqueiro Final"
-Descricao = "Nó de talento nível 8 (Arqueiro)."
-CustoPontos = 1
-NivelMinimo = 16
-BonusDestreza = 1
-BonusAgilidade = 1
-Requisitos = PackedStringArray("arq_47")
+NivelMinimo = 70
 
 [resource]
-script = ExtResource("1")
-NomeArvore = "Árvore Arqueiro"
-RootNodeIds = PackedStringArray("arq_01", "arq_02", "arq_03")
-
-Nodes = Array[Resource]([
-	SubResource("arq_n0"),
-	SubResource("arq_n1"),
-	SubResource("arq_n2"),
-	SubResource("arq_n3"),
-	SubResource("arq_n4"),
-	SubResource("arq_n5"),
-	SubResource("arq_n6"),
-	SubResource("arq_n7"),
-	SubResource("arq_n8"),
-	SubResource("arq_n9"),
-	SubResource("arq_n10"),
-	SubResource("arq_n11"),
-	SubResource("arq_n12"),
-	SubResource("arq_n13"),
-	SubResource("arq_n14"),
-	SubResource("arq_n15"),
-	SubResource("arq_n16"),
-	SubResource("arq_n17"),
-	SubResource("arq_n18"),
-	SubResource("arq_n19"),
-	SubResource("arq_n20"),
-	SubResource("arq_n21"),
-	SubResource("arq_n22"),
-	SubResource("arq_n23"),
-	SubResource("arq_n24"),
-	SubResource("arq_n25"),
-	SubResource("arq_n26"),
-	SubResource("arq_n27"),
-	SubResource("arq_n28"),
-	SubResource("arq_n29"),
-	SubResource("arq_n30"),
-	SubResource("arq_n31"),
-	SubResource("arq_n32"),
-	SubResource("arq_n33"),
-	SubResource("arq_n34"),
-	SubResource("arq_n35"),
-	SubResource("arq_n36"),
-	SubResource("arq_n37"),
-	SubResource("arq_n38"),
-	SubResource("arq_n39"),
-	SubResource("arq_n40"),
-	SubResource("arq_n41"),
-	SubResource("arq_n42"),
-	SubResource("arq_n43"),
-	SubResource("arq_n44"),
-	SubResource("arq_n45"),
-	SubResource("arq_n46"),
-	SubResource("arq_n47"),
-	SubResource("arq_n48"),
-	SubResource("arq_n49")
-])
+script = ExtResource("1_tree")
+NomeArvore = "Árvore do Arqueiro"
+Nodes = Array[Resource]([SubResource("base"), SubResource("cacador_rota"), SubResource("cacador_ci1"), SubResource("cacador_ci2"), SubResource("cacador_ci3"), SubResource("cacador_s1"), SubResource("cacador_s2"), SubResource("cacador_s3"), SubResource("cacador_ul"), SubResource("cacador_ur"), SubResource("cacador_s4"), SubResource("cacador_s5"), SubResource("cacador_s6"), SubResource("cacador_s7"), SubResource("cacador_ce1"), SubResource("cacador_ce2"), SubResource("cacador_ce3"), SubResource("cacador_s8"), SubResource("cacador_s9"), SubResource("cacador_s10"), SubResource("ranger_rota"), SubResource("ranger_ci1"), SubResource("ranger_ci2"), SubResource("ranger_ci3"), SubResource("ranger_s1"), SubResource("ranger_s2"), SubResource("ranger_s3"), SubResource("ranger_ul"), SubResource("ranger_ur"), SubResource("ranger_s4"), SubResource("ranger_s5"), SubResource("ranger_s6"), SubResource("ranger_s7"), SubResource("ranger_ce1"), SubResource("ranger_ce2"), SubResource("ranger_ce3"), SubResource("ranger_s8"), SubResource("ranger_s9"), SubResource("ranger_s10"), SubResource("sniper_rota"), SubResource("sniper_ci1"), SubResource("sniper_ci2"), SubResource("sniper_ci3"), SubResource("sniper_s1"), SubResource("sniper_s2"), SubResource("sniper_s3"), SubResource("sniper_ul"), SubResource("sniper_ur"), SubResource("sniper_s4"), SubResource("sniper_s5"), SubResource("sniper_s6"), SubResource("sniper_s7"), SubResource("sniper_ce1"), SubResource("sniper_ce2"), SubResource("sniper_ce3"), SubResource("sniper_s8"), SubResource("sniper_s9"), SubResource("sniper_s10")])
+RootNodeIds = PackedStringArray("arq_base")
+UsaLayoutPersonalizado = true
+BoardSize = Vector2(1900, 1900)

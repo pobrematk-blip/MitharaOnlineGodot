@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300281
+Nome = "Grevas de Bruma Baixa"
+Descricao = "Forjada nas oficinas de Bruma Baixa, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 2
+TipoItem = 1
+NivelRequerido = 10
+Valor = 100
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 13
+HpMin = 11
+HpMax = 15
+Mana = 2
+ManaMin = 2
+ManaMax = 3
+DefesaFisica = 8
+DefesaFisicaMin = 7
+DefesaFisicaMax = 10
+DefesaMagica = 2
+DefesaMagicaMin = 2
+DefesaMagicaMax = 3
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

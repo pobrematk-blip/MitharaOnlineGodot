@@ -66,13 +66,20 @@ public partial class OverheadUI : Control
     private Panel _hpFill;
     private Panel _manaBg;
     private Panel _manaFill;
+    private Panel _xpBg;
+    private Panel _xpFill;
+    private Label _guildLabel;
     private Player _player;
     private Camera2D _camera;
 
     private string _nomePersonagem;
     private string _guildTag = "";
+    private string _guildName = "";
     private int _guildEmblemIdx = -1;
     private TextureRect _emblemaIcon;
+    private bool _remoteMode;
+    private long _xpAtual;
+    private long _xpMaximo = 1;
 
     private const float BarraLargura = 80f;
     private const float BarraAltura = 6f;
@@ -145,9 +152,11 @@ public partial class OverheadUI : Control
 
     public override void _Ready()
     {
-        _camera = GetViewport().GetCamera2D();
+        if (!_remoteMode)
+            _camera = GetViewport().GetCamera2D();
 
-        _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
+        if (!_remoteMode)
+            _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
 
         _nomeLabel = new Label();
         _nomeLabel.Size = new Vector2(120, 20);
@@ -157,6 +166,17 @@ public partial class OverheadUI : Control
         _nomeLabel.Visible = MostrarNome;
         AddChild(_nomeLabel);
 
+        _guildLabel = new Label
+        {
+            Position = new Vector2(0, 17),
+            Size = new Vector2(120, 18),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        _guildLabel.AddThemeFontSizeOverride("font_size", 11);
+        _guildLabel.AddThemeColorOverride("font_color", new Color(0.35f, 0.8f, 1f));
+        AddChild(_guildLabel);
+
         _emblemaIcon = new TextureRect();
         _emblemaIcon.Position = new Vector2(2, 1);
         _emblemaIcon.Size = new Vector2(20, 20);
@@ -165,16 +185,19 @@ public partial class OverheadUI : Control
         _emblemaIcon.Visible = false;
         AddChild(_emblemaIcon);
 
-        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(20, 20), out _hpBg, out _hpFill);
+        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(20, 35), out _hpBg, out _hpFill);
         _hpBg.Visible = MostrarBarraVida;
         AddChild(_hpBg);
 
-        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(20, 27), out _manaBg, out _manaFill);
+        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(20, 42), out _manaBg, out _manaFill);
         _manaBg.Visible = MostrarBarraMana;
         AddChild(_manaBg);
 
-        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
-        _nomePersonagem = escolhido?.NomePersonagem ?? "Aventureiro";
+        if (!_remoteMode)
+        {
+            var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+            _nomePersonagem = escolhido?.NomePersonagem ?? "Aventureiro";
+        }
 
         CarregarDadosGuild();
         AtualizarNomeCompleto();
@@ -184,6 +207,30 @@ public partial class OverheadUI : Control
             _player.StatusAtualizado += Atualizar;
             Atualizar();
         }
+        else
+        {
+            AtualizarXp();
+        }
+    }
+
+    public void ConfigurarRemoto(string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
+    {
+        _remoteMode = true;
+        _nomePersonagem = nome;
+        AtualizarDadosRemotos(nome, guildName, guildTag, guildEmblem, xp, xpMax);
+    }
+
+    public void AtualizarDadosRemotos(string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
+    {
+        _nomePersonagem = nome;
+        _guildName = guildName;
+        _guildTag = guildTag;
+        _guildEmblemIdx = guildEmblem;
+        _xpAtual = System.Math.Max(0, xp);
+        _xpMaximo = System.Math.Max(1, xpMax);
+        if (_nomeLabel != null)
+            AtualizarNomeCompleto();
+        AtualizarXp();
     }
 
     public void RecarregarDadosGuild()
@@ -194,7 +241,11 @@ public partial class OverheadUI : Control
 
     private void CarregarDadosGuild()
     {
-        return;
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null) return;
+        _guildName = gameNet.GuildName;
+        _guildTag = gameNet.GuildTag;
+        _guildEmblemIdx = gameNet.GuildEmblem;
     }
 
     private void AtualizarNomeCompleto()
@@ -220,10 +271,16 @@ public partial class OverheadUI : Control
         }
 
         _nomeLabel.Text = nome;
+        if (_guildLabel != null)
+        {
+            _guildLabel.Text = _mostrarTagGuild ? _guildName : "";
+            _guildLabel.Visible = !string.IsNullOrWhiteSpace(_guildLabel.Text);
+        }
     }
 
     public override void _Process(double delta)
     {
+        if (_remoteMode) return;
         if (_player == null) return;
 
         if (_camera == null)
@@ -243,5 +300,12 @@ public partial class OverheadUI : Control
         float manaPct = Mathf.Clamp(_player.CurrentMana / (float)_player.MaxMana, 0, 1);
         _hpFill.Size = new Vector2(BarraLargura * hpPct, BarraAltura);
         _manaFill.Size = new Vector2(BarraLargura * manaPct, BarraAltura);
+    }
+
+    private void AtualizarXp()
+    {
+        if (_xpFill == null) return;
+        float xpPct = Mathf.Clamp(_xpAtual / (float)System.Math.Max(1, _xpMaximo), 0, 1);
+        _xpFill.Size = new Vector2(BarraLargura * xpPct, BarraAltura);
     }
 }

@@ -47,7 +47,7 @@ public partial class Inimigo : CharacterBody2D
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
         if (_sprite == null)
         {
-            GD.PrintErr($"[INIMIGO] {Name}: AnimatedSprite2D nao encontrado.");
+            GD.PrintErr($"[INIMIGO] {Name}: AnimatedSprite2D n?o encontrado.");
         }
         else
         {
@@ -93,10 +93,6 @@ public partial class Inimigo : CharacterBody2D
             GlobalPosition = NetworkTargetPos;
             return;
         }
-
-        Vector2 direction = toTarget.Normalized();
-        if (direction.LengthSquared() > 0.001f)
-            _facingDirection = direction;
 
         float t = Mathf.Clamp((float)delta * 12f, 0f, 1f);
         GlobalPosition = GlobalPosition.Lerp(NetworkTargetPos, t);

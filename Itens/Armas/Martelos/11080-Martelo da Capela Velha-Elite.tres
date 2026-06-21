@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo de Reparo.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11080
+Nome = "Martelo da Capela Velha"
+Descricao = "Usado por guardiões de pequenas capelas esquecidas nas estradas."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 32
+DanoFisicoMin = 28
+DanoFisicoMax = 37
+Forca = 10
+ForcaMin = 8
+ForcaMax = 12
+Inteligencia = 10
+InteligenciaMin = 8
+InteligenciaMax = 12

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12207
+Nome = "Sequência Mortal"
+Descricao = "Uma sequência veloz de cortes contra o mesmo alvo."
+Valor = 3
+CustoMana = 40
+ClasseRestrita = "Ladino"
+Cooldown = 16
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Assassino"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Dano / Combo"
+EfeitoPrincipal = "Causa múltiplos golpes em alvo único."
+DanoEscala = "3 golpes de 70% cada"
+BuffDebuff = "Último golpe tem chance crítica aumentada."
+DuracaoTexto = ""
+Progressao = "Lv1 3x70% → Lv10 3x120%"
+Observacoes = ""

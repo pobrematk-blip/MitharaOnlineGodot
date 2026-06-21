@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14209
+Nome = "Colapso da Terra"
+Descricao = "A Vanguarda concentra toda sua força em um golpe devastador que faz o campo de batalha ruir."
+Valor = 350
+CustoMana = 80
+ClasseRestrita = "Guardião"
+Cooldown = 120
+Duracao = 6
+TargetType = 2
+EffectType = 12
+Especializacao = "Vanguarda"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Causa dano massivo em área e aplica lentidão forte."
+DanoEscala = "350% → 600% do dano da arma"
+BuffDebuff = "Slow forte"
+DuracaoTexto = "6s"
+Progressao = "Ultimate possui 5 níveis; Lv1 = 350%; Lv5 = 600%."
+Observacoes = "Ultimate ofensiva e de controle."

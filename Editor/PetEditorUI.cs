@@ -117,7 +117,7 @@ public partial class PetEditorUI : Control
 
         if (!DirAccess.DirExistsAbsolute(PetsDir))
         {
-            _previewStatus.Text = "Pasta Pets/ nao encontrada.";
+            _previewStatus.Text = "Pasta Pets/ n?o encontrada.";
             return;
         }
 

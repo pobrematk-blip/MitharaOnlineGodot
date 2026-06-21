@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14109
+Nome = "Muralha Inabalável"
+Descricao = "O Protetor desperta sua determinação máxima e se torna uma fortaleza impossível de ignorar."
+Valor = 0
+CustoMana = 80
+ClasseRestrita = "Guardião"
+Cooldown = 120
+Duracao = 20
+TargetType = 0
+EffectType = 3
+Especializacao = "Protetor"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Aumenta HP Máximo, Defesa Física e Defesa Mágica drasticamente."
+DanoEscala = ""
+BuffDebuff = "+50% HP; +50% Def Física; +50% Def Mágica"
+DuracaoTexto = "20s"
+Progressao = "Ultimate possui 5 níveis; bônus pode escalar até +70%."
+Observacoes = "Ultimate defensiva para bosses e emergências."

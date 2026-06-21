@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300214
+Nome = "Cinto de Umbra Alta"
+Descricao = "Curtida e ajustada por batedores de Umbra Alta, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 3
+CategoriaPeso = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 15
+HpMin = 13
+HpMax = 18
+Mana = 9
+ManaMin = 8
+ManaMax = 10
+DefesaFisica = 9
+DefesaFisicaMin = 8
+DefesaFisicaMax = 11
+DefesaMagica = 9
+DefesaMagicaMin = 8
+DefesaMagicaMax = 11
+Evasao = 0.4
+EvasaoMin = 0.34
+EvasaoMax = 0.46

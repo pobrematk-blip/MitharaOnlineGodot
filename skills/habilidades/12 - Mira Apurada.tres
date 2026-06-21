@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12
+Nome = "Mira Apurada"
+Descricao = "Reduz a respiração e concentra toda atenção no alvo, aumentando Precisão e Chance Crítica."
+Valor = 5
+CustoMana = 20
+ClasseRestrita = "Arqueiro"
+Cooldown = 40.0
+Duracao = 15
+TargetType = 0
+EffectType = 3

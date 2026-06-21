@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10109
+Nome = "Rei da Selva"
+Descricao = "Forma ancestral."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 0
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Caçador"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Buff massivo no pet"
+DanoEscala = ""
+BuffDebuff = "+20%-100%"
+DuracaoTexto = "15s"
+Progressao = ""
+Observacoes = ""

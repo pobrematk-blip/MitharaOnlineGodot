@@ -14,12 +14,16 @@ partial class GameServer
 {
     private static readonly Dictionary<string, int[]> _classStartingItems = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["Arqueiro"] = new[] { 1001, 1051 },  // Arco de Madeira, Aljava Simples
-        ["Mago"] = new[] { 5001, 5051 },      // Cajado do Aprendiz, Orbe do Aprendiz
-        ["Ladino"] = new[] { 2001, 2051 },    // Adaga de Osso, Adaga Secundária de Osso
-        ["Berseker"] = new[] { 3001, 3051 },  // Machado de Pedra, Bumerangue de Pedra
-        ["Guardiao"] = new[] { 4001, 4051 },  // Espada de Ferro, Escudo de Ferro
-        ["Prist"] = new[] { 6001, 6051 },     // Martelo de Madeira, Escudo Sagrado de Madeira
+        ["Arqueiro"] = new[] { 1000 },
+        ["Mago"] = new[] { 1066 },
+        ["Ladino"] = new[] { 1011, 1022 },
+        ["Berseker"] = new[] { 1033 },
+        ["Berserker"] = new[] { 1033 },
+        ["Guardiao"] = new[] { 1044, 1055 },
+        ["Guardião"] = new[] { 1044, 1055 },
+        ["Prist"] = new[] { 1077, 1088 },
+        ["Clerigo"] = new[] { 1077, 1088 },
+        ["Clérigo"] = new[] { 1077, 1088 },
     };
 
     private static int[] GetStartingItemsForClass(string className)
@@ -62,6 +66,7 @@ partial class GameServer
                 Slot = slot,
                 Quantity = 1,
             };
+            ItemRoller.EnsureRolled(item, ItemRarity.Common);
             _db.SaveItem(characterId, item);
             count++;
         }
@@ -115,6 +120,48 @@ partial class GameServer
         if (selected == null) return;
 
         session.SelectedCharacter = selected;
+    }
+
+    private void HandleLeaveWorld(NetPeer peer)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+
+        if (session.EntityId > 0 && session.ChannelId >= 0)
+        {
+            var channel = _world.GetChannel(session.ChannelId);
+            var player = channel?.GetEntity(session.EntityId) as PlayerEntity;
+
+            if (player != null && session.SelectedCharacter != null)
+                _db.SaveCharacterFull(session.SelectedCharacter.Id, player, session.SelectedCharacter.BankGold);
+
+            if (player?.PartyId >= 0)
+                _world.Parties.RemoveMember(session.EntityId);
+
+            if (channel != null)
+            {
+                channel.RemoveEntity(session.EntityId);
+                BroadcastDespawn(channel, session.EntityId);
+            }
+        }
+
+        Logger.Info($"{session.SelectedCharacter?.Name ?? "Jogador"} saiu do mundo e voltou à seleção.");
+        session.EntityId = 0;
+        session.ChannelId = -1;
+        session.SelectedCharacter = null;
+        session.SpawnedEntities.Clear();
+
+        var characters = _db.GetCharacters(session.AccountId);
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_LeaveWorld);
+        writer.Put(characters.Count);
+        foreach (var character in characters)
+        {
+            writer.Put(character.SlotIndex);
+            writer.Put(character.Name);
+            writer.Put(character.Class);
+            writer.Put(character.Race);
+            writer.Put(character.Level);
+        }
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
     private void HandleDeleteCharacter(NetPeer peer, NetDataReader reader)
@@ -307,15 +354,50 @@ partial class GameServer
             }
 
             var items = _db.LoadItems(ch.Id);
+            bool repairedStartingEquipment = false;
+            bool hasWeapon = items.Any(item =>
+                item.Slot == 107 && ItemDefinitions.Get(item.ItemId)?.Type == ItemType.Weapon);
+            if (player.Level == 1 && !hasWeapon)
+            {
+                GiveStartingItems(ch.Id, player.CharacterClass);
+                items = _db.LoadItems(ch.Id);
+                repairedStartingEquipment = items.Any(item =>
+                    item.Slot == 107 && ItemDefinitions.Get(item.ItemId)?.Type == ItemType.Weapon);
+                Logger.Info($"Reparo de arma inicial para {player.Name}: {(repairedStartingEquipment ? "sucesso" : "falhou")}");
+            }
+
+            var officialStartingItems = GetStartingItemsForClass(player.CharacterClass).ToHashSet();
             foreach (var item in items)
             {
+                bool repairedStarterRarity = player.Level == 1
+                    && item.Slot >= 100
+                    && officialStartingItems.Contains(item.ItemId)
+                    && item.Roll.IsRolled
+                    && item.Roll.Rarity != ItemRarity.Common;
+                if (repairedStarterRarity)
+                {
+                    item.Roll = new ItemRoll();
+                    ItemRoller.EnsureRolled(item, ItemRarity.Common);
+                    _db.SaveItem(ch.Id, item);
+                    Logger.Info($"Raridade do item inicial {item.ItemId} corrigida para Comum em {player.Name}.");
+                }
+
+                bool neededRoll = !item.Roll.IsRolled && item.Definition is { IsStackable: false };
+                ItemRoller.EnsureRolled(item);
+                if (neededRoll) _db.SaveItem(ch.Id, item);
                 if (item.Slot >= 100 && item.Slot <= 116)
                     player.Equipment[item.Slot - 100] = item;
                 else
                     player.Items.Add(item);
             }
+            NormalizeLoadedInventory(player, ch.Id);
 
             RecalculatePlayerStats(player);
+
+            if (player.Level == 1 && player.Equipment.ContainsKey((int)ItemType.Weapon))
+                SendSystemMessage(peer, repairedStartingEquipment
+                    ? "Sua arma inicial estava ausente e foi equipada automaticamente."
+                    : "Sua arma inicial está equipada.");
         }
 
         SendInventoryData(peer, player);
@@ -324,12 +406,12 @@ partial class GameServer
         if (!useInline && ch != null)
             SendPetData(peer, ch.Id);
 
+        var vipExpiry = _db.LoadVipExpiry(session.AccountId);
+        player.VipExpiry = vipExpiry;
+        SendVipStatus(peer, vipExpiry);
+
             if (channel != null)
             {
-                var writerSpawn = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
-                WriteEntityPacket(writerSpawn, player);
-                peer.Send(writerSpawn, DeliveryMethod.ReliableOrdered);
-
                 var aoi = channel.GetEntitiesInAoi(player.X, player.Y);
                 Logger.Info($"HandleEnterWorld({player.Name}): AOI contem {aoi.Count} entidades (incluindo self)");
 
@@ -349,19 +431,7 @@ partial class GameServer
                     sentNearby++;
                 }
 
-                // Also send all player entities in the channel (regardless of AOI distance)
-                int sentPlayers = 0;
-                foreach (var kv in channel.GetAllEntities())
-                {
-                    if (kv.Value.Type != EntityType.Player) continue;
-                    if (kv.Key == entityId) continue;
-                    var playerWriter = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
-                    WriteEntityPacket(playerWriter, kv.Value);
-                    peer.Send(playerWriter, DeliveryMethod.ReliableOrdered);
-                    session.SpawnedEntities.Add(kv.Key);
-                    sentPlayers++;
-                }
-                Logger.Info($"HandleEnterWorld({player.Name}): enviou {sentNearby} spawn(s) de entidades (AOI) + {sentPlayers} player(s) no canal");
+                Logger.Info($"HandleEnterWorld({player.Name}): enviou {sentNearby} spawn(s) da AOI");
 
                 BroadcastSpawnToNearby(channel, player, player.X, player.Y);
             }

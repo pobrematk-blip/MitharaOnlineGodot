@@ -35,6 +35,8 @@ public class MonsterTemplate
     public List<LootEntry> LootTable { get; set; } = new();
     public int GoldMin { get; set; }
     public int GoldMax { get; set; }
+    public bool DropsNormalEquipment { get; set; }
+    public bool DropsEliteEquipment { get; set; }
 }
 
 public class SpawnPoint
@@ -45,6 +47,10 @@ public class SpawnPoint
     public string PrefabId { get; set; } = "";
     public int MaxCount { get; set; } = 5;
     public float RespawnDelay { get; set; } = 10f;
+    public string ElitePrefabId { get; set; } = "";
+    public int EliteBaseCount { get; set; }
+    public int EliteEveryKills { get; set; }
+    public int KillsSinceElite { get; set; }
 }
 
 public class SpawnerManager
@@ -55,7 +61,18 @@ public class SpawnerManager
     public SpawnerManager()
     {
         RegisterDefaultTemplates();
+        RemoveInvalidLootEntries();
         RegisterDefaultSpawnPoints();
+    }
+
+    private void RemoveInvalidLootEntries()
+    {
+        foreach (var template in _templates.Values)
+        {
+            int removed = template.LootTable.RemoveAll(entry => !ItemDefinitions.Exists(entry.ItemId));
+            if (removed > 0)
+                Logger.Info($"Drop: {removed} referencia(s) invalida(s) removida(s) de {template.PrefabId}.");
+        }
     }
 
     private void RegisterDefaultTemplates()
@@ -70,14 +87,37 @@ public class SpawnerManager
             AttackDamage = 4,
             Forca = 1,
             Agilidade = 1,
-            Speed = 60f,
+            Speed = 72f,
             ExperienceReward = 3,
             GoldMin = 1,
-            GoldMax = 5,
+            GoldMax = 4,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.05 },
-                new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.3 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
+            },
+        });
+
+        RegisterTemplate(new MonsterTemplate
+        {
+            PrefabId = "slimeElite",
+            Name = "Slime Elite",
+            Level = 3,
+            Health = 160,
+            MaxHealth = 160,
+            AttackDamage = 12,
+            Forca = 4,
+            Agilidade = 2,
+            Speed = 84f,
+            ExperienceReward = 18,
+            Passive = true,
+            GoldMin = 8,
+            GoldMax = 20,
+            DropsNormalEquipment = true,
+            LootTable = new List<LootEntry>
+            {
+                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
+                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
             },
         });
 
@@ -91,19 +131,14 @@ public class SpawnerManager
             AttackDamage = 7,
             Forca = 2,
             Agilidade = 2,
-            Speed = 80f,
+            Speed = 96f,
             ExperienceReward = 5,
             GoldMin = 3,
             GoldMax = 10,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.05 },
-                new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
-                new() { ItemId = 10, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.15 },
-                new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.08 },
-                new() { ItemId = 30, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.10 },
-                new() { ItemId = 100, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
-                new() { ItemId = 1001, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.08 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
             },
         });
 
@@ -117,16 +152,14 @@ public class SpawnerManager
             AttackDamage = 10,
             Forca = 3,
             Agilidade = 3,
-            Speed = 110f,
+            Speed = 132f,
             ExperienceReward = 8,
             GoldMin = 5,
             GoldMax = 15,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.05 },
-                new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.5 },
-                new() { ItemId = 13, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.12 },
-                new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.1 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
             },
         });
 
@@ -140,17 +173,41 @@ public class SpawnerManager
             AttackDamage = 15,
             Forca = 5,
             Agilidade = 2,
-            Speed = 70f,
+            Speed = 84f,
             ExperienceReward = 14,
             GoldMin = 8,
             GoldMax = 25,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 2, MaxQuantity = 3, DropChance = 0.05 },
-                new() { ItemId = 2, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.05 },
-                new() { ItemId = 11, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.2 },
-                new() { ItemId = 22, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.15 },
-                new() { ItemId = 24, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.12 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
+            },
+        });
+
+        RegisterTemplate(new MonsterTemplate
+        {
+            PrefabId = "slimeBoss",
+            Name = "Slime Boss",
+            Level = 10,
+            Health = 3000,
+            MaxHealth = 3000,
+            AttackDamage = 35,
+            Forca = 12,
+            Agilidade = 4,
+            Speed = 84f,
+            AttackRange = 55f,
+            AggroRange = 500f,
+            AttackCooldown = 2.0f,
+            ExperienceReward = 150,
+            IsBoss = true,
+            Passive = false,
+            GoldMin = 100,
+            GoldMax = 500,
+            DropsEliteEquipment = true,
+            LootTable = new List<LootEntry>
+            {
+                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
+                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
             },
         });
 
@@ -164,7 +221,7 @@ public class SpawnerManager
             AttackDamage = 30,
             Forca = 15,
             Agilidade = 5,
-            Speed = 90f,
+            Speed = 108f,
             AttackRange = 60f,
             AggroRange = 500f,
             ExperienceReward = 80,
@@ -172,15 +229,11 @@ public class SpawnerManager
             Passive = false,
             GoldMin = 50,
             GoldMax = 200,
+            DropsEliteEquipment = true,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = 1, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.05 },
-                new() { ItemId = 2, MinQuantity = 3, MaxQuantity = 8, DropChance = 1.0 },
-                new() { ItemId = 11, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.8 },
-                new() { ItemId = 21, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.7 },
-                new() { ItemId = 23, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.6 },
-                new() { ItemId = 30, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.3 },
-                new() { ItemId = 31, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.25 },
+                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
+                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
             },
         });
     }
@@ -204,10 +257,54 @@ public class SpawnerManager
 
     private void RegisterDefaultSpawnPoints()
     {
-        _spawnPoints.Add(new SpawnPoint { X = 1200, Y = 1050, Radius = 200f, PrefabId = "goblin", MaxCount = 5 });
+        _spawnPoints.Add(new SpawnPoint
+        {
+            X = 1200,
+            Y = 1050,
+            Radius = 600f,
+            PrefabId = "slime",
+            MaxCount = 15,
+            RespawnDelay = 2f,
+            ElitePrefabId = "slimeElite",
+            EliteBaseCount = 2,
+            EliteEveryKills = 10,
+        });
+
+        _spawnPoints.Add(new SpawnPoint
+        {
+            X = 1100,
+            Y = 1050,
+            Radius = 200f,
+            PrefabId = "slimeBoss",
+            MaxCount = 1,
+            RespawnDelay = 3600f,
+        });
     }
 
     public List<SpawnPoint> GetSpawnPoints() => _spawnPoints;
+
+    public void ConfigureSpawnPoints(IEnumerable<SpawnPoint> spawnPoints)
+    {
+        _spawnPoints.Clear();
+        foreach (var point in spawnPoints)
+        {
+            if (string.IsNullOrWhiteSpace(point.PrefabId) || point.MaxCount <= 0)
+                continue;
+
+            _spawnPoints.Add(new SpawnPoint
+            {
+                X = point.X,
+                Y = point.Y,
+                Radius = point.Radius,
+                PrefabId = point.PrefabId,
+                MaxCount = point.MaxCount,
+                RespawnDelay = point.RespawnDelay,
+                ElitePrefabId = point.ElitePrefabId,
+                EliteBaseCount = point.EliteBaseCount,
+                EliteEveryKills = point.EliteEveryKills,
+            });
+        }
+    }
 
     public MonsterEntity? CriarMonstroEm(MonsterTemplate template, float x, float y)
     {

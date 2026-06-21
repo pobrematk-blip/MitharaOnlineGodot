@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10302
+Nome = "Flecha Envenenada"
+Descricao = "Aplica veneno."
+Valor = 120
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 0
+Duracao = 8
+TargetType = 2
+EffectType = 24
+Especializacao = "Ranger"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "DoT"
+EfeitoPrincipal = "Veneno"
+DanoEscala = "120%"
+BuffDebuff = "Veneno"
+DuracaoTexto = "8s"
+Progressao = ""
+Observacoes = ""

@@ -22,7 +22,7 @@ public partial class ItemDatabase : Node
 
         if (!DirAccess.DirExistsAbsolute(ItensDir))
         {
-            GD.PrintErr("[ItemDatabase] Pasta Itens/ nao encontrada.");
+            GD.PrintErr("[ItemDatabase] Pasta Itens/ n?o encontrada.");
             return;
         }
 

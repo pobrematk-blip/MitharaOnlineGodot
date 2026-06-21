@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13209
+Nome = "Ceifador de Almas"
+Descricao = "O Slayer ergue o machado e desfere um golpe lendário, carregado com toda a força acumulada durante a batalha."
+Valor = 350
+CustoMana = 80
+ClasseRestrita = "Berserker"
+Cooldown = 120
+Duracao = 0
+TargetType = 0
+EffectType = 3
+Especializacao = "Slayer"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Causa dano massivo em alvo único. Recebe bônus contra inimigos abaixo de 30% HP."
+DanoEscala = "350% → 600% do dano da arma"
+BuffDebuff = "+50% dano contra alvo com pouca vida"
+DuracaoTexto = "Instantâneo"
+Progressao = "Ultimate possui 5 níveis. Dano escala de 350% até 600%."
+Observacoes = "Ultimate de execução. Ideal contra bosses e alvos prioritários."

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14308
+Nome = "Guardião Celestial"
+Descricao = "O Templário invoca uma proteção celestial sobre o grupo, reduzindo o impacto de ataques inimigos."
+Valor = 0
+CustoMana = 40
+ClasseRestrita = "Guardião"
+Cooldown = 60
+Duracao = 10
+TargetType = 0
+EffectType = 10
+Especializacao = "Templário"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Suporte Defensivo"
+EfeitoPrincipal = "Aplica escudo em área nos aliados próximos."
+DanoEscala = ""
+BuffDebuff = "Escudo coletivo"
+DuracaoTexto = "10s"
+Progressao = "Escudo aumenta por nível."
+Observacoes = "Excelente para mecânicas de boss."

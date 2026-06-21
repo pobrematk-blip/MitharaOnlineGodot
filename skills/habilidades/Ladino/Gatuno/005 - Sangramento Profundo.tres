@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12405
+Nome = "Sangramento Profundo"
+Descricao = "Um corte calculado que faz o alvo sangrar."
+Valor = 120
+CustoMana = 25
+ClasseRestrita = "Ladino"
+Cooldown = 12
+Duracao = 10
+TargetType = 2
+EffectType = 9
+Especializacao = "Gatuno"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano Contínuo"
+EfeitoPrincipal = "Causa dano ao longo do tempo."
+DanoEscala = "120% dano inicial + sangramento"
+BuffDebuff = "Sangramento por 10s"
+DuracaoTexto = "10s"
+Progressao = "Lv1 120% → Lv10 220%; sangramento escala."
+Observacoes = ""

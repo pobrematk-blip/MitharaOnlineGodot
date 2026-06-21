@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300228
+Nome = "Capuz de Aço Estelar"
+Descricao = "Curtida e ajustada por batedores de Aço Estelar, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 1
+CategoriaPeso = 1
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 23
+HpMin = 20
+HpMax = 27
+Mana = 13
+ManaMin = 11
+ManaMax = 15
+DefesaFisica = 14
+DefesaFisicaMin = 12
+DefesaFisicaMax = 16
+DefesaMagica = 14
+DefesaMagicaMin = 12
+DefesaMagicaMax = 16
+Evasao = 0.6
+EvasaoMin = 0.51
+EvasaoMax = 0.69

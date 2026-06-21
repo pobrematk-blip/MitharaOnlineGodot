@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300383
+Nome = "Cinturão do Eclipse de Mitthara"
+Descricao = "Forjada nas oficinas de Eclipse de Mitthara, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 3
+CategoriaPeso = 2
+TipoItem = 1
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 34
+HpMin = 29
+HpMax = 40
+Mana = 6
+ManaMin = 5
+ManaMax = 7
+DefesaFisica = 25
+DefesaFisicaMin = 22
+DefesaFisicaMax = 29
+DefesaMagica = 8
+DefesaMagicaMin = 7
+DefesaMagicaMax = 9
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

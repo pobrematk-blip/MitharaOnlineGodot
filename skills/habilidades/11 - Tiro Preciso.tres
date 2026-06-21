@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11
+Nome = "Tiro Preciso"
+Descricao = "Dispara uma flecha precisa contra um ponto vital do inimigo causando 120% do dano da arma."
+Valor = 120
+CustoMana = 10
+ClasseRestrita = "Arqueiro"
+Cooldown = 4.0
+TargetType = 2
+EffectType = 7

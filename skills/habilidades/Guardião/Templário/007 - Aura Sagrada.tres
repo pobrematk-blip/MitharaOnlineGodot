@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14307
+Nome = "Aura Sagrada"
+Descricao = "Uma aura de fé envolve o Templário e fortalece todos os aliados próximos."
+Valor = 0
+CustoMana = 35
+ClasseRestrita = "Guardião"
+Cooldown = 45
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Templário"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Buff de Grupo"
+EfeitoPrincipal = "Aumenta Defesa e dano sagrado dos aliados próximos."
+DanoEscala = ""
+BuffDebuff = "+10% → +20% Defesa; +Dano Sagrado"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = +10%; Lv10 = +20%."
+Observacoes = "Buff de grupo."

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Espada de Pirata 4.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1053
+Nome = "Espada Ancestral do Bastião"
+Descricao = "Baseada em armas antigas usadas pelos primeiros guardiões das fortalezas."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "ChanceCritica,Tenacidade,PenetracaoArmadura,Precisao,Forca,RouboVida"
+DanoFisico = 77
+DanoFisicoMin = 68
+DanoFisicoMax = 86
+Forca = 27
+ForcaMin = 23
+ForcaMax = 32

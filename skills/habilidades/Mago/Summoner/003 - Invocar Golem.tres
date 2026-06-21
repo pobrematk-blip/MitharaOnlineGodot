@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11103
+Nome = "Invocar Golem"
+Descricao = "Invoca golem."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 20
+TargetType = 0
+EffectType = 5
+Especializacao = "Summoner"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Invocação"
+EfeitoPrincipal = "Tanque temporário"
+DanoEscala = "Escala com nível"
+BuffDebuff = ""
+DuracaoTexto = "20s"
+Progressao = ""
+Observacoes = ""

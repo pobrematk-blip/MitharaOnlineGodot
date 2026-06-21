@@ -263,15 +263,19 @@ public partial class PetNode : Node2D
                 _sprite.Play(anim);
         }
 
-        if (_alvoInimigo is Inimigo inimigo)
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet.IsConnected)
         {
-            inimigo.LevarDano(AtaqueDano);
+            if (_alvoInimigo.HasMeta("network_id"))
+            {
+                ulong targetId = (ulong)_alvoInimigo.GetMeta("network_id");
+                gameNet.SendAttack(targetId);
+            }
         }
         else
         {
-            var metodo = _alvoInimigo.GetType().GetMethod("LevarDano");
-            if (metodo != null)
-                metodo.Invoke(_alvoInimigo, new object[] { AtaqueDano });
+            if (_alvoInimigo is Inimigo inimigo)
+                inimigo.LevarDano(AtaqueDano);
         }
 
         CriarEfeitoAtaque();

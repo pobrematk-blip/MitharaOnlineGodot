@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12205
+Nome = "Punhalada nas Costas"
+Descricao = "Uma facada brutal nas costas que atinge pontos vitais."
+Valor = 170
+CustoMana = 30
+ClasseRestrita = "Ladino"
+Cooldown = 10
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Assassino"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano / Perfuração"
+EfeitoPrincipal = "Causa alto dano e ignora parte da defesa se acertar por trás."
+DanoEscala = "170% do dano da arma"
+BuffDebuff = "Ignora 20% da Defesa Física quando usado pelas costas."
+DuracaoTexto = ""
+Progressao = "Lv1 170% → Lv10 320%; ignorar defesa 20% → 35%"
+Observacoes = "Skill central da árvore Assassino."

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300158
+Nome = "Gibão de Valebosque"
+Descricao = "Curtida e ajustada por batedores de Valebosque, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+NivelRequerido = 20
+Valor = 200
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 19
+HpMin = 16
+HpMax = 22
+Mana = 12
+ManaMin = 10
+ManaMax = 14
+DefesaFisica = 11
+DefesaFisicaMin = 10
+DefesaFisicaMax = 13
+DefesaMagica = 11
+DefesaMagicaMin = 10
+DefesaMagicaMax = 13
+Evasao = 0.525
+EvasaoMin = 0.45
+EvasaoMax = 0.6

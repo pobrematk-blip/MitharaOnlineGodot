@@ -9,7 +9,7 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private static ItemDefinition? GetItemDef(int id) => ItemDefinitions.Get(id);
-    private const float NpcInteractionRange = 100f;
+    private const float NpcInteractionRange = 180f;
 
     private void HandleNpcInteract(NetPeer peer, NetDataReader reader)
     {
@@ -25,7 +25,7 @@ partial class GameServer
         var npcEntity = channel.GetEntity(npcEntityId) as NPCEntity;
         if (npcEntity == null)
         {
-            Logger.Info($"Entidade {npcEntityId} nao encontrada ou nao e NPCEntity");
+            Logger.Info($"Entidade {npcEntityId} n?o encontrada ou n?o ? NPCEntity");
             return;
         }
         if (npcEntity.Health <= 0)
@@ -53,12 +53,12 @@ partial class GameServer
         var dialog = _world.Npcs.GetDialog(dialogId);
         if (dialog == null)
         {
-            Logger.Info($"Dialogo '{dialogId}' nao encontrado, enviando mensagem padrao");
+            Logger.Info($"Di?logo '{dialogId}' n?o encontrado, enviando mensagem padr?o");
             SendNpcDialog(peer, "O NPC não responde...", new List<(string text, string action, string data)>());
             return;
         }
 
-        Logger.Info($"Dialogo encontrado: \"{dialog.Text}\" ({dialog.Options.Count} opcoes)");
+        Logger.Info($"Di?logo encontrado: \"{dialog.Text}\" ({dialog.Options.Count} opcoes)");
         var options = dialog.Options.Select(o => (o.Text, o.Action, o.ActionData)).ToList();
         string dialogText = dialog.Text;
 
@@ -239,21 +239,16 @@ partial class GameServer
             return;
         }
 
-        int slot = player.FindEmptyInventorySlot();
-        if (slot < 0)
+        if (!_sessions.TryGetValue(peer, out var buySession) || buySession.SelectedCharacter == null)
+            return;
+        if (!TryAddItemToInventory(player, buySession.SelectedCharacter.Id, itemId, quantity))
         {
             SendNpcBuyResult(peer, false, "Inventário cheio.");
             return;
         }
 
         player.Gold -= totalCost;
-        var newItem = new ItemInstance { Slot = slot, ItemId = itemId, Quantity = quantity };
-        player.Items.Add(newItem);
-        if (_sessions.TryGetValue(peer, out var buySession) && buySession.SelectedCharacter != null)
-        {
-            _db.SaveCharacterGold(buySession.SelectedCharacter.Id, player.Gold);
-            _db.SaveItem(buySession.SelectedCharacter.Id, newItem);
-        }
+        _db.SaveCharacterGold(buySession.SelectedCharacter.Id, player.Gold);
 
         if (entry.Stock > 0)
             entry.Stock -= quantity;

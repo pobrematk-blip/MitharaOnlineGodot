@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13002
+Nome = "Investida Brutal"
+Descricao = "O Berserker baixa o ombro e avança como uma fera, usando o peso do corpo e da armadura para romper a distância até o inimigo."
+Valor = 80
+CustoMana = 15
+ClasseRestrita = "Berserker"
+Cooldown = 15
+Duracao = 0
+TargetType = 0
+EffectType = 2
+Especializacao = "Todas"
+NivelRequerido = 1
+Ordem = 2
+Escopo = "Compartilhada da Classe"
+Tipo = "Mobilidade / Iniciação"
+EfeitoPrincipal = "Avança 4 tiles em linha reta e causa dano leve ao primeiro inimigo atingido. Pode interromper conjurações comuns."
+DanoEscala = "80% → 150% do dano da arma"
+BuffDebuff = "Interrupção curta"
+DuracaoTexto = "Instantâneo"
+Progressao = "Skill possui 10 níveis. O dano escala de 80% no Lv1 até 150% no Lv10."
+Observacoes = "Não atravessa paredes. Em bosses, não interrompe habilidades especiais."

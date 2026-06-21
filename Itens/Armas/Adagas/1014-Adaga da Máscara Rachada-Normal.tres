@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga do Assassino Lendário.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1014
+Nome = "Adaga da Máscara Rachada"
+Descricao = "Carregada por duelistas sem nome, marcada por histórias que ninguém confirma."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 20
+DanoFisicoMin = 17
+DanoFisicoMax = 23
+Destreza = 8
+DestrezaMin = 7
+DestrezaMax = 10

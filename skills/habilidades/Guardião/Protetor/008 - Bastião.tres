@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14108
+Nome = "Bastião"
+Descricao = "O Guardião se torna o centro de uma formação defensiva, protegendo aliados que lutam próximos a ele."
+Valor = 0
+CustoMana = 40
+ClasseRestrita = "Guardião"
+Cooldown = 60
+Duracao = 15
+TargetType = 1
+EffectType = 7
+Especializacao = "Protetor"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Suporte em Área"
+EfeitoPrincipal = "Aliados próximos recebem redução de dano."
+DanoEscala = ""
+BuffDebuff = "Redução de dano do grupo 10% → 20%"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = 10%; Lv10 = 20%."
+Observacoes = "Não acumula com outro Bastião."

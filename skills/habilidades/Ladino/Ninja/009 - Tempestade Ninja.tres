@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12309
+Nome = "Tempestade Ninja"
+Descricao = "O Ninja se move como um vulto, atacando múltiplos inimigos em alta velocidade."
+Valor = 400
+CustoMana = 80
+ClasseRestrita = "Ladino"
+Cooldown = 120
+Duracao = 5
+TargetType = 2
+EffectType = 7
+Especializacao = "Ninja"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Causa múltiplos golpes rápidos em área curta."
+DanoEscala = "Total de 400% do dano da arma"
+BuffDebuff = "Durante a skill recebe evasão temporária."
+DuracaoTexto = "5s"
+Progressao = "Lv1 400% → Lv5 650%"
+Observacoes = "Ultimate da árvore."

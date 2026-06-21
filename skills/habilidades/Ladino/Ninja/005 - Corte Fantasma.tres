@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12305
+Nome = "Corte Fantasma"
+Descricao = "O Ninja atravessa o alvo com um corte rápido."
+Valor = 150
+CustoMana = 30
+ClasseRestrita = "Ladino"
+Cooldown = 10
+Duracao = 0
+TargetType = 0
+EffectType = 2
+Especializacao = "Ninja"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano / Mobilidade"
+EfeitoPrincipal = "Avança através do inimigo causando dano."
+DanoEscala = "150% do dano da arma"
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = "Lv1 150% → Lv10 280%"
+Observacoes = "Pode atravessar até 1 alvo; não atravessa paredes."

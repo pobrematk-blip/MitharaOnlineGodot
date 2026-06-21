@@ -81,4 +81,11 @@ partial class GameNetwork
         ulong newLeaderId = r.GetULong();
         EmitSignal(SignalName.OnPartyLeaderUpdate, newLeaderId);
     }
+
+    private void HandlePartyInviteReceived(NetDataReader r)
+    {
+        string senderName = r.GetString();
+        Log($"[PARTY] Received party invite from {senderName}");
+        InvitePopupUI.ShowInvite("party", senderName);
+    }
 }

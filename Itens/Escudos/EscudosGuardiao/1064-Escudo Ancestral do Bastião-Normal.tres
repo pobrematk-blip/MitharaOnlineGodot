@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1064
+Nome = "Escudo Ancestral do Bastião"
+Descricao = "Inspirado nos primeiros escudos que mantiveram as fortalezas de pé."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 63
+DefesaFisicaMin = 54
+DefesaFisicaMax = 72
+Hp = 135
+HpMin = 108
+HpMax = 163
+Forca = 17
+ForcaMin = 14
+ForcaMax = 20
+Agilidade = 13
+AgilidadeMin = 11
+AgilidadeMax = 16

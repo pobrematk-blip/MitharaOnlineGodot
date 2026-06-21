@@ -100,7 +100,7 @@ public partial class PetController : Node
         _coletaRow.AddChild(_chkColeta);
 
         CallDeferred(MethodName.CentralizarHUD);
-        GetTree().Root.SizeChanged += () => CallDeferred(MethodName.CentralizarHUD);
+        GetTree().Root.SizeChanged += OnRootSizeChanged;
         OnEquipamentoAtualizado();
     }
 
@@ -172,6 +172,8 @@ public partial class PetController : Node
         _petNode.PetID = petId;
         _petNode.NomePet = petNome;
 
+        string mobType = petNome.ToLowerInvariant();
+
         if (_petResource != null)
         {
             _petNode.AnimPrefix = _petResource.AnimPrefix;
@@ -182,6 +184,24 @@ public partial class PetController : Node
             _petNode.AtaqueDano = _petResource.AttackDamage;
             _petNode.ColetaRange = _petResource.ColetaRange;
             _petNode.GuardaRange = _petResource.GuardRange;
+        }
+        else
+        {
+            _petNode.AnimPrefix = mobType;
+            _petNode.TipoPet = TipoPet.Combate;
+            _petNode.Velocidade = 250f;
+            _petNode.AtaqueRange = 60f;
+            _petNode.AtaqueCooldown = 0.8f;
+            _petNode.AtaqueDano = 8;
+            _petNode.GuardaRange = 200f;
+        }
+
+        var sprite = _petNode.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+        if (sprite != null)
+        {
+            var frames = MobSpriteFramesBuilder.GetOrBuild(mobType);
+            if (frames != null)
+                sprite.SpriteFrames = frames;
         }
 
         _petNode.GlobalPosition = _player.GlobalPosition + new Vector2(
@@ -244,8 +264,14 @@ public partial class PetController : Node
         GD.Print($"[PET] Modo alterado para: {modo}");
     }
 
+    private void OnRootSizeChanged()
+    {
+        CallDeferred(MethodName.CentralizarHUD);
+    }
+
     public override void _ExitTree()
     {
+        GetTree().Root.SizeChanged -= OnRootSizeChanged;
         if (_hudPanel != null && IsInstanceValid(_hudPanel))
         {
             _hudPanel.QueueFree();

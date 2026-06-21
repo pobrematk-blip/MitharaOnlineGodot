@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13303
+Nome = "Provocação Selvagem"
+Descricao = "O Titã ruge com violência, atraindo a atenção dos inimigos próximos para si."
+Valor = 0
+CustoMana = 20
+ClasseRestrita = "Berserker"
+Cooldown = 15
+Duracao = 4
+TargetType = 2
+EffectType = 7
+Especializacao = "Titã"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Controle / Taunt"
+EfeitoPrincipal = "Provoca inimigos em área."
+DanoEscala = ""
+BuffDebuff = "Taunt"
+DuracaoTexto = "4s"
+Progressao = "Skill possui 10 níveis. Pode aumentar alcance ou reduzir cooldown."
+Observacoes = "Ferramenta de tank para segurar grupos."

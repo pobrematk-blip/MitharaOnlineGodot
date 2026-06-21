@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machados Perdisos 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1036
+Nome = "Machado do Clamor"
+Descricao = "Cada golpe parece anunciar guerra, mesmo quando empunhado por um só guerreiro."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,PenetracaoArmadura,RouboVida,Tenacidade,Precisao"
+DanoFisico = 36
+DanoFisicoMin = 32
+DanoFisicoMax = 41
+Forca = 11
+ForcaMin = 10
+ForcaMax = 13

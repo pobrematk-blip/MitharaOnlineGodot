@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14303
+Nome = "Julgamento"
+Descricao = "O Templário julga um inimigo diante da luz, castigando suas falhas e marcando-o para punição."
+Valor = 150
+CustoMana = 20
+ClasseRestrita = "Guardião"
+Cooldown = 10
+Duracao = 8
+TargetType = 0
+EffectType = 3
+Especializacao = "Templário"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Dano / Debuff"
+EfeitoPrincipal = "Causa dano sagrado e aumenta levemente o dano sagrado recebido pelo alvo."
+DanoEscala = "150% → 280% do dano da arma"
+BuffDebuff = "+5% → +15% dano sagrado recebido"
+DuracaoTexto = "8s"
+Progressao = "Dano e debuff escalam por nível."
+Observacoes = "Excelente para combos do Templário."

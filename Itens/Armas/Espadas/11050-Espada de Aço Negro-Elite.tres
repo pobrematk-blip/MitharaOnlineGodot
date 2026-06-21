@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Espada de Pirata 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11050
+Nome = "Espada de Aço Negro"
+Descricao = "Sua lâmina escura impõe respeito sem perder a função defensiva."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "ChanceCritica,Tenacidade,PenetracaoArmadura,Precisao,Forca,RouboVida"
+DanoFisico = 62
+DanoFisicoMin = 54
+DanoFisicoMax = 70
+Forca = 22
+ForcaMin = 18
+ForcaMax = 26

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300005
+Nome = "Calças do Despertar"
+Descricao = "Tecida com fios arcanos de aldeias iniciais, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 0
+TipoItem = 1
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 2
+HpMin = 2
+HpMax = 3
+Mana = 4
+ManaMin = 4
+ManaMax = 5
+DefesaFisica = 1
+DefesaFisicaMin = 1
+DefesaFisicaMax = 2
+DefesaMagica = 2
+DefesaMagicaMin = 2
+DefesaMagicaMax = 3
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

@@ -42,20 +42,8 @@ public partial class TalentTreeComponent : Node
 
     public bool DesbloquearNo(string nodeId, int nivelAtual)
     {
-        if (!PodeDesbloquear(nodeId, nivelAtual))
-            return false;
-
-        var node = TalentTree.ObterNo(nodeId);
-        _nosDesbloqueados.Add(nodeId);
-        PontosDisponiveis -= node.CustoPontos;
-        
-        GD.Print($"[TALENT TREE] ✓ Desbloqueado: {node.Nome}");
-        EmitSignal(SignalName.TalentoDesbloqueado, node);
-        
-        // Aplicar bônus ao player
-        AplicarBonusDoTalento(node);
-        
-        return true;
+        GD.PrintErr("[TALENT TREE] Desbloqueio local bloqueado. O servidor deve validar o talento.");
+        return false;
     }
 
     private void AplicarBonusDoTalento(TalentNodeResource node)

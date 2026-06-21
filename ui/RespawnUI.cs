@@ -38,7 +38,7 @@ public partial class RespawnUI : Control
         _isDead = true;
         _isWaiting = false;
         _waitTimer = 0f;
-        _titleLabel.Text = "Voce Morreu!";
+        _titleLabel.Text = "Voc? morreu!";
         _messageLabel.Text = "Deseja reviver agora ou aguardar ajuda?";
         _timerLabel.Visible = false;
         _respawnButton.Text = "Reviver Agora";

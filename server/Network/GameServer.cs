@@ -52,14 +52,16 @@ public partial class GameServer : INetEventListener
             IPv6Enabled = false,
             UnsyncedEvents = true,
             UpdateTime = 15,
-            DisconnectTimeout = 120000,
+            DisconnectTimeout = 10000,
+            PingInterval = 1000,
         };
         _world = new WorldManager(config.ChannelCount);
     }
 
     public void Start()
     {
-        _netManager.Start(_config.Port);
+        if (!_netManager.Start(_config.Port))
+            throw new InvalidOperationException($"Não foi possível iniciar o servidor: a porta {_config.Port} já está em uso.");
         _running = true;
 
         var pathGrid = new PathfindingGrid(
@@ -71,12 +73,18 @@ public partial class GameServer : INetEventListener
         );
         pathGrid.ApplyBlockedAreas(_config.BlockedAreas);
 
+        if (_config.NpcSpawnPoints.Count > 0)
+            _world.Npcs.ConfigureSpawnPoints(_config.NpcSpawnPoints);
+
         foreach (var ch in _world.GetAllChannels())
         {
-            ch.EntitySpawned += OnChannelEntitySpawned;
             ch.OnMonsterAttack += HandleMonsterAIAttack;
             ch.NoMobZones = _config.NoMobZones;
+            if (_config.SpawnPoints.Count > 0)
+                ch.Spawner.ConfigureSpawnPoints(_config.SpawnPoints);
             ch.PathGrid = pathGrid;
+            int npcCount = ch.SpawnNpcs(_world.Npcs);
+            Logger.Info($"Canal {ch.Id}: {npcCount} NPC(s), {_config.SpawnPoints.Count} spot(s) de mob configurado(s).");
         }
 
         LoadGuildsFromDb();
@@ -129,6 +137,24 @@ public partial class GameServer : INetEventListener
     {
         _gameTime += dt;
         _world.UpdateAll(dt, _gameTime);
+
+        foreach (var ch in _world.GetAllChannels())
+        {
+            var expired = ch.DrainExpiredLoot();
+            if (expired.Count == 0) continue;
+            foreach (var lootId in expired)
+            {
+                var w = PacketSerializer.WritePacket(PacketId.S2C_LootDespawn);
+                w.Put(lootId);
+                foreach (var kv in ch.GetAllEntities())
+                {
+                    var peer = ch.GetPlayerPeer(kv.Key);
+                    if (peer != null)
+                        peer.Send(w, DeliveryMethod.ReliableOrdered);
+                }
+            }
+        }
+
         BroadcastEntityUpdates();
 
         if (_gameTime - _lastAutoSaveTime >= AutoSaveInterval)
@@ -189,7 +215,9 @@ public partial class GameServer : INetEventListener
         {
             if (_sessions.Remove(peer, out var session))
             {
-                if (session.AccountId > 0)
+                if (session.AccountId > 0 &&
+                    _activeAccounts.TryGetValue(session.AccountId, out var activePeer) &&
+                    activePeer == peer)
                     _activeAccounts.Remove(session.AccountId);
                 if (session.EntityId > 0 && session.ChannelId >= 0)
                 {
@@ -275,6 +303,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_PlayerStop:
                 HandlePlayerStop(peer, reader);
                 break;
+            case PacketId.C2S_PlayerAction:
+                HandlePlayerAction(peer, reader);
+                break;
             case PacketId.C2S_ChannelSwitch:
                 HandleChannelSwitch(peer, reader);
                 break;
@@ -299,6 +330,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_DropItem:
                 HandleDropItem(peer, reader);
                 break;
+            case PacketId.C2S_UseItem:
+                HandleUseItem(peer, reader);
+                break;
             case PacketId.C2S_Attack:
                 HandleAttack(peer, reader);
                 break;
@@ -319,6 +353,9 @@ public partial class GameServer : INetEventListener
                 break;
             case PacketId.C2S_DeleteCharacter:
                 HandleDeleteCharacter(peer, reader);
+                break;
+            case PacketId.C2S_LeaveWorld:
+                HandleLeaveWorld(peer);
                 break;
             case PacketId.C2S_PartyInvite:
                 HandlePartyInvitePacket(peer, reader);
@@ -401,6 +438,22 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_AllocateStat:
                 HandleAllocateStat(peer, reader);
                 break;
+            case PacketId.C2S_AdminUpdateItemDefinition:
+                HandleAdminUpdateItemDefinition(peer, reader);
+                break;
+            case PacketId.C2S_DuelRequest:
+                HandleDuelRequestPacket(peer, reader);
+                break;
+            case PacketId.C2S_DuelAccept:
+                HandleDuelAcceptPacket(peer, reader);
+                break;
+            case PacketId.C2S_DuelDecline:
+                HandleDuelDeclinePacket(peer, reader);
+                break;
+            case PacketId.C2S_ProjectileFire:
+                HandleProjectileFire(peer, reader);
+                break;
+
             }
         }
         catch (Exception ex)
@@ -421,6 +474,46 @@ public partial class GameServer : INetEventListener
         SendPetData(peer, session.SelectedCharacter.Id);
 
         Logger.Info($"[PET] {session.SelectedCharacter.Name} capturou pet '{petName}' (ID:{petId})");
+    }
+
+    private void HandleProjectileFire(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel == null) return;
+        var entity = channel.GetEntity(session.EntityId) as PlayerEntity;
+        if (entity == null || entity.Health <= 0) return;
+
+        ulong entityId = entity.Id;
+        float originX = reader.GetFloat();
+        float originY = reader.GetFloat();
+        float dirX = reader.GetFloat();
+        float dirY = reader.GetFloat();
+        byte projectileType = reader.GetByte();
+
+        float length = MathF.Sqrt(dirX * dirX + dirY * dirY);
+        if (length > 0.001f)
+        {
+            dirX /= length;
+            dirY /= length;
+        }
+
+        var nearby = channel.GetEntitiesInAoi(entity.X, entity.Y);
+        foreach (var eid in nearby)
+        {
+            if (eid == entityId) continue;
+            var targetPeer = channel.GetPlayerPeer(eid);
+            if (targetPeer == null) continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_ProjectileSpawn);
+            writer.Put(entityId);
+            writer.Put(originX);
+            writer.Put(originY);
+            writer.Put(dirX);
+            writer.Put(dirY);
+            writer.Put(projectileType);
+            targetPeer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
     }
 
     private void SendPetData(NetPeer peer, int characterId)
@@ -445,6 +538,8 @@ public class PlayerSession
     public ulong EntityId { get; set; }
     public int ChannelId { get; set; } = -1;
     public bool IsAdmin { get; set; }
+    public double LastChatTime { get; set; } = -1;
+    public double LastActionTime { get; set; } = -1;
     public HashSet<ulong> SpawnedEntities { get; set; } = new();
 
     public bool IsAdminOrAdminMode(ServerConfig config)

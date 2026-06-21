@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Luva de couro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300294
+Nome = "Manoplas de Valebosque"
+Descricao = "Forjada nas oficinas de Valebosque, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 4
+CategoriaPeso = 2
+NivelRequerido = 20
+Valor = 200
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 7
+HpMin = 6
+HpMax = 8
+Mana = 1
+ManaMin = 1
+ManaMax = 2
+DefesaFisica = 5
+DefesaFisicaMin = 4
+DefesaFisicaMax = 6
+DefesaMagica = 1
+DefesaMagicaMin = 1
+DefesaMagicaMax = 2
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

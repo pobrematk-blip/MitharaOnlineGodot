@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14207
+Nome = "Tremor de Guerra"
+Descricao = "A Vanguarda golpeia o chão com força suficiente para rachar a terra e abalar todos ao redor."
+Valor = 200
+CustoMana = 35
+ClasseRestrita = "Guardião"
+Cooldown = 22
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Vanguarda"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Área"
+EfeitoPrincipal = "Causa dano físico em área grande."
+DanoEscala = "200% → 320% do dano da arma"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 200%; Lv10 = 320%."
+Observacoes = "Boa skill para PvE e guerras de guilda."

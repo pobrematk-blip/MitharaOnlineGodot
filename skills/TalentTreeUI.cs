@@ -11,6 +11,7 @@ public partial class TalentTreeUI : Control
     private Button _closeButton;
     private Button _zoomInButton;
     private Button _zoomOutButton;
+    private Control _canvasViewport;
     private Control _board;
     private PanelContainer _slotTemplate;
     private TalentTreeComponent _talentTreeComponent;
@@ -22,11 +23,16 @@ public partial class TalentTreeUI : Control
     private Vector2 _boardOriginalPosition;
 
     private const float SlotSize = 38f;
+    private const float AttributeNodeSize = 28f;
+    private const float ChoiceNodeWidth = 104f;
+    private const float SkillNodeSize = 58f;
+    private const float UnlockNodeSize = 40f;
+    private const float RootNodeSize = 68f;
     private const float RowHeight = 96f;
     private const float ColumnWidth = 108f;
     private const float BoardMargin = 50f;
-    private const float DefaultZoom = 0.6f;
-    private const float MinZoom = 0.3f;
+    private const float DefaultZoom = 0.48f;
+    private const float MinZoom = 0.25f;
     private const float MaxZoom = 1.15f;
     private const float ZoomStep = 0.08f;
     private float _zoomFactor = DefaultZoom;
@@ -34,6 +40,13 @@ public partial class TalentTreeUI : Control
     private static readonly Color CorDisponivel = new(0.35f, 0.2f, 0.45f);
     private static readonly Color CorNormal = new(0.08f, 0.08f, 0.12f);
     private static readonly Color CorDesbloqueado = new(0.35f, 0.5f, 0.9f);
+    private TextureButton _toggleButton;
+
+    public override void _ExitTree()
+    {
+        if (_toggleButton != null)
+            GetTree().Root.SizeChanged -= OnSizeChanged;
+    }
 
     public override void _Ready()
     {
@@ -45,8 +58,8 @@ public partial class TalentTreeUI : Control
         _closeButton = _bgPanel.GetNodeOrNull<Button>("CloseButton");
         _zoomInButton = _bgPanel.GetNodeOrNull<Button>("TitleBar/ZoomInButton");
         _zoomOutButton = _bgPanel.GetNodeOrNull<Button>("TitleBar/ZoomOutButton");
-        var scroll = _bgPanel.GetNodeOrNull<ScrollContainer>("VBox/Scroll");
-        _board = scroll?.GetNodeOrNull<Control>("Board");
+        _canvasViewport = _bgPanel.GetNodeOrNull<Control>("VBox/Scroll");
+        _board = _canvasViewport?.GetNodeOrNull<Control>("Board");
         _slotTemplate = _board?.GetNodeOrNull<PanelContainer>("SlotTemplate");
 
         if (_closeButton != null) _closeButton.Pressed += OnCloseButtonPressed;
@@ -69,16 +82,22 @@ public partial class TalentTreeUI : Control
 
     private void CriarBotaoToggle()
     {
-        var btn = new TextureButton();
-        btn.Name = "SkillsToggleButton";
-        btn.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Skills.png");
-        btn.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Skills Selecionado.png");
-        btn.CustomMinimumSize = new Vector2(36, 36);
-        btn.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
-        btn.Pressed += () => TogglePanelVisibility();
-        AddChild(btn);
-        AtualizarPosicaoBotao(btn);
-        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+        _toggleButton = new TextureButton();
+        _toggleButton.Name = "SkillsToggleButton";
+        _toggleButton.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Skills.png");
+        _toggleButton.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Skills Selecionado.png");
+        _toggleButton.CustomMinimumSize = new Vector2(36, 36);
+        _toggleButton.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
+        _toggleButton.Pressed += () => TogglePanelVisibility();
+        AddChild(_toggleButton);
+        AtualizarPosicaoBotao(_toggleButton);
+        GetTree().Root.SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged()
+    {
+        if (_toggleButton != null)
+            AtualizarPosicaoBotao(_toggleButton);
     }
 
     private void AtualizarPosicaoBotao(Control btn)
@@ -198,10 +217,6 @@ public partial class TalentTreeUI : Control
         if (_board != null)
         {
             _board.Scale = new Vector2(_zoomFactor, _zoomFactor);
-            // Ensure board occupies available area so scaling centers correctly
-            _board.Size = panelSize * 0.92f;
-            _board.CustomMinimumSize = _board.Size;
-            _board.Position = (panelSize - _board.Size * _zoomFactor) * 0.5f;
         }
 
         // Move close and zoom buttons to the top-right inside the panel
@@ -239,9 +254,13 @@ public partial class TalentTreeUI : Control
     private void AdjustZoom(float delta)
     {
         if (_board == null || _bgPanel == null) return;
+        Vector2 viewportCenter = _canvasViewport != null
+            ? _canvasViewport.Size * 0.5f
+            : _bgPanel.Size * 0.5f;
+        Vector2 localCenter = (viewportCenter - _board.Position) / _zoomFactor;
         _zoomFactor = Mathf.Clamp(_zoomFactor + delta, MinZoom, MaxZoom);
         _board.Scale = new Vector2(_zoomFactor, _zoomFactor);
-        _board.Position = (_bgPanel.Size - _board.Size * _zoomFactor) * 0.5f;
+        _board.Position = viewportCenter - localCenter * _zoomFactor;
         UpdatePointsLabel();
     }
 
@@ -273,13 +292,13 @@ public partial class TalentTreeUI : Control
             _draggingBoard = mouseEvent.Pressed;
             if (mouseEvent.Pressed)
             {
-                _boardDragOrigin = mouseEvent.Position;
+                _boardDragOrigin = mouseEvent.GlobalPosition;
                 _boardOriginalPosition = _board.Position;
             }
         }
         else if (@event is InputEventMouseMotion mouseMotion && _draggingBoard)
         {
-            Vector2 delta = mouseMotion.Position - _boardDragOrigin;
+            Vector2 delta = mouseMotion.GlobalPosition - _boardDragOrigin;
             _board.Position = _boardOriginalPosition + delta;
         }
     }
@@ -302,6 +321,9 @@ public partial class TalentTreeUI : Control
         }
 
         var tree = _talentTreeComponent.TalentTree;
+        var titleLabel = _titleBar?.GetNodeOrNull<Label>("TitleLabel");
+        if (titleLabel != null)
+            titleLabel.Text = tree.NomeArvore.ToUpperInvariant();
         var nodes = tree.Nodes?.Where(n => n != null).ToArray();
         if (nodes == null || nodes.Length == 0) return;
 
@@ -372,61 +394,78 @@ public partial class TalentTreeUI : Control
 
         var positions = CalculateNodePositions(tree, nodes, out int maxDepth);
         DrawBackgroundGrid(_board.CustomMinimumSize, maxDepth);
+        _board.Size = _board.CustomMinimumSize;
+        CallDeferred(nameof(CentralizarCanvas));
 
         var slotMap = new Dictionary<string, PanelContainer>();
         foreach (var node in nodes)
         {
             var id = node.NodeId;
             if (!positions.ContainsKey(id)) continue;
-            var slot = (PanelContainer)_slotTemplate.Duplicate(7);
+            bool unlocked = _talentTreeComponent.TemNoDesbloqueado(id);
+            bool canUnlock = !unlocked && _talentTreeComponent.PodeDesbloquear(id, _playerNivel);
+            Vector2 nodeDimensions = ObterDimensaoNo(node, tree);
+            var slot = new TalentNodeSlotUI
+            {
+                NodeData = unlocked ? node : null,
+                MouseFilter = MouseFilterEnum.Stop,
+            };
             slot.Visible = true;
-            slot.TooltipText = $"{node.Nome}\n{node.Descricao}";
+            slot.TooltipText = CriarTooltip(node);
             slot.AnchorLeft = 0;
             slot.AnchorTop = 0;
             slot.AnchorRight = 0;
             slot.AnchorBottom = 0;
-            slot.Size = new Vector2(SlotSize, SlotSize);
-            slot.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
+            slot.Size = nodeDimensions;
+            slot.CustomMinimumSize = nodeDimensions;
             _board.AddChild(slot);
             slotMap[id] = slot;
 
-            var icon = slot.GetNodeOrNull<TextureRect>("Icon");
-            if (icon != null && node.Icone != null)
-                icon.Texture = node.Icone;
-
-            bool unlocked = _talentTreeComponent.TemNoDesbloqueado(id);
-            bool canUnlock = !unlocked && _talentTreeComponent.PodeDesbloquear(id, _playerNivel);
-
-            if (tree.UsaLayoutPersonalizado && node.Posicao != new Vector2(-1, -1))
+            if (node.TemEscolhaDeStatus)
             {
-                Estilo(slot, new Color(0.18f, 0.14f, 0.25f), new Color(0.9f, 0.75f, 0.4f));
-            }
-            else if (unlocked)
-            {
-                Estilo(slot, new Color(0.16f, 0.24f, 0.48f), CorDesbloqueado);
-            }
-            else if (canUnlock)
-            {
-                Estilo(slot, new Color(0.28f, 0.18f, 0.4f), CorDisponivel);
+                CriarOpcoesDeStatus(slot, node, unlocked, canUnlock);
             }
             else
             {
-                Estilo(slot, CorNormal, new Color(0.18f, 0.18f, 0.22f));
-            }
-
-            if (canUnlock)
-            {
-                Control.GuiInputEventHandler handler = null;
-                handler = (InputEvent e) =>
+                var icon = new TextureRect
                 {
-                    if (e is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-                        if (_talentTreeComponent.DesbloquearNo(id, _playerNivel))
-                            UpdateTreeView();
+                    Texture = node.Icone,
+                    ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                    MouseFilter = MouseFilterEnum.Ignore,
                 };
-                slot.GuiInput += handler;
+                slot.AddChild(icon);
+
+                if (node.Icone == null)
+                {
+                    var fallback = new Label
+                    {
+                        Text = node.NodeType switch
+                        {
+                            TalentNodeType.Skill => "?",
+                            TalentNodeType.Unlock => "D",
+                            _ => "+",
+                        },
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        MouseFilter = MouseFilterEnum.Ignore,
+                    };
+                    fallback.AddThemeFontSizeOverride("font_size", node.NodeType == TalentNodeType.Skill ? 22 : 13);
+                    fallback.AddThemeColorOverride("font_color", new Color(0.88f, 0.9f, 0.94f));
+                    slot.AddChild(fallback);
+                }
+
+                Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
+                Color bg = CorNormal;
+                if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
+                else if (canUnlock) { bg = new Color(0.28f, 0.18f, 0.4f); border = CorDisponivel; }
+                Estilo(slot, bg, border, nodeDimensions.Y);
             }
 
-            slot.Position = positions[id] - new Vector2(SlotSize * 0.5f, SlotSize * 0.5f);
+            slot.Position = positions[id] - nodeDimensions * 0.5f;
+
+            if (node.NodeId.EndsWith("_rota", StringComparison.Ordinal))
+                CriarRotuloCaminho(node, positions[id]);
         }
 
         foreach (var node in nodes)
@@ -637,38 +676,147 @@ public partial class TalentTreeUI : Control
 
     private void DrawBackgroundGrid(Vector2 boardSize, int maxDepth)
     {
-        int rowCount = Mathf.Max(4, maxDepth + 2);
-        var gridColor = new Color(0.18f, 0.22f, 0.3f, 0.22f);
-        float startX = BoardMargin;
-        float endX = boardSize.X - BoardMargin;
-
-        for (int row = 0; row < rowCount; row++)
+        Vector2 center = boardSize * 0.5f;
+        var guideColor = new Color(0.24f, 0.28f, 0.34f, 0.16f);
+        foreach (float radius in new[] { 120f, 190f, 270f, 350f, 430f, 495f, 560f })
         {
-            float y = BoardMargin + row * RowHeight;
             var line = new Line2D();
             line.Width = 1.0f;
-            line.DefaultColor = gridColor;
-            line.Points = new[] { new Vector2(startX, y), new Vector2(endX, y) };
+            line.DefaultColor = guideColor;
+            var points = new Vector2[65];
+            for (int index = 0; index < points.Length; index++)
+            {
+                float angle = Mathf.Pi * 2f * index / (points.Length - 1);
+                points[index] = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            }
+            line.Points = points;
             line.ZIndex = -10;
             _board.AddChild(line);
             _board.MoveChild(line, 0);
         }
 
-        int columnCount = 5;
-        for (int column = 1; column < columnCount; column++)
+        foreach (float angle in new[] { -Mathf.Pi / 2f, Mathf.Pi * 5f / 6f, Mathf.Pi / 6f })
         {
-            float x = boardSize.X * column / columnCount;
             var line = new Line2D();
             line.Width = 1.0f;
-            line.DefaultColor = new Color(0.18f, 0.22f, 0.3f, 0.12f);
-            line.Points = new[] { new Vector2(x, BoardMargin - 40f), new Vector2(x, boardSize.Y - BoardMargin + 40f) };
+            line.DefaultColor = new Color(0.24f, 0.28f, 0.34f, 0.1f);
+            line.Points = new[] { center, center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 580f };
             line.ZIndex = -10;
             _board.AddChild(line);
             _board.MoveChild(line, 0);
         }
     }
 
-    private static void Estilo(PanelContainer slot, Color bg, Color border)
+    private void CentralizarCanvas()
+    {
+        if (_board == null || _canvasViewport == null) return;
+        _board.Position = (_canvasViewport.Size - _board.Size * _zoomFactor) * 0.5f;
+    }
+
+    private static Vector2 ObterDimensaoNo(TalentNodeResource node, TalentTreeResource tree)
+    {
+        if (node.TemEscolhaDeStatus)
+            return new Vector2(ChoiceNodeWidth, AttributeNodeSize);
+        if (tree.RootNodeIds?.Contains(node.NodeId) == true)
+            return Vector2.One * RootNodeSize;
+        float size = node.NodeType switch
+        {
+            TalentNodeType.Skill => SkillNodeSize,
+            TalentNodeType.Unlock => UnlockNodeSize,
+            _ => AttributeNodeSize,
+        };
+        return Vector2.One * size;
+    }
+
+    private static void CriarOpcoesDeStatus(PanelContainer slot, TalentNodeResource node, bool unlocked, bool canUnlock)
+    {
+        slot.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
+        var row = new HBoxContainer
+        {
+            Alignment = BoxContainer.AlignmentMode.Center,
+            MouseFilter = MouseFilterEnum.Pass,
+        };
+        row.AddThemeConstantOverride("separation", 8);
+        slot.AddChild(row);
+
+        int optionCount = Math.Min(3, node.StatOptionIds.Length);
+        for (int index = 0; index < optionCount; index++)
+        {
+            string statId = node.StatOptionIds[index];
+            float value = node.StatOptionValues != null && index < node.StatOptionValues.Length
+                ? node.StatOptionValues[index]
+                : 0.1f;
+            var option = new PanelContainer
+            {
+                CustomMinimumSize = Vector2.One * AttributeNodeSize,
+                TooltipText = $"{node.Nome}\n{statId}: {value:+0.0;-0.0}\nEscolha exclusiva",
+                MouseFilter = MouseFilterEnum.Stop,
+            };
+            Color border = TalentNodeResource.ObterCorTipo(TalentNodeType.Attribute).Darkened(0.35f);
+            Color bg = CorNormal;
+            if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
+            else if (canUnlock) { bg = new Color(0.16f, 0.28f, 0.32f); border = CorDisponivel; }
+            Estilo(option, bg, border, AttributeNodeSize);
+
+            var label = new Label
+            {
+                Text = AbreviarStatus(statId),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            label.AddThemeFontSizeOverride("font_size", 8);
+            option.AddChild(label);
+            row.AddChild(option);
+        }
+    }
+
+    private static string AbreviarStatus(string statId)
+    {
+        if (string.IsNullOrWhiteSpace(statId)) return "+";
+        var letras = statId.Where(char.IsUpper).Take(3).ToArray();
+        return letras.Length >= 2
+            ? new string(letras).ToUpperInvariant()
+            : statId[..Math.Min(3, statId.Length)].ToUpperInvariant();
+    }
+
+    private static string CriarTooltip(TalentNodeResource node)
+    {
+        var linhas = new List<string>
+        {
+            node.Nome,
+            TalentNodeResource.ObterRotuloTipo(node.NodeType),
+            node.Descricao,
+            $"Custo: {node.CustoPontos} ponto(s) | Nível: {node.NivelMinimo}",
+        };
+        if (!string.IsNullOrWhiteSpace(node.StatId) && !Mathf.IsZeroApprox(node.BonusValor))
+            linhas.Add($"{node.StatId}: {node.BonusValor:+0.0;-0.0}");
+        if (node.TemEscolhaDeStatus)
+            linhas.Add("Escolha uma das três opções deste grupo.");
+        return string.Join("\n", linhas.Where(l => !string.IsNullOrWhiteSpace(l)));
+    }
+
+    private void CriarRotuloCaminho(TalentNodeResource node, Vector2 center)
+    {
+        Vector2 offset = node.NodeId.Contains("sniper", StringComparison.Ordinal)
+            ? new Vector2(-190f, -12f)
+            : node.NodeId.Contains("ranger", StringComparison.Ordinal)
+                ? new Vector2(10f, -12f)
+                : new Vector2(-90f, 28f);
+        var label = new Label
+        {
+            Text = node.Nome.ToUpperInvariant(),
+            Position = center + offset,
+            Size = new Vector2(180f, 24f),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        label.AddThemeFontSizeOverride("font_size", 14);
+        label.AddThemeColorOverride("font_color", TalentNodeResource.ObterCorTipo(node.NodeType));
+        _board.AddChild(label);
+    }
+
+    private static void Estilo(PanelContainer slot, Color bg, Color border, float nodeSize)
     {
         slot.AddThemeStyleboxOverride("panel", new StyleBoxFlat
         {
@@ -678,10 +826,10 @@ public partial class TalentTreeUI : Control
             BorderWidthRight = 3,
             BorderWidthBottom = 3,
             BorderColor = border,
-            CornerRadiusTopLeft = (int)(SlotSize * 0.4f),
-            CornerRadiusTopRight = (int)(SlotSize * 0.4f),
-            CornerRadiusBottomRight = (int)(SlotSize * 0.4f),
-            CornerRadiusBottomLeft = (int)(SlotSize * 0.4f),
+            CornerRadiusTopLeft = (int)(nodeSize * 0.5f),
+            CornerRadiusTopRight = (int)(nodeSize * 0.5f),
+            CornerRadiusBottomRight = (int)(nodeSize * 0.5f),
+            CornerRadiusBottomLeft = (int)(nodeSize * 0.5f),
             ContentMarginLeft = 0,
             ContentMarginTop = 0,
             ContentMarginRight = 0,

@@ -1,0 +1,1 @@
+﻿$line = (Get-Content 'generate_items.ps1' | Select-Object -Index 386); $chars = $line.ToCharArray(); for ($i = 0; $i -lt $chars.Length; $i++) { Write-Host ("{0} (0x{1:X4})" -f $chars[$i], [int]$chars[$i]) }

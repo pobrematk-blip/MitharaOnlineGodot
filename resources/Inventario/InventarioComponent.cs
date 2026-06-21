@@ -154,12 +154,13 @@ public partial class InventarioComponent : Node
             int itemId = (int)entry["item_id"];
             int qty = (int)entry["quantity"];
             int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
+            string instanceData = entry.ContainsKey("instance_data") ? (string)entry["instance_data"] : "";
 
             if (slot >= 0 && slot < Slots.Count)
             {
                 var resource = itemDB.GetItem(itemId);
                 if (resource != null)
-                    Slots[slot] = new SlotInventario(resource, qty, refineLevel);
+                    Slots[slot] = new SlotInventario(resource, qty, refineLevel, instanceData);
             }
         }
 

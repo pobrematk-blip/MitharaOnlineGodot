@@ -20,6 +20,7 @@ public partial class GameNetwork : Node
     internal int _pendingBaseInteligencia;
     internal int _pendingLevel;
     internal long _pendingXp;
+    private bool _pendingInventoryApplyLogged;
 
     public static void Log(string msg)
     {
@@ -47,6 +48,9 @@ public partial class GameNetwork : Node
     public int LocalChannelId { get; private set; }
     public int Gold { get; set; }
     public int GuildId { get; set; } = -1;
+    public string GuildName { get; set; } = "";
+    public string GuildTag { get; set; } = "";
+    public int GuildEmblem { get; set; } = -1;
     public bool IsGuildLeader { get; set; }
     public Vector2 PendingPlayerSpawn { get; private set; }
 
@@ -88,6 +92,12 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnOpenGuildFormEventHandler();
     [Signal] public delegate void OnGuildCreateResultEventHandler(int guildId, bool success, string message);
     [Signal] public delegate void OnGuildClearedEventHandler();
+    [Signal] public delegate void OnDuelRequestedEventHandler(string senderName);
+    [Signal] public delegate void OnPartyInviteReceivedEventHandler(string senderName);
+    [Signal] public delegate void OnGuildInviteReceivedEventHandler(string senderName);
+    [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
+    [Signal] public delegate void OnDuelEndEventHandler(bool won);
+    [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
 
     public new bool IsConnected => _client?.IsConnected ?? false;
     public int ServerPing => _client?.Ping ?? 0;
@@ -172,10 +182,19 @@ public partial class GameNetwork : Node
             }
             else
             {
-                Log("HUD nao encontrado");
+                Log("HUD n?o encontrado");
             }
 
-            CallDeferred(nameof(EmitOnEnterWorld));
+            var tree = GetTree();
+            if (tree != null)
+            {
+                var timer = tree.CreateTimer(0.2);
+                timer.Timeout += EmitOnEnterWorld;
+            }
+            else
+            {
+                CallDeferred(nameof(EmitOnEnterWorld));
+            }
         }
         catch (System.Exception ex)
         {
@@ -186,6 +205,7 @@ public partial class GameNetwork : Node
     private void EmitOnEnterWorld()
     {
         EmitSignal(SignalName.OnEnterWorld);
+        CallDeferred(nameof(ApplyPendingInventory));
     }
 
     public void ConnectToServer(string host = "127.0.0.1", int port = 7777)
@@ -225,6 +245,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_EntityUpdate:
                 HandleEntityUpdate(r);
+                break;
+            case PacketId.S2C_PlayerAction:
+                HandlePlayerAction(r);
                 break;
             case PacketId.S2C_Chat:
                 HandleChat(r);
@@ -268,6 +291,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_CharacterDeleted:
                 HandleCharacterDeleted(r);
                 break;
+            case PacketId.S2C_LeaveWorld:
+                HandleLeaveWorld(r);
+                break;
             case PacketId.S2C_PartyData:
                 HandlePartyData(r);
                 break;
@@ -276,6 +302,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_PartyLeaderUpdate:
                 HandlePartyLeaderUpdate(r);
+                break;
+            case PacketId.S2C_PartyInviteReceived:
+                HandlePartyInviteReceived(r);
                 break;
             case PacketId.S2C_GuildData:
                 HandleGuildData(r);
@@ -288,6 +317,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_GuildSkillUpdate:
                 HandleGuildSkillUpdate(r);
+                break;
+            case PacketId.S2C_GuildInviteReceived:
+                HandleGuildInviteReceived(r);
                 break;
             case PacketId.S2C_LootSpawn:
                 HandleLootSpawn(r);
@@ -333,6 +365,21 @@ public partial class GameNetwork : Node
             case PacketId.S2C_StatUpdate:
                 HandleStatUpdate(r);
                 break;
+            case PacketId.S2C_DuelRequested:
+                HandleDuelRequested(r);
+                break;
+            case PacketId.S2C_DuelStart:
+                HandleDuelStart(r);
+                break;
+            case PacketId.S2C_DuelEnd:
+                HandleDuelEnd(r);
+                break;
+            case PacketId.S2C_ProjectileSpawn:
+                HandleProjectileSpawn(r);
+                break;
+            case PacketId.S2C_VipStatus:
+                HandleVipStatus(r);
+                break;
         } } catch (System.Exception ex)
         {
             LogError($"Erro processando pacote {id}", ex.ToString());
@@ -368,11 +415,19 @@ public partial class GameNetwork : Node
 
     public void ApplyPendingInventory()
     {
-        if (PendingInventoryData == null && PendingEquipmentData == null)
+        if (PendingInventoryData == null && PendingEquipmentData == null && PendingPetData == null)
             return;
 
         var player = GetTree().CurrentScene?.FindChild("Player", true, false);
-        if (player == null) return;
+        if (player == null)
+        {
+            if (!_pendingInventoryApplyLogged)
+            {
+                Log("ApplyPendingInventory: Player ainda n?o est? pronto; mantendo dados pendentes.");
+                _pendingInventoryApplyLogged = true;
+            }
+            return;
+        }
 
         if (PendingInventoryData != null)
         {
@@ -381,8 +436,12 @@ public partial class GameNetwork : Node
             {
                 inv.AplicarDadosServidor(PendingInventoryData, ItemDB);
                 GD.Print("[GAME] Pending inventory applied");
+                PendingInventoryData = null;
             }
-            PendingInventoryData = null;
+            else
+            {
+                Log("ApplyPendingInventory: InventarioComponent ou ItemDB n?o encontrado; mantendo invent?rio pendente.");
+            }
         }
 
         if (PendingEquipmentData != null)
@@ -397,17 +456,30 @@ public partial class GameNetwork : Node
                     int itemId = (int)entry["item_id"];
                     int qty = (int)entry["quantity"];
                     int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
+                    string instanceData = entry.ContainsKey("instance_data") ? (string)entry["instance_data"] : "";
                     var resource = ItemDB.GetItem(itemId);
+                    if (resource == null)
+                    {
+                        ItemDB.Refresh();
+                        resource = ItemDB.GetItem(itemId);
+                    }
                     if (resource != null)
                     {
                         var tipo = (TipoEquipamento)slotVal;
-                        equip.ItensEquipados[tipo] = new SlotInventario(resource, qty, refineLevel);
+                        equip.ItensEquipados[tipo] = new SlotInventario(resource, qty, refineLevel, instanceData);
                     }
+                    else
+                        LogError($"Item equipado {itemId} não existe no catálogo do cliente.");
                 }
+                equip.RecalcularBonusEquipamentos();
                 equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
                 GD.Print("[GAME] Pending equipment applied");
+                PendingEquipmentData = null;
             }
-            PendingEquipmentData = null;
+            else
+            {
+                Log("ApplyPendingInventory: EquipamentoComponent ou ItemDB n?o encontrado; mantendo equipamento pendente.");
+            }
         }
 
         if (PendingPetData != null)
@@ -423,9 +495,18 @@ public partial class GameNetwork : Node
                     colecao.RegistrarCaptura(petId, petName);
                 }
                 GD.Print("[GAME] Pending pet data applied");
+                PendingPetData = null;
             }
-            PendingPetData = null;
+            else
+            {
+                Log("ApplyPendingInventory: PetColecaoComponent n?o encontrado; mantendo pets pendentes.");
+            }
         }
+    }
+
+    internal void ResetPendingInventoryApplyLog()
+    {
+        _pendingInventoryApplyLogged = false;
     }
 
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingInventoryData { get; private set; }
@@ -484,6 +565,94 @@ public partial class GameNetwork : Node
             w.Put(worldPosition.X);
             w.Put(worldPosition.Y);
         });
+    }
+
+    public void SendAdminUpdateItemDefinition(ItemResource item)
+    {
+        if (item == null || _client == null || !_client.IsConnected)
+            return;
+
+        static int Mid(int min, int max, int fallback) =>
+            min == 0 && max == 0 ? fallback : (min + max) / 2;
+
+        _client.SendPacket(PacketId.C2S_AdminUpdateItemDefinition, w =>
+        {
+            w.Put(item.ItemID);
+            w.Put(item.Nome ?? "");
+            w.Put((int)item.Tipo);
+            w.Put(item.QuantidadeMaximaPorSlot);
+            w.Put(item.Acumulavel);
+            w.Put(item.EhBolsa);
+            w.Put(item.SlotsAdicionais);
+            w.Put(Mid(item.ForcaMin, item.ForcaMax, item.Forca));
+            w.Put(Mid(item.AgilidadeMin, item.AgilidadeMax, item.Agilidade));
+            w.Put(Mid(item.DestrezaMin, item.DestrezaMax, item.Destreza));
+            w.Put(Mid(item.InteligenciaMin, item.InteligenciaMax, item.Inteligencia));
+            w.Put(Mid(item.DanoFisicoMin, item.DanoFisicoMax, item.DanoFisico));
+            w.Put(Mid(item.DefesaFisicaMin, item.DefesaFisicaMax, item.DefesaFisica));
+            w.Put(Mid(item.DefesaMagicaMin, item.DefesaMagicaMax, item.DefesaMagica));
+            w.Put(Mid(item.HpMin, item.HpMax, item.Hp));
+            w.Put(Mid(item.ManaMin, item.ManaMax, item.Mana));
+            w.Put((item.EvasaoMin == 0 && item.EvasaoMax == 0) ? item.Evasao : (item.EvasaoMin + item.EvasaoMax) / 2f);
+            w.Put(item.Valor);
+            w.Put(item.PoolDeAfixos ?? "");
+            w.Put(item.NivelRequerido);
+            w.Put(item.TipoItem == TipoItem.Elite);
+            w.Put(item.ClassesPermitidas ?? "");
+            w.Put(item.ForcaMin); w.Put(item.ForcaMax);
+            w.Put(item.AgilidadeMin); w.Put(item.AgilidadeMax);
+            w.Put(item.DestrezaMin); w.Put(item.DestrezaMax);
+            w.Put(item.InteligenciaMin); w.Put(item.InteligenciaMax);
+            w.Put(item.DanoFisicoMin); w.Put(item.DanoFisicoMax);
+            w.Put(item.DefesaFisicaMin); w.Put(item.DefesaFisicaMax);
+            w.Put(item.DefesaMagicaMin); w.Put(item.DefesaMagicaMax);
+            w.Put(item.HpMin); w.Put(item.HpMax);
+            w.Put(item.ManaMin); w.Put(item.ManaMax);
+            w.Put(item.EvasaoMin); w.Put(item.EvasaoMax);
+        });
+    }
+
+    private void HandleProjectileSpawn(NetDataReader r)
+    {
+        ulong entityId = r.GetULong();
+        float originX = r.GetFloat();
+        float originY = r.GetFloat();
+        float dirX = r.GetFloat();
+        float dirY = r.GetFloat();
+        byte projectileType = r.GetByte();
+        EmitSignal(SignalName.OnProjectileSpawn, entityId, originX, originY, dirX, dirY, projectileType);
+    }
+
+    public void SendProjectileFire(float originX, float originY, float dirX, float dirY, byte projectileType)
+    {
+        if (_client == null || !_client.IsConnected) return;
+        _client.SendPacket(PacketId.C2S_ProjectileFire, w =>
+        {
+            w.Put(originX);
+            w.Put(originY);
+            w.Put(dirX);
+            w.Put(dirY);
+            w.Put(projectileType);
+        });
+    }
+
+    public long VipExpiryBinary { get; private set; }
+    public bool IsVipActive
+    {
+        get
+        {
+            if (VipExpiryBinary == 0) return false;
+            var expiry = System.DateTime.FromBinary(VipExpiryBinary);
+            return expiry > System.DateTime.UtcNow;
+        }
+    }
+
+    private void HandleVipStatus(NetDataReader r)
+    {
+        long binary = r.GetLong();
+        VipExpiryBinary = binary;
+        var expiry = System.DateTime.FromBinary(binary);
+        GD.Print($"[VIP] Status recebido: expiry={expiry:yyyy-MM-dd HH:mm:ss}, ativo={IsVipActive}");
     }
 }
 

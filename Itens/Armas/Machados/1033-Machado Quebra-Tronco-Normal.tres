@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machados Perdisos 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1033
+Nome = "Machado Quebra-Tronco"
+Descricao = "Pesado e simples, feito para quem prefere resolver problemas com um único golpe."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,PenetracaoArmadura,RouboVida,Tenacidade,Precisao"
+DanoFisico = 4
+DanoFisicoMin = 3
+DanoFisicoMax = 5
+Forca = 1
+ForcaMin = 1
+ForcaMax = 2

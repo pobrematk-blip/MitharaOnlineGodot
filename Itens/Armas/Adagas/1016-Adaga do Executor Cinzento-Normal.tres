@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga do Campeão.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1016
+Nome = "Adaga do Executor Cinzento"
+Descricao = "Usada por mercenários que cumprem contratos sem deixar perguntas para trás."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 50
+Valor = 500
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 32
+DanoFisicoMin = 28
+DanoFisicoMax = 36
+Destreza = 14
+DestrezaMin = 12
+DestrezaMax = 16

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 21
+Nome = "Disparo Múltiplo"
+Descricao = "Dispara três flechas simultaneamente em formato de V. 90% do dano da arma cada."
+Valor = 90
+CustoMana = 15
+ClasseRestrita = "Arqueiro"
+Cooldown = 4.0
+TargetType = 2
+EffectType = 7

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de montros 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300340
+Nome = "Grevas de Umbra Alta"
+Descricao = "Forjada nas oficinas de Umbra Alta, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 2
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 46
+HpMin = 39
+HpMax = 53
+Mana = 8
+ManaMin = 7
+ManaMax = 9
+DefesaFisica = 34
+DefesaFisicaMin = 29
+DefesaFisicaMax = 40
+DefesaMagica = 11
+DefesaMagicaMin = 9
+DefesaMagicaMax = 13
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

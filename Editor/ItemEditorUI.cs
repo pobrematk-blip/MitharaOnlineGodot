@@ -6,7 +6,8 @@ using System.Linq;
 public partial class ItemEditorUI : Control
 {
     private Panel _panel;
-    private ItemList _itemList;
+    private Tree _itemTree;
+    private LineEdit _itemSearch;
     private Label _previewStatus;
 
     private SpinBox _itemIdSpin;
@@ -23,6 +24,7 @@ public partial class ItemEditorUI : Control
     private CheckBox _ehBolsaCheck;
     private SpinBox _slotsAdicionaisSpin;
     private OptionButton _tipoDropdown;
+    private OptionButton _subcategoriaDropdown;
     private OptionButton _categoriaPesoDropdown;
     private SpinBox _nivelReqSpin;
     private SpinBox _valorSpin;
@@ -117,7 +119,8 @@ public partial class ItemEditorUI : Control
         fechar.Pressed += () => { _panel.Visible = false; };
         header.GuiInput += OnHeaderDrag;
 
-        _itemList = GetNode<ItemList>("%ItemList");
+        _itemTree = GetNode<Tree>("%ItemTree");
+        _itemSearch = GetNode<LineEdit>("%ItemSearch");
         _previewStatus = GetNode<Label>("%PreviewStatus");
 
         _itemIdSpin = GetNode<SpinBox>("%ItemIdSpin");
@@ -135,6 +138,7 @@ public partial class ItemEditorUI : Control
         _ehBolsaCheck = GetNode<CheckBox>("%EhBolsaCheck");
         _slotsAdicionaisSpin = GetNode<SpinBox>("%SlotsAdicionaisSpin");
         _tipoDropdown = GetNode<OptionButton>("%TipoDropdown");
+        _subcategoriaDropdown = GetNode<OptionButton>("%SubcategoriaDropdown");
         _categoriaPesoDropdown = GetNode<OptionButton>("%CategoriaPesoDropdown");
         _nivelReqSpin = GetNode<SpinBox>("%NivelReqSpin");
         _valorSpin = GetNode<SpinBox>("%ValorSpin");
@@ -217,10 +221,12 @@ public partial class ItemEditorUI : Control
         GetNode<Button>("%BtnCriarTodos").Pressed += OnCriarTodosFaltantes;
         GetNode<Button>("%BtnGerarValores").Pressed += OnGerarValores;
 
-        _itemList.ItemSelected += OnItemSelected;
+        _itemTree.ItemSelected += OnItemSelected;
+        _itemSearch.TextChanged += _ => CarregarListaItens();
 
         foreach (var tipo in _tiposEquipamento)
             _tipoDropdown.AddItem(tipo);
+        AtualizarSubcategorias();
 
         _categoriaPesoDropdown.AddItem("Leve");
         _categoriaPesoDropdown.AddItem("Medio");
@@ -303,7 +309,7 @@ public partial class ItemEditorUI : Control
             else if (f is LineEdit le) le.TextChanged += _ => OnFormDirty();
             else if (f is CheckBox cb) cb.Toggled += _ => OnFormDirty();
         }
-        _tipoDropdown.ItemSelected += _ => OnFormDirty();
+        _tipoDropdown.ItemSelected += _ => { AtualizarSubcategorias(); OnFormDirty(); };
         _categoriaPesoDropdown.ItemSelected += _ => OnFormDirty();
         _tipoItemDropdown.ItemSelected += _ => OnFormDirty();
         _raridadeDropdown.ItemSelected += _ => OnFormDirty();
@@ -325,13 +331,13 @@ public partial class ItemEditorUI : Control
 
     private void CarregarListaItens()
     {
-        _itemList.Clear();
+        _itemTree.Clear();
         _currentItem = null;
         _currentItemPath = null;
 
         if (!DirAccess.DirExistsAbsolute(ItensDir))
         {
-            _previewStatus.Text = "Pasta Itens/ nao encontrada.";
+            _previewStatus.Text = "Pasta Itens/ n?o encontrada.";
             return;
         }
 
@@ -339,15 +345,126 @@ public partial class ItemEditorUI : Control
         ScanDirRecursive(ItensDir, paths);
         paths.Sort();
 
+        var root = _itemTree.CreateItem();
+        _itemTree.HideRoot = true;
+        var folders = new Dictionary<string, TreeItem> { [""] = root };
+        TreeItem EnsureFolder(string categoryPath, string physicalPath = null)
+        {
+            string parentPath = "";
+            TreeItem parent = root;
+            foreach (string part in categoryPath.Split('/', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string currentPath = string.IsNullOrEmpty(parentPath) ? part : parentPath + "/" + part;
+                if (!folders.TryGetValue(currentPath, out var folder))
+                {
+                    folder = _itemTree.CreateItem(parent);
+                    folder.SetText(0, part);
+                    folder.Collapsed = parent != root;
+                    folders[currentPath] = folder;
+                }
+                parent = folder;
+                parentPath = currentPath;
+            }
+            if (!string.IsNullOrWhiteSpace(physicalPath))
+                parent.SetMetadata(0, "folder:" + physicalPath.Trim('/'));
+            return parent;
+        }
+
+        EnsureFolder("Armas/Arcos", "Armas/Arcos");
+        EnsureFolder("Armas/Adagas", "Armas/Adagas");
+        EnsureFolder("Armas/Machados", "Armas/Machados");
+        EnsureFolder("Armas/Espadas", "Armas/Espadas");
+        EnsureFolder("Armas/Cajados", "Armas/Cajados");
+        EnsureFolder("Armas/Martelos", "Armas/Martelos");
+        EnsureFolder("Armas/Mao Secundaria/Adagas Secundarias", "Escudos/AdagasSecundarias");
+        EnsureFolder("Armas/Mao Secundaria/Escudos de Guardiao", "Escudos/EscudosGuardiao");
+        EnsureFolder("Armas/Mao Secundaria/Escudos de Clerigo", "Escudos/EscudosClerigo");
+        foreach (string peso in new[] { "Leves", "Medias", "Pesadas" })
+        foreach (string slot in new[] { "Capacetes", "Peitorais", "Calcas", "Luvas", "Botas", "Cintos" })
+            EnsureFolder($"Armaduras/{peso}/{slot}", $"Armaduras/{peso}/{slot}");
+        EnsureFolder("Acessorios/Colares", "Colares");
+        EnsureFolder("Acessorios/Aneis", "Aneis");
+        EnsureFolder("Acessorios/Brincos", "Brincos");
+        EnsureFolder("Companheiros/Montarias", "Montarias");
+        EnsureFolder("Companheiros/Pets", "Pets");
+        EnsureFolder("Consumiveis", "Consumiveis");
+        EnsureFolder("Itens de Quest", "ItensDeQuest");
+        EnsureFolder("Materiais", "Materiais");
+        EnsureFolder("Bolsas", "Bolsas");
+        EnsureFolder("Recursos", "Recursos");
+        EnsureFolder("Moedas", "Moedas");
+        EnsureFolder("Runas", "Runas");
+        EnsureFolder("Feiticos", "Feiticos");
+        EnsureFolder("Cosmeticos", "Cosmeticos");
+        EnsureFolder("Outros", "Outros");
+        string filter = _itemSearch.Text.Trim();
+        int itemCount = 0;
+
         foreach (var p in paths)
         {
             string relativePath = p.Replace(ItensDir, "");
-            string displayName = relativePath.Replace(".tres", "").Replace(".res", "");
-            int idx = _itemList.AddItem(displayName);
-            _itemList.SetItemMetadata(idx, relativePath);
+            Resource resource;
+            try
+            {
+                resource = ResourceLoader.Load(p, cacheMode: ResourceLoader.CacheMode.Replace);
+            }
+            catch (Exception ex)
+            {
+                GD.PushWarning($"Item ignorado por erro de carregamento: {p} ({ex.Message})");
+                continue;
+            }
+            if (resource is not ItemResource item) continue;
+            if (!string.IsNullOrWhiteSpace(filter)
+                && !item.Nome.Contains(filter, StringComparison.OrdinalIgnoreCase)
+                && !item.ItemID.ToString().Contains(filter, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            string categoryPath = ObterCategoriaEditor(relativePath, item);
+            string physicalFolder = relativePath.Replace('\\', '/');
+            physicalFolder = physicalFolder.Contains('/') ? physicalFolder[..physicalFolder.LastIndexOf('/')] : "Outros";
+            TreeItem parent = EnsureFolder(categoryPath, physicalFolder);
+
+            var leaf = _itemTree.CreateItem(parent);
+            leaf.SetText(0, $"{item.ItemID} | {item.Nome} ({item.TipoItem})");
+            leaf.SetMetadata(0, relativePath);
+            if (item.Icone != null)
+            {
+                leaf.SetIcon(0, item.Icone);
+                leaf.SetIconMaxWidth(0, 28);
+            }
+            leaf.SetCustomMinimumHeight(32);
+            itemCount++;
         }
 
-        _previewStatus.Text = $"Encontrados {paths.Count} item(ns). Selecione um.";
+        _previewStatus.Text = $"Encontrados {itemCount} item(ns). Selecione um.";
+    }
+
+    private static string ObterCategoriaEditor(string relativePath, ItemResource item)
+    {
+        string normalized = relativePath.Replace('\\', '/');
+        string folder = normalized.Contains('/') ? normalized[..normalized.LastIndexOf('/')] : "Outros";
+
+        if (item.EhBolsa) return "Bolsas";
+        if (folder.StartsWith("Armas", StringComparison.OrdinalIgnoreCase)) return folder;
+        if (folder.StartsWith("Escudos", StringComparison.OrdinalIgnoreCase))
+        {
+            string subtype = folder["Escudos".Length..].Trim('/');
+            subtype = subtype switch
+            {
+                "AdagasSecundarias" => "Adagas Secundarias",
+                "EscudosGuardiao" => "Escudos de Guardiao",
+                "EscudosClerigo" => "Escudos de Clerigo",
+                _ => subtype,
+            };
+            return "Armas/Mao Secundaria/" + subtype;
+        }
+        if (folder.StartsWith("Armaduras/", StringComparison.OrdinalIgnoreCase)) return folder;
+        if (folder is "Capacetes" or "Peitorais" or "Cintos" or "Luvas" or "Calcas" or "Botas") return "Armaduras/Medias/" + folder;
+        if (folder is "Colares" or "Aneis" or "Brincos") return "Acessorios/" + folder;
+        if (folder is "Montarias" or "Pets") return "Companheiros/" + folder;
+        if (folder is "Asas" or "Skins") return "Cosmeticos/" + folder;
+        if (folder.Contains("Quest", StringComparison.OrdinalIgnoreCase) || folder.Contains("Missao", StringComparison.OrdinalIgnoreCase)) return "Itens de Quest";
+        return folder;
     }
 
     private void ScanDirRecursive(string dirPath, List<string> results)
@@ -373,16 +490,29 @@ public partial class ItemEditorUI : Control
         dir.ListDirEnd();
     }
 
-    private void OnItemSelected(long index)
+    private void OnItemSelected()
     {
         if (_ignorarEventosUi) return;
-        if (index < 0 || index >= _itemList.ItemCount) return;
+        var selected = _itemTree.GetSelected();
+        if (selected == null) return;
 
-        string relativePath = (string)_itemList.GetItemMetadata((int)index);
+        string relativePath = selected.GetMetadata(0).AsString();
+        if (string.IsNullOrWhiteSpace(relativePath) && selected.GetFirstChild() != null)
+        {
+            selected.Collapsed = !selected.Collapsed;
+            return;
+        }
+        if (relativePath.StartsWith("folder:", StringComparison.Ordinal))
+        {
+            selected.Collapsed = !selected.Collapsed;
+            _previewStatus.Text = $"Pasta selecionada: {relativePath[7..]}. Use Novo Item para criar aqui.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(relativePath)) return;
         string path = ItensDir + relativePath;
         if (!ResourceLoader.Exists(path))
         {
-            _previewStatus.Text = "Arquivo nao encontrado: " + path;
+            _previewStatus.Text = "Arquivo n?o encontrado: " + path;
             return;
         }
 
@@ -412,6 +542,9 @@ public partial class ItemEditorUI : Control
         _ehBolsaCheck.ButtonPressed = _currentItem.EhBolsa;
         _slotsAdicionaisSpin.Value = _currentItem.SlotsAdicionais;
         _tipoDropdown.Select((int)_currentItem.Tipo);
+        string currentFolder = _currentItemPath?.Replace(ItensDir, "").Replace('\\', '/') ?? "";
+        var parts = currentFolder.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        AtualizarSubcategorias(parts.Length >= 3 ? parts[1] : null);
         _categoriaPesoDropdown.Select((int)_currentItem.CategoriaPeso);
         _tipoItemDropdown.Select((int)_currentItem.TipoItem);
         AtualizarRaridades();
@@ -734,7 +867,7 @@ public partial class ItemEditorUI : Control
     private void OnBrowseIcone()
     {
         var dialog = new FileDialog();
-        dialog.Title = "Selecionar Icone do Item";
+        dialog.Title = "Selecionar ?cone do item";
         dialog.FileMode = FileDialog.FileModeEnum.OpenFile;
         dialog.Filters = new[] { "*.png,*.jpg,*.jpeg,*.webp ; Imagens" };
         dialog.Access = FileDialog.AccessEnum.Resources;
@@ -785,6 +918,27 @@ public partial class ItemEditorUI : Control
         };
     }
 
+    private void AtualizarSubcategorias(string selecionar = null)
+    {
+        if (_subcategoriaDropdown == null || _tipoDropdown == null) return;
+        string[] options = (TipoEquipamento)_tipoDropdown.Selected switch
+        {
+            TipoEquipamento.Arma => new[] { "Arcos", "Adagas", "Machados", "Espadas", "Cajados", "Martelos", "Outros" },
+            TipoEquipamento.Escudo => new[] { "AdagasSecundarias", "EscudosGuardiao", "EscudosClerigo", "Outros" },
+            _ => new[] { "Padrao" },
+        };
+
+        _subcategoriaDropdown.Clear();
+        foreach (string option in options)
+            _subcategoriaDropdown.AddItem(option);
+
+        if (!string.IsNullOrWhiteSpace(selecionar))
+        {
+            int index = Array.FindIndex(options, option => string.Equals(option, selecionar, StringComparison.OrdinalIgnoreCase));
+            if (index >= 0) _subcategoriaDropdown.Select(index);
+        }
+    }
+
     private void OnAddItem()
     {
         var item = new ItemResource();
@@ -792,7 +946,31 @@ public partial class ItemEditorUI : Control
 
         var tipoAtual = (TipoEquipamento)_tipoDropdown.Selected;
         string pasta = ObterPastaPorTipo(tipoAtual);
-        string dirPasta = ItensDir + pasta + "/";
+        string subcategoria = _subcategoriaDropdown.GetItemText(_subcategoriaDropdown.Selected);
+        string dirPasta;
+        string selectedMetadata = _itemTree.GetSelected()?.GetMetadata(0).AsString() ?? "";
+        if (selectedMetadata.StartsWith("folder:", StringComparison.Ordinal))
+            dirPasta = ItensDir + selectedMetadata[7..].Trim('/') + "/";
+        else
+        {
+            bool armorSlot = tipoAtual is TipoEquipamento.Capacete or TipoEquipamento.Peitoral
+                or TipoEquipamento.Cinto or TipoEquipamento.Luvas or TipoEquipamento.Calca or TipoEquipamento.Botas;
+            if (armorSlot)
+            {
+                string peso = ((PesoItem)_categoriaPesoDropdown.Selected) switch
+                {
+                    PesoItem.Leve => "Leves",
+                    PesoItem.Pesado => "Pesadas",
+                    _ => "Medias",
+                };
+                dirPasta = $"{ItensDir}Armaduras/{peso}/{pasta}/";
+            }
+            else
+                dirPasta = ItensDir + pasta + "/";
+
+            if (!armorSlot && (tipoAtual == TipoEquipamento.Arma || tipoAtual == TipoEquipamento.Escudo) && subcategoria != "Padrao")
+                dirPasta += subcategoria + "/";
+        }
 
         if (!DirAccess.DirExistsAbsolute(dirPasta))
             DirAccess.MakeDirAbsolute(dirPasta);
@@ -851,7 +1029,11 @@ public partial class ItemEditorUI : Control
         if (err == Error.Ok)
         {
             AtualizarDatabase();
-            _previewStatus.Text = $"Salvo em {_currentItemPath}";
+            var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            network?.SendAdminUpdateItemDefinition(_currentItem);
+            _previewStatus.Text = network?.IsConnected == true
+                ? $"Salvo e enviado ao servidor: {_currentItem.Nome}"
+                : $"Salvo em {_currentItemPath}; servidor desconectado.";
         }
         else
         {
@@ -896,6 +1078,11 @@ public partial class ItemEditorUI : Control
     private void OnGerarValores()
     {
         if (_currentItem == null) return;
+        if (ItemGerador.ItemDeCatalogoOficial(_currentItem.ItemID))
+        {
+            _previewStatus.Text = "Item oficial: altere as faixas manualmente; o servidor fará a rolagem ao obter o item.";
+            return;
+        }
         _ignorarEventosUi = true;
 
         if (_statsAleatoriosCheck.ButtonPressed)
@@ -1156,6 +1343,25 @@ public partial class ItemEditorUI : Control
 
     private void OnCriarTodosFaltantes()
     {
+        if (_itemTree != null)
+        {
+            CarregarListaItens();
+            var ids = new HashSet<int>();
+            int duplicates = 0;
+            int missingIcons = 0;
+            var paths = new List<string>();
+            ScanDirRecursive(ItensDir, paths);
+            foreach (string path in paths)
+            {
+                var item = ResourceLoader.Load<ItemResource>(path);
+                if (item == null) continue;
+                if (!ids.Add(item.ItemID)) duplicates++;
+                if (item.Icone == null) missingIcons++;
+            }
+            _previewStatus.Text = $"Catalogo: {ids.Count} IDs, {duplicates} duplicado(s), {missingIcons} sem icone.";
+            return;
+        }
+
         var serverDefs = new (int id, string name, string tipoStr, int forca, int agilidade, int destreza, int inteligencia, int dano, int defesa, int maxStack, bool isBag, int extraSlots, string classes)[]
         {
             (1, "Pocao de Vida", "Nenhum", 0, 0, 0, 0, 0, 0, 99, false, 0, ""),

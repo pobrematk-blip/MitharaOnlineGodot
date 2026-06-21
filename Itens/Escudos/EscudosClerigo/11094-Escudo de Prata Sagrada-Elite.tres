@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11094
+Nome = "Escudo de Prata Sagrada"
+Descricao = "Prata sagrada reforça sua borda e sua presença em lugares corrompidos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 43
+DefesaFisicaMin = 35
+DefesaFisicaMax = 51
+DefesaMagica = 47
+DefesaMagicaMin = 40
+DefesaMagicaMax = 54
+Hp = 92
+HpMin = 73
+HpMax = 111
+Forca = 14
+ForcaMin = 11
+ForcaMax = 17
+Inteligencia = 14
+InteligenciaMin = 11
+InteligenciaMax = 17

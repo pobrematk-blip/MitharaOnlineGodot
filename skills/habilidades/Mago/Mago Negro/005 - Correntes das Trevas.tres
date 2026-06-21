@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11305
+Nome = "Correntes das Trevas"
+Descricao = "Imobiliza alvo."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 3
+TargetType = 2
+EffectType = 13
+Especializacao = "Mago Negro"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Root"
+DanoEscala = ""
+BuffDebuff = "Controle"
+DuracaoTexto = "3s"
+Progressao = ""
+Observacoes = ""

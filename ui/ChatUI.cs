@@ -342,11 +342,12 @@ public partial class ChatUI : Control
         string color = "#" + hex.Substring(0, 6);
         string tag = ChannelNames[chIdx];
 
+        string safeSenderName = EscapeBbcode(senderName);
         string displayName = ch == ChatChannel.Whisper && senderName.StartsWith("-> ")
-            ? $"[b][color=#88ff88]({senderName})[/color][/b]"
-            : $"[b][color={color}]{senderName}[/color][/b]";
+            ? $"[b][color=#88ff88]({safeSenderName})[/color][/b]"
+            : $"[b][color={color}]{safeSenderName}[/color][/b]";
 
-        string formatted = $"[color={color}][{tag}][/color] {displayName}: {message}";
+        string formatted = $"[color={color}][{tag}][/color] {displayName}: {EscapeBbcode(message)}";
         AddMessage(formatted + "\n", ch);
 
         if (_translator != null && _translator.Enabled && ch != ChatChannel.Whisper)
@@ -357,22 +358,18 @@ public partial class ChatUI : Control
 
     private void TryTranslate(string message, string language, string senderName, ChatChannel ch)
     {
-        if (string.IsNullOrEmpty(language) || language == _translator.SelectedLanguage) return;
-
-        string color = ChannelColors[(int)ch].ToHtml();
-
-        _translator.DetectLanguage(message, (detected) =>
+        _translator.Translate(message, "Autodetect", (translated) =>
         {
-            if (string.IsNullOrEmpty(detected) || detected == _translator.SelectedLanguage)
+            if (string.IsNullOrEmpty(translated) || string.Equals(translated, message, StringComparison.OrdinalIgnoreCase))
                 return;
-
-            _translator.Translate(message, detected, (translated) =>
-            {
-                if (string.IsNullOrEmpty(translated)) return;
-                string transMsg = $"     [color=#888888][i](\u2192 {translated})[/i][/color]\n";
-                AddMessage(transMsg);
-            });
+            string transMsg = $"     [color=#888888][i](\u2192 {EscapeBbcode(translated)})[/i][/color]\n";
+            AddMessage(transMsg, ch);
         });
+    }
+
+    private static string EscapeBbcode(string text)
+    {
+        return (text ?? "").Replace("[", "[lb]");
     }
 
     private void AddMessage(string bbcode, ChatChannel channel)
@@ -450,8 +447,7 @@ public partial class ChatUI : Control
         string target = "";
         byte ch = (byte)_currentChannel;
 
-        _net.SendChat(ch, target, text, "pt");
-        OnChatReceived(ch, _playerName, text, "pt");
+        _net.SendChat(ch, target, text, "auto");
     }
 
     private void HandleCommand(string cmd)
@@ -466,8 +462,7 @@ public partial class ChatUI : Control
                 if (parts.Length < 3) { AddMessage("[color=#ff8888]Use: /w <nome> <mensagem>[/color]\n"); return; }
                 string target = parts[1];
                 string msg = string.Join(" ", parts, 2, parts.Length - 2);
-                _net?.SendChat((byte)ChatChannel.Whisper, target, msg, "pt");
-                OnChatReceived((byte)ChatChannel.Whisper, $"-> {target}", msg, "pt");
+                _net?.SendChat((byte)ChatChannel.Whisper, target, msg, "auto");
                 break;
 
             case "/g":
@@ -482,7 +477,7 @@ public partial class ChatUI : Control
                 if (parts.Length >= 2)
                 {
                     string partyMsg = string.Join(" ", parts, 1, parts.Length - 1);
-                    _net?.SendChat((byte)ChatChannel.Group, "", partyMsg, "pt");
+                    _net?.SendChat((byte)ChatChannel.Group, "", partyMsg, "auto");
                 }
                 else
                 {
@@ -496,7 +491,7 @@ public partial class ChatUI : Control
                 if (parts.Length >= 2)
                 {
                     string guildMsg = string.Join(" ", parts, 1, parts.Length - 1);
-                    _net?.SendChat((byte)ChatChannel.Guild, "", guildMsg, "pt");
+                    _net?.SendChat((byte)ChatChannel.Guild, "", guildMsg, "auto");
                 }
                 else
                 {
@@ -517,7 +512,7 @@ public partial class ChatUI : Control
             case "/gsair":
             case "/gleave":
                 string fullCmd = string.Join(" ", parts);
-                _net?.SendChat((byte)ChatChannel.Global, "", fullCmd, "pt");
+                _net?.SendChat((byte)ChatChannel.Global, "", fullCmd, "auto");
                 break;
 
             case "/ajuda":

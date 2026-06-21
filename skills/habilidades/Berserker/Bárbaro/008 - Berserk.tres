@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13108
+Nome = "Berserk"
+Descricao = "O Bárbaro perde completamente o medo da morte e entra em um estado de destruição absoluta, atacando com velocidade e força assustadoras."
+Valor = 0
+CustoMana = 40
+ClasseRestrita = "Berserker"
+Cooldown = 60
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Bárbaro"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Buff Ofensivo Maior"
+EfeitoPrincipal = "Aumenta Dano e Velocidade de Ataque."
+DanoEscala = ""
+BuffDebuff = "+20% → +35% Dano; +20% → +35% Velocidade de Ataque"
+DuracaoTexto = "15s"
+Progressao = "Skill possui 10 níveis. Ambos os bônus aumentam gradualmente até +35%."
+Observacoes = "Pode ser combinada com Fúria para janelas de burst, mas deixa o jogador exposto."

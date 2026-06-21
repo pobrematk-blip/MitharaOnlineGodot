@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15103
+Nome = "Cura em Área"
+Descricao = "Ondas de luz restauradora se espalham ao redor do Sacerdote, curando todos os aliados que estiverem dentro do alcance da oração."
+Valor = 150
+CustoMana = 35
+ClasseRestrita = "Clérigo"
+Cooldown = 12
+Duracao = 0
+TargetType = 0
+EffectType = 1
+Especializacao = "Sacerdote"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Cura em Área"
+EfeitoPrincipal = "Cura aliados próximos em área."
+DanoEscala = "Cura: 150% → 300% do Poder Mágico"
+BuffDebuff = "Cura em área"
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 150%; Lv10 = 300%."
+Observacoes = "Cura menor que cura focada, mas atinge vários aliados."

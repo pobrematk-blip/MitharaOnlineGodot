@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300051
+Nome = "Manto de Pedraforte"
+Descricao = "Tecida com fios arcanos de Pedraforte, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 0
+TipoItem = 1
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 35
+HpMin = 30
+HpMax = 40
+Mana = 46
+ManaMin = 39
+ManaMax = 53
+DefesaFisica = 15
+DefesaFisicaMin = 13
+DefesaFisicaMax = 18
+DefesaMagica = 33
+DefesaMagicaMin = 28
+DefesaMagicaMax = 38
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

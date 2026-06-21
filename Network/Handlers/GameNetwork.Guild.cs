@@ -82,6 +82,9 @@ partial class GameNetwork
         string liderNome = "";
 
         GuildId = guildId;
+        GuildName = guildName;
+        GuildTag = guildTag;
+        GuildEmblem = guildEmblem;
         IsGuildLeader = false;
         int meuRank = 4;
 
@@ -146,6 +149,9 @@ partial class GameNetwork
     private void HandleGuildClear()
     {
         GuildId = -1;
+        GuildName = "";
+        GuildTag = "";
+        GuildEmblem = -1;
         IsGuildLeader = false;
         EmitSignal(SignalName.OnGuildCleared);
     }
@@ -182,5 +188,12 @@ partial class GameNetwork
         string skillId = r.GetString();
         int newLevel = r.GetInt();
         EmitSignal(SignalName.OnGuildSkillUpdate, skillId, newLevel);
+    }
+
+    private void HandleGuildInviteReceived(NetDataReader r)
+    {
+        string senderName = r.GetString();
+        Log($"[GUILD] Received guild invite from {senderName}");
+        InvitePopupUI.ShowInvite("guild", senderName);
     }
 }

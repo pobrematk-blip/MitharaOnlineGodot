@@ -388,7 +388,18 @@ public partial class SlotUI : Control
         int itemId = SlotInterno.Item.ItemID;
         string itemNome = SlotInterno.Item.Nome;
 
-        if (itemId == 101)
+        if (itemId == 110 || itemId == 111)
+        {
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet == null || !gameNet.IsConnected)
+            {
+                GD.PrintErr("[CONSUMÍVEL] Uso local bloqueado. Conecte ao servidor.");
+                return;
+            }
+
+            gameNet.SendUseItem(SlotIndex);
+        }
+        else if (itemId == 101)
         {
             TentarReviverAliadoComPergaminho();
         }
@@ -625,7 +636,7 @@ public partial class SlotUI : Control
         // Transferência entre inventário e banco
         if (containerOrigem != containerDestino)
         {
-            GD.PrintErr("[SLOT] Transferencia inventario/banco local bloqueada. Use pacotes do servidor.");
+            GD.PrintErr("[SLOT] Transfer?ncia invent?rio/banco local bloqueada. Use pacotes do servidor.");
             return;
         }
 

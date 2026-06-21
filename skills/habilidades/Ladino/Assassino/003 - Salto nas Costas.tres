@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12203
+Nome = "Salto nas Costas"
+Descricao = "O Assassino salta diretamente para trás do alvo escolhido."
+Valor = 130
+CustoMana = 25
+ClasseRestrita = "Ladino"
+Cooldown = 12
+Duracao = 0
+TargetType = 0
+EffectType = 4
+Especializacao = "Assassino"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Mobilidade / Dano"
+EfeitoPrincipal = "Teleporta/avança para as costas do inimigo e causa dano."
+DanoEscala = "130% do dano da arma"
+BuffDebuff = "Bônus se usado durante invisibilidade."
+DuracaoTexto = ""
+Progressao = "Lv1 130% → Lv10 240%"
+Observacoes = "Não funciona contra bosses imunes a reposicionamento; nesses casos apenas aproxima."

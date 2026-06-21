@@ -12,7 +12,9 @@ public partial class EditorRecursosUI : Control
     private SpinBox _tempo3Spin;
     private SpinBox _tempo4Spin;
     private SpinBox _itemIdSpin;
-    private SpinBox _ferramentaIdSpin;
+    private LineEdit _ferramentaPathEdit;
+    private Button _btnBrowseFerramenta;
+    private ItemResource _ferramentaSelecionada;
     private SpinBox _qtdMinSpin;
     private SpinBox _qtdMaxSpin;
     private TextureRect _previewFase1;
@@ -95,9 +97,13 @@ public partial class EditorRecursosUI : Control
         _itemIdSpin = new SpinBox { MaxValue = 9999, Value = 0 };
         form.AddChild(_itemIdSpin);
 
-        AddLabel("Ferramenta Necessaria (ItemID)");
-        _ferramentaIdSpin = new SpinBox { MaxValue = 9999, Value = 0 };
-        form.AddChild(_ferramentaIdSpin);
+        AddLabel("Ferramenta Necessaria");
+        var ferramentaHbox = new HBoxContainer();
+        _ferramentaPathEdit = new LineEdit { PlaceholderText = "Nenhuma (clique em Procurar)", SizeFlagsHorizontal = SizeFlags.ExpandFill, Editable = false };
+        _btnBrowseFerramenta = new Button { Text = "Procurar..." };
+        ferramentaHbox.AddChild(_ferramentaPathEdit);
+        ferramentaHbox.AddChild(_btnBrowseFerramenta);
+        form.AddChild(ferramentaHbox);
 
         var qtdHbox = new HBoxContainer();
         _qtdMinSpin = new SpinBox { MaxValue = 999, Value = 1, Prefix = "Min " };
@@ -178,6 +184,8 @@ public partial class EditorRecursosUI : Control
         _btnBrowse4.Pressed += () => BrowseTexture(idx => _texFase4 = idx, _previewFase4);
         _btnBrowse5.Pressed += () => BrowseTexture(idx => _texFase5 = idx, _previewFase5);
 
+        _btnBrowseFerramenta.Pressed += OnBrowseFerramenta;
+
         _btnNovo.Pressed += OnNovo;
         _btnExcluir.Pressed += OnExcluir;
         _btnSalvar.Pressed += OnSalvar;
@@ -227,7 +235,7 @@ public partial class EditorRecursosUI : Control
         var dir = DirAccess.Open(DirRecursos);
         if (dir == null)
         {
-            MostrarFeedback("Diretorio 'Recursos' nao encontrado!", new Color(0.9f, 0.3f, 0.3f));
+            MostrarFeedback("Diret?rio 'Recursos' n?o encontrado!", new Color(0.9f, 0.3f, 0.3f));
             return;
         }
 
@@ -280,7 +288,10 @@ public partial class EditorRecursosUI : Control
         _tempo3Spin.Value = _atual.TempoFase3Para4;
         _tempo4Spin.Value = _atual.TempoFase4Para5;
         _itemIdSpin.Value = _atual.ItemDropID;
-        _ferramentaIdSpin.Value = _atual.FerramentaNecessariaID;
+        _ferramentaSelecionada = _atual.FerramentaNecessaria;
+        _ferramentaPathEdit.Text = _ferramentaSelecionada != null
+            ? $"{_ferramentaSelecionada.Nome} (ID: {_ferramentaSelecionada.ItemID})"
+            : "Nenhuma";
         _qtdMinSpin.Value = _atual.QuantidadeMinima;
         _qtdMaxSpin.Value = _atual.QuantidadeMaxima;
 
@@ -296,6 +307,29 @@ public partial class EditorRecursosUI : Control
         _previewFase5.Texture = _texFase5;
     }
 
+    private void OnBrowseFerramenta()
+    {
+        var dialog = new Godot.FileDialog
+        {
+            FileMode = Godot.FileDialog.FileModeEnum.OpenFile,
+            Filters = new[] { "*.tres ; Item Resources" },
+            CurrentDir = "res://Itens/"
+        };
+        dialog.FileSelected += (path) =>
+        {
+            var item = ResourceLoader.Load<ItemResource>(path);
+            if (item != null)
+            {
+                _ferramentaSelecionada = item;
+                _ferramentaPathEdit.Text = $"{item.Nome} (ID: {item.ItemID})";
+            }
+            dialog.QueueFree();
+        };
+        dialog.CloseRequested += () => dialog.QueueFree();
+        AddChild(dialog);
+        dialog.PopupCentered(new Vector2I(600, 400));
+    }
+
     private void OnNovo()
     {
         _atual = new RecursoResource();
@@ -308,7 +342,8 @@ public partial class EditorRecursosUI : Control
         _tempo3Spin.Value = 30;
         _tempo4Spin.Value = 30;
         _itemIdSpin.Value = 0;
-        _ferramentaIdSpin.Value = 0;
+        _ferramentaSelecionada = null;
+        _ferramentaPathEdit.Text = "Nenhuma";
         _qtdMinSpin.Value = 1;
         _qtdMaxSpin.Value = 1;
 
@@ -366,7 +401,7 @@ public partial class EditorRecursosUI : Control
         _atual.TempoFase3Para4 = (float)_tempo3Spin.Value;
         _atual.TempoFase4Para5 = (float)_tempo4Spin.Value;
         _atual.ItemDropID = (int)_itemIdSpin.Value;
-        _atual.FerramentaNecessariaID = (int)_ferramentaIdSpin.Value;
+        _atual.FerramentaNecessaria = _ferramentaSelecionada;
         _atual.QuantidadeMinima = (int)_qtdMinSpin.Value;
         _atual.QuantidadeMaxima = (int)_qtdMaxSpin.Value;
         _atual.TexturaFase1 = _texFase1;

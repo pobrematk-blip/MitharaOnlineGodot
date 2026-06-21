@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11302
+Nome = "Maldição da Fraqueza"
+Descricao = "Enfraquece alvo."
+Valor = -20
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 10
+TargetType = 0
+EffectType = 3
+Especializacao = "Mago Negro"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Debuff"
+EfeitoPrincipal = "-20% dano"
+DanoEscala = ""
+BuffDebuff = "Debuff"
+DuracaoTexto = "10s"
+Progressao = ""
+Observacoes = ""

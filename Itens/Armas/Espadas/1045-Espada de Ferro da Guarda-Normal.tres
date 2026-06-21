@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Espada de Pirata 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1045
+Nome = "Espada de Ferro da Guarda"
+Descricao = "Forjada para guardas de estrada, confiável mesmo depois de muitos confrontos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 10
+Valor = 100
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "ChanceCritica,Tenacidade,PenetracaoArmadura,Precisao,Forca,RouboVida"
+DanoFisico = 11
+DanoFisicoMin = 9
+DanoFisicoMax = 13
+Forca = 4
+ForcaMin = 3
+ForcaMax = 5

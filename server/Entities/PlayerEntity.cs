@@ -16,6 +16,8 @@ public class PlayerEntity : Entity
 
     public int BaseAttack { get; set; }
     public int Defense { get; set; }
+    public int MagicDefense { get; set; }
+    public float EquipmentEvasion { get; set; }
 
     // Base stats (before equipment bonuses) - used by RecalculatePlayerStats
     public int BaseForca { get; set; }
@@ -29,6 +31,9 @@ public class PlayerEntity : Entity
     public int Gold { get; set; }
 
     public Dictionary<int, PlayerQuest> Quests { get; set; } = new();
+
+    public DateTime VipExpiry { get; set; } = new(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    public bool IsVipActive => VipExpiry > DateTime.UtcNow;
 
     public PlayerEntity()
     {

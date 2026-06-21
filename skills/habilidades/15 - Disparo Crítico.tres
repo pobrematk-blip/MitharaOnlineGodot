@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15
+Nome = "Disparo Crítico"
+Descricao = "Prepara um disparo mortal buscando o ponto mais vulnerável, causando 180% do dano da arma."
+Valor = 180
+CustoMana = 25
+ClasseRestrita = "Arqueiro"
+Cooldown = 10.0
+TargetType = 2
+EffectType = 7

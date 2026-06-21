@@ -34,12 +34,16 @@ public class PathFollower
             _waypointIndex = 1;
         }
 
-        if (_path != null && _path.Count > 0)
+        if (_path != null && _waypointIndex < _path.Count)
         {
             var (wgx, wgy) = _path[_waypointIndex];
             var (wx, wy) = _grid.GridToWorld(wgx, wgy);
             _targetX = wx;
             _targetY = wy;
+        }
+        else
+        {
+            Stop();
         }
     }
 
@@ -55,67 +59,41 @@ public class PathFollower
             return (currentX, currentY, 0, 0, false);
 
         const float waypointReachDist = 8f;
-        float moveDist = speed * dt;
+        float remainingMove = speed * dt;
+        float startX = currentX;
+        float startY = currentY;
 
-        while (true)
+        while (HasPath && remainingMove > 0.001f)
         {
             float dx = _targetX - currentX;
             float dy = _targetY - currentY;
             float dist = MathF.Sqrt(dx * dx + dy * dy);
 
-            if (dist >= waypointReachDist && dist > moveDist)
+            if (dist <= waypointReachDist)
             {
-                float ratio = MathF.Min(moveDist / dist, 1f);
-                float newX = currentX + dx * ratio;
-                float newY = currentY + dy * ratio;
-                float dirX = dx / dist;
-                float dirY = dy / dist;
-                return (newX, newY, dirX, dirY, true);
-            }
-
-            _waypointIndex++;
-            if (_waypointIndex >= _path!.Count)
-            {
-                _path = null;
-                float lastDirX = dx / dist;
-                float lastDirY = dy / dist;
-                return (currentX, currentY, lastDirX, lastDirY, false);
-            }
-
-            var (wgx, wgy) = _path[_waypointIndex];
-            var (wx, wy) = _grid.GridToWorld(wgx, wgy);
-            _targetX = wx;
-            _targetY = wy;
-
-            if (dist <= moveDist)
-            {
-                currentX = _targetX;
-                currentY = _targetY;
-                moveDist -= dist;
-                if (moveDist < 0.001f)
+                _waypointIndex++;
+                if (_waypointIndex >= _path!.Count)
                 {
-                    float lastDirX = dx / dist;
-                    float lastDirY = dy / dist;
-                    return (currentX, currentY, lastDirX, lastDirY, false);
+                    _path = null;
+                    break;
                 }
+
+                var (nextGx, nextGy) = _path[_waypointIndex];
+                (_targetX, _targetY) = _grid.GridToWorld(nextGx, nextGy);
                 continue;
             }
 
-            dx = _targetX - currentX;
-            dy = _targetY - currentY;
-            dist = MathF.Sqrt(dx * dx + dy * dy);
-
-            if (dist < 0.001f)
-            {
-                return (currentX, currentY, 0, 0, false);
-            }
-
-            float ratio2 = MathF.Min(moveDist / dist, 1f);
-            float newX2 = currentX + dx * ratio2;
-            float newY2 = currentY + dy * ratio2;
-            float dirX2 = dx / dist;
-            float dirY2 = dy / dist;
-            return (newX2, newY2, dirX2, dirY2, true);
+            float step = MathF.Min(remainingMove, dist);
+            currentX += dx / dist * step;
+            currentY += dy / dist * step;
+            remainingMove -= step;
         }
+
+        float movedX = currentX - startX;
+        float movedY = currentY - startY;
+        float moved = MathF.Sqrt(movedX * movedX + movedY * movedY);
+        return moved > 0.001f
+            ? (currentX, currentY, movedX / moved, movedY / moved, true)
+            : (currentX, currentY, 0f, 0f, false);
     }
 }

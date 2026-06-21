@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga Real.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1026
+Nome = "Lâmina da Sombra Curta"
+Descricao = "Curta, escura e veloz, perfeita para completar combos sem quebrar o ritmo."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,VelocidadeAtaque,Precisao,Agilidade,RouboVida,Evasao"
+DanoFisico = 18
+DanoFisicoMin = 15
+DanoFisicoMax = 21
+Agilidade = 7
+AgilidadeMin = 6
+AgilidadeMax = 9
+Destreza = 9
+DestrezaMin = 8
+DestrezaMax = 11

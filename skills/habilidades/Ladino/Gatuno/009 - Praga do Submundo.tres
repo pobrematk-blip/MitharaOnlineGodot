@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12409
+Nome = "Praga do Submundo"
+Descricao = "Espalha uma praga tóxica devastadora que corrói os inimigos afetados."
+Valor = 0
+CustoMana = 80
+ClasseRestrita = "Ladino"
+Cooldown = 120
+Duracao = 10
+TargetType = 0
+EffectType = 1
+Especializacao = "Gatuno"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Aplica veneno poderoso em área e reduz cura recebida."
+DanoEscala = "Dano contínuo massivo em área"
+BuffDebuff = "Veneno forte + redução de cura"
+DuracaoTexto = "10s"
+Progressao = "Lv1 forte → Lv5 muito forte"
+Observacoes = "Ultimate da árvore."

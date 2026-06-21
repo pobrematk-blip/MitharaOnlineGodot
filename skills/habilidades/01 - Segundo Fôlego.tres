@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 1
+Nome = "Segundo Fôlego"
+Descricao = "O aventureiro reúne suas forças e restaura parte de sua Vida e Mana."
+Valor = 15
+CustoMana = 0
+ClasseRestrita = ""
+Cooldown = 60.0
+TargetType = 0
+EffectType = 1

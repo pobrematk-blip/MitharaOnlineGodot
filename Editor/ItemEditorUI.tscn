@@ -79,10 +79,19 @@ layout_mode = 2
 layout_mode = 2
 text = "Itens"
 
-[node name="ItemList" type="ItemList" parent="Panel/HBox/LeftPanel"]
+[node name="ItemSearch" type="LineEdit" parent="Panel/HBox/LeftPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Buscar por nome ou ID"
+
+[node name="ItemTree" type="Tree" parent="Panel/HBox/LeftPanel"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+columns = 1
+hide_root = true
+allow_reselect = true
+theme_override_constants/icon_max_width = 28
 
 [node name="BtnAddItem" type="Button" parent="Panel/HBox/LeftPanel"]
 unique_name_in_owner = true
@@ -287,6 +296,19 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="SubcategoriaRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
+layout_mode = 2
+
+[node name="SubcategoriaLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/SubcategoriaRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "Subcategoria"
+
+[node name="SubcategoriaDropdown" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/SubcategoriaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="DuasMaosRow" type="HBoxContainer" parent="Panel/HBox/ScrollForm/Form"]
 layout_mode = 2
 
@@ -319,7 +341,7 @@ layout_mode = 2
 [node name="CategoriaPesoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/CategoriaPesoRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(120, 0)
-text = "Categoria"
+text = "Armadura"
 
 [node name="CategoriaPesoDropdown" type="OptionButton" parent="Panel/HBox/ScrollForm/Form/CategoriaPesoRow"]
 unique_name_in_owner = true
@@ -499,7 +521,7 @@ layout_mode = 2
 [node name="DescricaoLabel" type="Label" parent="Panel/HBox/ScrollForm/Form/DescricaoRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(120, 0)
-text = "Descricao"
+text = "Descri??o"
 valign = 1
 
 [node name="DescricaoEdit" type="TextEdit" parent="Panel/HBox/ScrollForm/Form/DescricaoRow"]
@@ -1476,4 +1498,4 @@ value = 0
 [node name="BtnCriarTodos" type="Button" parent="Panel/HBox/ScrollForm/Form"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Criar Todos os Itens Faltantes (servidor)"
+text = "Verificar Catalogo"

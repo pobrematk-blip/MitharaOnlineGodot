@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14304
+Nome = "Escudo da Fé"
+Descricao = "A fé do Templário fortalece sua alma e sua armadura contra ataques mágicos."
+Valor = 0
+CustoMana = 25
+ClasseRestrita = "Guardião"
+Cooldown = 30
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Templário"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Buff Defensivo"
+EfeitoPrincipal = "Aumenta Defesa Mágica e resistência a debuffs."
+DanoEscala = ""
+BuffDebuff = "+15% → +30% Defesa Mágica"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = +15%; Lv10 = +30%."
+Observacoes = "Boa resposta contra magos e bosses mágicos."

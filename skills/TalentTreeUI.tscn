@@ -95,15 +95,17 @@ offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Scroll" type="ScrollContainer" parent="BgPanel/VBox"]
+[node name="Scroll" type="Control" parent="BgPanel/VBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+clip_contents = true
+mouse_filter = 1
 
 [node name="Board" type="Control" parent="BgPanel/VBox/Scroll"]
 custom_minimum_size = Vector2(600, 600)
-layout_mode = 2
-mouse_filter = 2
+layout_mode = 0
+mouse_filter = 1
 
 [node name="SlotTemplate" type="PanelContainer" parent="BgPanel/VBox/Scroll/Board"]
 visible = false

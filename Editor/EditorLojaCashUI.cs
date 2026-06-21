@@ -70,10 +70,10 @@ public partial class EditorLojaCashUI : Control
         _nomeExibicaoEdit.PlaceholderText = "Deixe vazio para usar o nome do item";
         form.AddChild(_nomeExibicaoEdit);
 
-        AddLabel("Descricao (opcional)");
+        AddLabel("Descri??o (opcional)");
         _descricaoEdit = new TextEdit();
         _descricaoEdit.CustomMinimumSize = new Vector2(0, 60);
-        _descricaoEdit.PlaceholderText = "Descricao do item na loja";
+        _descricaoEdit.PlaceholderText = "Descri??o do item na loja";
         form.AddChild(_descricaoEdit);
 
         form.AddChild(new Control { CustomMinimumSize = new Vector2(0, 8) });
@@ -201,7 +201,7 @@ public partial class EditorLojaCashUI : Control
     {
         if (_lojaData.Itens.Count == 0)
         {
-            MostrarFeedback("Nao ha itens para salvar. Adicione itens primeiro.", new Color(0.9f, 0.6f, 0.0f));
+            MostrarFeedback("N?o h? itens para salvar. Adicione itens primeiro.", new Color(0.9f, 0.6f, 0.0f));
             return;
         }
         var err = ResourceSaver.Save(_lojaData, LojaDataPath);

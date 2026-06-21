@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1063
+Nome = "Escudo Imperial de Mitthara"
+Descricao = "Defesa refinada usada por soldados de elite das capitais imperiais."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 56
+DefesaFisicaMin = 48
+DefesaFisicaMax = 64
+Hp = 121
+HpMin = 97
+HpMax = 146
+Forca = 15
+ForcaMin = 12
+ForcaMax = 18
+Agilidade = 12
+AgilidadeMin = 10
+AgilidadeMax = 15

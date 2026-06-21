@@ -9,7 +9,7 @@ public partial class SelecaoPersonagem : Control
     private VBoxContainer _listaContainer;
     private Button _btnJogar;
     private Button _btnCriarNovo;
-    private Button _btnLoja;
+
     private Button _btnExcluir;
     private AcceptDialog _confirmacaoExcluir;
     private Control _vazio;
@@ -49,7 +49,7 @@ public partial class SelecaoPersonagem : Control
         _listaContainer = GetNode<VBoxContainer>("%ListaContainer");
         _btnJogar = GetNode<Button>("%BtnJogar");
         _btnCriarNovo = GetNode<Button>("%BtnCriarNovo");
-        _btnLoja = GetNode<Button>("%BtnLoja");
+
         _btnExcluir = GetNode<Button>("%BtnExcluir");
         _vazio = GetNode<Control>("%Vazio");
         _personagemPreview = GetNode<Control>("%PersonagemPreview");
@@ -69,12 +69,12 @@ public partial class SelecaoPersonagem : Control
 
         _btnJogar.Pressed += OnJogar;
         _btnCriarNovo.Pressed += OnCriarNovo;
-        _btnLoja.Pressed += OnAbrirLoja;
+
         _btnExcluir.Pressed += OnExcluir;
 
         _confirmacaoExcluir = new AcceptDialog();
         _confirmacaoExcluir.Title = "Excluir Personagem";
-        _confirmacaoExcluir.DialogText = "Tem certeza que deseja excluir este personagem? Esta acao nao pode ser desfeita.";
+        _confirmacaoExcluir.DialogText = "Tem certeza que deseja excluir este personagem? Esta a??o n?o pode ser desfeita.";
         _confirmacaoExcluir.OkButtonText = "Excluir";
         _confirmacaoExcluir.AddCancelButton("Cancelar");
         _confirmacaoExcluir.Confirmed += ConfirmarExclusao;
@@ -402,7 +402,7 @@ public partial class SelecaoPersonagem : Control
         if (_net != null && _net.IsConnected)
         {
             var card = _cards.Find(c => c.SlotIndex == _slotSelecionado.Value);
-            if (card == null) { GD.PrintErr("[SELECAO] Card nao encontrado para slot " + _slotSelecionado); FecharTelaCarregamento(); return; }
+            if (card == null) { GD.PrintErr("[SELE??O] Card n?o encontrado para slot " + _slotSelecionado); FecharTelaCarregamento(); return; }
 
             GD.Print($"[SELECAO] OnJogar: slot={card.SlotIndex} nome={card.Nome} classePath={card.ClassePath} racaPath={card.RacaPath}");
 
@@ -453,16 +453,6 @@ public partial class SelecaoPersonagem : Control
     private void OnCriarNovo()
     {
         GetTree().ChangeSceneToFile(SceneConstants.CRIACAO_PERSONAGEM);
-    }
-
-    private void OnAbrirLoja()
-    {
-        var lojaCena = ResourceLoader.Load<PackedScene>(SceneConstants.LOJA_CASH_UI);
-        if (lojaCena == null) return;
-
-        var loja = lojaCena.Instantiate<LojaCashUI>();
-        AddChild(loja);
-        loja.Abrir();
     }
 
     private void OnExcluir()

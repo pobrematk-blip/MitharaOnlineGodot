@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15304
+Nome = "Correntes Sagradas"
+Descricao = "Correntes de luz descem do alto e prendem o inimigo ao chão, impedindo sua fuga por alguns instantes."
+Valor = 0
+CustoMana = 30
+ClasseRestrita = "Clérigo"
+Cooldown = 20
+Duracao = 3
+TargetType = 2
+EffectType = 13
+Especializacao = "Inquisidor"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Imobiliza o alvo."
+DanoEscala = ""
+BuffDebuff = "Root"
+DuracaoTexto = "3s"
+Progressao = "Duração pode aumentar levemente por nível."
+Observacoes = "Bosses recebem apenas lentidão."

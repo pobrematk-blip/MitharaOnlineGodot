@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1098
+Nome = "Escudo do Sumo Sacerdote"
+Descricao = "O escudo comum mais respeitado entre clérigos, símbolo de fé inabalável."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 60
+DefesaFisicaMin = 50
+DefesaFisicaMax = 70
+DefesaMagica = 65
+DefesaMagicaMin = 55
+DefesaMagicaMax = 75
+Hp = 125
+HpMin = 100
+HpMax = 150
+Forca = 18
+ForcaMin = 15
+ForcaMax = 22
+Inteligencia = 18
+InteligenciaMin = 15
+InteligenciaMax = 22

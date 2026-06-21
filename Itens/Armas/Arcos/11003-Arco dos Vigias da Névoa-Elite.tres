@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco do Rastreador.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11003
+Nome = "Arco dos Vigias da Névoa"
+Descricao = "Usado por sentinelas que patrulham trilhas cobertas por neblina, perfeito para atacar antes de ser visto."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+TipoItem = 1
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"
+DanoFisico = 37
+DanoFisicoMin = 33
+DanoFisicoMax = 42
+Destreza = 13
+DestrezaMin = 11
+DestrezaMax = 15

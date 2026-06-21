@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14208
+Nome = "Comandante de Batalha"
+Descricao = "A presença da Vanguarda inspira aliados próximos, fortalecendo sua resistência e coragem."
+Valor = 0
+CustoMana = 40
+ClasseRestrita = "Guardião"
+Cooldown = 60
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Vanguarda"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Buff de Grupo"
+EfeitoPrincipal = "Aumenta Tenacidade e Defesa dos aliados próximos."
+DanoEscala = ""
+BuffDebuff = "+10% → +20% Resistência/Defesa"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = +10%; Lv10 = +20%."
+Observacoes = "Buff de grupo, não acumula com cópias."

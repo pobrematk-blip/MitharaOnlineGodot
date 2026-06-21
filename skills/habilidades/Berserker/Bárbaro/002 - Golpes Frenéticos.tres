@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13102
+Nome = "Golpes Frenéticos"
+Descricao = "O Bárbaro desfere uma sequência de golpes brutais sem se preocupar com técnica, esmagando o alvo pela pura velocidade e agressividade."
+Valor = 120
+CustoMana = 15
+ClasseRestrita = "Berserker"
+Cooldown = 8
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Bárbaro"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Dano Rápido"
+EfeitoPrincipal = "Executa ataques consecutivos contra o alvo."
+DanoEscala = "120% → 220% do dano da arma"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Skill possui 10 níveis. Dano total escala de 120% até 220%."
+Observacoes = "Boa skill de rotação para DPS constante."

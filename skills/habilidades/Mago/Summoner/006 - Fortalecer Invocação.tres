@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11106
+Nome = "Fortalecer Invocação"
+Descricao = "Fortalece invocações."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Summoner"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "Buff"
+EfeitoPrincipal = "+Dano/+HP"
+DanoEscala = ""
+BuffDebuff = "+10%-25%"
+DuracaoTexto = "15s"
+Progressao = ""
+Observacoes = ""

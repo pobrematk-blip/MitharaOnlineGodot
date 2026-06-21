@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10306
+Nome = "Tiro Ricochete"
+Descricao = "Salta entre alvos."
+Valor = 120
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 0
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Ranger"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "Área"
+EfeitoPrincipal = "Até 5 alvos"
+DanoEscala = "120%-220%"
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = ""
+Observacoes = ""

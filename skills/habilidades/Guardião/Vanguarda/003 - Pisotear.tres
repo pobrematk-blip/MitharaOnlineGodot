@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14203
+Nome = "Pisotear"
+Descricao = "A Vanguarda pisa violentamente no solo, abalando a área ao redor e dificultando o avanço dos inimigos."
+Valor = 100
+CustoMana = 20
+ClasseRestrita = "Guardião"
+Cooldown = 15
+Duracao = 5
+TargetType = 2
+EffectType = 12
+Especializacao = "Vanguarda"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Área / Controle"
+EfeitoPrincipal = "Causa dano em área pequena e aplica lentidão."
+DanoEscala = "100% → 180% do dano da arma"
+BuffDebuff = "Slow 30%"
+DuracaoTexto = "5s"
+Progressao = "Lv1 = 100%; Lv10 = 180%."
+Observacoes = "Afeta inimigos ao redor do Guardião."

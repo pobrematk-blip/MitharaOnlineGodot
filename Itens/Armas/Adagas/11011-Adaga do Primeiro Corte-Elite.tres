@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga de Aço Negro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11011
+Nome = "Adaga do Primeiro Corte"
+Descricao = "Pequena e direta, feita para ensinar que velocidade vale mais que força bruta."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 2
+DanoFisicoMin = 1
+DanoFisicoMax = 4
+Destreza = 1
+DestrezaMin = 1
+DestrezaMax = 2

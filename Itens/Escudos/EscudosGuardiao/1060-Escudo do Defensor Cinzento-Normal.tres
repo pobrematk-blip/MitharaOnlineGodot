@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1060
+Nome = "Escudo do Defensor Cinzento"
+Descricao = "Uma placa robusta para defensores que não abandonam a linha de frente."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 50
+Valor = 500
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 35
+DefesaFisicaMin = 30
+DefesaFisicaMax = 41
+Hp = 78
+HpMin = 62
+HpMax = 95
+Forca = 10
+ForcaMin = 8
+ForcaMax = 12
+Agilidade = 8
+AgilidadeMin = 6
+AgilidadeMax = 10

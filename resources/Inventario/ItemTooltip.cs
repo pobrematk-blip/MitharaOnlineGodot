@@ -35,10 +35,17 @@ public partial class ItemTooltip : Panel
 			BorderWidthBottom = 1,
 		});
 
+		var outerMargin = new MarginContainer();
+		outerMargin.AddThemeConstantOverride("margin_left", 8);
+		outerMargin.AddThemeConstantOverride("margin_right", 8);
+		outerMargin.AddThemeConstantOverride("margin_top", 6);
+		outerMargin.AddThemeConstantOverride("margin_bottom", 6);
+		AddChild(outerMargin);
+
 		_container = new VBoxContainer();
 		_container.AddThemeConstantOverride("separation", 0);
 		_container.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		AddChild(_container);
+		outerMargin.AddChild(_container);
 
 		ProcessPriority = int.MaxValue;
 	}
@@ -85,8 +92,8 @@ public partial class ItemTooltip : Panel
 		var window = GetWindow();
 		if (window == null) return;
 
-		float cw = CustomMinimumSize.X > 0 ? Mathf.Max(CustomMinimumSize.X, 246) : 246;
-		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 16, window.Size.Y * 0.75f);
+		float cw = CustomMinimumSize.X > 0 ? Mathf.Max(CustomMinimumSize.X, 320) : 320;
+		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 4, window.Size.Y * 0.75f);
 		float mx = posicaoGlobal.X + 16;
 		float my = posicaoGlobal.Y;
 
@@ -151,8 +158,8 @@ public partial class ItemTooltip : Panel
 		var window = GetWindow();
 		if (window == null) return;
 
-		float cw = Mathf.Max(CustomMinimumSize.X, 420);
-		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 16, window.Size.Y * 0.75f);
+		float cw = Mathf.Max(CustomMinimumSize.X, 480);
+		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 4, window.Size.Y * 0.75f);
 		float mx = posicaoGlobal.X + 16;
 		float my = posicaoGlobal.Y;
 
@@ -454,8 +461,8 @@ public partial class ItemTooltip : Panel
 			Raridade.Mistico => "Místico",
 			_ => "",
 		};
-		string eliteTag = item.TipoItem == TipoItem.Elite ? " (Elite)" : "";
-		raridadeLabel.Text = $"{raridadeNome}{eliteTag} | Nível {item.NivelRequerido}";
+		string categoriaNome = item.TipoItem == TipoItem.Elite ? "Elite" : "Normal";
+		raridadeLabel.Text = $"{raridadeNome} ({categoriaNome}) | Nível {item.NivelRequerido}";
 		raridadeLabel.AddThemeColorOverride("font_color", cor);
 		raridadeLabel.AddThemeFontSizeOverride("font_size", 11);
 		vbox.AddChild(nome);
@@ -482,7 +489,7 @@ public partial class ItemTooltip : Panel
 		if (!string.IsNullOrEmpty(pesoNome))
 		{
 			var pesoLabel = new Label();
-			pesoLabel.Text = $"Classe do Item: {pesoNome}";
+			pesoLabel.Text = $"Categoria da Armadura: {pesoNome}";
 			pesoLabel.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.7f));
 			pesoLabel.AddThemeFontSizeOverride("font_size", 10);
 			vbox.AddChild(pesoLabel);

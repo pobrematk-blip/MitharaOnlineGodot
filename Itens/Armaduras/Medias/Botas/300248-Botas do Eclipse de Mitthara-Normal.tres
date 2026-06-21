@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Montros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300248
+Nome = "Botas do Eclipse de Mitthara"
+Descricao = "Curtida e ajustada por batedores de Eclipse de Mitthara, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 6
+CategoriaPeso = 1
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 21
+HpMin = 18
+HpMax = 24
+Mana = 11
+ManaMin = 10
+ManaMax = 13
+DefesaFisica = 12
+DefesaFisicaMin = 10
+DefesaFisicaMax = 14
+DefesaMagica = 12
+DefesaMagicaMin = 10
+DefesaMagicaMax = 14
+Evasao = 0.55
+EvasaoMin = 0.47
+EvasaoMax = 0.63

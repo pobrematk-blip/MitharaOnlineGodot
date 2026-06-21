@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13206
+Nome = "Caçador de Gigantes"
+Descricao = "O Slayer entra em estado de concentração absoluta contra inimigos poderosos, estudando seus movimentos para atacar com precisão brutal."
+Valor = 0
+CustoMana = 30
+ClasseRestrita = "Berserker"
+Cooldown = 40
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Slayer"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "Buff Anti-Boss"
+EfeitoPrincipal = "Aumenta dano contra monstros Elite, Bosses e World Bosses."
+DanoEscala = ""
+BuffDebuff = "+10% → +25% dano contra alvos poderosos"
+DuracaoTexto = "15s"
+Progressao = "Skill possui 10 níveis. Bônus escala de +10% até +25%."
+Observacoes = "Identidade de boss killer do Slayer."

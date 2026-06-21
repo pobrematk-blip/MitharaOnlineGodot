@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 29
+Nome = "Postura do Mestre Ranger"
+Descricao = "Estado de combate perfeito. +30% Vel. Ataque, +20% Precisão, +20% Dano em Área, -20% Recarga."
+CustoMana = 80
+ClasseRestrita = "Arqueiro"
+Cooldown = 120.0
+Duracao = 15
+TargetType = 0
+EffectType = 3

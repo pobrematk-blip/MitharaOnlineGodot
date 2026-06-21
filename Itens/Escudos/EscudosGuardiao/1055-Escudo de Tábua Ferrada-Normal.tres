@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1055
+Nome = "Escudo de Tábua Ferrada"
+Descricao = "Escudo simples, mas resistente o bastante para ensinar o valor de bloquear primeiro."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 1
+DefesaFisicaMin = 1
+DefesaFisicaMax = 2
+Hp = 7
+HpMin = 5
+HpMax = 10
+Forca = 1
+ForcaMin = 1
+ForcaMax = 1
+Agilidade = 1
+AgilidadeMin = 1
+AgilidadeMax = 1

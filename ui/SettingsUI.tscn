@@ -104,6 +104,12 @@ max_value = 1.0
 step = 0.01
 value = 0.5
 
+[node name="ApplyButton" type="Button" parent="Panel/TabContainer/Video"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Aplicar"
+theme_override_font_sizes/font_size = 14
+
 [node name="Audio" type="VBoxContainer" parent="Panel/TabContainer"]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -225,6 +231,17 @@ button_pressed = true
 [node name="MostrarEmblemaCheck" type="CheckBox" parent="Panel/TabContainer/UI"]
 layout_mode = 2
 text = "Mostrar Emblema da Guilda"
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+button_pressed = true
+
+[node name="PartySeparator" type="Label" parent="Panel/TabContainer/UI"]
+layout_mode = 2
+text = "HUD da Party"
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+
+[node name="MostrarPartyHUDCheck" type="CheckBox" parent="Panel/TabContainer/UI"]
+layout_mode = 2
+text = "Mostrar HUD da Party"
 theme_override_colors/font_color = Color(1, 1, 1, 0.85)
 button_pressed = true
 

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13307
+Nome = "Espírito Indomável"
+Descricao = "Mesmo cercado e ferido, o Titã se recusa a cair. Sua vontade reduz a força dos golpes recebidos."
+Valor = 0
+CustoMana = 35
+ClasseRestrita = "Berserker"
+Cooldown = 40
+Duracao = 12
+TargetType = 0
+EffectType = 3
+Especializacao = "Titã"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Buff de Sobrevivência"
+EfeitoPrincipal = "Reduz dano recebido."
+DanoEscala = ""
+BuffDebuff = "-15% → -30% dano recebido"
+DuracaoTexto = "12s"
+Progressao = "Skill possui 10 níveis. Redução escala até 30%."
+Observacoes = "Excelente para sobreviver a mecânicas perigosas."

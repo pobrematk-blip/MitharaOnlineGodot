@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300254
+Nome = "Gibão da Ascensão"
+Descricao = "Curtida e ajustada por batedores de Ascensão, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 77
+HpMin = 65
+HpMax = 89
+Mana = 42
+ManaMin = 36
+ManaMax = 48
+DefesaFisica = 45
+DefesaFisicaMin = 39
+DefesaFisicaMax = 52
+DefesaMagica = 45
+DefesaMagicaMin = 39
+DefesaMagicaMax = 52
+Evasao = 2.095
+EvasaoMin = 1.78
+EvasaoMax = 2.41

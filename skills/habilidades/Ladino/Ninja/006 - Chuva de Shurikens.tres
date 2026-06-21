@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12306
+Nome = "Chuva de Shurikens"
+Descricao = "Lança várias shurikens ao redor em rápida sucessão."
+Valor = 160
+CustoMana = 35
+ClasseRestrita = "Ladino"
+Cooldown = 14
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Ninja"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "Área"
+EfeitoPrincipal = "Causa dano em área ao redor do alvo ou do Ninja."
+DanoEscala = "160% do dano da arma em área"
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = "Lv1 160% → Lv10 300%"
+Observacoes = ""

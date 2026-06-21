@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14204
+Nome = "Golpe Atordoante"
+Descricao = "Um golpe calculado atinge um ponto vulnerável do inimigo, deixando-o desnorteado por alguns instantes."
+Valor = 140
+CustoMana = 25
+ClasseRestrita = "Guardião"
+Cooldown = 15
+Duracao = 2
+TargetType = 2
+EffectType = 8
+Especializacao = "Vanguarda"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Causa dano e atordoa o alvo."
+DanoEscala = "140% → 250% do dano da arma"
+BuffDebuff = "Stun"
+DuracaoTexto = "2s"
+Progressao = "Lv1 = 140%; Lv10 = 250%."
+Observacoes = "Bosses recebem apenas lentidão."

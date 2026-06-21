@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo de Reparo.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1084
+Nome = "Martelo do Arcebispo"
+Descricao = "Empunhado por líderes espirituais acostumados a decidir o destino de muitos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 60
+DanoFisicoMin = 53
+DanoFisicoMax = 68
+Forca = 18
+ForcaMin = 16
+ForcaMax = 21
+Inteligencia = 18
+InteligenciaMin = 16
+InteligenciaMax = 21

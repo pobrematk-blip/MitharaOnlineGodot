@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300182
+Nome = "Gibão de Pedraforte"
+Descricao = "Curtida e ajustada por batedores de Pedraforte, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 36
+HpMin = 31
+HpMax = 42
+Mana = 22
+ManaMin = 19
+ManaMax = 26
+DefesaFisica = 21
+DefesaFisicaMin = 18
+DefesaFisicaMax = 25
+DefesaMagica = 21
+DefesaMagicaMin = 18
+DefesaMagicaMax = 25
+Evasao = 0.875
+EvasaoMin = 0.74
+EvasaoMax = 1.01

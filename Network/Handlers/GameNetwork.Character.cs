@@ -44,6 +44,49 @@ partial class GameNetwork
         });
     }
 
+    public void SendLeaveWorld()
+    {
+        _client?.SendPacket(PacketId.C2S_LeaveWorld, _ => { });
+    }
+
+    private void HandleLeaveWorld(NetDataReader r)
+    {
+        int characterCount = r.GetInt();
+        Characters.Clear();
+        for (int i = 0; i < characterCount; i++)
+        {
+            Characters.Add(new CharacterEntry
+            {
+                SlotIndex = r.GetInt(),
+                Name = r.GetString(),
+                Class = r.GetString(),
+                Race = r.GetString(),
+                Level = r.GetInt(),
+            });
+        }
+
+        ClearAllEntities();
+        GetNodeOrNull<EntityManager>("EntityManager")?.ClearAll();
+
+        LocalPlayerId = 0;
+        LocalChannelId = 0;
+        PendingPlayerSpawn = Vector2.Zero;
+        PendingInventoryData = null;
+        PendingEquipmentData = null;
+        PendingPetData = null;
+        Gold = 0;
+
+        var loading = GetTree()?.Root.GetNodeOrNull("LoadingScreen");
+        loading?.QueueFree();
+        Input.MouseMode = Input.MouseModeEnum.Visible;
+
+        var err = GetTree().ChangeSceneToFile(SceneConstants.SELECAO_PERSONAGEM);
+        if (err != Error.Ok)
+            LogError($"Falha ao voltar para a seleção de personagens: {err}");
+        else
+            Log("Saída do mundo confirmada pelo servidor.");
+    }
+
     private void HandleCharacterList(NetDataReader r)
     {
         int count = r.GetInt();

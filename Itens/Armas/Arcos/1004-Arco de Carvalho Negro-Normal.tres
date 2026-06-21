@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco do Veterano.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1004
+Nome = "Arco de Carvalho Negro"
+Descricao = "Sua madeira escura é densa e resistente, escolhida por arqueiros que preferem precisão acima de aparência."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"
+DanoFisico = 41
+DanoFisicoMin = 37
+DanoFisicoMax = 46
+Destreza = 14
+DestrezaMin = 12
+DestrezaMax = 16

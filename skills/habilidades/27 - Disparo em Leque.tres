@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 27
+Nome = "Disparo em Leque"
+Descricao = "Dispara uma rajada de 7 flechas em cone. 80% do dano da arma por flecha."
+Valor = 80
+CustoMana = 35
+ClasseRestrita = "Arqueiro"
+Cooldown = 14.0
+TargetType = 2
+EffectType = 7

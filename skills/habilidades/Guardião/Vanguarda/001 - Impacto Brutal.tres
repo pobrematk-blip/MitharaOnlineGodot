@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14201
+Nome = "Impacto Brutal"
+Descricao = "A Vanguarda desfere um golpe pesado capaz de deslocar o inimigo pela força do impacto."
+Valor = 120
+CustoMana = 15
+ClasseRestrita = "Guardião"
+Cooldown = 8
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Vanguarda"
+NivelRequerido = 1
+Ordem = 1
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Causa dano físico e empurra o alvo 2 tiles."
+DanoEscala = "120% → 220% do dano da arma"
+BuffDebuff = "Knockback"
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 120%; Lv10 = 220%."
+Observacoes = "Bosses são imunes ao empurrão."

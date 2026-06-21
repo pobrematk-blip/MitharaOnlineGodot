@@ -123,7 +123,7 @@ placeholder_text = "Nome do pet"
 
 [node name="DescricaoLabel" type="Label" parent="Panel/HSplit/RightPanel/Form"]
 layout_mode = 2
-text = "Descricao:"
+text = "Descri??o:"
 
 [node name="DescricaoEdit" type="TextEdit" parent="Panel/HSplit/RightPanel/Form"]
 unique_name_in_owner = true

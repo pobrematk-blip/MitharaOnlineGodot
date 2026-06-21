@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13304
+Nome = "Golpe Sísmico"
+Descricao = "O Titã golpeia o chão com tamanha força que o impacto se espalha como uma onda sísmica."
+Valor = 140
+CustoMana = 20
+ClasseRestrita = "Berserker"
+Cooldown = 12
+Duracao = 5
+TargetType = 2
+EffectType = 12
+Especializacao = "Titã"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Área / Controle"
+EfeitoPrincipal = "Causa dano em área e reduz velocidade dos inimigos."
+DanoEscala = "140% → 250% do dano da arma"
+BuffDebuff = "Slow 30%"
+DuracaoTexto = "5s"
+Progressao = "Skill possui 10 níveis. Dano escala de 140% até 250%."
+Observacoes = "Boa para controlar grupos próximos."

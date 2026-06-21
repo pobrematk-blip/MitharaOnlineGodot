@@ -17,6 +17,7 @@ public enum PacketId : ushort
     C2S_GetSecurityQuestion = 0x010A,
     C2S_RecoverPassword = 0x010B,
     C2S_DeleteCharacter = 0x010C,
+    C2S_LeaveWorld = 0x010D,
     C2S_Chat = 0x0110,
     C2S_Attack = 0x0120,
     C2S_SkillUse = 0x0121,
@@ -27,6 +28,7 @@ public enum PacketId : ushort
     C2S_UnequipItem = 0x0132,
     C2S_MoveItem = 0x0133,
     C2S_DropItem = 0x0134,
+    C2S_UseItem = 0x0135,
     C2S_PartyInvite = 0x0140,
     C2S_PartyAccept = 0x0141,
     C2S_PartyLeave = 0x0142,
@@ -54,6 +56,12 @@ public enum PacketId : ushort
     C2S_MobDropConfig = 0x0190,
     C2S_PetCapture = 0x0191,
     C2S_AllocateStat = 0x0192,
+    C2S_AdminUpdateItemDefinition = 0x0193,
+    C2S_ProjectileFire = 0x0162,
+    C2S_DuelRequest = 0x0194,
+    C2S_DuelAccept = 0x0195,
+    C2S_DuelDecline = 0x0196,
+
     C2S_Ping = 0x01FF,
 
     // Server -> Client
@@ -70,6 +78,8 @@ public enum PacketId : ushort
     S2C_SecurityQuestion = 0x020B,
     S2C_RecoverResult = 0x020C,
     S2C_CharacterDeleted = 0x020D,
+    S2C_LeaveWorld = 0x020E,
+    S2C_PlayerAction = 0x020F,
     S2C_CombatResult = 0x0220,
     S2C_EntityDamage = 0x0221,
     S2C_EntityDied = 0x0222,
@@ -106,6 +116,13 @@ public enum PacketId : ushort
     S2C_GuildClear = 0x028A,
     S2C_PetData = 0x0290,
     S2C_StatUpdate = 0x0291,
+    S2C_DuelRequested = 0x0292,
+    S2C_ProjectileSpawn = 0x0295,
+    S2C_DuelStart = 0x0293,
+    S2C_DuelEnd = 0x0294,
+    S2C_VipStatus = 0x0296,
+    S2C_PartyInviteReceived = 0x0243,
+    S2C_GuildInviteReceived = 0x0255,
     S2C_Pong = 0x02FF,
 }
 

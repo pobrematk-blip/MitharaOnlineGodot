@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Dracônico.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1005
+Nome = "Arco do Predador Silencioso"
+Descricao = "Arco silencioso, feito para caçadores que vencem a luta antes que o inimigo perceba o perigo."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 50
+Valor = 500
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"
+DanoFisico = 51
+DanoFisicoMin = 46
+DanoFisicoMax = 57
+Destreza = 17
+DestrezaMin = 14
+DestrezaMax = 20

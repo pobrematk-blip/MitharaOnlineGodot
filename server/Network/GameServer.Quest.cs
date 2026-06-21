@@ -35,7 +35,10 @@ partial class GameServer
         pq.Claimed = true;
 
         // Award XP
-        player.Experience += def.Reward.Experience;
+        long questXp = def.Reward.Experience;
+        if (IsPlayerVip(player))
+            questXp *= 2;
+        player.Experience += questXp;
 
         // Award gold
         player.Gold += def.Reward.Gold;

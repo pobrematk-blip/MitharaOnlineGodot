@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Lanca quebrada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11075
+Nome = "Cajado Ancestral de Aster"
+Descricao = "Baseado em conhecimento antigo preservado entre ruínas e bibliotecas fechadas."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+TipoItem = 1
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Mago"
+PoolDeAfixos = "DanoMagico,ChanceCritica,DanoCriticoBonus,Precisao,RouboMana,RegeneracaoMana,ReducaoCooldown"
+DanoFisico = 106
+DanoFisicoMin = 96
+DanoFisicoMax = 117
+Inteligencia = 37
+InteligenciaMin = 32
+InteligenciaMax = 42

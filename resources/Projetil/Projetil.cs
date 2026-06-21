@@ -79,7 +79,7 @@ public partial class Projetil : Area2D
                 }
                 else
                 {
-                    GD.PrintErr("[PROJETIL] Inimigo sem network_id! Nao e possivel atacar online.");
+                    GD.PrintErr("[PROJETIL] Inimigo sem network_id! N?o ? poss?vel atacar online.");
                 }
             }
             else

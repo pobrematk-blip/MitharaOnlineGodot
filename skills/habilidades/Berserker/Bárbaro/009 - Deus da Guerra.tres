@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13109
+Nome = "Deus da Guerra"
+Descricao = "O Bárbaro libera toda sua ferocidade e se torna uma força imparável no campo de batalha, lutando como se cada golpe fosse o último."
+Valor = 0
+CustoMana = 80
+ClasseRestrita = "Berserker"
+Cooldown = 120
+Duracao = 20
+TargetType = 0
+EffectType = 1
+Especializacao = "Bárbaro"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Aumenta drasticamente Dano, Velocidade de Ataque e Roubo de Vida."
+DanoEscala = ""
+BuffDebuff = "+50% Dano, +50% Velocidade de Ataque, +15% Roubo de Vida"
+DuracaoTexto = "20s"
+Progressao = "Ultimate possui 5 níveis. Bônus podem escalar levemente ou reduzir cooldown conforme o nível."
+Observacoes = "Ultimate ofensiva do Bárbaro. Deve respeitar caps globais de Velocidade de Ataque e Roubo de Vida."

@@ -9,6 +9,7 @@ public partial class LojaCashUI : Control
     private VBoxContainer _itensContainer;
     private CashManager _cash;
     private LojaCashData _lojaData;
+    private GameNetwork _net;
 
     private static readonly string LojaDataPath = "res://SistemaContas/LojaCashData.tres";
 
@@ -21,6 +22,7 @@ public partial class LojaCashUI : Control
         _itensContainer = GetNode<VBoxContainer>("%ItensContainer");
 
         _cash = GetNode<CashManager>("/root/CashManager");
+        _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
 
         _fecharBtn.Pressed += OnFechar;
 

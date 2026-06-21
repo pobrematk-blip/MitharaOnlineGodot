@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15203
+Nome = "Provocação Divina"
+Descricao = "O Paladino desafia os inimigos em nome da luz, forçando criaturas próximas a voltarem sua atenção para ele."
+Valor = 0
+CustoMana = 30
+ClasseRestrita = "Clérigo"
+Cooldown = 20
+Duracao = 5
+TargetType = 2
+EffectType = 7
+Especializacao = "Paladino"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Provoca inimigos próximos."
+DanoEscala = ""
+BuffDebuff = "Taunt"
+DuracaoTexto = "5s"
+Progressao = "Aumenta alcance/ameaça conforme o nível."
+Observacoes = "Funciona principalmente em PvE; PvP pode aplicar redução de dano no alvo."

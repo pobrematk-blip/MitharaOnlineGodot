@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300362
+Nome = "Couraça de Aço Estelar"
+Descricao = "Forjada nas oficinas de Aço Estelar, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 2
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 89
+HpMin = 76
+HpMax = 103
+Mana = 15
+ManaMin = 13
+ManaMax = 18
+DefesaFisica = 66
+DefesaFisicaMin = 57
+DefesaFisicaMax = 76
+DefesaMagica = 21
+DefesaMagicaMin = 18
+DefesaMagicaMax = 24
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

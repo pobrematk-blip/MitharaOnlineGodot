@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300147
+Nome = "Gibão de Bruma Baixa"
+Descricao = "Curtida e ajustada por batedores de Bruma Baixa, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 10
+Valor = 100
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 15
+HpMin = 13
+HpMax = 18
+Mana = 8
+ManaMin = 7
+ManaMax = 10
+DefesaFisica = 8
+DefesaFisicaMin = 7
+DefesaFisicaMax = 9
+DefesaMagica = 8
+DefesaMagicaMin = 7
+DefesaMagicaMax = 9
+Evasao = 0.44
+EvasaoMin = 0.38
+EvasaoMax = 0.5

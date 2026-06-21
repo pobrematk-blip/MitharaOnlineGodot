@@ -85,6 +85,19 @@ public partial class SkillResource : Resource
     public SkillEffectType EffectType { get; set; } = SkillEffectType.None;
 
     // Aliases em inglês (compatibilidade com outros arquivos criados posteriormente)
+    // Dados de catalogo usados pelo editor/importador de planilhas.
+    [Export] public string Especializacao { get; set; } = string.Empty;
+    [Export] public int NivelRequerido { get; set; } = 1;
+    [Export] public int Ordem { get; set; } = 0;
+    [Export] public string Escopo { get; set; } = string.Empty;
+    [Export] public string Tipo { get; set; } = string.Empty;
+    [Export] public string EfeitoPrincipal { get; set; } = string.Empty;
+    [Export] public string DanoEscala { get; set; } = string.Empty;
+    [Export] public string BuffDebuff { get; set; } = string.Empty;
+    [Export] public string DuracaoTexto { get; set; } = string.Empty;
+    [Export] public string Progressao { get; set; } = string.Empty;
+    [Export] public string Observacoes { get; set; } = string.Empty;
+
     public string SkillName { get => Nome; set => Nome = value; }
     public string Description { get => Descricao; set => Descricao = value; }
     public string IconPath { get => Icone != null ? Icone.ResourcePath : string.Empty; set { if (!string.IsNullOrEmpty(value)) Icone = GD.Load<Texture2D>(value); } }

@@ -11,5 +11,7 @@ public class NPCEntity : Entity
     public NPCEntity()
     {
         Type = EntityType.NPC;
+        Health = 1;
+        MaxHealth = 1;
     }
 }

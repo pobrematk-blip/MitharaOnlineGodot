@@ -47,7 +47,7 @@ public partial class FriendsUI : Control
         AtualizarLista();
 
         CallDeferred(MethodName.Centralizar);
-        GetTree().Root.SizeChanged += () => CallDeferred(MethodName.Centralizar);
+        GetTree().Root.SizeChanged += OnRootSizeChanged;
 
         CriarBotaoToggle();
     }
@@ -67,7 +67,13 @@ public partial class FriendsUI : Control
 
         _toggleBtn = btn;
         AtualizarPosicaoBotao(btn);
-        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+        GetTree().Root.SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged()
+    {
+        if (_toggleBtn != null)
+            AtualizarPosicaoBotao(_toggleBtn);
     }
 
     private void AtualizarPosicaoBotao(Control btn)
@@ -201,6 +207,18 @@ public partial class FriendsUI : Control
 
             _friendsList.AddChild(hbox);
         }
+    }
+
+    private void OnRootSizeChanged()
+    {
+        CallDeferred(MethodName.Centralizar);
+    }
+
+    public override void _ExitTree()
+    {
+        GetTree().Root.SizeChanged -= OnRootSizeChanged;
+        if (_toggleBtn != null)
+            GetTree().Root.SizeChanged -= OnSizeChanged;
     }
 
     public override void _Input(InputEvent @event)

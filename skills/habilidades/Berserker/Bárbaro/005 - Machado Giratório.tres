@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13105
+Nome = "Machado Giratório"
+Descricao = "Girando seu machado com força absurda, o Bárbaro atinge todos os inimigos próximos em uma demonstração de pura violência."
+Valor = 150
+CustoMana = 25
+ClasseRestrita = "Berserker"
+Cooldown = 12
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Bárbaro"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano em Área"
+EfeitoPrincipal = "Causa dano físico em área ao redor do personagem."
+DanoEscala = "150% → 280% do dano da arma"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Skill possui 10 níveis. Dano escala de 150% até 280%."
+Observacoes = "Principal skill de limpeza de grupos pequenos."

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machados Perdisos 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11034
+Nome = "Machado do Sangue Quente"
+Descricao = "Arma de guerreiros impulsivos, carrega marcas de batalhas curtas e barulhentas."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+TipoItem = 1
+NivelRequerido = 10
+Valor = 100
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,PenetracaoArmadura,RouboVida,Tenacidade,Precisao"
+DanoFisico = 17
+DanoFisicoMin = 15
+DanoFisicoMax = 20
+Forca = 6
+ForcaMin = 5
+ForcaMax = 7

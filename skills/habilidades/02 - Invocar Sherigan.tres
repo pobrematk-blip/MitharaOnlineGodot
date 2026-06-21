@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 2
+Nome = "Invocar Sherigan"
+Descricao = "Invoca Sherigan, o lobo espiritual, para lutar ao lado do Caçador."
+Valor = 1
+CustoMana = 20
+ClasseRestrita = "Arqueiro"
+Cooldown = 30.0
+TargetType = 0
+EffectType = 5

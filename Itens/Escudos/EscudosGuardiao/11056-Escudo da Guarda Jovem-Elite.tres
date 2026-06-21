@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11056
+Nome = "Escudo da Guarda Jovem"
+Descricao = "Usado por novos guardas, protege contra golpes leves e erros pesados."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 10
+Valor = 100
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 10
+DefesaFisicaMin = 8
+DefesaFisicaMax = 12
+Hp = 25
+HpMin = 19
+HpMax = 32
+Forca = 3
+ForcaMin = 2
+ForcaMax = 4
+Agilidade = 3
+AgilidadeMin = 2
+AgilidadeMax = 4

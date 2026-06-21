@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[ext_resource type="Texture2D" uid="uid://dmjvog2cq7sd2" path="res://Itens/Incones/Pergaminho de Criação de Guild.png" id="2_guildicon"]
+
+[resource]
+script = ExtResource("1_taxcw")
+ItemID = 102
+Nome = "Pergaminho de Criação de Clã"
+Descricao = "Um pergaminho sagrado necessário para fundar um clã. Leve-o ao Mestre de Guildas."
+Icone = ExtResource("2_guildicon")
+Acumulavel = true
+QuantidadeMaximaPorSlot = 99
+Tipo = 17
+NivelRequerido = 1
+Valor = 100
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+ChanceDrop = 0.0
+TempoDesaparecimento = 30.0
+TipoItem = 0
+Raridade = 2

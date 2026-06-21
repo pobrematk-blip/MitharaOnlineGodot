@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de montros 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300388
+Nome = "Grevas da Ascensão"
+Descricao = "Forjada nas oficinas de Ascensão, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 2
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 67
+HpMin = 57
+HpMax = 77
+Mana = 14
+ManaMin = 12
+ManaMax = 16
+DefesaFisica = 50
+DefesaFisicaMin = 43
+DefesaFisicaMax = 58
+DefesaMagica = 16
+DefesaMagicaMin = 14
+DefesaMagicaMax = 19
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

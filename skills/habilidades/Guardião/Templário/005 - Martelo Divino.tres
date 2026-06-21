@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14305
+Nome = "Martelo Divino"
+Descricao = "Um martelo de luz desce dos céus esmagando os inimigos em uma pequena área."
+Valor = 180
+CustoMana = 30
+ClasseRestrita = "Guardião"
+Cooldown = 14
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Templário"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano em Área"
+EfeitoPrincipal = "Causa dano sagrado em área."
+DanoEscala = "180% → 320% do dano da arma"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 180%; Lv10 = 320%."
+Observacoes = "Área pequena, alto impacto."

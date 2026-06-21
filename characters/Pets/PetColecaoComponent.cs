@@ -64,7 +64,7 @@ public partial class PetColecaoComponent : Node
             var dirAccess = DirAccess.Open(dir);
             if (dirAccess == null)
             {
-                GD.PrintErr($"[COLECAO] Diretorio '{dir}' nao existe!");
+                GD.PrintErr($"[COLE??O] Diret?rio '{dir}' n?o existe!");
                 return;
             }
 

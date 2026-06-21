@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12403
+Nome = "Nuvem Tóxica"
+Descricao = "Cria uma nuvem venenosa em uma área."
+Valor = 0
+CustoMana = 30
+ClasseRestrita = "Ladino"
+Cooldown = 18
+Duracao = 6
+TargetType = 2
+EffectType = 24
+Especializacao = "Gatuno"
+NivelRequerido = 10
+Ordem = 3
+Escopo = "Especialização"
+Tipo = "Área / Veneno"
+EfeitoPrincipal = "Causa dano contínuo em área e aplica veneno."
+DanoEscala = "Dano contínuo em área"
+BuffDebuff = "Veneno em área"
+DuracaoTexto = "6s"
+Progressao = "Dano e duração podem escalar levemente."
+Observacoes = ""

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11088
+Nome = "Escudo da Primeira Prece"
+Descricao = "Pequeno escudo de templo, usado por quem ainda aprende a proteger vidas."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 1
+DefesaFisicaMin = 1
+DefesaFisicaMax = 2
+DefesaMagica = 3
+DefesaMagicaMin = 2
+DefesaMagicaMax = 4
+Hp = 9
+HpMin = 6
+HpMax = 12
+Forca = 1
+ForcaMin = 1
+ForcaMax = 1
+Inteligencia = 1
+InteligenciaMin = 1
+InteligenciaMax = 1

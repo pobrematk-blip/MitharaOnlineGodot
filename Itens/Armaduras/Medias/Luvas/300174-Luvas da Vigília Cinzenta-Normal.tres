@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Luva de couro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300174
+Nome = "Luvas da Vigília Cinzenta"
+Descricao = "Curtida e ajustada por batedores de Vigília Cinzenta, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 4
+CategoriaPeso = 1
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 8
+HpMin = 7
+HpMax = 9
+Mana = 5
+ManaMin = 4
+ManaMax = 6
+DefesaFisica = 5
+DefesaFisicaMin = 4
+DefesaFisicaMax = 6
+DefesaMagica = 5
+DefesaMagicaMin = 4
+DefesaMagicaMax = 6
+Evasao = 0.2
+EvasaoMin = 0.17
+EvasaoMax = 0.23

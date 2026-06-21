@@ -5,10 +5,10 @@
 /// </summary>
 public partial class TalentBonusPackage : Resource
 {
-    public int BonusForca { get; set; }
-    public int BonusAgilidade { get; set; }
-    public int BonusDestreza { get; set; }
-    public int BonusInteligencia { get; set; }
+    public float BonusForca { get; set; }
+    public float BonusAgilidade { get; set; }
+    public float BonusDestreza { get; set; }
+    public float BonusInteligencia { get; set; }
     public float BonusDanoPercent { get; set; }
     public float BonusVelocidadePercent { get; set; }
     public float BonusVidaPercent { get; set; }

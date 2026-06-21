@@ -161,7 +161,7 @@ partial class GameServer
         }
     }
 
-    private static void FlushEntityUpdates(NetPeer peer, Dictionary<ulong, Entity> entities, HashSet<ulong> aoi, ulong playerEntityId, int maxPayload)
+    private void FlushEntityUpdates(NetPeer peer, Dictionary<ulong, Entity> entities, HashSet<ulong> aoi, ulong playerEntityId, int maxPayload)
     {
         var writer = new NetDataWriter();
         int batchFrom = 0;
@@ -185,6 +185,7 @@ partial class GameServer
             writer.Put(aoiEntity.DirX);
             writer.Put(aoiEntity.DirY);
             writer.Put(aoiEntity.Moving);
+            writer.Put(aoiEntity.Sprinting);
             writer.Put(aoiEntity.Health);
             writer.Put(aoiEntity.MaxHealth);
             writer.Put(aoiEntity.Mana);
@@ -192,6 +193,23 @@ partial class GameServer
             writer.Put(aoiEntity.Level);
             writer.Put(aoiEntity.Name);
             writer.Put(aoiEntity.FactionId);
+            if (aoiEntity is PlayerEntity remotePlayer)
+            {
+                writer.Put(remotePlayer.Experience);
+                writer.Put(XpForNextLevel(remotePlayer.Level));
+                var guild = remotePlayer.GuildId >= 0 ? _world.Guilds.GetGuild(remotePlayer.GuildId) : null;
+                writer.Put(guild?.Name ?? "");
+                writer.Put(guild?.Tag ?? "");
+                writer.Put(guild?.Emblem ?? -1);
+            }
+            else
+            {
+                writer.Put(0L);
+                writer.Put(1L);
+                writer.Put("");
+                writer.Put("");
+                writer.Put(-1);
+            }
             index++;
         }
 
@@ -209,7 +227,7 @@ partial class GameServer
 
     private static int EstimateEntitySize(Entity entity)
     {
-        return 45 + (entity.Name.Length * 2) + (entity.FactionId.Length * 2);
+        return 80 + (entity.Name.Length * 2) + (entity.FactionId.Length * 2);
     }
 
     private void BroadcastSpawnToNearby(Channel channel, Entity entity, float x, float y)
@@ -228,6 +246,8 @@ partial class GameServer
             if (peer != null)
             {
                 peer.Send(writer, DeliveryMethod.ReliableOrdered);
+                if (_sessions.TryGetValue(peer, out var session))
+                    session.SpawnedEntities.Add(entity.Id);
                 sent++;
             }
         }
@@ -265,6 +285,12 @@ partial class GameServer
         {
             writer.Put(player.CharacterClass);
             writer.Put(player.Race);
+            writer.Put(player.Experience);
+            writer.Put(XpForNextLevel(player.Level));
+            var guild = player.GuildId >= 0 ? _world.Guilds.GetGuild(player.GuildId) : null;
+            writer.Put(guild?.Name ?? "");
+            writer.Put(guild?.Tag ?? "");
+            writer.Put(guild?.Emblem ?? -1);
         }
         else if (entity is MonsterEntity mob)
         {

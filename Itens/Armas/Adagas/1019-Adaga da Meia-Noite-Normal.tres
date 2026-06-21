@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga do Predador.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1019
+Nome = "Adaga da Meia-Noite"
+Descricao = "Quase desaparece na escuridão, como se fosse parte da sombra do usuário."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 50
+DanoFisicoMin = 44
+DanoFisicoMax = 57
+Destreza = 21
+DestrezaMin = 18
+DestrezaMax = 24

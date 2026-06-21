@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300245
+Nome = "Calças do Eclipse de Mitthara"
+Descricao = "Curtida e ajustada por batedores de Eclipse de Mitthara, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 60
+HpMin = 51
+HpMax = 69
+Mana = 33
+ManaMin = 28
+ManaMax = 38
+DefesaFisica = 35
+DefesaFisicaMin = 30
+DefesaFisicaMax = 40
+DefesaMagica = 35
+DefesaMagicaMin = 30
+DefesaMagicaMax = 40
+Evasao = 1.58
+EvasaoMin = 1.35
+EvasaoMax = 1.81

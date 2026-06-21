@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15105
+Nome = "Renovação"
+Descricao = "Uma bênção persistente envolve o aliado, restaurando sua vida lentamente enquanto a luz divina permanece ativa."
+Valor = 180
+CustoMana = 30
+ClasseRestrita = "Clérigo"
+Cooldown = 15
+Duracao = 10
+TargetType = 0
+EffectType = 1
+Especializacao = "Sacerdote"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Cura Contínua"
+EfeitoPrincipal = "Regenera HP do alvo ao longo do tempo."
+DanoEscala = "Cura total: 180% → 360% do Poder Mágico"
+BuffDebuff = "HoT"
+DuracaoTexto = "10s"
+Progressao = "Lv1 = 180% total; Lv10 = 360% total."
+Observacoes = "Ideal para manter tanques vivos em lutas longas."

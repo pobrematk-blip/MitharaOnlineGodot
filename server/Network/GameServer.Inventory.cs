@@ -8,6 +8,91 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private void HandleAdminUpdateItemDefinition(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || !session.IsAdminOrAdminMode(_config))
+        {
+            SendSystemMessage(peer, "Apenas administradores podem editar itens.");
+            return;
+        }
+
+        int id = reader.GetInt();
+        string name = reader.GetString().Trim();
+        int clientType = reader.GetInt();
+        int maxStack = Math.Clamp(reader.GetInt(), 1, 9999);
+        bool stackable = reader.GetBool();
+        bool isBag = reader.GetBool();
+        int extraSlots = Math.Clamp(reader.GetInt(), 0, 100);
+        var type = isBag ? ItemType.Bag : clientType switch
+        {
+            18 or 20 => ItemType.Consumable,
+            19 => ItemType.Material,
+            >= 0 and <= 17 => (ItemType)clientType,
+            _ => ItemType.None,
+        };
+
+        var definition = new ItemDefinition
+        {
+            Id = id,
+            Name = name,
+            Type = type,
+            MaxStack = maxStack,
+            IsStackable = stackable,
+            IsBag = isBag,
+            ExtraSlots = extraSlots,
+            Forca = reader.GetInt(),
+            Agilidade = reader.GetInt(),
+            Destreza = reader.GetInt(),
+            Inteligencia = reader.GetInt(),
+            BaseAttack = reader.GetInt(),
+            Defense = reader.GetInt(),
+            MagicDefense = reader.GetInt(),
+            Hp = reader.GetInt(),
+            Mana = reader.GetInt(),
+            Evasion = reader.GetFloat(),
+            BuyPrice = Math.Max(0, reader.GetInt()),
+            AffixPool = reader.GetString()
+                .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList(),
+            RequiredLevel = Math.Max(1, reader.GetInt()),
+            IsElite = reader.GetBool(),
+            AllowedClasses = reader.GetString().Trim(),
+            ForcaMin = reader.GetInt(),
+            ForcaMax = reader.GetInt(),
+            AgilidadeMin = reader.GetInt(),
+            AgilidadeMax = reader.GetInt(),
+            DestrezaMin = reader.GetInt(),
+            DestrezaMax = reader.GetInt(),
+            InteligenciaMin = reader.GetInt(),
+            InteligenciaMax = reader.GetInt(),
+            BaseAttackMin = reader.GetInt(),
+            BaseAttackMax = reader.GetInt(),
+            DefenseMin = reader.GetInt(),
+            DefenseMax = reader.GetInt(),
+            MagicDefenseMin = reader.GetInt(),
+            MagicDefenseMax = reader.GetInt(),
+            HpMin = reader.GetInt(),
+            HpMax = reader.GetInt(),
+            ManaMin = reader.GetInt(),
+            ManaMax = reader.GetInt(),
+            EvasionMin = reader.GetFloat(),
+            EvasionMax = reader.GetFloat(),
+        };
+
+        if (definition.Id <= 0 || string.IsNullOrWhiteSpace(definition.Name)
+            || !Enum.IsDefined(typeof(ItemType), definition.Type))
+        {
+            SendSystemMessage(peer, "Definicao de item invalida.");
+            return;
+        }
+
+        _db.SaveItemDefinition(definition);
+        ItemDefinitions.Register(definition);
+        Logger.Info($"[ADMIN] Conta {session.AccountId} atualizou item {definition.Id} ({definition.Name}).");
+        SendSystemMessage(peer, $"Item {definition.Name} sincronizado com o servidor.");
+    }
+
     private void SendInventoryData(NetPeer peer, PlayerEntity player)
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_InventoryData);
@@ -18,6 +103,7 @@ partial class GameServer
             writer.Put(item.ItemId);
             writer.Put(item.Quantity);
             writer.Put(item.RefineLevel);
+            writer.Put(System.Text.Json.JsonSerializer.Serialize(item.Roll));
         }
         writer.Put(player.Equipment.Count);
         foreach (var kv in player.Equipment)
@@ -26,6 +112,7 @@ partial class GameServer
             writer.Put(kv.Value.ItemId);
             writer.Put(kv.Value.Quantity);
             writer.Put(kv.Value.RefineLevel);
+            writer.Put(System.Text.Json.JsonSerializer.Serialize(kv.Value.Roll));
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -35,7 +122,8 @@ partial class GameServer
         if (quantity <= 0) return false;
 
         var def = ItemDefinitions.Get(itemId);
-        bool stackable = def?.IsStackable == true && def.MaxStack > 1;
+        if (def == null) return false;
+        bool stackable = IsStackableInventoryItem(def);
         int maxStack = stackable ? Math.Max(1, def!.MaxStack) : 1;
         int remaining = quantity;
 
@@ -81,12 +169,100 @@ partial class GameServer
 
             int amount = stackable ? Math.Min(remaining, maxStack) : 1;
             var newItem = new ItemInstance { Slot = slot, ItemId = itemId, Quantity = amount };
+            ItemRoller.EnsureRolled(newItem);
             player.Items.Add(newItem);
             _db.SaveItem(characterId, newItem);
             remaining -= amount;
         }
 
         return true;
+    }
+
+    private static bool IsStackableInventoryItem(ItemDefinition? def)
+    {
+        if (def == null || !def.IsStackable || def.MaxStack <= 1)
+            return false;
+
+        return def.Type is ItemType.Consumable or ItemType.Material;
+    }
+
+    private void NormalizeLoadedInventory(PlayerEntity player, int characterId)
+    {
+        var usedSlots = new HashSet<int>(player.Items.Select(i => i.Slot));
+
+        int? TakeFreeSlot()
+        {
+            for (int slot = 0; slot < 40; slot++)
+            {
+                if (usedSlots.Contains(slot))
+                    continue;
+
+                usedSlots.Add(slot);
+                return slot;
+            }
+
+            return null;
+        }
+
+        foreach (var item in player.Items.ToList())
+        {
+            if (IsStackableInventoryItem(item.Definition) || item.Quantity <= 1)
+                continue;
+
+            int extraQuantity = item.Quantity - 1;
+            item.Quantity = 1;
+            _db.SaveItem(characterId, item);
+
+            for (int i = 0; i < extraQuantity; i++)
+            {
+                var freeSlot = TakeFreeSlot();
+                if (freeSlot == null)
+                {
+                    Logger.Info($"Inventario sem espaco para separar item nao empilhavel {item.ItemId} do personagem {characterId}.");
+                    break;
+                }
+
+                var splitItem = new ItemInstance
+                {
+                    Slot = freeSlot.Value,
+                    ItemId = item.ItemId,
+                    Quantity = 1,
+                    RefineLevel = item.RefineLevel,
+                };
+                player.Items.Add(splitItem);
+                _db.SaveItem(characterId, splitItem);
+            }
+        }
+
+        foreach (var equipped in player.Equipment.Values.ToList())
+        {
+            if (IsStackableInventoryItem(equipped.Definition) || equipped.Quantity <= 1)
+                continue;
+
+            int extraQuantity = equipped.Quantity - 1;
+            equipped.Quantity = 1;
+            _db.SaveItem(characterId, equipped);
+
+            for (int i = 0; i < extraQuantity; i++)
+            {
+                var freeSlot = TakeFreeSlot();
+                if (freeSlot == null)
+                {
+                    Logger.Info($"Inventario sem espaco para separar item equipado nao empilhavel {equipped.ItemId} do personagem {characterId}.");
+                    break;
+                }
+
+                var splitItem = new ItemInstance
+                {
+                    Slot = freeSlot.Value,
+                    ItemId = equipped.ItemId,
+                    Quantity = 1,
+                    RefineLevel = equipped.RefineLevel,
+                };
+                player.Items.Add(splitItem);
+                _db.SaveItem(characterId, splitItem);
+            }
+        }
     }
 
     private void HandleInventoryRequest(NetPeer peer)
@@ -115,6 +291,18 @@ partial class GameServer
         if (sourceItem == null) return;
         var def = sourceItem.Definition;
         if (def == null) return;
+        if (player.Level < def.RequiredLevel)
+        {
+            SendSystemMessage(peer, $"Nivel {def.RequiredLevel} necessario para equipar este item.");
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(def.AllowedClasses)
+            && !def.AllowedClasses.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Contains(player.CharacterClass, StringComparer.OrdinalIgnoreCase))
+        {
+            SendSystemMessage(peer, "Sua classe nao pode equipar este item.");
+            return;
+        }
 
         int eqType = def.Type switch
         {
@@ -164,6 +352,7 @@ partial class GameServer
         writer.Put(sourceItem.ItemId);
         writer.Put(sourceItem.Quantity);
         writer.Put(sourceItem.RefineLevel);
+        writer.Put(System.Text.Json.JsonSerializer.Serialize(sourceItem.Roll));
         if (currentEquipped != null)
         {
             writer.Put(true);
@@ -171,6 +360,7 @@ partial class GameServer
             writer.Put(currentEquipped.ItemId);
             writer.Put(currentEquipped.Quantity);
             writer.Put(currentEquipped.RefineLevel);
+            writer.Put(System.Text.Json.JsonSerializer.Serialize(currentEquipped.Roll));
         }
         else
         {
@@ -179,6 +369,7 @@ partial class GameServer
             writer.Put(0);
             writer.Put(0);
             writer.Put(0);
+            writer.Put("");
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
@@ -203,6 +394,12 @@ partial class GameServer
                 visWriter.Put(player.Level);
                 visWriter.Put(player.Name);
                 visWriter.Put(player.FactionId);
+                visWriter.Put(player.Experience);
+                visWriter.Put(XpForNextLevel(player.Level));
+                var guild = player.GuildId >= 0 ? _world.Guilds.GetGuild(player.GuildId) : null;
+                visWriter.Put(guild?.Name ?? "");
+                visWriter.Put(guild?.Tag ?? "");
+                visWriter.Put(guild?.Emblem ?? -1);
                 p.Send(visWriter, DeliveryMethod.Unreliable);
             }
         }
@@ -237,10 +434,14 @@ partial class GameServer
         writer.Put(equipSlot);
         writer.Put(0);
         writer.Put(0);
+        writer.Put(0);
+        writer.Put("");
         writer.Put(true);
         writer.Put(targetInvSlot);
         writer.Put(equipped.ItemId);
         writer.Put(equipped.Quantity);
+        writer.Put(equipped.RefineLevel);
+        writer.Put(System.Text.Json.JsonSerializer.Serialize(equipped.Roll));
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
@@ -260,10 +461,10 @@ partial class GameServer
 
         if (fromItem == null) return;
 
-        if (toItem != null && fromItem.ItemId == toItem.ItemId && fromItem.IsStackable)
+        if (toItem != null && fromItem.ItemId == toItem.ItemId && IsStackableInventoryItem(fromItem.Definition))
         {
             int totalQty = fromItem.Quantity + toItem.Quantity;
-            int maxStack = fromItem.MaxStack;
+            int maxStack = Math.Max(1, fromItem.Definition!.MaxStack);
             if (totalQty <= maxStack)
             {
                 toItem.Quantity = totalQty;
@@ -278,17 +479,97 @@ partial class GameServer
                 _db.SaveItem(session.SelectedCharacter!.Id, toItem);
                 _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
             }
+            SendInventoryData(peer, player);
+            return;
         }
+
+        fromItem.Slot = toSlot;
+        if (toItem != null)
+            toItem.Slot = fromSlot;
+        _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
+        if (toItem != null)
+            _db.SaveItem(session.SelectedCharacter!.Id, toItem);
+
+        SendInventoryData(peer, player);
+    }
+
+    private void HandleUseItem(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel?.GetEntity(session.EntityId) is not PlayerEntity player || player.Health <= 0)
+            return;
+
+        int slot = reader.GetInt();
+        var item = player.Items.FirstOrDefault(candidate => candidate.Slot == slot);
+        var def = item?.Definition;
+        if (item == null || def == null || def.Type != ItemType.Consumable)
+            return;
+
+        int restoredHealth = 0;
+        int restoredMana = 0;
+        if (item.ItemId == ItemDefinitions.PocaoVida && def.Hp > 0)
         {
-            fromItem.Slot = toSlot;
-            if (toItem != null)
-                toItem.Slot = fromSlot;
-            _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
-            if (toItem != null)
-                _db.SaveItem(session.SelectedCharacter!.Id, toItem);
+            restoredHealth = Math.Min(def.Hp, player.MaxHealth - player.Health);
+            if (restoredHealth <= 0)
+            {
+                SendSystemMessage(peer, "Sua vida já está cheia.");
+                return;
+            }
+            player.Health += restoredHealth;
+        }
+        else if (item.ItemId == ItemDefinitions.PocaoMana && def.Mana > 0)
+        {
+            restoredMana = Math.Min(def.Mana, player.MaxMana - player.Mana);
+            if (restoredMana <= 0)
+            {
+                SendSystemMessage(peer, "Sua mana já está cheia.");
+                return;
+            }
+            player.Mana += restoredMana;
+        }
+        else if (item.ItemId is ItemDefinitions.PergaminhoVip7Dias or ItemDefinitions.PergaminhoVip15Dias or ItemDefinitions.PergaminhoVip30Dias or ItemDefinitions.PergaminhoVip7DiasTrial)
+        {
+            int days = item.ItemId switch
+            {
+                ItemDefinitions.PergaminhoVip7Dias => 7,
+                ItemDefinitions.PergaminhoVip15Dias => 15,
+                ItemDefinitions.PergaminhoVip30Dias => 30,
+                ItemDefinitions.PergaminhoVip7DiasTrial => 7,
+                _ => 0,
+            };
+            if (days <= 0) return;
+            var currentExpiry = _db.LoadVipExpiry(session.AccountId);
+            var now = DateTime.UtcNow;
+            var baseTime = currentExpiry > now ? currentExpiry : now;
+            var newExpiry = baseTime.AddDays(days);
+            _db.SaveVipExpiry(session.AccountId, newExpiry);
+            player.VipExpiry = newExpiry;
+            SendVipStatus(peer, newExpiry);
+            Logger.Info($"[VIP] Conta {session.AccountId} usou pergaminho VIP de {days} dias. Expira em: {newExpiry:yyyy-MM-dd HH:mm:ss}");
+        }
+        else
+        {
+            return;
+        }
+
+        item.Quantity--;
+        if (item.Quantity <= 0)
+        {
+            player.Items.Remove(item);
+            _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+        }
+        else
+        {
+            _db.SaveItem(session.SelectedCharacter.Id, item);
         }
 
         SendInventoryData(peer, player);
+        SendSystemMessage(peer, restoredHealth > 0
+            ? $"Poção de Vida usada: +{restoredHealth} HP."
+            : $"Poção de Mana usada: +{restoredMana} mana.");
     }
 
     private void HandleDropItem(NetPeer peer, NetDataReader reader)
@@ -368,18 +649,27 @@ partial class GameServer
 
     private static void RecalculatePlayerStats(PlayerEntity player)
     {
-        int bonusAtk = 0, bonusDef = 0, bonusForca = 0, bonusAgi = 0, bonusDes = 0, bonusInt = 0;
+        int bonusAtk = 0, bonusDef = 0, bonusMagicDef = 0, bonusHp = 0, bonusMana = 0;
+        int bonusForca = 0, bonusAgi = 0, bonusDes = 0, bonusInt = 0;
+        float bonusEvasion = 0;
         foreach (var kv in player.Equipment)
         {
-            var def = kv.Value.Definition;
+            var item = kv.Value;
+            var def = item.Definition;
             if (def == null) continue;
-            double refineMult = GetRefineMultiplier(kv.Value.RefineLevel);
-            bonusAtk += (int)(def.BaseAttack * refineMult);
-            bonusDef += (int)(def.Defense * refineMult);
-            bonusForca += (int)(def.Forca * refineMult);
-            bonusAgi += (int)(def.Agilidade * refineMult);
-            bonusDes += (int)(def.Destreza * refineMult);
-            bonusInt += (int)(def.Inteligencia * refineMult);
+            ItemRoller.EnsureRolled(item);
+            var roll = item.Roll;
+            double refineMult = GetRefineMultiplier(item.RefineLevel);
+            bonusAtk += Refined(roll.BaseAttack + Affix(roll, "BaseAttack"), refineMult);
+            bonusDef += Refined(roll.Defense + Affix(roll, "DefesaFisica"), refineMult);
+            bonusMagicDef += Refined(roll.MagicDefense + Affix(roll, "DefesaMagica"), refineMult);
+            bonusHp += Refined(roll.Hp + Affix(roll, "Hp"), refineMult);
+            bonusMana += Refined(roll.Mana + Affix(roll, "Mana"), refineMult);
+            bonusEvasion += Math.Min(40f, (float)((roll.Evasion + Affix(roll, "Evasao")) * refineMult));
+            bonusForca += Refined(roll.Forca + Affix(roll, "Forca"), refineMult);
+            bonusAgi += Refined(roll.Agilidade + Affix(roll, "Agilidade"), refineMult);
+            bonusDes += Refined(roll.Destreza + Affix(roll, "Destreza"), refineMult);
+            bonusInt += Refined(roll.Inteligencia + Affix(roll, "Inteligencia"), refineMult);
         }
         int baseAttack = player.CharacterClass.ToLowerInvariant() switch
         {
@@ -398,13 +688,20 @@ partial class GameServer
 
         player.BaseAttack = baseAttack + bonusAtk;
         player.Defense = baseDefense + bonusDef;
+        player.MagicDefense = bonusMagicDef;
+        player.EquipmentEvasion = bonusEvasion;
         player.Forca = player.BaseForca + bonusForca;
         player.Agilidade = player.BaseAgilidade + bonusAgi;
         player.Destreza = player.BaseDestreza + bonusDes;
         player.Inteligencia = player.BaseInteligencia + bonusInt;
-        player.MaxHealth = 80 + player.Forca * 2 + player.Level * 10;
-        player.MaxMana = 30 + player.Inteligencia * 3 + player.Level * 5;
+        player.MaxHealth = 80 + player.Forca * 2 + player.Level * 10 + bonusHp;
+        player.MaxMana = 30 + player.Inteligencia * 3 + player.Level * 5 + bonusMana;
     }
+
+    private static int Refined(float value, double multiplier) => (int)Math.Round(value * multiplier);
+
+    private static float Affix(ItemRoll roll, string name)
+        => roll.Affixes.TryGetValue(name, out float value) ? value : 0f;
 
     private void HandleCollectLocalItem(NetPeer peer, NetDataReader reader)
     {

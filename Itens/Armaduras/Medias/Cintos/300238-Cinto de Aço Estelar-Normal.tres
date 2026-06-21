@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300238
+Nome = "Cinto de Aço Estelar"
+Descricao = "Curtida e ajustada por batedores de Aço Estelar, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 3
+CategoriaPeso = 1
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 19
+HpMin = 17
+HpMax = 22
+Mana = 11
+ManaMin = 9
+ManaMax = 13
+DefesaFisica = 11
+DefesaFisicaMin = 10
+DefesaFisicaMax = 13
+DefesaMagica = 11
+DefesaMagicaMin = 10
+DefesaMagicaMax = 13
+Evasao = 0.495
+EvasaoMin = 0.42
+EvasaoMax = 0.57

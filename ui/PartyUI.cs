@@ -17,6 +17,7 @@ public partial class PartyUI : Control
     private ulong _leaderId;
     private List<Godot.Collections.Dictionary> _members = new();
     private const int MaxParty = 5;
+    private TextureButton _toggleButton;
 
     private string NomeJogador
     {
@@ -56,22 +57,28 @@ public partial class PartyUI : Control
 
         AtualizarLista();
         CallDeferred(MethodName.Centralizar);
-        GetTree().Root.SizeChanged += () => CallDeferred(MethodName.Centralizar);
+        GetTree().Root.SizeChanged += OnRootSizeChanged;
         CriarBotaoToggle();
     }
 
     private void CriarBotaoToggle()
     {
-        var btn = new TextureButton();
-        btn.Name = "PartyToggleButton";
-        btn.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Party.png");
-        btn.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Party Selecionado.png");
-        btn.CustomMinimumSize = new Vector2(36, 36);
-        btn.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
-        btn.Pressed += () => AbrirFechar(null);
-        AddChild(btn);
-        AtualizarPosicaoBotao(btn);
-        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+        _toggleButton = new TextureButton();
+        _toggleButton.Name = "PartyToggleButton";
+        _toggleButton.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Party.png");
+        _toggleButton.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Party Selecionado.png");
+        _toggleButton.CustomMinimumSize = new Vector2(36, 36);
+        _toggleButton.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
+        _toggleButton.Pressed += () => AbrirFechar(null);
+        AddChild(_toggleButton);
+        AtualizarPosicaoBotao(_toggleButton);
+        GetTree().Root.SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged()
+    {
+        if (_toggleButton != null)
+            AtualizarPosicaoBotao(_toggleButton);
     }
 
     private void AtualizarPosicaoBotao(Control btn)
@@ -242,6 +249,18 @@ public partial class PartyUI : Control
             hbox.AddChild(hpLabel);
             _membersList.AddChild(hbox);
         }
+    }
+
+    private void OnRootSizeChanged()
+    {
+        CallDeferred(MethodName.Centralizar);
+    }
+
+    public override void _ExitTree()
+    {
+        GetTree().Root.SizeChanged -= OnRootSizeChanged;
+        if (_toggleButton != null)
+            GetTree().Root.SizeChanged -= OnSizeChanged;
     }
 
     public override void _Input(InputEvent @event)

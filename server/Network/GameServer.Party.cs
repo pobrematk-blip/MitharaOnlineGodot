@@ -83,7 +83,10 @@ partial class GameServer
 
         _partyInvites[target.Id] = sender.Id;
         SendSystemMessage(peer, $"Convidei {target.Name} para o grupo.");
-        SendSystemMessage(targetPeer!, $"{sender.Name} convidou você para um grupo. Digite /aceitar para entrar.");
+
+        var notify = PacketSerializer.WritePacket(PacketId.S2C_PartyInviteReceived);
+        notify.Put(sender.Name);
+        targetPeer!.Send(notify, DeliveryMethod.ReliableOrdered);
     }
 
     private void HandlePartyAccept(NetPeer peer, PlayerSession session, Entity sender)

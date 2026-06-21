@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13301
+Nome = "Pele de Ferro"
+Descricao = "O Titã endurece o corpo como metal, suportando golpes que derrubariam guerreiros comuns."
+Valor = 0
+CustoMana = 15
+ClasseRestrita = "Berserker"
+Cooldown = 20
+Duracao = 12
+TargetType = 0
+EffectType = 3
+Especializacao = "Titã"
+NivelRequerido = 1
+Ordem = 1
+Escopo = "Especialização"
+Tipo = "Buff Defensivo"
+EfeitoPrincipal = "Aumenta Defesa Física."
+DanoEscala = ""
+BuffDebuff = "+20% → +40% Defesa Física"
+DuracaoTexto = "12s"
+Progressao = "Skill possui 10 níveis. Bônus escala de +20% até +40%."
+Observacoes = "Base defensiva da árvore Titã."

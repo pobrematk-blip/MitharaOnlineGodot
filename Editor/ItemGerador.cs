@@ -7,7 +7,7 @@ public static class ItemGerador
 
     public static void GerarStatsAleatorios(ItemResource item, Raridade raridade)
     {
-        if (item == null) return;
+        if (item == null || ItemDeCatalogoOficial(item.ItemID)) return;
 
         int rarityIndex = (int)raridade;
         var (mainMin, mainMax, bonusChance) = rarityIndex switch
@@ -128,6 +128,9 @@ public static class ItemGerador
         RollPct(v => item.BonusExperiencia = v, 0.5f, 5.0f, 0.2f);
         RollPct(v => item.ChanceDropAumentada = v, 0.5f, 4.0f, 0.2f);
     }
+
+    public static bool ItemDeCatalogoOficial(int itemId)
+        => itemId is >= 1000 and <= 11098 || itemId is >= 300000 and <= 300395;
 
     public static Raridade SortearRaridade()
     {

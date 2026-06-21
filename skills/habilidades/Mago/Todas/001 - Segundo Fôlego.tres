@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11001
+Nome = "Segundo Fôlego"
+Descricao = "Recupera HP e Mana."
+Valor = 15
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 0
+TargetType = 0
+EffectType = 3
+Especializacao = "Todas"
+NivelRequerido = 1
+Ordem = 1
+Escopo = "Classe"
+Tipo = "Utilitária"
+EfeitoPrincipal = "15% HP + 15% Mana"
+DanoEscala = ""
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = ""
+Observacoes = ""

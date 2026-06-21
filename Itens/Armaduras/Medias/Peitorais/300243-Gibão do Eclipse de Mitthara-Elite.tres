@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300243
+Nome = "Gibão do Eclipse de Mitthara"
+Descricao = "Curtida e ajustada por batedores de Eclipse de Mitthara, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 92
+HpMin = 78
+HpMax = 106
+Mana = 50
+ManaMin = 43
+ManaMax = 58
+DefesaFisica = 53
+DefesaFisicaMin = 45
+DefesaFisicaMax = 61
+DefesaMagica = 53
+DefesaMagicaMin = 45
+DefesaMagicaMax = 61
+Evasao = 2.405
+EvasaoMin = 2.05
+EvasaoMax = 2.76

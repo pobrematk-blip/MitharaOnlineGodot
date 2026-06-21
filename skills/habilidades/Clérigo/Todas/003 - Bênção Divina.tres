@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15003
+Nome = "Bênção Divina"
+Descricao = "Uma aura de proteção celestial envolve o Clérigo, formando uma barreira luminosa capaz de absorver parte do dano recebido."
+Valor = 15
+CustoMana = 25
+ClasseRestrita = "Clérigo"
+Cooldown = 30
+Duracao = 15
+TargetType = 0
+EffectType = 10
+Especializacao = "Todas"
+NivelRequerido = 5
+Ordem = 3
+Escopo = "Compartilhada do Clérigo"
+Tipo = "Defensiva"
+EfeitoPrincipal = "Cria um escudo sagrado que absorve dano."
+DanoEscala = "Absorção: 15% → 30% do HP Máximo"
+BuffDebuff = "Buff defensivo"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = 15% HP Máximo; Lv10 = 30% HP Máximo."
+Observacoes = "Não acumula com outro escudo igual; renova a duração se usado novamente."

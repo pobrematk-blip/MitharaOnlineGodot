@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11003
+Nome = "Escudo Arcano"
+Descricao = "Escudo de mana."
+Valor = 10
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 15
+TargetType = 0
+EffectType = 10
+Especializacao = "Todas"
+NivelRequerido = 5
+Ordem = 3
+Escopo = "Classe"
+Tipo = "Defensiva"
+EfeitoPrincipal = "Absorve dano"
+DanoEscala = "10%-30% HP"
+BuffDebuff = "Buff"
+DuracaoTexto = "15s"
+Progressao = ""
+Observacoes = ""

@@ -20,10 +20,11 @@ public class Channel
     private readonly Dictionary<ulong, NetPeer> _playerPeers = new();
     private readonly SpawnerManager _spawner;
     private readonly List<SpawnPoint> _respawnQueue = new();
-    private readonly List<(SpawnPoint point, double respawnAt)> _pendingRespawns = new();
+    private readonly List<(SpawnPoint point, string prefabId, double respawnAt)> _pendingRespawns = new();
     private readonly Dictionary<string, int> _spawnCounts = new();
     private readonly Dictionary<string, List<ulong>> _spawnedByPrefab = new();
     private readonly List<LootEntity> _lootItems = new();
+    private readonly List<ulong> _expiredLoot = new();
     private readonly Dictionary<ulong, PathFollower> _pathFollowers = new();
     private readonly Dictionary<ulong, double> _lastPathfindTime = new();
     private ulong _nextEntityId = 1;
@@ -32,6 +33,7 @@ public class Channel
     public const float AoiRadius = 1200f;
     private const float MonsterSeparationRadius = 52f;
     private const float MonsterSeparationStrength = 0.65f;
+    private const float SpawnMinDistance = 180f;
 
     public SpawnerManager Spawner => _spawner;
     public event Action<Entity>? EntitySpawned;
@@ -44,8 +46,9 @@ public class Channel
         _spawner = new SpawnerManager();
     }
 
-    public void SpawnNpcs(NpcManager npcManager)
+    public int SpawnNpcs(NpcManager npcManager)
     {
+        int spawned = 0;
         foreach (var point in npcManager.GetSpawnPoints())
         {
             var npc = npcManager.CreateNpc(point);
@@ -57,8 +60,11 @@ public class Channel
                     PathGrid.SetBlocked(gx, gy, true);
                 }
                 AddEntity(npc);
+                spawned++;
             }
         }
+
+        return spawned;
     }
 
     public ulong NextEntityId() => _nextEntityId++;
@@ -132,6 +138,51 @@ public class Channel
         return _spawnedByPrefab.TryGetValue(prefabId, out var list) ? list.Count : 0;
     }
 
+    private int CountMonstersForSpawnPoint(SpawnPoint point, string prefabId)
+    {
+        if (!_spawnedByPrefab.TryGetValue(prefabId, out var list))
+            return 0;
+
+        int count = 0;
+        float radiusSq = point.Radius * point.Radius;
+        foreach (ulong entityId in list)
+        {
+            if (!_entities.TryGetValue(entityId, out var entity) || entity is not MonsterEntity mob)
+                continue;
+
+            float dx = mob.SpawnX - point.X;
+            float dy = mob.SpawnY - point.Y;
+            if ((dx * dx) + (dy * dy) <= radiusSq)
+                count++;
+        }
+
+        return count;
+    }
+
+    private int CountAllMonstersForSpawnPoint(SpawnPoint point)
+    {
+        int total = CountMonstersForSpawnPoint(point, point.PrefabId);
+        if (!string.IsNullOrWhiteSpace(point.ElitePrefabId)
+            && !string.Equals(point.ElitePrefabId, point.PrefabId, StringComparison.OrdinalIgnoreCase))
+        {
+            total += CountMonstersForSpawnPoint(point, point.ElitePrefabId);
+        }
+        return total;
+    }
+
+    private SpawnPoint? FindSpawnPointForMonster(MonsterEntity mob)
+    {
+        return _spawner.GetSpawnPoints()
+            .Where(sp => sp.PrefabId == mob.PrefabId || sp.ElitePrefabId == mob.PrefabId)
+            .OrderBy(sp =>
+            {
+                float dx = mob.SpawnX - sp.X;
+                float dy = mob.SpawnY - sp.Y;
+                return (dx * dx) + (dy * dy);
+            })
+            .FirstOrDefault();
+    }
+
     public void AddLoot(LootEntity loot)
     {
         _lootItems.Add(loot);
@@ -161,12 +212,22 @@ public class Channel
 
     private void UpdateLootCleanup(double gameTime)
     {
-        const double lootDuration = 30.0;
+        const double lootDuration = 60.0;
         for (int i = _lootItems.Count - 1; i >= 0; i--)
         {
             if (gameTime - _lootItems[i].SpawnTime >= lootDuration)
+            {
+                _expiredLoot.Add(_lootItems[i].Id);
                 _lootItems.RemoveAt(i);
+            }
         }
+    }
+
+    public List<ulong> DrainExpiredLoot()
+    {
+        var result = new List<ulong>(_expiredLoot);
+        _expiredLoot.Clear();
+        return result;
     }
 
     private bool IsInNoMobZone(float x, float y)
@@ -215,7 +276,10 @@ public class Channel
         if (pushLen <= 0.001f)
             return (desiredX, desiredY);
 
-        float maxPush = mob.Speed * dt * MonsterSeparationStrength;
+        float desiredMoveX = desiredX - mob.X;
+        float desiredMoveY = desiredY - mob.Y;
+        float desiredMove = MathF.Sqrt(desiredMoveX * desiredMoveX + desiredMoveY * desiredMoveY);
+        float maxPush = desiredMove * MonsterSeparationStrength;
         float adjustedX = desiredX + pushX / pushLen * maxPush;
         float adjustedY = desiredY + pushY / pushLen * maxPush;
 
@@ -226,6 +290,31 @@ public class Channel
             return (desiredX, desiredY);
 
         return (adjustedX, adjustedY);
+    }
+
+    private void ApplyMonsterMovement(MonsterEntity mob, float oldX, float oldY, float newX, float newY)
+    {
+        float moveX = newX - oldX;
+        float moveY = newY - oldY;
+        float movedSq = moveX * moveX + moveY * moveY;
+
+        if (movedSq < 0.04f)
+        {
+            mob.X = oldX;
+            mob.Y = oldY;
+            mob.Moving = false;
+            mob.DirX = 0;
+            mob.DirY = 0;
+            return;
+        }
+
+        float moved = MathF.Sqrt(movedSq);
+        mob.X = newX;
+        mob.Y = newY;
+        mob.DirX = moveX / moved;
+        mob.DirY = moveY / moved;
+        mob.Moving = true;
+        _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
     }
 
     private void UpdateMonsterAI(float dt, double gameTime)
@@ -251,7 +340,8 @@ public class Channel
                 float dy = target.Y - mob.Y;
                 float dist = MathF.Sqrt(dx * dx + dy * dy);
 
-                if (dist <= mob.AttackRange)
+                float effectiveAttackRange = mob.AttackRange + (mob.Moving ? 0f : 8f);
+                if (dist <= effectiveAttackRange)
                 {
                     mob.Moving = false;
                     pathFollower?.Stop();
@@ -304,16 +394,12 @@ public class Channel
                             }
 
                             (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
-                            mob.X = newX;
-                            mob.Y = newY;
-                            mob.DirX = dirX;
-                            mob.DirY = dirY;
-                            mob.Moving = true;
-                            if (oldX != newX || oldY != newY)
-                                _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
+                            ApplyMonsterMovement(mob, oldX, oldY, newX, newY);
                         }
                         else if (!pathFollower.HasPath)
                         {
+                            float fallbackOldX = mob.X;
+                            float fallbackOldY = mob.Y;
                             float moveDist = mob.Speed * dt;
                             float ratio = Math.Min(moveDist / dist, 1f);
                             float newFx = mob.X + dx * ratio;
@@ -324,22 +410,21 @@ public class Channel
                             if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
                             {
                                 (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                                mob.X = newFx;
-                                mob.Y = newFy;
-                                mob.DirX = dx / dist;
-                                mob.DirY = dy / dist;
-                                mob.Moving = true;
-                                _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                                ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy);
                             }
                             else
                             {
-                                _lastPathfindTime[mob.Id] = double.MinValue;
+                                _lastPathfindTime[mob.Id] = 0;
                                 mob.Moving = false;
+                                mob.DirX = 0;
+                                mob.DirY = 0;
                             }
                         }
                     }
                     else
                     {
+                        float oldX = mob.X;
+                        float oldY = mob.Y;
                         float moveDist = mob.Speed * dt;
                         float ratio = Math.Min(moveDist / dist, 1f);
                         float newFx = mob.X + dx * ratio;
@@ -362,12 +447,7 @@ public class Channel
                         }
 
                         (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                        mob.X = newFx;
-                        mob.Y = newFy;
-                        mob.DirX = dx / dist;
-                        mob.DirY = dy / dist;
-                        mob.Moving = true;
-                        _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                        ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy);
                     }
                 }
             }
@@ -429,15 +509,12 @@ public class Channel
                             }
 
                                 (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
-                                mob.X = newX;
-                                mob.Y = newY;
-                                mob.DirX = dirX;
-                                mob.DirY = dirY;
-                                mob.Moving = true;
-                                _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
+                                ApplyMonsterMovement(mob, oldX, oldY, newX, newY);
                             }
                             else if (!pathFollower.HasPath)
                             {
+                                float fallbackOldX = mob.X;
+                                float fallbackOldY = mob.Y;
                                 float moveDist = mob.Speed * dt * 0.5f;
                                 float ratio = Math.Min(moveDist / dist, 1f);
                                 float newFx = mob.X + dx * ratio;
@@ -448,12 +525,7 @@ public class Channel
                                 if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
                                 {
                                     (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                                    mob.X = newFx;
-                                    mob.Y = newFy;
-                                    mob.DirX = dx / dist;
-                                    mob.DirY = dy / dist;
-                                    mob.Moving = true;
-                                    _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                                    ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy);
                                 }
                                 else
                                 {
@@ -466,6 +538,8 @@ public class Channel
                         }
                         else
                         {
+                            float oldX = mob.X;
+                            float oldY = mob.Y;
                             float moveDist = mob.Speed * dt * 0.5f;
                             float ratio = Math.Min(moveDist / dist, 1f);
                             float newFx = mob.X + dx * ratio;
@@ -481,12 +555,7 @@ public class Channel
                         }
 
                         (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                        mob.X = newFx;
-                        mob.Y = newFy;
-                        mob.DirX = dx / dist;
-                        mob.DirY = dy / dist;
-                        mob.Moving = true;
-                            _grid.MoveEntity(mob.Id, mob.X - dx * ratio, mob.Y - dy * ratio, mob.X, mob.Y);
+                        ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy);
                         }
                     }
                 }
@@ -514,6 +583,8 @@ public class Channel
                 else
                 {
                     mob.Moving = false;
+                    mob.DirX = 0;
+                    mob.DirY = 0;
                     pathFollower?.Stop();
                 }
 
@@ -563,49 +634,166 @@ public class Channel
         if (!_initialSpawned)
         {
             _initialSpawned = true;
+            int totalSpawned = 0;
             foreach (var point in _spawner.GetSpawnPoints())
             {
-                int current = CountMonstersByPrefab(point.PrefabId);
-                while (current < point.MaxCount)
+                int eliteTarget = Math.Clamp(point.EliteBaseCount, 0, point.MaxCount);
+                int normalTarget = point.MaxCount - eliteTarget;
+                int currentElites = string.IsNullOrWhiteSpace(point.ElitePrefabId)
+                    ? 0
+                    : CountMonstersForSpawnPoint(point, point.ElitePrefabId);
+                while (currentElites < eliteTarget)
                 {
-                    TrySpawnMonster(point, gameTime);
-                    current++;
+                    if (TrySpawnMonster(point, point.ElitePrefabId, true))
+                    {
+                        currentElites++;
+                        totalSpawned++;
+                    }
+                    else break;
+                }
+
+                int currentNormals = CountMonstersForSpawnPoint(point, point.PrefabId);
+                while (currentNormals < normalTarget)
+                {
+                    if (TrySpawnMonster(point, point.PrefabId, true))
+                    {
+                        currentNormals++;
+                        totalSpawned++;
+                    }
+                    else break;
                 }
             }
+            Logger.Info($"Canal {Id}: spawn inicial criou {totalSpawned} mob(s) em {_spawner.GetSpawnPoints().Count} spot(s).");
             return;
         }
 
         for (int i = _pendingRespawns.Count - 1; i >= 0; i--)
         {
-            var (point, respawnAt) = _pendingRespawns[i];
+            var (point, prefabId, respawnAt) = _pendingRespawns[i];
             if (gameTime >= respawnAt)
             {
-                TrySpawnMonster(point, gameTime);
+                TrySpawnMonster(point, prefabId, true);
                 _pendingRespawns.RemoveAt(i);
+            }
+        }
+
+        foreach (var point in _spawner.GetSpawnPoints())
+        {
+            if (string.IsNullOrWhiteSpace(point.ElitePrefabId))
+                continue;
+
+            int eliteTarget = Math.Clamp(point.EliteBaseCount, 0, point.MaxCount);
+            int currentElites = CountMonstersForSpawnPoint(point, point.ElitePrefabId);
+            while (currentElites < eliteTarget)
+            {
+                if (!TrySpawnMonster(point, point.ElitePrefabId, true))
+                    break;
+                currentElites++;
             }
         }
     }
 
     private void TrySpawnMonster(SpawnPoint point, double gameTime)
     {
-        int current = CountMonstersByPrefab(point.PrefabId);
-        if (current >= point.MaxCount) return;
+        int normalTarget = point.MaxCount - Math.Clamp(point.EliteBaseCount, 0, point.MaxCount);
+        int current = CountMonstersForSpawnPoint(point, point.PrefabId);
+        if (current >= normalTarget) return;
 
-        for (int attempt = 0; attempt < 5; attempt++)
-        {
-            var monster = _spawner.CreateMonster(point);
-            if (monster == null) return;
-
-            if (!IsInNoMobZone(monster.X, monster.Y))
-            {
-                AddEntity(monster);
-                return;
-            }
-        }
+        TrySpawnMonster(point, point.PrefabId, false);
     }
 
-    public void ScheduleRespawn(SpawnPoint point, double gameTime)
+    private bool TrySpawnMonster(SpawnPoint point, string prefabId, bool ignoreMaxCount)
     {
-        _pendingRespawns.Add((point, gameTime + point.RespawnDelay));
+        // MaxCount inclui normais e elites. Nenhum respawn ou elite bônus pode
+        // elevar o total do spot acima desse limite.
+        if (CountAllMonstersForSpawnPoint(point) >= point.MaxCount)
+            return false;
+
+        if (!ignoreMaxCount)
+        {
+            int normalTarget = point.MaxCount - Math.Clamp(point.EliteBaseCount, 0, point.MaxCount);
+            int current = CountMonstersForSpawnPoint(point, point.PrefabId);
+            if (current >= normalTarget) return false;
+        }
+
+        var template = _spawner.GetTemplate(prefabId);
+        if (template == null) return false;
+
+        for (int attempt = 0; attempt < 32; attempt++)
+        {
+            var (spawnX, spawnY) = GetRandomSpawnPosition(point);
+            var monster = _spawner.CriarMonstroEm(template, spawnX, spawnY);
+            if (monster == null)
+                return false;
+
+            if (!IsInNoMobZone(monster.X, monster.Y) && !IsSpawnTooClose(point, monster.X, monster.Y))
+            {
+                AddEntity(monster);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void ScheduleRespawn(SpawnPoint point, string prefabId, double gameTime)
+    {
+        _pendingRespawns.Add((point, prefabId, gameTime + point.RespawnDelay));
+    }
+
+    public void HandleMonsterKilled(MonsterEntity mob, double gameTime)
+    {
+        var spawnPoint = FindSpawnPointForMonster(mob);
+        if (spawnPoint == null)
+            return;
+
+        if (mob.PrefabId != spawnPoint.PrefabId)
+            return;
+
+        ScheduleRespawn(spawnPoint, mob.PrefabId, gameTime);
+
+        if (
+            string.IsNullOrWhiteSpace(spawnPoint.ElitePrefabId) ||
+            spawnPoint.EliteEveryKills <= 0)
+            return;
+
+        spawnPoint.KillsSinceElite++;
+        if (spawnPoint.KillsSinceElite < spawnPoint.EliteEveryKills)
+            return;
+
+        spawnPoint.KillsSinceElite = 0;
+        TrySpawnMonster(spawnPoint, spawnPoint.ElitePrefabId, true);
+    }
+
+    private static (float x, float y) GetRandomSpawnPosition(SpawnPoint point)
+    {
+        var rng = Random.Shared;
+        float angle = (float)(rng.NextDouble() * Math.PI * 2);
+        float dist = MathF.Sqrt((float)rng.NextDouble()) * point.Radius;
+        return (point.X + MathF.Cos(angle) * dist, point.Y + MathF.Sin(angle) * dist);
+    }
+
+    private bool IsSpawnTooClose(SpawnPoint point, float x, float y)
+    {
+        float minDistanceSq = SpawnMinDistance * SpawnMinDistance;
+        float pointRadiusSq = point.Radius * point.Radius;
+
+        foreach (var entity in _entities.Values)
+        {
+            if (entity is not MonsterEntity mob)
+                continue;
+
+            float spawnDx = mob.SpawnX - point.X;
+            float spawnDy = mob.SpawnY - point.Y;
+            if ((spawnDx * spawnDx) + (spawnDy * spawnDy) > pointRadiusSq)
+                continue;
+
+            float dx = mob.X - x;
+            float dy = mob.Y - y;
+            if ((dx * dx) + (dy * dy) < minDistanceSq)
+                return true;
+        }
+
+        return false;
     }
 }

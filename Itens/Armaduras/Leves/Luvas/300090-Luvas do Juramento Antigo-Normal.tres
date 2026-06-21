@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Luva de couro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300090
+Nome = "Luvas do Juramento Antigo"
+Descricao = "Tecida com fios arcanos de Juramento Antigo, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 4
+CategoriaPeso = 0
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 14
+HpMin = 12
+HpMax = 16
+Mana = 19
+ManaMin = 16
+ManaMax = 22
+DefesaFisica = 6
+DefesaFisicaMin = 6
+DefesaFisicaMax = 7
+DefesaMagica = 13
+DefesaMagicaMin = 11
+DefesaMagicaMax = 16
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

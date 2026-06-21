@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15102
+Nome = "Bênção Sagrada"
+Descricao = "Uma prece luminosa fortalece os aliados próximos, elevando sua coragem e protegendo seus corpos contra os perigos do combate."
+Valor = 0
+CustoMana = 25
+ClasseRestrita = "Clérigo"
+Cooldown = 40
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Sacerdote"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Buff"
+EfeitoPrincipal = "Aumenta Defesa Física e Defesa Mágica dos aliados próximos."
+DanoEscala = ""
+BuffDebuff = "Buff: +5% → +15% Defesas"
+DuracaoTexto = "15s"
+Progressao = "Lv1 = +5%; Lv10 = +15%."
+Observacoes = "Afeta membros do grupo em área curta."

@@ -125,7 +125,7 @@ public partial class DialogUI : Control
         GD.Print("[GUILD] AbrirCriacaoGuilda chamado!");
         Fechar();
         var scene = ResourceLoader.Load<PackedScene>("res://ui/GuildCreateUI.tscn");
-        if (scene == null) { GD.Print("[GUILD] ERRO: cena GuildCreateUI.tscn nao encontrada!"); return; }
+        if (scene == null) { GD.Print("[GUILD] ERRO: cena GuildCreateUI.tscn n?o encontrada!"); return; }
         GD.Print("[GUILD] Cena carregada com sucesso!");
         var ui = scene.Instantiate<GuildCreateUI>();
         if (ui == null) { GD.Print("[GUILD] ERRO: Instantiate retornou null!"); return; }

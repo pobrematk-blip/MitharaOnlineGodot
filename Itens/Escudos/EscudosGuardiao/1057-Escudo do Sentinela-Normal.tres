@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1057
+Nome = "Escudo do Sentinela"
+Descricao = "Feito para sentinelas que permanecem firmes mesmo quando cercados."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 20
+Valor = 200
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 15
+DefesaFisicaMin = 13
+DefesaFisicaMax = 18
+Hp = 36
+HpMin = 28
+HpMax = 44
+Forca = 4
+ForcaMin = 4
+ForcaMax = 5
+Agilidade = 3
+AgilidadeMin = 3
+AgilidadeMax = 4

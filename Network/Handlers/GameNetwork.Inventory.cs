@@ -46,6 +46,11 @@ partial class GameNetwork
         });
     }
 
+    public void SendUseItem(int slot)
+    {
+        _client?.SendPacket(PacketId.C2S_UseItem, w => w.Put(slot));
+    }
+
     private void HandleInventoryData(NetDataReader r)
     {
         int invCount = r.GetInt();
@@ -58,6 +63,7 @@ partial class GameNetwork
                 ["item_id"] = r.GetInt(),
                 ["quantity"] = r.GetInt(),
                 ["refine_level"] = r.GetInt(),
+                ["instance_data"] = r.GetString(),
             };
             items.Add(entry);
         }
@@ -72,12 +78,14 @@ partial class GameNetwork
                 ["item_id"] = r.GetInt(),
                 ["quantity"] = r.GetInt(),
                 ["refine_level"] = r.GetInt(),
+                ["instance_data"] = r.GetString(),
             };
             equipment.Add(entry);
         }
 
         PendingInventoryData = items;
         PendingEquipmentData = equipment;
+        ResetPendingInventoryApplyLog();
 
         GD.Print($"[GAME] Inventário recebido: {invCount} itens, {equipCount} equipados");
         EmitSignal(SignalName.OnInventoryData, items, equipment);
@@ -101,13 +109,22 @@ partial class GameNetwork
                 int itemId = (int)entry["item_id"];
                 int qty = (int)entry["quantity"];
                 int refineLevel = (int)entry["refine_level"];
+                string instanceData = (string)entry["instance_data"];
                 var resource = ItemDB.GetItem(itemId);
+                if (resource == null)
+                {
+                    ItemDB.Refresh();
+                    resource = ItemDB.GetItem(itemId);
+                }
                 if (resource != null)
                 {
                     var tipo = (TipoEquipamento)slot;
-                    equip.ItensEquipados[tipo] = new SlotInventario(resource, qty, refineLevel);
+                    equip.ItensEquipados[tipo] = new SlotInventario(resource, qty, refineLevel, instanceData);
                 }
+                else
+                    GameNetwork.LogError($"Item equipado {itemId} não existe no catálogo do cliente.");
             }
+            equip.RecalcularBonusEquipamentos();
             equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
         }
     }
@@ -118,11 +135,13 @@ partial class GameNetwork
         int itemId = r.GetInt();
         int quantity = r.GetInt();
         int refineLevel = r.GetInt();
+        string instanceData = r.GetString();
         bool hasUnequip = r.GetBool();
         int invSlot = r.GetInt();
         int unequipItemId = r.GetInt();
         int unequipQuantity = r.GetInt();
         int unequipRefineLevel = r.GetInt();
+        string unequipInstanceData = r.GetString();
 
         EmitSignal(SignalName.OnEquipUpdate, equipSlot, itemId, quantity, hasUnequip, invSlot, unequipItemId, unequipQuantity);
 
@@ -141,7 +160,7 @@ partial class GameNetwork
             var oldItem = ItemDB?.GetItem(unequipItemId);
             if (oldItem != null && invSlot >= 0 && invSlot < inv.Slots.Count)
             {
-                inv.Slots[invSlot] = new SlotInventario(oldItem, unequipQuantity, unequipRefineLevel);
+                inv.Slots[invSlot] = new SlotInventario(oldItem, unequipQuantity, unequipRefineLevel, unequipInstanceData);
             }
         }
         else if (inv != null && invSlot >= 0 && invSlot < inv.Slots.Count)
@@ -151,7 +170,7 @@ partial class GameNetwork
 
         if (newItem != null)
         {
-            equip.ItensEquipados[tipo] = new SlotInventario(newItem, quantity, refineLevel);
+            equip.ItensEquipados[tipo] = new SlotInventario(newItem, quantity, refineLevel, instanceData);
         }
         else if (itemId == 0 && equip.ItensEquipados.ContainsKey(tipo))
         {
@@ -169,6 +188,7 @@ partial class GameNetwork
         int itemId = r.GetInt();
         int quantity = r.GetInt();
         int refineLevel = r.GetInt();
+        string instanceData = r.GetString();
 
         GD.Print($"[GAME] Item update: slot={slot} itemId={itemId} qty={quantity} refine={refineLevel}");
         EmitSignal(SignalName.OnItemUpdate, slot, itemId, quantity);
@@ -189,7 +209,7 @@ partial class GameNetwork
             {
                 var resource = ItemDB.GetItem(itemId);
                 if (resource != null)
-                    inv.Slots[slot] = new SlotInventario(resource, quantity, refineLevel);
+                    inv.Slots[slot] = new SlotInventario(resource, quantity, refineLevel, instanceData);
             }
             inv.EmitSignal(InventarioComponent.SignalName.InventarioAtualizado);
         }

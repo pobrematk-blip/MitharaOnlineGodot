@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15305
+Nome = "Punição Divina"
+Descricao = "Um raio de luz celestial cai sobre o inimigo, punindo-o com força divina."
+Valor = 180
+CustoMana = 35
+ClasseRestrita = "Clérigo"
+Cooldown = 12
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Inquisidor"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano"
+EfeitoPrincipal = "Causa dano sagrado elevado."
+DanoEscala = "180% → 320% do Poder Mágico"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 180%; Lv10 = 320%."
+Observacoes = "Principal skill de burst do Inquisidor."

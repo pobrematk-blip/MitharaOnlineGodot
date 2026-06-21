@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300087
+Nome = "Manto do Juramento Antigo"
+Descricao = "Tecida com fios arcanos de Juramento Antigo, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 0
+TipoItem = 1
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 61
+HpMin = 52
+HpMax = 70
+Mana = 83
+ManaMin = 71
+ManaMax = 96
+DefesaFisica = 28
+DefesaFisicaMin = 24
+DefesaFisicaMax = 33
+DefesaMagica = 59
+DefesaMagicaMin = 50
+DefesaMagicaMax = 68
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

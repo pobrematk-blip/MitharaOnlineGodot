@@ -1,5 +1,6 @@
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Mithara.Server.Entities;
 using Mithara.Server.Packets;
 using Mithara.Server.World;
 
@@ -9,6 +10,46 @@ partial class GameServer
 {
     private const float MaxPlayerSpeed = 333f;
     private const float MaxPlayerSpeedSq = MaxPlayerSpeed * MaxPlayerSpeed;
+
+    private void HandlePlayerAction(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel == null) return;
+        var entity = channel.GetEntity(session.EntityId) as PlayerEntity;
+        if (entity == null || entity.Health <= 0) return;
+
+        byte actionType = reader.GetByte();
+        float dirX = reader.GetFloat();
+        float dirY = reader.GetFloat();
+        if (actionType != 1) return;
+        if (_gameTime - session.LastActionTime < 0.10) return;
+        session.LastActionTime = _gameTime;
+
+        float length = MathF.Sqrt(dirX * dirX + dirY * dirY);
+        if (length > 0.001f)
+        {
+            dirX /= length;
+            dirY /= length;
+            entity.DirX = dirX;
+            entity.DirY = dirY;
+        }
+
+        var nearby = channel.GetEntitiesInAoi(entity.X, entity.Y);
+        foreach (var entityId in nearby)
+        {
+            if (entityId == entity.Id) continue;
+            var targetPeer = channel.GetPlayerPeer(entityId);
+            if (targetPeer == null) continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_PlayerAction);
+            writer.Put(entity.Id);
+            writer.Put(actionType);
+            writer.Put(dirX);
+            writer.Put(dirY);
+            targetPeer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+    }
 
     private void HandlePlayerMove(NetPeer peer, NetDataReader reader)
     {
@@ -20,6 +61,8 @@ partial class GameServer
         float targetY = reader.GetFloat();
         float dirX = reader.GetFloat();
         float dirY = reader.GetFloat();
+        bool moving = reader.GetBool();
+        bool sprinting = reader.GetBool();
 
         var entity = channel.GetEntity(session.EntityId);
         if (entity == null) return;
@@ -39,7 +82,8 @@ partial class GameServer
             Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {MaxPlayerSpeed})");
         }
 
-        entity.Moving = true;
+        entity.Moving = moving;
+        entity.Sprinting = moving && sprinting;
         entity.DirX = dirX;
         entity.DirY = dirY;
         entity.LastMoveTime = _gameTime;
@@ -53,6 +97,7 @@ partial class GameServer
         writer.Put(dirX);
         writer.Put(dirY);
         writer.Put(entity.Moving);
+        writer.Put(entity.Sprinting);
 
         foreach (var eid in aoi)
         {
@@ -72,10 +117,12 @@ partial class GameServer
         if (entity == null) return;
 
         entity.Moving = false;
+        entity.Sprinting = false;
         if (reader.AvailableBytes >= 8)
         {
-            entity.X = reader.GetFloat();
-            entity.Y = reader.GetFloat();
+            float stopX = reader.GetFloat();
+            float stopY = reader.GetFloat();
+            channel.MoveEntity(session.EntityId, stopX, stopY);
         }
 
         if (session.SelectedCharacter != null)

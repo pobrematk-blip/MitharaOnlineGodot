@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machados Perdisos 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1041
+Nome = "Machado Imperial de Guerra"
+Descricao = "Uma arma de guerra refinada, criada para líderes que lutam na linha de frente."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,PenetracaoArmadura,RouboVida,Tenacidade,Precisao"
+DanoFisico = 91
+DanoFisicoMin = 81
+DanoFisicoMax = 101
+Forca = 28
+ForcaMin = 24
+ForcaMax = 32

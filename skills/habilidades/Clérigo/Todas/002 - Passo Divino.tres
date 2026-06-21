@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15002
+Nome = "Passo Divino"
+Descricao = "O Clérigo é envolvido por um brilho sagrado e avança rapidamente pelo campo de batalha, como se fosse guiado por uma força divina."
+Valor = 4
+CustoMana = 15
+ClasseRestrita = "Clérigo"
+Cooldown = 15
+Duracao = 0
+TargetType = 0
+EffectType = 2
+Especializacao = "Todas"
+NivelRequerido = 1
+Ordem = 2
+Escopo = "Compartilhada do Clérigo"
+Tipo = "Mobilidade"
+EfeitoPrincipal = "Move o personagem 4 tiles na direção escolhida."
+DanoEscala = ""
+BuffDebuff = "Mobilidade"
+DuracaoTexto = "Instantâneo"
+Progressao = "Distância fixa: 4 tiles."
+Observacoes = "Skill compartilhada entre Sacerdote, Paladino e Inquisidor."

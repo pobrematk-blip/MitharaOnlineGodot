@@ -161,7 +161,7 @@ public partial class TalentNodeEditorUI : Control
 
         if (!DirAccess.DirExistsAbsolute(ArvoresDir))
         {
-            _previewStatus.Text = "Pasta skills/ArvoresClasses/ nao encontrada.";
+            _previewStatus.Text = "Pasta skills/ArvoresClasses/ n?o encontrada.";
             return;
         }
 
@@ -347,10 +347,10 @@ public partial class TalentNodeEditorUI : Control
 
         _currentNode.CustoPontos = (int)_custoSpin.Value;
         _currentNode.NivelMinimo = (int)_nivelSpin.Value;
-        _currentNode.BonusForca = (int)_forcaSpin.Value;
-        _currentNode.BonusAgilidade = (int)_agilidadeSpin.Value;
-        _currentNode.BonusDestreza = (int)_destrezaSpin.Value;
-        _currentNode.BonusInteligencia = (int)_inteligenciaSpin.Value;
+        _currentNode.BonusForca = (float)_forcaSpin.Value;
+        _currentNode.BonusAgilidade = (float)_agilidadeSpin.Value;
+        _currentNode.BonusDestreza = (float)_destrezaSpin.Value;
+        _currentNode.BonusInteligencia = (float)_inteligenciaSpin.Value;
         _currentNode.BonusDanoPercent = (float)(_danoSpin.Value / 100.0);
         _currentNode.BonusVelocidadePercent = (float)(_velocidadeSpin.Value / 100.0);
         _currentNode.BonusVidaPercent = (float)(_vidaSpin.Value / 100.0);
@@ -366,10 +366,10 @@ public partial class TalentNodeEditorUI : Control
         var partes = new List<string>();
         if (_currentNode.HabilidadeAtiva != null)
             partes.Add($"Skill: {_currentNode.HabilidadeAtiva.Nome}");
-        if (_currentNode.BonusForca != 0) partes.Add($"Forca {_currentNode.BonusForca:+0;-0}");
-        if (_currentNode.BonusAgilidade != 0) partes.Add($"Agilidade {_currentNode.BonusAgilidade:+0;-0}");
-        if (_currentNode.BonusDestreza != 0) partes.Add($"Destreza {_currentNode.BonusDestreza:+0;-0}");
-        if (_currentNode.BonusInteligencia != 0) partes.Add($"Inteligencia {_currentNode.BonusInteligencia:+0;-0}");
+        if (_currentNode.BonusForca != 0) partes.Add($"Forca {_currentNode.BonusForca:+0.0;-0.0}");
+        if (_currentNode.BonusAgilidade != 0) partes.Add($"Agilidade {_currentNode.BonusAgilidade:+0.0;-0.0}");
+        if (_currentNode.BonusDestreza != 0) partes.Add($"Destreza {_currentNode.BonusDestreza:+0.0;-0.0}");
+        if (_currentNode.BonusInteligencia != 0) partes.Add($"Inteligencia {_currentNode.BonusInteligencia:+0.0;-0.0}");
         if (_currentNode.BonusDanoPercent != 0) partes.Add($"Dano {_currentNode.BonusDanoPercent * 100:+#;-#}%");
         if (_currentNode.BonusVelocidadePercent != 0) partes.Add($"Velocidade {_currentNode.BonusVelocidadePercent * 100:+#;-#}%");
         if (_currentNode.BonusVidaPercent != 0) partes.Add($"Vida {_currentNode.BonusVidaPercent * 100:+#;-#}%");
@@ -441,6 +441,7 @@ public partial class TalentNodeEditorUI : Control
         dialog.FileMode = FileDialog.FileModeEnum.OpenFile;
         dialog.Filters = new[] { "*.tres ; Recursos de Skill" };
         dialog.Access = FileDialog.AccessEnum.Resources;
+        dialog.CurrentDir = "res://skills/habilidades";
 
         dialog.FileSelected += path =>
         {
@@ -476,7 +477,7 @@ public partial class TalentNodeEditorUI : Control
         var node = new TalentNodeResource();
         node.NodeId = "novo_no_" + GD.Randi() % 10000;
         node.Nome = "Novo Talento";
-        node.Descricao = "Descricao do talento.";
+        node.Descricao = "Descri??o do talento.";
         node.CustoPontos = 1;
         node.NivelMinimo = 1;
 

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Montros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300008
+Nome = "Passos do Despertar"
+Descricao = "Tecida com fios arcanos de aldeias iniciais, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 6
+CategoriaPeso = 0
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 1
+HpMin = 1
+HpMax = 1
+Mana = 1
+ManaMin = 1
+ManaMax = 2
+DefesaFisica = 0
+DefesaFisicaMin = 0
+DefesaFisicaMax = 1
+DefesaMagica = 1
+DefesaMagicaMin = 1
+DefesaMagicaMax = 1
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

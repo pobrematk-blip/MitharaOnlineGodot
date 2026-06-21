@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1091
+Nome = "Escudo da Capela Velha"
+Descricao = "Proteção tradicional das capelas antigas espalhadas por Mitthara."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 19
+DefesaFisicaMin = 16
+DefesaFisicaMax = 22
+DefesaMagica = 21
+DefesaMagicaMin = 18
+DefesaMagicaMax = 25
+Hp = 43
+HpMin = 34
+HpMax = 52
+Forca = 6
+ForcaMin = 5
+ForcaMax = 7
+Inteligencia = 6
+InteligenciaMin = 5
+InteligenciaMax = 7

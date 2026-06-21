@@ -31,6 +31,7 @@ public partial class CharacterUI : Control
     private Label _petDetalhesDescricao;
     private Label _petDetalhesStats;
     private int _petSelecionadoId = -1;
+    private TextureButton _toggleButton;
 
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
@@ -335,7 +336,7 @@ public partial class CharacterUI : Control
 
         _petDetalhesIcone.Texture = entry.Recurso?.Icone;
         _petDetalhesNome.Text = entry.Nome;
-        _petDetalhesDescricao.Text = entry.Recurso?.Descricao ?? "Sem descricao";
+        _petDetalhesDescricao.Text = entry.Recurso?.Descricao ?? "Sem descri??o";
 
         if (entry.Recurso != null)
         {
@@ -481,14 +482,14 @@ public partial class CharacterUI : Control
         var player = GetTree().CurrentScene.FindChild("Player", true, false);
         if (player == null)
         {
-            GD.PrintErr("[CHARACTER UI] Player nao encontrado!");
+            GD.PrintErr("[CHARACTER UI] Player n?o encontrado!");
             return;
         }
 
         _equipamento = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (_equipamento == null)
         {
-            GD.PrintErr("[CHARACTER UI] Player nao tem EquipamentoComponent!");
+            GD.PrintErr("[CHARACTER UI] Player n?o tem EquipamentoComponent!");
             return;
         }
 
@@ -502,7 +503,7 @@ public partial class CharacterUI : Control
         _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
         if (_player == null)
         {
-            GD.PrintErr("[CHARACTER UI] Player nao encontrado para status de vida/mana!");
+            GD.PrintErr("[CHARACTER UI] Player n?o encontrado para status de vida/mana!");
             return;
         }
 
@@ -597,6 +598,8 @@ public partial class CharacterUI : Control
         AtualizarStatusLabel("RouboMana", $"Roubo Mana: {_equipamento.RouboMana:F2}%");
         AtualizarStatusLabel("ReducaoCooldown", $"Red. Cooldown: {_equipamento.ReducaoCooldown:F2}%");
         AtualizarStatusLabel("BonusExperiencia", $"Bonus XP: {_equipamento.BonusExperiencia}%");
+        AtualizarStatusLabel("ReflexaoDano", $"Reflexao Dano: {_equipamento.ReflexaoDano}%");
+        AtualizarStatusLabel("ResistenciaControle", $"Resist. Controle: {_equipamento.ResistenciaControle:F1}%");
     }
 
     private void AtualizarStatusLabel(string nomeStatus, string texto)
@@ -631,13 +634,13 @@ public partial class CharacterUI : Control
 
     private void CriarBotaoToggle()
     {
-        var btn = new TextureButton();
-        btn.Name = "CharacterToggleButton";
-        btn.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Character.png");
-        btn.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Character Selecionado.png");
-        btn.CustomMinimumSize = new Vector2(36, 36);
-        btn.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
-        btn.Pressed += () =>
+        _toggleButton = new TextureButton();
+        _toggleButton.Name = "CharacterToggleButton";
+        _toggleButton.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Character.png");
+        _toggleButton.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Character Selecionado.png");
+        _toggleButton.CustomMinimumSize = new Vector2(36, 36);
+        _toggleButton.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
+        _toggleButton.Pressed += () =>
         {
             _panel.Visible = !_panel.Visible;
             _arrastando = false;
@@ -647,15 +650,27 @@ public partial class CharacterUI : Control
                 AtualizarTela();
             }
         };
-        AddChild(btn);
-        AtualizarPosicaoBotao(btn);
-        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+        AddChild(_toggleButton);
+        AtualizarPosicaoBotao(_toggleButton);
+        GetTree().Root.SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged()
+    {
+        if (_toggleButton != null)
+            AtualizarPosicaoBotao(_toggleButton);
     }
 
     private void AtualizarPosicaoBotao(Control btn)
     {
         Vector2 tela = GetViewportRect().Size;
         btn.Position = new Vector2(tela.X - 44, tela.Y - 264);
+    }
+
+    public override void _ExitTree()
+    {
+        if (_toggleButton != null)
+            GetTree().Root.SizeChanged -= OnSizeChanged;
     }
 
     public override void _Input(InputEvent @event)

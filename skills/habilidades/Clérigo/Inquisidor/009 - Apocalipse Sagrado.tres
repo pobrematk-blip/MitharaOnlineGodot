@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15309
+Nome = "Apocalipse Sagrado"
+Descricao = "O céu se abre em luz devastadora, castigando inimigos em uma ampla área e marcando-os com julgamento divino."
+Valor = 350
+CustoMana = 80
+ClasseRestrita = "Clérigo"
+Cooldown = 120
+Duracao = 8
+TargetType = 0
+EffectType = 3
+Especializacao = "Inquisidor"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Dano massivo em área e aplica debuff de heresia."
+DanoEscala = "350% → 600% do Poder Mágico"
+BuffDebuff = "Debuff em área"
+DuracaoTexto = "8s"
+Progressao = "Ultimate Lv1 = 350%; Lv5 = 600%."
+Observacoes = "Ultimate do Inquisidor; possui 5 níveis."

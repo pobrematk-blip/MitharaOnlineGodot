@@ -69,6 +69,9 @@ partial class GameNetwork
         else
         {
             string reason = r.GetString();
+            LoggedIn = false;
+            AccountId = 0;
+            Characters.Clear();
             GD.Print($"[GAME] Login falhou: {reason}");
             EmitSignal(SignalName.OnLoginResult, false, reason);
         }

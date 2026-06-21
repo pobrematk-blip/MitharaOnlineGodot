@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13207
+Nome = "Ruptura"
+Descricao = "O Slayer abre uma ferida profunda no inimigo, fazendo-o sangrar enquanto continua lutando."
+Valor = 160
+CustoMana = 30
+ClasseRestrita = "Berserker"
+Cooldown = 18
+Duracao = 10
+TargetType = 2
+EffectType = 9
+Especializacao = "Slayer"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Dano Contínuo"
+EfeitoPrincipal = "Causa dano inicial e aplica Sangramento."
+DanoEscala = "160% → 260% do dano da arma"
+BuffDebuff = "Sangramento"
+DuracaoTexto = "10s"
+Progressao = "Skill possui 10 níveis. Dano inicial e DoT escalam."
+Observacoes = "Sangramento não acumula infinitamente; renova a duração."

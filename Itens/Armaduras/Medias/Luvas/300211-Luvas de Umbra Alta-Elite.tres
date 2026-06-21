@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Luvas Perdidas.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300211
+Nome = "Luvas de Umbra Alta"
+Descricao = "Curtida e ajustada por batedores de Umbra Alta, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 4
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 19
+HpMin = 16
+HpMax = 22
+Mana = 11
+ManaMin = 10
+ManaMax = 13
+DefesaFisica = 11
+DefesaFisicaMin = 10
+DefesaFisicaMax = 13
+DefesaMagica = 11
+DefesaMagicaMin = 10
+DefesaMagicaMax = 13
+Evasao = 0.505
+EvasaoMin = 0.43
+EvasaoMax = 0.58

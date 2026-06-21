@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12402
+Nome = "Bomba de Fumaça"
+Descricao = "Lança uma bomba de fumaça que atrapalha os inimigos próximos."
+Valor = 0
+CustoMana = 25
+ClasseRestrita = "Ladino"
+Cooldown = 30
+Duracao = 6
+TargetType = 2
+EffectType = 25
+Especializacao = "Gatuno"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Controle / Sobrevivência"
+EfeitoPrincipal = "Reduz precisão dos inimigos na área."
+DanoEscala = ""
+BuffDebuff = "-15% Precisão dos inimigos"
+DuracaoTexto = "6s"
+Progressao = "Lv1 -15% → Lv10 -30%"
+Observacoes = "Não é invisibilidade; é zona de controle."

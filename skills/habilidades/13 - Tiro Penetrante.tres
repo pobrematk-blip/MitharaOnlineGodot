@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13
+Nome = "Tiro Penetrante"
+Descricao = "Uma flecha reforçada capaz de atravessar armaduras, causando 150% do dano da arma."
+Valor = 150
+CustoMana = 20
+ClasseRestrita = "Arqueiro"
+Cooldown = 8.0
+TargetType = 2
+EffectType = 7

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 25
+Nome = "Flecha Explosiva"
+Descricao = "Uma flecha explosiva que causa dano em área. 150% do dano da arma."
+Valor = 150
+CustoMana = 25
+ClasseRestrita = "Arqueiro"
+Cooldown = 12.0
+TargetType = 2
+EffectType = 7

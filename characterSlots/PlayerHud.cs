@@ -9,18 +9,20 @@ public partial class PlayerHud : Control
     private Label _manaLabel;
     private Label _staminaLabel;
     private Label _nameLevelLabel;
+    private TextureRect _portraitIcon;
     private Player _player;
     private LevelProgressionComponent _levelComp;
 
     public override void _Ready()
     {
-        _healthBar = GetNode<ProgressBar>("Background/VBox/HealthBar");
-        _manaBar = GetNode<ProgressBar>("Background/VBox/ManaBar");
-        _staminaBar = GetNode<ProgressBar>("Background/VBox/StaminaBar");
-        _healthLabel = GetNode<Label>("Background/VBox/HealthBar/HealthBarLabel");
-        _manaLabel = GetNode<Label>("Background/VBox/ManaBar/ManaBarLabel");
-        _staminaLabel = GetNode<Label>("Background/VBox/StaminaBar/StaminaBarLabel");
-        _nameLevelLabel = GetNode<Label>("Background/VBox/NameLevelLabel");
+        _healthBar = GetNode<ProgressBar>("Background/MainHBox/VBox/HealthBar");
+        _manaBar = GetNode<ProgressBar>("Background/MainHBox/VBox/ManaBar");
+        _staminaBar = GetNode<ProgressBar>("Background/MainHBox/VBox/StaminaBar");
+        _healthLabel = GetNode<Label>("Background/MainHBox/VBox/HealthBar/HealthBarLabel");
+        _manaLabel = GetNode<Label>("Background/MainHBox/VBox/ManaBar/ManaBarLabel");
+        _staminaLabel = GetNode<Label>("Background/MainHBox/VBox/StaminaBar/StaminaBarLabel");
+        _nameLevelLabel = GetNode<Label>("Background/MainHBox/VBox/NameLevelLabel");
+        _portraitIcon = GetNode<TextureRect>("Background/MainHBox/PortraitPanel/PortraitIcon");
 
         CallDeferred(nameof(ConnectPlayer));
     }
@@ -38,8 +40,28 @@ public partial class PlayerHud : Control
 
         ConectarProgressao();
         AtualizarInfoNivel();
+        CarregarIconeClasse();
         UpdateHud();
         GD.Print("[PLAYER HUD] Conectado ao Player.");
+    }
+
+    private void CarregarIconeClasse()
+    {
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        string classe = escolhido?.ClasseBase?.NomeClasse ?? "";
+        string iconPath = classe.ToLowerInvariant() switch
+        {
+            "arqueiro" => "res://Itens/Incones/Arco do Atirador.png",
+            "assassino" or "ladino" => "res://Itens/Incones/Adaga Sombria.png",
+            "guerreiro" => "res://Itens/Incones/Machados Perdisos 1.png",
+            "berserker" => "res://Itens/Incones/Machados Perdisos 2.png",
+            "mago" => "res://Itens/Incones/1.png",
+            "clerigo" => "res://Itens/Incones/Martelo quebrada.png",
+            "guardiao" => "res://Itens/Incones/Escudo de Goglin.png",
+            _ => "res://Itens/Incones/1.png",
+        };
+        if (!string.IsNullOrEmpty(iconPath) && ResourceLoader.Exists(iconPath))
+            _portraitIcon.Texture = ResourceLoader.Load<Texture2D>(iconPath);
     }
 
     private void ConectarProgressao()
@@ -51,7 +73,7 @@ public partial class PlayerHud : Control
         }
         else
         {
-            GD.PrintErr("[PLAYER HUD] LevelProgressionComponent nao encontrado!");
+            GD.PrintErr("[PLAYER HUD] LevelProgressionComponent n?o encontrado!");
         }
     }
 

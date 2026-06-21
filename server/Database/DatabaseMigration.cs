@@ -8,7 +8,7 @@ public static class DatabaseMigration
     {
         if (!File.Exists(sqlitePath))
         {
-            Logger.Info($"[Migracao] Arquivo SQLite nao encontrado: {sqlitePath}");
+            Logger.Info($"[Migra??o] Arquivo SQLite n?o encontrado: {sqlitePath}");
             return;
         }
 

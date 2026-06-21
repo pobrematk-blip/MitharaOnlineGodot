@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Espada de Pirata 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1051
+Nome = "Espada do Campeão da Guarda"
+Descricao = "Usada por defensores veteranos que já provaram sua coragem em campo aberto."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "ChanceCritica,Tenacidade,PenetracaoArmadura,Precisao,Forca,RouboVida"
+DanoFisico = 60
+DanoFisicoMin = 53
+DanoFisicoMax = 68
+Forca = 21
+ForcaMin = 18
+ForcaMax = 25

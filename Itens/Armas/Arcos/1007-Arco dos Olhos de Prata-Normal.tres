@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Longo.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1007
+Nome = "Arco dos Olhos de Prata"
+Descricao = "Arma de arqueiros veteranos, conhecida por manter a mira firme mesmo sob pressão."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"
+DanoFisico = 71
+DanoFisicoMin = 64
+DanoFisicoMax = 78
+Destreza = 23
+DestrezaMin = 20
+DestrezaMax = 27

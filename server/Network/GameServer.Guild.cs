@@ -250,7 +250,10 @@ partial class GameServer
 
         _guildInvites[target.Id] = sender.Id;
         SendSystemMessage(peer, $"Convidei {target.Name} para a guilda.");
-        SendSystemMessage(targetPeer!, $"{sender.Name} convidou você para a guilda '{guild.Name}'. Digite /gaceitar para entrar.");
+
+        var notify = PacketSerializer.WritePacket(PacketId.S2C_GuildInviteReceived);
+        notify.Put(sender.Name);
+        targetPeer!.Send(notify, DeliveryMethod.ReliableOrdered);
     }
 
     private void HandleGuildAccept(NetPeer peer, PlayerSession session, Entity sender)

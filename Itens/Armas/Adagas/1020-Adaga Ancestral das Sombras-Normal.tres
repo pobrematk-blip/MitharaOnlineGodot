@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga do Veterano.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1020
+Nome = "Adaga Ancestral das Sombras"
+Descricao = "Baseada em técnicas antigas de assassinos que transformavam silêncio em arma."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 56
+DanoFisicoMin = 50
+DanoFisicoMax = 63
+Destreza = 23
+DestrezaMin = 20
+DestrezaMax = 27

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12102
+Nome = "Passo Sombrio"
+Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
+Valor = 3
+CustoMana = 20
+ClasseRestrita = "Ladino"
+Cooldown = 18
+Duracao = 5
+TargetType = 0
+EffectType = 4
+Especializacao = "Ninja / Assassino / Gatuno"
+NivelRequerido = 1
+Ordem = 2
+Escopo = "Universal do Ladino"
+Tipo = "Mobilidade / Invisibilidade"
+EfeitoPrincipal = "Avança até 3 tiles e fica invisível por 5 segundos. A invisibilidade quebra ao atacar."
+DanoEscala = ""
+BuffDebuff = "Invisibilidade por 5s; próximo ataque pode receber bônus de abertura."
+DuracaoTexto = "5s"
+Progressao = "Recarga pode reduzir levemente com nível da skill ou talentos."
+Observacoes = "Disponível apenas para as três especializações do Ladino."

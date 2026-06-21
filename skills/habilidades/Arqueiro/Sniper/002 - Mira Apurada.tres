@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10202
+Nome = "Mira Apurada"
+Descricao = "Aumenta foco."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 0
+Duracao = 15
+TargetType = 0
+EffectType = 3
+Especializacao = "Sniper"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Buff"
+EfeitoPrincipal = "Precisão e crítico"
+DanoEscala = ""
+BuffDebuff = "+5%-15%"
+DuracaoTexto = "15s"
+Progressao = ""
+Observacoes = ""

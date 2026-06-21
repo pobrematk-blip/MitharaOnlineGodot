@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300274
+Nome = "Cinturão do Despertar"
+Descricao = "Forjada nas oficinas de aldeias iniciais, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 3
+CategoriaPeso = 2
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 2
+HpMin = 2
+HpMax = 2
+Mana = 0
+ManaMin = 0
+ManaMax = 1
+DefesaFisica = 1
+DefesaFisicaMin = 1
+DefesaFisicaMax = 1
+DefesaMagica = 0
+DefesaMagicaMin = 0
+DefesaMagicaMax = 1
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

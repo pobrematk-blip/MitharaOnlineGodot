@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300207
+Nome = "Gibão de Umbra Alta"
+Descricao = "Curtida e ajustada por batedores de Umbra Alta, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 68
+HpMin = 58
+HpMax = 78
+Mana = 39
+ManaMin = 33
+ManaMax = 45
+DefesaFisica = 40
+DefesaFisicaMin = 34
+DefesaFisicaMax = 46
+DefesaMagica = 40
+DefesaMagicaMin = 34
+DefesaMagicaMax = 46
+Evasao = 1.75
+EvasaoMin = 1.49
+EvasaoMax = 2.01

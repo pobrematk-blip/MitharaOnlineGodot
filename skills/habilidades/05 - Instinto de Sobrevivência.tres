@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 5
+Nome = "Instinto de Sobrevivência"
+Descricao = "O caçador utiliza sua experiência em ambientes hostis para recuperar suas energias."
+Valor = 20
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 45.0
+TargetType = 0
+EffectType = 1

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11306
+Nome = "Praga Sombria"
+Descricao = "Dano contínuo."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 10
+TargetType = 0
+EffectType = 3
+Especializacao = "Mago Negro"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "DoT"
+EfeitoPrincipal = "DoT"
+DanoEscala = ""
+BuffDebuff = "Debuff"
+DuracaoTexto = "10s"
+Progressao = ""
+Observacoes = ""

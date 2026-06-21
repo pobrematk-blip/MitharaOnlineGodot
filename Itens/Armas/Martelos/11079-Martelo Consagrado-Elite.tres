@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo quebrada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11079
+Nome = "Martelo Consagrado"
+Descricao = "Abençoado em ritos menores, carrega marcas de oração e batalha."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 20
+Valor = 200
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 23
+DanoFisicoMin = 20
+DanoFisicoMax = 26
+Forca = 7
+ForcaMin = 6
+ForcaMax = 8
+Inteligencia = 7
+InteligenciaMin = 6
+InteligenciaMax = 8

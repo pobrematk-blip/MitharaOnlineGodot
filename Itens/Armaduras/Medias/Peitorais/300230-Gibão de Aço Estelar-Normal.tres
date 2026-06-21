@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300230
+Nome = "Gibão de Aço Estelar"
+Descricao = "Curtida e ajustada por batedores de Aço Estelar, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 2
+CategoriaPeso = 1
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 68
+HpMin = 58
+HpMax = 78
+Mana = 38
+ManaMin = 33
+ManaMax = 44
+DefesaFisica = 40
+DefesaFisicaMin = 34
+DefesaFisicaMax = 46
+DefesaMagica = 40
+DefesaMagicaMin = 34
+DefesaMagicaMax = 46
+Evasao = 1.75
+EvasaoMin = 1.49
+EvasaoMax = 2.01

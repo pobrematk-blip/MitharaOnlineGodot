@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga de Emboscada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1013
+Nome = "Adaga de Ferro Sombrio"
+Descricao = "Seu metal escurecido evita reflexos e favorece ataques precisos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 20
+Valor = 200
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 14
+DanoFisicoMin = 12
+DanoFisicoMax = 16
+Destreza = 6
+DestrezaMin = 5
+DestrezaMax = 8

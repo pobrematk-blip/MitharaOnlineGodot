@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13107
+Nome = "Carnificina"
+Descricao = "O Bárbaro avança golpeando tudo ao seu redor em uma sequência brutal que transforma o campo de batalha em caos."
+Valor = 180
+CustoMana = 35
+ClasseRestrita = "Berserker"
+Cooldown = 18
+Duracao = 4
+TargetType = 2
+EffectType = 7
+Especializacao = "Bárbaro"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Dano em Área / Sustentado"
+EfeitoPrincipal = "Causa dano físico contínuo em área por curta duração."
+DanoEscala = "180% → 320% do dano da arma total"
+BuffDebuff = ""
+DuracaoTexto = "4s"
+Progressao = "Skill possui 10 níveis. Dano total escala de 180% até 320%."
+Observacoes = "Boa contra grupos, mas exige que o Berserker permaneça próximo dos inimigos."

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Luva de couro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300138
+Nome = "Luvas do Despertar"
+Descricao = "Curtida e ajustada por batedores de aldeias iniciais, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 4
+CategoriaPeso = 1
+NivelRequerido = 1
+Valor = 10
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 1
+HpMin = 1
+HpMax = 2
+Mana = 1
+ManaMin = 1
+ManaMax = 1
+DefesaFisica = 1
+DefesaFisicaMin = 1
+DefesaFisicaMax = 1
+DefesaMagica = 1
+DefesaMagicaMin = 1
+DefesaMagicaMax = 1
+Evasao = 0.05
+EvasaoMin = 0.04
+EvasaoMax = 0.06

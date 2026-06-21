@@ -22,6 +22,9 @@ partial class GameServer
             MonsterEntity m => m.CalculateDefense(),
             _ => 0,
         };
+        if (target is PlayerEntity playerTarget
+            && Random.Shared.NextDouble() * 100.0 < Math.Min(40f, playerTarget.EquipmentEvasion))
+            return true;
         float defReduction = MathF.Min(0.80f, targetDefense / (targetDefense + 400f));
         bool isCrit = Random.Shared.Next(100) < mob.Destreza / 4;
         int rawDamage = mob.CalculateAttackDamage();
@@ -128,7 +131,7 @@ partial class GameServer
         var scroll = healer.Items.FirstOrDefault(i => i.ItemId == 101 && i.Quantity > 0);
         if (scroll == null)
         {
-            SendSystemMessage(peer, "Voce precisa de um Pergaminho de Ressureicao para reviver alguem!");
+            SendSystemMessage(peer, "Voc? precisa de um Pergaminho de Ressurrei??o para reviver algu?m!");
             return;
         }
 
@@ -152,6 +155,7 @@ partial class GameServer
         wItemUpdate.Put(scroll.Quantity > 0 ? scroll.ItemId : 0);
         wItemUpdate.Put(scroll.Quantity > 0 ? scroll.Quantity : 0);
         wItemUpdate.Put(0);
+        wItemUpdate.Put("");
         peer.Send(wItemUpdate, DeliveryMethod.ReliableOrdered);
 
         target.Health = target.MaxHealth;
@@ -299,6 +303,8 @@ partial class GameServer
     private void HandleMonsterDeath(Channel channel, MonsterEntity mob, PlayerEntity killer, PlayerSession killerSession, ulong mobId)
     {
         int xpReward = mob.ExperienceReward;
+        if (IsPlayerVip(killer))
+            xpReward *= 2;
 
         var writerDied = PacketSerializer.WritePacket(PacketId.S2C_EntityDied);
         writerDied.Put(mobId);
@@ -384,14 +390,18 @@ partial class GameServer
 
         SpawnMonsterLoot(channel, mob, killer, aoi);
 
-        var spawnPoint = channel.Spawner.GetSpawnPoints()
-            .FirstOrDefault(sp => sp.PrefabId == mob.PrefabId);
-        if (spawnPoint != null)
+        // Libera primeiro a vaga no spot. Assim um elite gerado pelo contador
+        // de mortes ocupa essa vaga sem ultrapassar o MaxCount do spot.
+        channel.RemoveEntity(mobId);
+        channel.HandleMonsterKilled(mob, _gameTime);
+
+        if (mob.IsBoss && string.Equals(mob.PrefabId, "slimeBoss", StringComparison.OrdinalIgnoreCase))
         {
-            channel.ScheduleRespawn(spawnPoint, _gameTime);
+            SendGlobalChat(
+                "Sistema",
+                $"{killer.Name} derrotou o Boss Slime! Ele nascerá novamente em 1 hora.");
         }
 
-        channel.RemoveEntity(mobId);
     }
 
     private void SpawnMonsterLoot(Channel channel, MonsterEntity mob, PlayerEntity killer, HashSet<ulong> aoi)
@@ -400,6 +410,7 @@ partial class GameServer
         if (template == null) return;
 
         var rng = Random.Shared;
+        bool vipDrop = IsPlayerVip(killer);
 
         int goldAmount = 0;
         if (template.GoldMax > 0)
@@ -409,7 +420,8 @@ partial class GameServer
 
         foreach (var entry in template.LootTable)
         {
-            if (rng.NextDouble() >= entry.DropChance) continue;
+            double chance = vipDrop ? Math.Min(1.0, entry.DropChance * 2.0) : entry.DropChance;
+            if (rng.NextDouble() >= chance) continue;
             int qty = entry.MinQuantity == entry.MaxQuantity
                 ? entry.MinQuantity
                 : rng.Next(entry.MinQuantity, entry.MaxQuantity + 1);
@@ -420,6 +432,37 @@ partial class GameServer
             var loot = new LootEntity(mob.X + offsetX, mob.Y + offsetY, entry.ItemId, qty, killer.Id, _gameTime);
             spawnedLoot.Add(loot);
             channel.AddLoot(loot);
+        }
+
+        bool dropsEquipment = template.DropsNormalEquipment || template.DropsEliteEquipment;
+        if (dropsEquipment)
+        {
+            int equipmentLevel = mob.Level < 10 ? 1 : Math.Min(100, (mob.Level / 10) * 10);
+            bool eliteItem = template.DropsEliteEquipment;
+            var equipmentPool = ItemDefinitions.GetAll()
+                .Where(def => def.IsElite == eliteItem
+                    && def.RequiredLevel == equipmentLevel
+                    && def.Type is >= ItemType.Helmet and <= ItemType.Shield)
+                .ToArray();
+
+            if (equipmentPool.Length > 0)
+            {
+                var equipment = equipmentPool[rng.Next(equipmentPool.Length)];
+                var loot = new LootEntity(
+                    mob.X + (float)(rng.NextDouble() - 0.5) * 40f,
+                    mob.Y + (float)(rng.NextDouble() - 0.5) * 40f,
+                    equipment.Id,
+                    1,
+                    killer.Id,
+                    _gameTime);
+                spawnedLoot.Add(loot);
+                channel.AddLoot(loot);
+                Logger.Info($"Drop: {mob.Name} gerou {equipment.Name} ({(eliteItem ? "Elite" : "Normal")}, nivel {equipmentLevel}).");
+            }
+            else
+            {
+                Logger.Info($"Drop: nenhum equipamento {(eliteItem ? "Elite" : "Normal")} de nivel {equipmentLevel} encontrado para {mob.Name}.");
+            }
         }
 
         if (goldAmount > 0)
@@ -485,7 +528,7 @@ partial class GameServer
 
             if (!itemAdded)
             {
-                SendSystemMessage(peer, "InventÃ¡rio cheio!");
+                SendSystemMessage(peer, "Invent?rio cheio!");
                 SendInventoryData(peer, player);
                 return;
             }

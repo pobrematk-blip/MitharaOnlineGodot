@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13205
+Nome = "Golpe Impiedoso"
+Descricao = "Um ataque direto e cruel feito para atravessar defesas e atingir o corpo do inimigo sem piedade."
+Valor = 170
+CustoMana = 25
+ClasseRestrita = "Berserker"
+Cooldown = 12
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Slayer"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Dano / Penetração"
+EfeitoPrincipal = "Causa dano e ignora parte da defesa física."
+DanoEscala = "170% → 300% do dano da arma"
+BuffDebuff = "Ignora 10% → 30% Defesa Física"
+DuracaoTexto = "Instantâneo"
+Progressao = "Skill possui 10 níveis. Dano e penetração escalam."
+Observacoes = "Respeita cap global de Penetração de Armadura."

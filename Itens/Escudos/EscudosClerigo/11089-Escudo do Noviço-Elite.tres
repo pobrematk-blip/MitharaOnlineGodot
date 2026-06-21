@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11089
+Nome = "Escudo do Noviço"
+Descricao = "Defesa leve para noviços que acompanham grupos em suas primeiras missões."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 10
+Valor = 100
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 9
+DefesaFisicaMin = 7
+DefesaFisicaMax = 11
+DefesaMagica = 10
+DefesaMagicaMin = 8
+DefesaMagicaMax = 12
+Hp = 22
+HpMin = 17
+HpMax = 28
+Forca = 3
+ForcaMin = 2
+ForcaMax = 4
+Inteligencia = 3
+InteligenciaMin = 2
+InteligenciaMax = 4

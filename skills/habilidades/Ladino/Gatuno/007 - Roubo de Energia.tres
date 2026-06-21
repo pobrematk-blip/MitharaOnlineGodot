@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12407
+Nome = "Roubo de Energia"
+Descricao = "O Gatuno drena energia vital e mágica do inimigo."
+Valor = 130
+CustoMana = 35
+ClasseRestrita = "Ladino"
+Cooldown = 20
+Duracao = 0
+TargetType = 0
+EffectType = 1
+Especializacao = "Gatuno"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Sustentação / Debuff"
+EfeitoPrincipal = "Causa dano e recupera pequena quantidade de HP e Mana."
+DanoEscala = "130% do dano da arma"
+BuffDebuff = "Recupera HP/Mana proporcional ao dano"
+DuracaoTexto = ""
+Progressao = "Lv1 130% → Lv10 250%"
+Observacoes = "Respeita caps de roubo de vida/mana."

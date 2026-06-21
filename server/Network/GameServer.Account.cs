@@ -153,13 +153,19 @@ partial class GameServer
 
         if (_activeAccounts.TryGetValue(accountId.Value, out var existingPeer) && existingPeer != peer)
         {
-            if (_sessions.TryGetValue(existingPeer, out var oldSession))
+            if (existingPeer.ConnectionState == ConnectionState.Connected &&
+                _sessions.TryGetValue(existingPeer, out var activeSession) &&
+                activeSession.AccountId == accountId.Value)
             {
-                Logger.Info($"Conta {accountId.Value} já logada em outro cliente. Desconectando anterior.");
-                _activeAccounts.Remove(accountId.Value);
-                oldSession.AccountId = 0;
-                existingPeer.Disconnect();
+                Logger.Info($"Login recusado: conta {accountId.Value} já está conectada em outro cliente.");
+                writer.Put(false);
+                writer.Put("Esta conta já está logada.");
+                peer.Send(writer, DeliveryMethod.ReliableOrdered);
+                return;
             }
+
+            // A conexão registrada já caiu; libera apenas a referência obsoleta.
+            _activeAccounts.Remove(accountId.Value);
         }
 
         if (_sessions.TryGetValue(peer, out var session))

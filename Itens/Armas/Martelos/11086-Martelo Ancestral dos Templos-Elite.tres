@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo de Reparo.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11086
+Nome = "Martelo Ancestral dos Templos"
+Descricao = "Inspirado nos primeiros protetores dos templos de Mitthara."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 90
+DanoFisicoMin = 80
+DanoFisicoMax = 101
+Forca = 28
+ForcaMin = 24
+ForcaMax = 32
+Inteligencia = 28
+InteligenciaMin = 24
+InteligenciaMax = 32

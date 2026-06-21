@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adagas de Pirata 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11029
+Nome = "Adaga de Aço Negro Leve"
+Descricao = "Feita com aço leve, oferece equilíbrio entre defesa, velocidade e precisão."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,VelocidadeAtaque,Precisao,Agilidade,RouboVida,Evasao"
+DanoFisico = 36
+DanoFisicoMin = 30
+DanoFisicoMax = 42
+Agilidade = 15
+AgilidadeMin = 12
+AgilidadeMax = 19
+Destreza = 18
+DestrezaMin = 15
+DestrezaMax = 21

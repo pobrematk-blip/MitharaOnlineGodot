@@ -552,7 +552,7 @@ public partial class CriacaoPersonagem : Control
         }
         else
         {
-            GD.PrintErr("[CRIACAO] Criacao offline bloqueada. Conecte ao servidor para criar personagem.");
+            GD.PrintErr("[CRIA??O] Cria??o offline bloqueada. Conecte ao servidor para criar personagem.");
         }
     }
 

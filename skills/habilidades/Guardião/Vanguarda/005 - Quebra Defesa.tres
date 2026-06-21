@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14205
+Nome = "Quebra Defesa"
+Descricao = "A Vanguarda golpeia a proteção do inimigo com precisão, abrindo falhas em sua guarda."
+Valor = 100
+CustoMana = 25
+ClasseRestrita = "Guardião"
+Cooldown = 18
+Duracao = 10
+TargetType = 0
+EffectType = 3
+Especializacao = "Vanguarda"
+NivelRequerido = 20
+Ordem = 5
+Escopo = "Especialização"
+Tipo = "Debuff"
+EfeitoPrincipal = "Reduz Defesa Física do alvo."
+DanoEscala = "100% → 180% do dano da arma"
+BuffDebuff = "-10% → -25% Defesa Física"
+DuracaoTexto = "10s"
+Progressao = "Debuff escala por nível."
+Observacoes = "Muito útil para aumentar o dano do grupo."

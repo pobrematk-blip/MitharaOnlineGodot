@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga do Executor.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11017
+Nome = "Adaga do Predador Noturno"
+Descricao = "Equilibrada para caçadas humanas, responde rápido ao menor movimento da mão."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,Precisao,Agilidade,RouboVida,PenetracaoArmadura"
+DanoFisico = 45
+DanoFisicoMin = 39
+DanoFisicoMax = 51
+Destreza = 19
+DestrezaMin = 17
+DestrezaMax = 22

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15206
+Nome = "Julgamento"
+Descricao = "O Paladino ergue seu martelo e invoca um julgamento divino sobre o alvo, punindo-o por sua corrupção."
+Valor = 180
+CustoMana = 35
+ClasseRestrita = "Clérigo"
+Cooldown = 18
+Duracao = 8
+TargetType = 0
+EffectType = 3
+Especializacao = "Paladino"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "Dano/Debuff"
+EfeitoPrincipal = "Causa dano sagrado e reduz o dano causado pelo alvo."
+DanoEscala = "180% → 320% do dano da arma"
+BuffDebuff = "Debuff: -10% dano"
+DuracaoTexto = "8s"
+Progressao = "Lv1 = 180%; Lv10 = 320%."
+Observacoes = "Bom contra inimigos fortes."

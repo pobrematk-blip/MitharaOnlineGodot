@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15107
+Nome = "Luz Restauradora"
+Descricao = "Uma poderosa coluna de luz desce sobre o aliado ferido, restaurando uma grande quantidade de vida em um único instante."
+Valor = 220
+CustoMana = 55
+ClasseRestrita = "Clérigo"
+Cooldown = 20
+Duracao = 0
+TargetType = 0
+EffectType = 1
+Especializacao = "Sacerdote"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Cura Forte"
+EfeitoPrincipal = "Grande cura em alvo único."
+DanoEscala = "Cura: 220% → 420% do Poder Mágico"
+BuffDebuff = "Cura"
+DuracaoTexto = "Instantâneo"
+Progressao = "Lv1 = 220%; Lv10 = 420%."
+Observacoes = "Cura emergencial com recarga maior."

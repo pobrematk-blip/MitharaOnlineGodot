@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 16
+Nome = "Marca do Executor"
+Descricao = "Marca a vítima para receber dano aumentado das habilidades do Sniper."
+Valor = 10
+CustoMana = 20
+ClasseRestrita = "Arqueiro"
+Cooldown = 15.0
+Duracao = 12
+TargetType = 2
+EffectType = 24

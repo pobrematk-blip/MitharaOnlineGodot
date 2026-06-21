@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11308
+Nome = "Forma das Sombras"
+Descricao = "Fortalece magia negra."
+Valor = 0
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 15
+TargetType = 0
+EffectType = 1
+Especializacao = "Mago Negro"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Buff"
+EfeitoPrincipal = "Roubo de vida e dano"
+DanoEscala = ""
+BuffDebuff = "+20%"
+DuracaoTexto = "+15s"
+Progressao = ""
+Observacoes = ""

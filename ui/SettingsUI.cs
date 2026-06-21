@@ -28,6 +28,7 @@ public partial class SettingsUI : Control
     private CheckBox _mostrarManaCheck;
     private CheckBox _mostrarTagCheck;
     private CheckBox _mostrarEmblemaCheck;
+    private CheckBox _mostrarPartyHUDCheck;
 
     private static readonly Vector2I[] Resolutions = {
         new Vector2I(1280, 720),
@@ -38,6 +39,8 @@ public partial class SettingsUI : Control
     };
 
     private Button _btnVoltarSelecao;
+    private Button _applyVideoButton;
+    private TextureButton _toggleButton;
 
     private const string SettingsPath = "user://settings.cfg";
     private const string SectionVideo = "Video";
@@ -74,6 +77,7 @@ public partial class SettingsUI : Control
         _mostrarManaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarManaCheck");
         _mostrarTagCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarTagCheck");
         _mostrarEmblemaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarEmblemaCheck");
+        _mostrarPartyHUDCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarPartyHUDCheck");
 
         PopulateResolutions();
         SelecionarResolucaoAtual();
@@ -84,6 +88,7 @@ public partial class SettingsUI : Control
         _mostrarManaCheck.Toggled += OnMostrarManaToggled;
         _mostrarTagCheck.Toggled += OnMostrarTagToggled;
         _mostrarEmblemaCheck.Toggled += OnMostrarEmblemaToggled;
+        _mostrarPartyHUDCheck.Toggled += OnMostrarPartyHUDToggled;
 
         AplicarOverheadUIDoCheckbox();
 
@@ -95,8 +100,8 @@ public partial class SettingsUI : Control
         _btnVoltarSelecao = _panel.GetNode<Button>("BtnVoltarSelecao");
         _btnVoltarSelecao.Pressed += OnVoltarSelecao;
 
-        _fullscreenCheck.Toggled += OnFullscreenToggled;
-        _resolutionOption.ItemSelected += OnResolutionSelected;
+        _applyVideoButton = _tabContainer.GetNode<Button>("Video/ApplyButton");
+        _applyVideoButton.Pressed += OnApplyVideo;
         _brightnessSlider.ValueChanged += OnBrightnessChanged;
         _masterVolumeSlider.ValueChanged += OnMasterVolumeChanged;
         _sfxVolumeSlider.ValueChanged += OnSfxVolumeChanged;
@@ -108,23 +113,29 @@ public partial class SettingsUI : Control
         CallDeferred(MethodName.Centralizar);
         CallDeferred(MethodName.FindPlayer);
 
-        GetTree().Root.SizeChanged += () => CallDeferred(MethodName.Centralizar);
+        GetTree().Root.SizeChanged += OnRootSizeChanged;
 
         CriarBotaoToggle();
     }
 
     private void CriarBotaoToggle()
     {
-        var btn = new TextureButton();
-        btn.Name = "SettingsToggleButton";
-        btn.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Menu.png");
-        btn.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Menu Selecionado.png");
-        btn.CustomMinimumSize = new Vector2(36, 36);
-        btn.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
-        btn.Pressed += () => AbrirFechar(null);
-        AddChild(btn);
-        AtualizarPosicaoBotao(btn);
-        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+        _toggleButton = new TextureButton();
+        _toggleButton.Name = "SettingsToggleButton";
+        _toggleButton.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Menu.png");
+        _toggleButton.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Menu Selecionado.png");
+        _toggleButton.CustomMinimumSize = new Vector2(36, 36);
+        _toggleButton.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
+        _toggleButton.Pressed += () => AbrirFechar(null);
+        AddChild(_toggleButton);
+        AtualizarPosicaoBotao(_toggleButton);
+        GetTree().Root.SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged()
+    {
+        if (_toggleButton != null)
+            AtualizarPosicaoBotao(_toggleButton);
     }
 
     private void AtualizarPosicaoBotao(Control btn)
@@ -208,8 +219,16 @@ public partial class SettingsUI : Control
     {
         GD.Print("[SETTINGS] OnVoltarSelecao chamado!");
         SaveSettings();
-        var err = GetTree().ChangeSceneToFile("res://scenes/SelecaoPersonagem.tscn");
-        GD.Print($"[SETTINGS] ChangeSceneToFile result: {err}");
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null || !net.IsConnected)
+        {
+            GD.PrintErr("[SETTINGS] Não foi possível sair: sem conexão com o servidor.");
+            return;
+        }
+
+        _btnVoltarSelecao.Disabled = true;
+        _btnVoltarSelecao.Text = "Saindo do mundo...";
+        net.SendLeaveWorld();
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)
@@ -223,20 +242,14 @@ public partial class SettingsUI : Control
             _panel.Position += mouseMotion.Position - _pontoCliqueOriginal;
     }
 
-    private void OnFullscreenToggled(bool pressed)
+    private void OnApplyVideo()
     {
-        DisplayServer.WindowSetMode(pressed ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
-    }
+        bool fullscreen = _fullscreenCheck.ButtonPressed;
+        DisplayServer.WindowSetMode(fullscreen ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
 
-    private void OnResolutionSelected(long index)
-    {
-        int idx = (int)index;
-        if (idx >= 0 && idx < Resolutions.Length)
-        {
-            if (DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen)
-                DisplayServer.WindowSetMode(DisplayServer.WindowMode.Windowed);
+        int idx = _resolutionOption.Selected;
+        if (idx >= 0 && idx < Resolutions.Length && !fullscreen)
             DisplayServer.WindowSetSize(Resolutions[idx]);
-        }
     }
 
     private void OnBrightnessChanged(double value)
@@ -302,6 +315,19 @@ public partial class SettingsUI : Control
     private void OnMostrarEmblemaToggled(bool pressed)
     {
         AplicarOverheadUI("MostrarEmblemaGuild", pressed);
+    }
+
+    private void OnMostrarPartyHUDToggled(bool pressed)
+    {
+        var partyHud = GetTree().CurrentScene?.FindChild("PartyHUD", true, false) as PartyHUD;
+        if (partyHud != null)
+        {
+            partyHud.HiddenByUser = !pressed;
+            if (pressed)
+                partyHud.Refresh();
+            else
+                partyHud.Visible = false;
+        }
     }
 
     private static void AplicarOverheadUI(string propriedade, bool value)
@@ -475,6 +501,7 @@ public partial class SettingsUI : Control
         cfg.SetValue(SectionUI, "mostrar_mana", _mostrarManaCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_tag_guild", _mostrarTagCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_emblema_guild", _mostrarEmblemaCheck.ButtonPressed);
+        cfg.SetValue(SectionUI, "mostrar_party_hud", _mostrarPartyHUDCheck.ButtonPressed);
 
         foreach (var nome in InputMap.GetActions())
         {
@@ -501,11 +528,17 @@ public partial class SettingsUI : Control
 
         bool fullscreen = cfg.GetValue(SectionVideo, "fullscreen", false).AsBool();
         _fullscreenCheck.ButtonPressed = fullscreen;
-        DisplayServer.WindowSetMode(fullscreen ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
 
         int resIdx = cfg.GetValue(SectionVideo, "resolution_index", -1).AsInt32();
         if (resIdx >= 0 && resIdx < _resolutionOption.ItemCount)
+        {
             _resolutionOption.Selected = resIdx;
+            OnApplyVideo();
+        }
+        else
+        {
+            DisplayServer.WindowSetMode(fullscreen ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
+        }
 
         _brightnessSlider.Value = cfg.GetValue(SectionVideo, "brightness", 0.5).AsDouble();
 
@@ -520,6 +553,8 @@ public partial class SettingsUI : Control
         _mostrarManaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_mana", true).AsBool();
         _mostrarTagCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_tag_guild", true).AsBool();
         _mostrarEmblemaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_emblema_guild", true).AsBool();
+        _mostrarPartyHUDCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_party_hud", true).AsBool();
+        Callable.From(() => OnMostrarPartyHUDToggled(_mostrarPartyHUDCheck.ButtonPressed)).CallDeferred();
 
         foreach (var nome in InputMap.GetActions())
         {
@@ -547,8 +582,16 @@ public partial class SettingsUI : Control
         }
     }
 
+    private void OnRootSizeChanged()
+    {
+        CallDeferred(MethodName.Centralizar);
+    }
+
     public override void _ExitTree()
     {
+        GetTree().Root.SizeChanged -= OnRootSizeChanged;
+        if (_toggleButton != null)
+            GetTree().Root.SizeChanged -= OnSizeChanged;
         SaveSettings();
     }
 }

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10209
+Nome = "Tiro da Execução"
+Descricao = "Disparo mortal."
+Valor = 350
+CustoMana = 0
+ClasseRestrita = "Arqueiro"
+Cooldown = 0
+Duracao = 0
+TargetType = 0
+EffectType = 3
+Especializacao = "Sniper"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Execução"
+DanoEscala = "350%-600%"
+BuffDebuff = "+50% alvo baixo HP"
+DuracaoTexto = ""
+Progressao = ""
+Observacoes = ""

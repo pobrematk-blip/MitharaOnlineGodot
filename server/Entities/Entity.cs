@@ -29,6 +29,7 @@ public class Entity
     public int Inteligencia { get; set; }
     public long Experience { get; set; }
     public bool Moving { get; set; }
+    public bool Sprinting { get; set; }
     public double LastMoveTime { get; set; }
     public string FactionId { get; set; } = "";
 

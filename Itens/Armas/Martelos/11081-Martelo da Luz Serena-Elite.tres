@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo quebrada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11081
+Nome = "Martelo da Luz Serena"
+Descricao = "Seu peso é equilibrado para proteger aliados sem abandonar o combate."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+TipoItem = 1
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 42
+DanoFisicoMin = 37
+DanoFisicoMax = 47
+Forca = 13
+ForcaMin = 11
+ForcaMax = 15
+Inteligencia = 13
+InteligenciaMin = 11
+InteligenciaMax = 15

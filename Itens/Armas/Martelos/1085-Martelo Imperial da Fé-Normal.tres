@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo quebrada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1085
+Nome = "Martelo Imperial da Fé"
+Descricao = "Martelo cerimonial e militar, usado pelos defensores da fé imperial."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 68
+DanoFisicoMin = 60
+DanoFisicoMax = 77
+Forca = 21
+ForcaMin = 18
+ForcaMax = 24
+Inteligencia = 21
+InteligenciaMin = 18
+InteligenciaMax = 24

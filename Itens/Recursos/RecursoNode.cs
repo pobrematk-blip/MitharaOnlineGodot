@@ -118,7 +118,8 @@ public partial class RecursoNode : StaticBody2D
 
     private bool TemFerramentaEquipada()
     {
-        if (RecursoData.FerramentaNecessariaID <= 0)
+        var ferramenta = RecursoData.FerramentaNecessaria;
+        if (ferramenta == null || ferramenta.ItemID <= 0)
             return true;
 
         var player = GetTree().GetFirstNodeInGroup("player");
@@ -127,14 +128,10 @@ public partial class RecursoNode : StaticBody2D
             return true;
 
         bool temFerramenta = equip.ItensEquipados.Values
-            .Any(s => s?.Item?.ItemID == RecursoData.FerramentaNecessariaID);
+            .Any(s => s?.Item?.ItemID == ferramenta.ItemID);
 
         if (!temFerramenta)
-        {
-            var itemDB = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
-            string nomeFerramenta = itemDB?.GetItemName(RecursoData.FerramentaNecessariaID) ?? "Ferramenta";
-            MensagemSistema($"Você precisa de [{nomeFerramenta}] equipado para coletar {RecursoData.Nome}!");
-        }
+            MensagemSistema($"Você precisa de [{ferramenta.Nome}] equipado para coletar {RecursoData.Nome}!");
 
         return temFerramenta;
     }
@@ -214,12 +211,12 @@ public partial class RecursoNode : StaticBody2D
 
         if (_faseAtual == 1)
         {
-            _colisao.Position = new Vector2(0, 5);
+            _colisao.Position = new Vector2(0, 8);
             ((CapsuleShape2D)_colisao.Shape).Height = 30f;
         }
         else
         {
-            _colisao.Position = new Vector2(0, 25);
+            _colisao.Position = new Vector2(0, 28);
             ((CapsuleShape2D)_colisao.Shape).Height = 115f;
         }
 

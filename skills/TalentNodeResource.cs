@@ -7,6 +7,7 @@ public enum TalentNodeType
     Passive,
     Status,
     Hybrid,
+    Unlock,
 }
 
 [GlobalClass]
@@ -33,10 +34,18 @@ public partial class TalentNodeResource : Resource
     [Export] public int NivelMinimo { get; set; } = 1;
 
     [ExportGroup("Bônus de Atributos")]
-    [Export(PropertyHint.Range, "-100,100,1")] public int BonusForca { get; set; }
-    [Export(PropertyHint.Range, "-100,100,1")] public int BonusAgilidade { get; set; }
-    [Export(PropertyHint.Range, "-100,100,1")] public int BonusDestreza { get; set; }
-    [Export(PropertyHint.Range, "-100,100,1")] public int BonusInteligencia { get; set; }
+    [Export(PropertyHint.Range, "-100,100,0.1")] public float BonusForca { get; set; }
+    [Export(PropertyHint.Range, "-100,100,0.1")] public float BonusAgilidade { get; set; }
+    [Export(PropertyHint.Range, "-100,100,0.1")] public float BonusDestreza { get; set; }
+    [Export(PropertyHint.Range, "-100,100,0.1")] public float BonusInteligencia { get; set; }
+
+    [ExportGroup("Bônus Genérico")]
+    [Export] public string StatId { get; set; } = "";
+    [Export(PropertyHint.Range, "-10000,10000,0.1")] public float BonusValor { get; set; }
+    [Export] public string[] StatOptionIds { get; set; } = System.Array.Empty<string>();
+    [Export] public float[] StatOptionValues { get; set; } = System.Array.Empty<float>();
+
+    public bool TemEscolhaDeStatus => StatOptionIds != null && StatOptionIds.Length > 1;
 
     [ExportGroup("Bônus Percentuais")]
     [Export(PropertyHint.Range, "-100,100,0.1")] public float BonusDanoPercent { get; set; }
@@ -55,6 +64,7 @@ public partial class TalentNodeResource : Resource
             TalentNodeType.Passive => "Passiva",
             TalentNodeType.Status => "Status",
             TalentNodeType.Hybrid => "Híbrido",
+            TalentNodeType.Unlock => "Desbloqueio",
             _ => "Desconhecido",
         };
     }
@@ -68,6 +78,7 @@ public partial class TalentNodeResource : Resource
             TalentNodeType.Passive => new Color(0.6f, 1.0f, 0.4f),
             TalentNodeType.Status => new Color(1.0f, 0.4f, 0.8f),
             TalentNodeType.Hybrid => new Color(1.0f, 1.0f, 0.4f),
+            TalentNodeType.Unlock => new Color(0.95f, 0.75f, 0.25f),
             _ => new Color(1.0f, 1.0f, 1.0f),
         };
     }

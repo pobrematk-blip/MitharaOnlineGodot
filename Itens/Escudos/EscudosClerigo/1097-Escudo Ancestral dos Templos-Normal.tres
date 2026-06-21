@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1097
+Nome = "Escudo Ancestral dos Templos"
+Descricao = "Inspirado nos escudos dos primeiros protetores sagrados de Mitthara."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 90
+Valor = 900
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "HP,Mana,DefesaFisica,DefesaMagica,Tenacidade,RegeneracaoVida,RegeneracaoMana,ReducaoCooldown"
+DefesaFisica = 54
+DefesaFisicaMin = 45
+DefesaFisicaMax = 63
+DefesaMagica = 59
+DefesaMagicaMin = 50
+DefesaMagicaMax = 68
+Hp = 113
+HpMin = 90
+HpMax = 136
+Forca = 17
+ForcaMin = 14
+ForcaMax = 20
+Inteligencia = 17
+InteligenciaMin = 14
+InteligenciaMax = 20

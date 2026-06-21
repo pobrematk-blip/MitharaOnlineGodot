@@ -16,7 +16,6 @@ public class WorldManager
         for (int i = 0; i < channelCount; i++)
         {
             var channel = new Channel(i, $"Mundo {i + 1}");
-            channel.SpawnNpcs(Npcs);
             _channels.Add(channel);
         }
     }

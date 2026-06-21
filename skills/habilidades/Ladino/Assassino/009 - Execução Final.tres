@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12209
+Nome = "Execução Final"
+Descricao = "O golpe definitivo do Assassino, usado para finalizar vítimas vulneráveis."
+Valor = 350
+CustoMana = 80
+ClasseRestrita = "Ladino"
+Cooldown = 120
+Duracao = 0
+TargetType = 0
+EffectType = 3
+Especializacao = "Assassino"
+NivelRequerido = 70
+Ordem = 9
+Escopo = "Especialização"
+Tipo = "Ultimate"
+EfeitoPrincipal = "Causa dano massivo em alvo único. Dano adicional contra alvos com pouca vida."
+DanoEscala = "350% do dano da arma"
+BuffDebuff = "+50% dano contra alvo abaixo de 30% HP"
+DuracaoTexto = ""
+Progressao = "Lv1 350% → Lv5 600%"
+Observacoes = "Ultimate da árvore."

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14106
+Nome = "Desafio"
+Descricao = "O Protetor bate sua arma contra o escudo e emite um desafio ensurdecedor, atraindo a atenção de todos ao redor."
+Valor = 0
+CustoMana = 25
+ClasseRestrita = "Guardião"
+Cooldown = 20
+Duracao = 5
+TargetType = 2
+EffectType = 7
+Especializacao = "Protetor"
+NivelRequerido = 30
+Ordem = 6
+Escopo = "Especialização"
+Tipo = "Controle / Taunt em Área"
+EfeitoPrincipal = "Aplica Taunt em área maior e gera alta ameaça instantânea."
+DanoEscala = ""
+BuffDebuff = "Taunt em área"
+DuracaoTexto = "5s"
+Progressao = "Área e ameaça aumentam por nível."
+Observacoes = "Principal ferramenta para puxar grupos em dungeon."

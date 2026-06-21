@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12408
+Nome = "Mestre dos Venenos"
+Descricao = "O Gatuno aprimora todos os seus venenos temporariamente."
+Valor = 0
+CustoMana = 45
+ClasseRestrita = "Ladino"
+Cooldown = 60
+Duracao = 15
+TargetType = 2
+EffectType = 24
+Especializacao = "Gatuno"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Buff"
+EfeitoPrincipal = "Aumenta dano de veneno e duração dos efeitos tóxicos."
+DanoEscala = ""
+BuffDebuff = "+20% dano de veneno"
+DuracaoTexto = "15s"
+Progressao = "Lv1 +20% → Lv10 +40%"
+Observacoes = ""

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="LojaCashData" load_steps=2 format=3]
+[ext_resource type="Script" uid="uid://b4cvj2e4b30re" path="res://SistemaContas/LojaCashData.cs" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+Itens = [{
+"ItemID": -1,
+"PrecoDiamantes": 30,
+"NomeExibicao": "Slot Extra",
+"Descricao": "Desbloqueia um slot extra de personagem."
+}, {
+"ItemID": 103,
+"PrecoDiamantes": 100,
+"NomeExibicao": "Pergaminho VIP (7 Dias)",
+"Descricao": "Ativa VIP por 7 dias. Ganhe 2x XP e 2x chance de drop."
+}, {
+"ItemID": 104,
+"PrecoDiamantes": 180,
+"NomeExibicao": "Pergaminho VIP (15 Dias)",
+"Descricao": "Ativa VIP por 15 dias. Ganhe 2x XP e 2x chance de drop."
+}, {
+"ItemID": 105,
+"PrecoDiamantes": 300,
+"NomeExibicao": "Pergaminho VIP (30 Dias)",
+"Descricao": "Ativa VIP por 30 dias. Ganhe 2x XP e 2x chance de drop."
+}]

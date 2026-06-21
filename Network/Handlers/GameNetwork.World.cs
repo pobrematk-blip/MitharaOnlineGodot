@@ -5,7 +5,17 @@ using Mithara.Network;
 
 partial class GameNetwork
 {
-    public void SendPlayerMove(Vector2 position, Vector2 direction, bool moving)
+    public void SendPlayerAction(byte actionType, Vector2 direction)
+    {
+        _client?.SendPacket(PacketId.C2S_PlayerAction, w =>
+        {
+            w.Put(actionType);
+            w.Put(direction.X);
+            w.Put(direction.Y);
+        });
+    }
+
+    public void SendPlayerMove(Vector2 position, Vector2 direction, bool moving, bool sprinting)
     {
         _client?.SendPacketUnreliable(PacketId.C2S_PlayerMove, w =>
         {
@@ -14,6 +24,7 @@ partial class GameNetwork
             w.Put(direction.X);
             w.Put(direction.Y);
             w.Put(moving);
+            w.Put(sprinting);
         });
     }
 
@@ -60,6 +71,7 @@ partial class GameNetwork
         string typeLabel;
         string extra1 = "";
         string extra2 = "";
+        string extra3 = "";
 
         switch (entityType)
         {
@@ -67,6 +79,14 @@ partial class GameNetwork
                 typeLabel = "player";
                 extra1 = r.GetString(); // CharacterClass
                 extra2 = r.GetString(); // Race
+                extra3 = Json.Stringify(new Godot.Collections.Dictionary
+                {
+                    ["xp"] = r.GetLong(),
+                    ["xp_max"] = r.GetLong(),
+                    ["guild_name"] = r.GetString(),
+                    ["guild_tag"] = r.GetString(),
+                    ["guild_emblem"] = r.GetInt(),
+                });
                 break;
             case 1:
             case 2:
@@ -90,12 +110,13 @@ partial class GameNetwork
         }
 
         GD.Print($"[GAME] Spawn {typeLabel}: {name} em ({x:F1}, {y:F1}) [HP={health}/{maxHealth}]");
-        EmitSignal(SignalName.OnEntitySpawned, entityId, typeLabel, name, x, y, level, health, maxHealth, extra1, extra2, "");
+        EmitSignal(SignalName.OnEntitySpawned, entityId, typeLabel, name, x, y, level, health, maxHealth, extra1, extra2, extra3);
     }
 
     private void HandleDespawnEntity(NetDataReader r)
     {
         ulong entityId = r.GetULong();
+        GetNodeOrNull<EntityManager>("EntityManager")?.RemoveNetworkEntity(entityId);
         RemoveEntity(entityId);
     }
 
@@ -107,9 +128,20 @@ partial class GameNetwork
         float dirX = r.GetFloat();
         float dirY = r.GetFloat();
         bool moving = r.GetBool();
+        bool sprinting = r.GetBool();
 
         var em = GetNodeOrNull<EntityManager>("EntityManager");
-        em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving);
+        em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting);
+    }
+
+    private void HandlePlayerAction(NetDataReader r)
+    {
+        ulong entityId = r.GetULong();
+        byte actionType = r.GetByte();
+        var direction = new Vector2(r.GetFloat(), r.GetFloat());
+
+        if (entityId == LocalPlayerId) return;
+        GetNodeOrNull<EntityManager>("EntityManager")?.HandleRemoteAction(entityId, actionType, direction);
     }
 
     private void HandleEntityUpdate(NetDataReader r)
@@ -124,6 +156,7 @@ partial class GameNetwork
             float dirX = r.GetFloat();
             float dirY = r.GetFloat();
             bool moving = r.GetBool();
+            bool sprinting = r.GetBool();
             int health = r.GetInt();
             int maxHealth = r.GetInt();
             int mana = r.GetInt();
@@ -131,8 +164,14 @@ partial class GameNetwork
             int level = r.GetInt();
             string name = r.GetString();
             string factionId = r.GetString();
+            long xp = r.GetLong();
+            long xpMax = r.GetLong();
+            string guildName = r.GetString();
+            string guildTag = r.GetString();
+            int guildEmblem = r.GetInt();
 
-            em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving);
+            em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting);
+            em?.AtualizarOverheadRemoto(entityId, name, guildName, guildTag, guildEmblem, xp, xpMax);
             EmitSignal(SignalName.OnEntityHealthUpdate, entityId, health, maxHealth);
         }
     }

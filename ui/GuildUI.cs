@@ -24,6 +24,7 @@ public partial class GuildUI : Control
     private VBoxContainer _skillsList;
 
     private TextureRect _infoEmblem;
+    private TextureButton _toggleButton;
     private Label _infoNameLabel;
     private Label _infoTagLabel;
     private Label _infoLevelLabel;
@@ -173,28 +174,46 @@ public partial class GuildUI : Control
         AtualizarSkills();
 
         CallDeferred(MethodName.Centralizar);
-        GetTree().Root.SizeChanged += () => CallDeferred(MethodName.Centralizar);
+        GetTree().Root.SizeChanged += OnRootSizeChanged;
         CriarBotaoToggle();
     }
 
     private void CriarBotaoToggle()
     {
-        var btn = new TextureButton();
-        btn.Name = "GuildToggleButton";
-        btn.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Guild.png");
-        btn.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Guild Selecionado.png");
-        btn.CustomMinimumSize = new Vector2(36, 36);
-        btn.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
-        btn.Pressed += () => AbrirFechar(null);
-        AddChild(btn);
-        AtualizarPosicaoBotao(btn);
-        GetTree().Root.SizeChanged += () => AtualizarPosicaoBotao(btn);
+        _toggleButton = new TextureButton();
+        _toggleButton.Name = "GuildToggleButton";
+        _toggleButton.TextureNormal = GD.Load<Texture2D>("res://ui/Incone de Menu/Guild.png");
+        _toggleButton.TextureHover = GD.Load<Texture2D>("res://ui/Incone de Menu/Guild Selecionado.png");
+        _toggleButton.CustomMinimumSize = new Vector2(36, 36);
+        _toggleButton.StretchMode = TextureButton.StretchModeEnum.KeepCentered;
+        _toggleButton.Pressed += () => AbrirFechar(null);
+        AddChild(_toggleButton);
+        AtualizarPosicaoBotao(_toggleButton);
+        GetTree().Root.SizeChanged += OnSizeChanged;
+    }
+
+    private void OnSizeChanged()
+    {
+        if (_toggleButton != null)
+            AtualizarPosicaoBotao(_toggleButton);
     }
 
     private void AtualizarPosicaoBotao(Control btn)
     {
         Vector2 tela = GetViewportRect().Size;
         btn.Position = new Vector2(tela.X - 44, tela.Y - 132);
+    }
+
+    private void OnRootSizeChanged()
+    {
+        CallDeferred(MethodName.Centralizar);
+    }
+
+    public override void _ExitTree()
+    {
+        GetTree().Root.SizeChanged -= OnRootSizeChanged;
+        if (_toggleButton != null)
+            GetTree().Root.SizeChanged -= OnSizeChanged;
     }
 
     public override void _Input(InputEvent @event)

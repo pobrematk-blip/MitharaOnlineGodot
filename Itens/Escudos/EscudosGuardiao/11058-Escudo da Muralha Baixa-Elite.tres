@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11058
+Nome = "Escudo da Muralha Baixa"
+Descricao = "Sua borda reforçada aguenta impactos constantes em passagens estreitas."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 30
+Valor = 300
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 26
+DefesaFisicaMin = 22
+DefesaFisicaMax = 30
+Hp = 59
+HpMin = 47
+HpMax = 72
+Forca = 7
+ForcaMin = 6
+ForcaMax = 8
+Agilidade = 6
+AgilidadeMin = 5
+AgilidadeMax = 7

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Adaga Ancestral.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11032
+Nome = "Lâmina do Lendário Assassino"
+Descricao = "A companheira perfeita para a adaga principal de um assassino lendário."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Ladino"
+PoolDeAfixos = "ChanceCritica,VelocidadeAtaque,Precisao,Agilidade,RouboVida,Evasao"
+DanoFisico = 50
+DanoFisicoMin = 41
+DanoFisicoMax = 59
+Agilidade = 21
+AgilidadeMin = 17
+AgilidadeMax = 26
+Destreza = 25
+DestrezaMin = 21
+DestrezaMax = 30

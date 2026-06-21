@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 12202
+Nome = "Invisibilidade Profunda"
+Descricao = "O Assassino desaparece completamente nas sombras por mais tempo que o Passo Sombrio."
+Valor = 0
+CustoMana = 30
+ClasseRestrita = "Ladino"
+Cooldown = 60
+Duracao = 10
+TargetType = 0
+EffectType = 4
+Especializacao = "Assassino"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Utilidade / Furtividade"
+EfeitoPrincipal = "Fica invisível e prepara o próximo ataque."
+DanoEscala = ""
+BuffDebuff = "Invisibilidade; primeiro ataque após sair causa dano adicional."
+DuracaoTexto = "10s"
+Progressao = "Lv1 10s → Lv10 15s; bônus de abertura 10% → 25%"
+Observacoes = "Quebra ao atacar. Não deve permitir capturar objetivos em PvP enquanto invisível."

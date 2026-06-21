@@ -28,10 +28,20 @@ partial class GameServer
         byte channelType = reader.GetByte();
         string targetName = reader.GetString();
         string message = reader.GetString();
-        string language = reader.GetString();
+        _ = reader.GetString(); // O servidor não confia no idioma informado pelo cliente.
 
         if (string.IsNullOrWhiteSpace(message)) return;
+        message = message.Trim().Replace("[", "［").Replace("]", "］");
         if (message.Length > 500) message = message[..500];
+        targetName = (targetName ?? "").Trim();
+        if (targetName.Length > 32) targetName = targetName[..32];
+
+        if (_gameTime - session.LastChatTime < 0.25)
+        {
+            SendSystemMessage(peer, "Aguarde um instante antes de enviar outra mensagem.");
+            return;
+        }
+        session.LastChatTime = _gameTime;
 
         if (message.StartsWith('/'))
         {
@@ -40,23 +50,28 @@ partial class GameServer
         }
 
         var chatChannel = (ChatChannel)channelType;
+        if (!Enum.IsDefined(typeof(ChatChannel), chatChannel) || chatChannel == ChatChannel.System)
+        {
+            SendSystemMessage(peer, "Canal de chat inválido.");
+            return;
+        }
 
         switch (chatChannel)
         {
             case ChatChannel.Global:
-                SendGlobalChat(channel, sender.Name, message, language);
+                SendGlobalChat(sender.Name, message);
                 break;
 
             case ChatChannel.Whisper:
-                SendWhisperChat(sender.Name, targetName, message, language);
+                SendWhisperChat(peer, sender.Name, targetName, message);
                 break;
 
             case ChatChannel.Group:
-                SendGroupChat(sender, message, language);
+                SendGroupChat(peer, sender, message);
                 break;
 
             case ChatChannel.Guild:
-                SendGuildChat(sender, message, language);
+                SendGuildChat(peer, sender, message);
                 break;
         }
     }
@@ -220,17 +235,11 @@ partial class GameServer
                 int qty = parts.Length >= 3 && int.TryParse(parts[2], out int q) ? Math.Max(1, q) : 1;
                 if (sender is not PlayerEntity playerEntity)
                 { SendSystemMessage(peer, "Apenas players podem receber itens."); return; }
-                int slot = playerEntity.FindEmptyInventorySlot();
-                if (slot < 0)
-                { SendSystemMessage(peer, "Inventário cheio."); return; }
-                playerEntity.Items.Add(new ItemInstance { ItemId = itemId, Quantity = qty, Slot = slot });
-                SendSystemMessage(peer, $"Item {itemId} x{qty} adicionado ao inventário (slot {slot}).");
-                var invWriter = PacketSerializer.WritePacket(PacketId.S2C_InventoryData);
-                invWriter.Put((byte)1);
-                invWriter.Put(itemId);
-                invWriter.Put(qty);
-                invWriter.Put(slot);
-                peer.Send(invWriter, DeliveryMethod.ReliableOrdered);
+                if (session.SelectedCharacter == null
+                    || !TryAddItemToInventory(playerEntity, session.SelectedCharacter.Id, itemId, qty))
+                { SendSystemMessage(peer, "Inventario cheio ou item invalido."); return; }
+                SendSystemMessage(peer, $"Item {itemId} x{qty} adicionado ao inventario.");
+                SendInventoryData(peer, playerEntity);
                 break;
 
             case "/kick":
@@ -311,37 +320,44 @@ partial class GameServer
         }
     }
 
-    private void SendGlobalChat(Channel channel, string senderName, string message, string language)
+    private void SendGlobalChat(string senderName, string message)
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Chat);
         writer.Put((byte)ChatChannel.Global);
         writer.Put(senderName);
         writer.Put(message);
-        writer.Put(language);
+        writer.Put("auto");
 
-        foreach (var kv in channel.GetAllEntities())
+        foreach (var channel in _world.GetAllChannels())
         {
-            if (kv.Value.Type != EntityType.Player) continue;
-            var peer = channel.GetPlayerPeer(kv.Key);
-            peer?.Send(writer, DeliveryMethod.ReliableOrdered);
+            foreach (var kv in channel.GetAllEntities())
+            {
+                if (kv.Value.Type != EntityType.Player) continue;
+                var playerPeer = channel.GetPlayerPeer(kv.Key);
+                playerPeer?.Send(writer, DeliveryMethod.ReliableOrdered);
+            }
         }
     }
 
-    private void SendWhisperChat(string senderName, string targetName, string message, string language)
+    private void SendWhisperChat(NetPeer requestingPeer, string senderName, string targetName, string message)
     {
-        if (string.IsNullOrWhiteSpace(targetName)) return;
+        if (string.IsNullOrWhiteSpace(targetName))
+        {
+            SendSystemMessage(requestingPeer, "Informe o nome do destinatário do sussurro.");
+            return;
+        }
 
         var writerToTarget = PacketSerializer.WritePacket(PacketId.S2C_Chat);
         writerToTarget.Put((byte)ChatChannel.Whisper);
         writerToTarget.Put(senderName);
         writerToTarget.Put(message);
-        writerToTarget.Put(language);
+        writerToTarget.Put("auto");
 
         var writerToSender = PacketSerializer.WritePacket(PacketId.S2C_Chat);
         writerToSender.Put((byte)ChatChannel.Whisper);
         writerToSender.Put($"-> {targetName}");
         writerToSender.Put(message);
-        writerToSender.Put(language);
+        writerToSender.Put("auto");
 
         NetPeer? targetPeer = null;
         NetPeer? senderPeer = null;
@@ -359,19 +375,30 @@ partial class GameServer
             }
         }
 
-        targetPeer?.Send(writerToTarget, DeliveryMethod.ReliableOrdered);
-        senderPeer?.Send(writerToSender, DeliveryMethod.ReliableOrdered);
+        if (targetPeer == null)
+        {
+            SendSystemMessage(requestingPeer, $"Jogador '{targetName}' não encontrado ou offline.");
+            return;
+        }
+
+        targetPeer.Send(writerToTarget, DeliveryMethod.ReliableOrdered);
+        if (senderPeer != null && senderPeer != targetPeer)
+            senderPeer.Send(writerToSender, DeliveryMethod.ReliableOrdered);
     }
 
-    private void SendGroupChat(Entity sender, string message, string language)
+    private void SendGroupChat(NetPeer requestingPeer, Entity sender, string message)
     {
-        if (sender is not PlayerEntity player || player.PartyId < 0) return;
+        if (sender is not PlayerEntity player || player.PartyId < 0)
+        {
+            SendSystemMessage(requestingPeer, "Você não está em um grupo.");
+            return;
+        }
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Chat);
         writer.Put((byte)ChatChannel.Group);
         writer.Put(sender.Name);
         writer.Put(message);
-        writer.Put(language);
+        writer.Put("auto");
 
         var members = _world.Parties.GetMemberEntityIds(player.PartyId);
         foreach (var eid in members)
@@ -388,15 +415,19 @@ partial class GameServer
         }
     }
 
-    private void SendGuildChat(Entity sender, string message, string language)
+    private void SendGuildChat(NetPeer requestingPeer, Entity sender, string message)
     {
-        if (sender is not PlayerEntity player || player.GuildId < 0) return;
+        if (sender is not PlayerEntity player || player.GuildId < 0)
+        {
+            SendSystemMessage(requestingPeer, "Você não pertence a uma guilda.");
+            return;
+        }
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Chat);
         writer.Put((byte)ChatChannel.Guild);
         writer.Put(sender.Name);
         writer.Put(message);
-        writer.Put(language);
+        writer.Put("auto");
 
         var members = _world.Guilds.GetMemberEntityIds(player.GuildId);
         foreach (var eid in members)

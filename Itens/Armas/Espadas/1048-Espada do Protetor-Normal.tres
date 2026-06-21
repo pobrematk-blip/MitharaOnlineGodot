@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Espada de Pirata 4.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1048
+Nome = "Espada do Protetor"
+Descricao = "Símbolo de guerreiros que defendem aliados antes de buscar glória pessoal."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "ChanceCritica,Tenacidade,PenetracaoArmadura,Precisao,Forca,RouboVida"
+DanoFisico = 35
+DanoFisicoMin = 31
+DanoFisicoMax = 40
+Forca = 13
+ForcaMin = 11
+ForcaMax = 15

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1059
+Nome = "Escudo do Protetor"
+Descricao = "Projetado para proteger aliados, não apenas o braço que o carrega."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+NivelRequerido = 40
+Valor = 400
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 29
+DefesaFisicaMin = 25
+DefesaFisicaMax = 33
+Hp = 64
+HpMin = 51
+HpMax = 78
+Forca = 8
+ForcaMin = 7
+ForcaMax = 9
+Agilidade = 6
+AgilidadeMin = 5
+AgilidadeMax = 8

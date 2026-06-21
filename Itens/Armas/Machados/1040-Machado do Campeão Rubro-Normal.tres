@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machados Perdisos 1.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1040
+Nome = "Machado do Campeão Rubro"
+Descricao = "Carregado por veteranos que venceram mais pela força do que pela sorte."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 70
+Valor = 700
+ClassesPermitidas = "Berseker"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,PenetracaoArmadura,RouboVida,Tenacidade,Precisao"
+DanoFisico = 80
+DanoFisicoMin = 71
+DanoFisicoMax = 89
+Forca = 25
+ForcaMin = 21
+ForcaMax = 29

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300360
+Nome = "Elmo de Aço Estelar"
+Descricao = "Forjada nas oficinas de Aço Estelar, esta peça suporta impactos brutais e mantém a linha de frente firme contra ataques físicos."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 1
+CategoriaPeso = 2
+NivelRequerido = 80
+Valor = 800
+ClassesPermitidas = "Berseker,Guardiao"
+PoolDeAfixos = "Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura"
+Hp = 30
+HpMin = 26
+HpMax = 35
+Mana = 5
+ManaMin = 5
+ManaMax = 6
+DefesaFisica = 22
+DefesaFisicaMin = 19
+DefesaFisicaMax = 26
+DefesaMagica = 7
+DefesaMagicaMin = 6
+DefesaMagicaMax = 8
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

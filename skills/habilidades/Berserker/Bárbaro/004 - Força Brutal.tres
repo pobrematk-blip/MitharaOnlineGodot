@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13104
+Nome = "Força Brutal"
+Descricao = "O Bárbaro abandona qualquer postura defensiva e concentra toda sua força nos ataques, trocando segurança por poder destrutivo."
+Valor = 0
+CustoMana = 20
+ClasseRestrita = "Berserker"
+Cooldown = 25
+Duracao = 12
+TargetType = 0
+EffectType = 3
+Especializacao = "Bárbaro"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Buff / Sacrifício Defensivo"
+EfeitoPrincipal = "Aumenta o ataque, mas reduz a defesa física e mágica durante a duração."
+DanoEscala = ""
+BuffDebuff = "+25% → +45% Ataque; -20% Defesa"
+DuracaoTexto = "12s"
+Progressao = "Skill possui 10 níveis. Bônus de ataque escala de +25% até +45%."
+Observacoes = "Skill de alto risco. Ideal para momentos em que o inimigo está controlado ou próximo de morrer."

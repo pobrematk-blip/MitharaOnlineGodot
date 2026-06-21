@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 13101
+Nome = "Fúria"
+Descricao = "O Bárbaro entra em um estado de fúria selvagem, ignorando a própria dor para destruir seus inimigos com golpes cada vez mais violentos."
+Valor = 0
+CustoMana = 20
+ClasseRestrita = "Berserker"
+Cooldown = 20
+Duracao = 10
+TargetType = 0
+EffectType = 3
+Especializacao = "Bárbaro"
+NivelRequerido = 1
+Ordem = 1
+Escopo = "Especialização"
+Tipo = "Buff Ofensivo / Risco"
+EfeitoPrincipal = "Aumenta o dano causado, mas consome HP por segundo enquanto estiver ativa."
+DanoEscala = ""
+BuffDebuff = "+20% → +40% Dano; perde 1% HP por segundo"
+DuracaoTexto = "10s"
+Progressao = "Skill possui 10 níveis. Bônus de dano escala de +20% até +40%."
+Observacoes = "Essencial para a identidade do Bárbaro. Deve ser usada com cuidado, pois pode deixar o jogador vulnerável."

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300070
+Nome = "Faixa da Aurora Partida"
+Descricao = "Tecida com fios arcanos de Aurora Partida, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 3
+CategoriaPeso = 0
+NivelRequerido = 50
+Valor = 500
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
+Hp = 10
+HpMin = 8
+HpMax = 12
+Mana = 13
+ManaMin = 11
+ManaMax = 15
+DefesaFisica = 4
+DefesaFisicaMin = 4
+DefesaFisicaMax = 5
+DefesaMagica = 9
+DefesaMagicaMin = 8
+DefesaMagicaMax = 11
+Evasao = 0
+EvasaoMin = 0
+EvasaoMax = 0

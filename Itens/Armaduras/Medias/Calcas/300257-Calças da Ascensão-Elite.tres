@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300257
+Nome = "Calças da Ascensão"
+Descricao = "Curtida e ajustada por batedores de Ascensão, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 5
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 63
+HpMin = 54
+HpMax = 73
+Mana = 34
+ManaMin = 29
+ManaMax = 40
+DefesaFisica = 37
+DefesaFisicaMin = 32
+DefesaFisicaMax = 43
+DefesaMagica = 37
+DefesaMagicaMin = 32
+DefesaMagicaMax = 43
+Evasao = 1.725
+EvasaoMin = 1.46
+EvasaoMax = 1.99

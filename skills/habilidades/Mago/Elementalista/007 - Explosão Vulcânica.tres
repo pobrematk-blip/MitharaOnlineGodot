@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11207
+Nome = "Explosão Vulcânica"
+Descricao = "Explosão de fogo."
+Valor = 180
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Elementalista"
+NivelRequerido = 40
+Ordem = 7
+Escopo = "Especialização"
+Tipo = "Área"
+EfeitoPrincipal = "Área massiva"
+DanoEscala = "180%-320%"
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = ""
+Observacoes = ""

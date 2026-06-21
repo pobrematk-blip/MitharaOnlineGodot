@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 14104
+Nome = "Guardião dos Fracos"
+Descricao = "O Protetor cria um juramento de proteção sobre aliados próximos, assumindo parte dos danos que eles receberiam."
+Valor = 0
+CustoMana = 30
+ClasseRestrita = "Guardião"
+Cooldown = 30
+Duracao = 10
+TargetType = 1
+EffectType = 7
+Especializacao = "Protetor"
+NivelRequerido = 15
+Ordem = 4
+Escopo = "Especialização"
+Tipo = "Suporte Defensivo"
+EfeitoPrincipal = "Redireciona parte do dano recebido por aliados próximos para o Guardião."
+DanoEscala = ""
+BuffDebuff = "Redireciona 10% → 25% do dano"
+DuracaoTexto = "10s"
+Progressao = "Lv1 = 10%; Lv10 = 25%."
+Observacoes = "Muito forte em grupo; não deve acumular com outro Guardião."

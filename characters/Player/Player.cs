@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public partial class Player : CharacterBody2D
 {
+    private const float NpcInteractionRange = 180f;
     [Signal] public delegate void StatusAtualizadoEventHandler();
 
     [Export] public float MaxSpeed = 185.0f;
@@ -252,7 +253,7 @@ public partial class Player : CharacterBody2D
     {
         if (classe.ArvoreTalentos == null)
         {
-            GD.Print("[PLAYER] Classe nao possui arvore de talentos.");
+            GD.Print("[PLAYER] Classe n?o possui ?rvore de talentos.");
             return;
         }
 
@@ -266,8 +267,6 @@ public partial class Player : CharacterBody2D
         }
 
         talentComp.TalentTree = classe.ArvoreTalentos;
-        if (talentComp.PontosDisponiveis <= 0)
-            talentComp.AdicionarPontos(3);
 
         GD.Print($"[PLAYER] Arvore de talentos configurada: {classe.ArvoreTalentos.ResourceName}");
     }
@@ -479,7 +478,7 @@ public partial class Player : CharacterBody2D
             {
                 if (_moveSendTimer >= 0.1f || pos.DistanceSquaredTo(_lastSentPosition) > 400f)
                 {
-                    _network.SendPlayerMove(pos, dir, true);
+                    _network.SendPlayerMove(pos, dir, true, IsSprinting);
                     _lastSentPosition = pos;
                     _moveSendTimer = 0f;
                 }
@@ -675,6 +674,10 @@ public partial class Player : CharacterBody2D
             GD.Print($"[PLAYER] Animação '{animacaoDeAtaque}' não encontrada. Atacando sem animação.");
         }
 
+        // A animação também é uma ação online: servidor valida e replica aos demais jogadores.
+        if (_network != null && _network.IsConnected)
+            _network.SendPlayerAction(1, DirectionUtil.DirectionToVector(CurrentDirection));
+
         // Executa a lógica de ataque independente da animação
         if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase))
         {
@@ -739,6 +742,14 @@ public partial class Player : CharacterBody2D
         else
         {
             GD.PrintErr("[PLAYER] Erro: O projétil instanciado não é do tipo Projetil.");
+        }
+
+        // Envia pacote para replicar o projétil para outros jogadores
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet.IsConnected)
+        {
+            byte projType = string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ? (byte)1 : (byte)0;
+            gameNet.SendProjectileFire(novoProjetil.GlobalPosition.X, novoProjetil.GlobalPosition.Y, direcaoDoVetor.X, direcaoDoVetor.Y, projType);
         }
     }
 
@@ -939,7 +950,7 @@ public partial class Player : CharacterBody2D
         bool online = gameNet != null && gameNet.IsConnected;
 
         Node2D? nearest = null;
-        float nearestDist = 100f;
+        float nearestDist = NpcInteractionRange;
 
         var npcNodes = GetTree()?.GetNodesInGroup("NPC");
         if (npcNodes == null) return false;
@@ -948,8 +959,11 @@ public partial class Player : CharacterBody2D
         {
             if (node is Node2D n2d)
             {
+                if (online && !n2d.HasMeta("network_id"))
+                    continue;
+
                 float d = GlobalPosition.DistanceTo(n2d.GlobalPosition);
-                if (d < 100f && (nearest == null || d < nearestDist))
+                if (d <= NpcInteractionRange && (nearest == null || d < nearestDist))
                 {
                     nearestDist = d;
                     nearest = n2d;
@@ -962,6 +976,7 @@ public partial class Player : CharacterBody2D
         if (online && nearest.HasMeta("network_id"))
         {
             ulong npcId = (ulong)nearest.GetMeta("network_id").AsInt64();
+            GD.Print($"[NPC] Solicitando interação online: id={npcId}, distância={nearestDist:F1}");
             gameNet.SendNpcInteract(npcId);
             return true;
         }
@@ -981,7 +996,7 @@ public partial class Player : CharacterBody2D
             if (node is Node2D n2d)
             {
                 float d = GlobalPosition.DistanceTo(n2d.GlobalPosition);
-                bool near = d < 100f;
+                bool near = d <= NpcInteractionRange;
 
                 var prompt = n2d.FindChild("InteractPrompt", true, false) as Label;
                 if (prompt != null)
@@ -997,7 +1012,8 @@ public partial class Player : CharacterBody2D
 
         var lootNodes = GetTree()?.GetNodesInGroup("Loot");
         Node2D? nearest = null;
-        float nearestDist = 55f;
+        const float pickupRange = 80f;
+        float nearestDist = pickupRange;
 
         if (lootNodes != null)
         {
@@ -1012,7 +1028,7 @@ public partial class Player : CharacterBody2D
 
                     if (!isServerLoot && !isSceneItem) continue;
 
-                    bool near = d < 55f;
+                    bool near = d <= pickupRange;
 
                     if (isServerLoot)
                     {

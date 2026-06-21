@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Martelo quebrada.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 1083
+Nome = "Martelo de Prata Sagrada"
+Descricao = "Prata sagrada cobre sua cabeça, refletindo luz mesmo em lugares sombrios."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 60
+Valor = 600
+ClassesPermitidas = "Prist"
+PoolDeAfixos = "ChanceCritica,Precisao,Tenacidade,RegeneracaoVida,RegeneracaoMana,RouboVida,RouboMana"
+DanoFisico = 52
+DanoFisicoMin = 46
+DanoFisicoMax = 59
+Forca = 16
+ForcaMin = 14
+ForcaMax = 18
+Inteligencia = 16
+InteligenciaMin = 14
+InteligenciaMax = 18

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11202
+Nome = "Lança de Gelo"
+Descricao = "Lança de gelo."
+Valor = 100
+CustoMana = 0
+ClasseRestrita = "Mago"
+Cooldown = 0
+Duracao = 5
+TargetType = 2
+EffectType = 12
+Especializacao = "Elementalista"
+NivelRequerido = 5
+Ordem = 2
+Escopo = "Especialização"
+Tipo = "Controle"
+EfeitoPrincipal = "Lentidão"
+DanoEscala = "100%-180%"
+BuffDebuff = "Slow 30%"
+DuracaoTexto = "5s"
+Progressao = ""
+Observacoes = ""

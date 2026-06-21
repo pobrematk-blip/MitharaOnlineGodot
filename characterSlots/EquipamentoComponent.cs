@@ -48,6 +48,8 @@ public partial class EquipamentoComponent : Node
     private float _bonusReducaoCooldown;
     private float _bonusBonusExperiencia;
     private int _bonusStamina;
+    private int _bonusReflexaoDano;
+    private float _bonusResistenciaControle;
 
     public int PontosDisponiveis => _pontosDisponiveis;
     public int Forca => _forca + _bonusForca;
@@ -76,28 +78,29 @@ public partial class EquipamentoComponent : Node
     public float ChanceCritica => MathF.Min(75f, (Destreza * 0.25f) + _bonusChanceCritica);
     public float Evasao => MathF.Min(40f, (Destreza * 0.3f) + _bonusEvasao);
     
-    // Dano Crítico - Base 1.5x, aumenta APENAS com itens
+    // Dano Crítico - Base 1.5x, bônus máximo +100% (cap 1.0f)
     private float _bonusDanoCritico = 0f;
-    public float DanoCritico => 1.5f + _bonusDanoCritico;
+    public float DanoCritico => 1.5f + MathF.Min(1.0f, _bonusDanoCritico);
     
     // Velocidades (por Agilidade + bônus de itens)
-    public float VelocidadeMovimento => 1.0f + (Agilidade * 0.05f) + _bonusVelocidadeMovimento;
-    public float VelocidadeAtaque => MathF.Min(100f, 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque);
+    public float VelocidadeMovimento => MathF.Min(1.3f, 1.0f + (Agilidade * 0.05f) + _bonusVelocidadeMovimento);
+    public float VelocidadeAtaque => MathF.Min(2.0f, 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque);
     
     // Defesas
     public int DefesaFisica => (Agilidade / 2) + _bonusDefesaFisica;
     public int DefesaMagica => (Inteligencia / 3) + _bonusDefesaMagica;
     
-    // Precisão (por Agilidade + Destreza) e Tenacidade
-    public float Precisao => (Agilidade / 2f) + Destreza + _bonusPrecisao;
-    public float Tenacidade => (Forca / 5f) + _bonusTenacidade;
+    // Limites globais definidos no catálogo de armaduras.
+    public float Precisao => MathF.Min(75f, (Agilidade / 2f) + Destreza + _bonusPrecisao);
+    public float Tenacidade => MathF.Min(75f, (Forca / 5f) + _bonusTenacidade);
     
     // PvP
     public int DanoPvp => (Forca + Inteligencia) / 2 + _bonusDanoPvp;
     public int DefesaPvp => (Agilidade + Destreza) / 2 + _bonusDefesaPvp;
     
-    // Penetração e Absorção
-    public int PenetracaoArmadura => Forca / 10 + _bonusPenetracaoArmadura;
+    // Penetração cap 60, Reflexão cap 25
+    public int PenetracaoArmadura => Math.Min(60, Forca / 10 + _bonusPenetracaoArmadura);
+    public int ReflexaoDano => Math.Min(25, _bonusReflexaoDano);
     
     // Regeneração
     public float RegeneracaoVida => Forca / 20f + _bonusRegeneracaoVida;
@@ -111,6 +114,7 @@ public partial class EquipamentoComponent : Node
     public float ReducaoCooldown => MathF.Min(40f, Agilidade / 100f + _bonusReducaoCooldown);
     public float BonusExperiencia => Inteligencia / 100f + _bonusBonusExperiencia;
     public int Stamina => 100 + (Agilidade * 2) + _bonusStamina;
+    public float ResistenciaControle => MathF.Min(50f, _bonusResistenciaControle);
 
     public override void _Ready()
     {
@@ -205,6 +209,8 @@ public partial class EquipamentoComponent : Node
         _bonusRouboMana = 0f;
         _bonusReducaoCooldown = 0f;
         _bonusBonusExperiencia = 0f;
+        _bonusReflexaoDano = 0;
+        _bonusResistenciaControle = 0f;
 
         foreach (var kv in ItensEquipados)
         {
@@ -257,6 +263,8 @@ public partial class EquipamentoComponent : Node
             _bonusRouboMana += (float)(item.RouboMana * refineMult);
             _bonusReducaoCooldown += (float)(item.ReducaoCooldown * refineMult);
             _bonusBonusExperiencia += (float)(item.BonusExperiencia * refineMult);
+            _bonusReflexaoDano += (int)(item.ReflexaoDano * refineMult);
+            _bonusResistenciaControle += (float)(item.ResistenciaControle * refineMult);
         }
     }
 

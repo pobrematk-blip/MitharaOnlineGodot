@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Icon Bandana de Arqueiro.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 300253
+Nome = "Capuz da Ascensão"
+Descricao = "Curtida e ajustada por batedores de Ascensão, esta peça favorece reflexos rápidos, equilíbrio e sobrevivência em combate móvel."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 1
+CategoriaPeso = 1
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Arqueiro,Ladino"
+PoolDeAfixos = "Destreza,Agilidade,Precisao,ChanceCritica,DanoCriticoBonus,VelocidadeAtaque,VelocidadeMovimento,Evasao"
+Hp = 33
+HpMin = 28
+HpMax = 38
+Mana = 18
+ManaMin = 15
+ManaMax = 21
+DefesaFisica = 19
+DefesaFisicaMin = 17
+DefesaFisicaMax = 22
+DefesaMagica = 19
+DefesaMagicaMin = 17
+DefesaMagicaMax = 22
+Evasao = 0.9
+EvasaoMin = 0.76
+EvasaoMax = 1.04

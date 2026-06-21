@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Escudo de Goglin.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 11065
+Nome = "Escudo do Guardião Lendário"
+Descricao = "Um escudo conhecido por transformar seu portador em uma muralha viva."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 8
+TipoItem = 1
+NivelRequerido = 100
+Valor = 1000
+ClassesPermitidas = "Guardiao"
+PoolDeAfixos = "HP,DefesaFisica,Tenacidade,RegeneracaoVida,Forca,Agilidade"
+DefesaFisica = 82
+DefesaFisicaMin = 71
+DefesaFisicaMax = 94
+Hp = 177
+HpMin = 142
+HpMax = 212
+Forca = 22
+ForcaMin = 18
+ForcaMax = 26
+Agilidade = 17
+AgilidadeMin = 14
+AgilidadeMax = 21

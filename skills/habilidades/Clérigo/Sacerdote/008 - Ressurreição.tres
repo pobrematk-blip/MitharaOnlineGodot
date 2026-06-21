@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 15108
+Nome = "Ressurreição"
+Descricao = "O Sacerdote chama a alma de um aliado caído de volta ao corpo, permitindo que ele retorne à batalha sob a graça divina."
+Valor = 20
+CustoMana = 100
+ClasseRestrita = "Clérigo"
+Cooldown = 180
+Duracao = 0
+TargetType = 1
+EffectType = 0
+Especializacao = "Sacerdote"
+NivelRequerido = 50
+Ordem = 8
+Escopo = "Especialização"
+Tipo = "Suporte"
+EfeitoPrincipal = "Revive um aliado derrotado."
+DanoEscala = "Revive com 20% → 60% HP e Mana"
+BuffDebuff = "Suporte"
+DuracaoTexto = "Conjuração"
+Progressao = "Lv1 = 20%; Lv10 = 60%."
+Observacoes = "Não deve funcionar em certos modos PvP, se o design bloquear."
