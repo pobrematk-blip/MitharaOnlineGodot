@@ -27,17 +27,17 @@ public partial class RefineUI : Control
 
     public override void _Ready()
     {
-        _dropZone = GetNode<Panel>("%DropZone");
-        _itemIcone = GetNode<TextureRect>("%ItemIcone");
-        _itemNome = GetNode<Label>("%ItemNome");
-        _nivelAtual = GetNode<Label>("%NivelAtual");
-        _chanceLabel = GetNode<Label>("%ChanceLabel");
-        _custoGold = GetNode<Label>("%CustoGold");
-        _custoPoeira = GetNode<Label>("%CustoPoeira");
-        _refinarBtn = GetNode<Button>("%RefinarBtn");
-        _fecharBtn = GetNode<Button>("%FecharBtn");
-        _feedbackLabel = GetNode<Label>("%FeedbackLabel");
-        _tituloLabel = GetNode<Label>("%TituloLabel");
+        _dropZone = GetNode<Panel>("Panel/DropZone");
+        _itemIcone = GetNode<TextureRect>("Panel/DropZone/ItemIcone");
+        _itemNome = GetNode<Label>("Panel/DropZone/ItemNome");
+        _nivelAtual = GetNode<Label>("Panel/DropZone/NivelAtual");
+        _chanceLabel = GetNode<Label>("Panel/InfoContainer/ChanceRow/ChanceLabel");
+        _custoGold = GetNode<Label>("Panel/InfoContainer/GoldRow/CustoGold");
+        _custoPoeira = GetNode<Label>("Panel/InfoContainer/PoeiraRow/CustoPoeira");
+        _refinarBtn = GetNode<Button>("Panel/ButtonRow/RefinarBtn");
+        _fecharBtn = GetNode<Button>("Panel/ButtonRow/FecharBtn");
+        _feedbackLabel = GetNode<Label>("Panel/FeedbackLabel");
+        _tituloLabel = GetNode<Label>("Panel/TituloLabel");
 
         _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         _cash = GetNodeOrNull<CashManager>("/root/CashManager");
@@ -53,25 +53,18 @@ public partial class RefineUI : Control
         AtualizarUI();
     }
 
-    public override Variant _GetDragData(Vector2 atPosition)
-    {
-        return default;
-    }
-
-    public override bool _CanDropData(Vector2 atPosition, Variant data)
+    public bool CanDropOnSlot(Variant data)
     {
         if (_processando) return false;
         if (data.Obj is SlotUI slot && slot.SlotInterno?.Item != null)
         {
             var tipo = slot.SlotInterno.Item.Tipo;
-            if (tipo == TipoEquipamento.Nenhum || tipo == TipoEquipamento.Consumivel || tipo == TipoEquipamento.Moeda || tipo == TipoEquipamento.Feitico)
-                return false;
-            return _dropZone.GetGlobalRect().HasPoint(GetGlobalMousePosition());
+            return tipo != TipoEquipamento.Nenhum && tipo != TipoEquipamento.Consumivel && tipo != TipoEquipamento.Moeda && tipo != TipoEquipamento.Feitico;
         }
         return false;
     }
 
-    public override void _DropData(Vector2 atPosition, Variant data)
+    public void DropOnSlot(Variant data)
     {
         if (data.Obj is SlotUI slot && slot.SlotInterno?.Item != null)
         {

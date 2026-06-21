@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://refineuimain"]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://ui/RefineUI.cs" id="1_wmhio"]
+[ext_resource type="Script" path="res://ui/RefineDropZone.cs" id="2_dropzone"]
 
 [node name="RefineUI" type="Control"]
 anchors_preset = 0
@@ -35,6 +36,7 @@ offset_top = 44.0
 offset_right = 380.0
 offset_bottom = 124.0
 mouse_filter = 0
+script = ExtResource("2_dropzone")
 theme_override_styles/panel = SubResource("drop_zone")
 
 [node name="ItemIcone" type="TextureRect" parent="Panel/DropZone"]
