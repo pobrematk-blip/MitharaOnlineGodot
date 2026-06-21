@@ -22,6 +22,8 @@ public partial class Inimigo : CharacterBody2D
 
     private AnimatedSprite2D _sprite;
     private Vector2 _facingDirection = Vector2.Down;
+    private Vector2 _networkDirection = Vector2.Down;
+    private bool _networkMoving;
     private int _vidaAtual;
     private bool _vidaInicializada;
     private bool _avisouSemNetworkId;
@@ -79,29 +81,44 @@ public partial class Inimigo : CharacterBody2D
             return;
         }
 
+        Vector2 previousPosition = GlobalPosition;
         Vector2 toTarget = NetworkTargetPos - GlobalPosition;
         float distance = toTarget.Length();
 
         if (distance > 96f)
         {
             GlobalPosition = NetworkTargetPos;
-            return;
         }
-
-        if (distance <= 0.5f)
+        else if (distance <= 0.5f)
         {
             GlobalPosition = NetworkTargetPos;
-            return;
+        }
+        else
+        {
+            // Suavizacao independente do FPS, processada no mesmo tick da animacao.
+            float t = 1.0f - Mathf.Exp(-(float)delta * 12f);
+            GlobalPosition = GlobalPosition.Lerp(NetworkTargetPos, t);
         }
 
-        float t = Mathf.Clamp((float)delta * 12f, 0f, 1f);
-        GlobalPosition = GlobalPosition.Lerp(NetworkTargetPos, t);
+        float visualMoveSq = GlobalPosition.DistanceSquaredTo(previousPosition);
+        bool aindaTemDeslocamento = GlobalPosition.DistanceSquaredTo(NetworkTargetPos) > 0.25f;
+        bool visualmenteMovendo = _networkMoving && (visualMoveSq > 0.0001f || aindaTemDeslocamento);
+        AtualizarAnimacaoDeRede(_networkDirection, visualmenteMovendo);
     }
 
     public void DefinirPosicaoInicial(Vector2 posicao)
     {
         GlobalPosition = posicao;
         NetworkTargetPos = posicao;
+    }
+
+    public void SetNetworkState(Vector2 posicao, Vector2 direcao, bool moving)
+    {
+        NetworkTargetPos = posicao;
+        _networkMoving = moving;
+
+        if (direcao.LengthSquared() > 0.001f)
+            _networkDirection = direcao.Normalized();
     }
 
     public void SetVidaAtual(int health, int maxHealth)
@@ -122,18 +139,39 @@ public partial class Inimigo : CharacterBody2D
             return;
 
         if (direcao.LengthSquared() > 0.001f)
-            _facingDirection = direcao.Normalized();
+            AtualizarDirecaoEstavel(direcao);
 
-        string state = moving && direcao.LengthSquared() > 0.01f ? "walk" : "idle";
+        string state = moving ? "walk" : "idle";
         TocarAnimacao($"{state}_{CardinalDirection(_facingDirection)}");
     }
 
     public void TriggerAttackAnimation(Vector2 direction)
     {
         if (direction.LengthSquared() > 0.001f)
-            _facingDirection = direction.Normalized();
+            AtualizarDirecaoEstavel(direction, true);
 
         TocarAnimacao($"attack_{CardinalDirection(_facingDirection)}", true);
+    }
+
+    private void AtualizarDirecaoEstavel(Vector2 direction, bool force = false)
+    {
+        float absX = Mathf.Abs(direction.X);
+        float absY = Mathf.Abs(direction.Y);
+        bool facingHorizontal = Mathf.Abs(_facingDirection.X) > 0.5f;
+        bool facingVertical = Mathf.Abs(_facingDirection.Y) > 0.5f;
+
+        bool useHorizontal;
+        if (force || (!facingHorizontal && !facingVertical))
+            useHorizontal = absX >= absY;
+        else if (facingHorizontal)
+            useHorizontal = absY <= absX * 1.25f;
+        else
+            useHorizontal = absX > absY * 1.25f;
+
+        if (useHorizontal && absX > 0.001f)
+            _facingDirection = direction.X >= 0f ? Vector2.Right : Vector2.Left;
+        else if (absY > 0.001f)
+            _facingDirection = direction.Y >= 0f ? Vector2.Down : Vector2.Up;
     }
 
     public void LevarDano(int quantidade)

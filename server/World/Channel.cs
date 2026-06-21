@@ -132,18 +132,30 @@ public class Channel
         if (lenSq < 0.0025f)
             return;
 
-        float len = MathF.Sqrt(lenSq);
-        float ndx = dx / len;
-        float ndy = dy / len;
+        float absX = MathF.Abs(dx);
+        float absY = MathF.Abs(dy);
+        bool wasHorizontal = MathF.Abs(mob.DirX) > 0.5f;
+        bool wasVertical = MathF.Abs(mob.DirY) > 0.5f;
 
-        // Evita microtrocas de direção, mas permite inversões reais de movimento.
-        float currentLenSq = mob.DirX * mob.DirX + mob.DirY * mob.DirY;
-        float dot = ndx * mob.DirX + ndy * mob.DirY;
+        // Histerese de 25%: preserva o eixo atual perto das diagonais.
+        // A direcao enviada pela rede fica cardinal e nao oscila entre dois sprites.
+        bool useHorizontal;
+        if (wasHorizontal)
+            useHorizontal = absY <= absX * 1.25f;
+        else if (wasVertical)
+            useHorizontal = absX > absY * 1.25f;
+        else
+            useHorizontal = absX >= absY;
 
-        if (currentLenSq < 0.0025f || dot < 0.92f)
+        if (useHorizontal && absX > 0.001f)
         {
-            mob.DirX = ndx;
-            mob.DirY = ndy;
+            mob.DirX = MathF.Sign(dx);
+            mob.DirY = 0f;
+        }
+        else if (absY > 0.001f)
+        {
+            mob.DirX = 0f;
+            mob.DirY = MathF.Sign(dy);
         }
     }
 
@@ -313,7 +325,14 @@ public class Channel
         return (adjustedX, adjustedY);
     }
 
-    private void ApplyMonsterMovement(MonsterEntity mob, float oldX, float oldY, float newX, float newY)
+    private void ApplyMonsterMovement(
+        MonsterEntity mob,
+        float oldX,
+        float oldY,
+        float newX,
+        float newY,
+        float intendedDirX,
+        float intendedDirY)
     {
         float moveX = newX - oldX;
         float moveY = newY - oldY;
@@ -327,7 +346,12 @@ public class Channel
 
         mob.X = newX;
         mob.Y = newY;
-        SetMonsterDirection(mob, moveX, moveY);
+        // A separacao evita sobreposicao, mas nao deve decidir para onde o sprite olha.
+        // Usa a direcao do caminho/perseguicao e recorre ao deslocamento apenas como fallback.
+        if (intendedDirX * intendedDirX + intendedDirY * intendedDirY > 0.0025f)
+            SetMonsterDirection(mob, intendedDirX, intendedDirY);
+        else
+            SetMonsterDirection(mob, moveX, moveY);
         mob.Moving = true;
         _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
     }
@@ -405,7 +429,7 @@ public class Channel
                             }
 
                             (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
-                            ApplyMonsterMovement(mob, oldX, oldY, newX, newY);
+                            ApplyMonsterMovement(mob, oldX, oldY, newX, newY, dirX, dirY);
                         }
                         else if (!pathFollower.HasPath)
                         {
@@ -421,14 +445,12 @@ public class Channel
                             if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
                             {
                                 (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                                ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy);
+                                ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy, dx, dy);
                             }
                             else
                             {
                                 _lastPathfindTime[mob.Id] = 0;
                                 mob.Moving = false;
-                                mob.DirX = 0;
-                                mob.DirY = 0;
                             }
                         }
                     }
@@ -458,7 +480,7 @@ public class Channel
                         }
 
                         (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                        ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy);
+                        ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy, dx, dy);
                     }
                 }
             }
@@ -520,7 +542,7 @@ public class Channel
                                 }
 
                                 (newX, newY) = ApplyMonsterSeparation(mob, newX, newY, dt, usePathfinding);
-                                ApplyMonsterMovement(mob, oldX, oldY, newX, newY);
+                                ApplyMonsterMovement(mob, oldX, oldY, newX, newY, dirX, dirY);
                             }
                             else if (!pathFollower.HasPath)
                             {
@@ -536,7 +558,7 @@ public class Channel
                                 if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
                                 {
                                     (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                                    ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy);
+                                    ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy, dx, dy);
                                 }
                                 else
                                 {
@@ -566,7 +588,7 @@ public class Channel
                             }
 
                             (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
-                            ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy);
+                            ApplyMonsterMovement(mob, oldX, oldY, newFx, newFy, dx, dy);
                         }
                     }
                 }
@@ -594,8 +616,6 @@ public class Channel
                 else
                 {
                     mob.Moving = false;
-                    mob.DirX = 0;
-                    mob.DirY = 0;
                     pathFollower?.Stop();
                 }
 

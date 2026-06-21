@@ -1158,6 +1158,7 @@ public partial class EntityManager : Node
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
         root.ZIndex = -1;
+        root.ZAsRelative = true;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
         root.SetMeta("item_id", itemId);
@@ -1178,6 +1179,7 @@ public partial class EntityManager : Node
 
         var visuals = new Node2D();
         visuals.Name = "Visuals";
+        visuals.ZAsRelative = true;
         root.AddChild(visuals);
 
         Texture2D? iconTexture = itemRes?.Icone ?? GD.Load<Texture2D>("res://Itens/Incones/1.png");
@@ -1188,7 +1190,8 @@ public partial class EntityManager : Node
                 Name = "ItemIcon",
                 Texture = iconTexture,
                 Position = new Vector2(0, -12),
-                ZIndex = 2,
+                ZIndex = 0,
+                ZAsRelative = true,
             };
 
             float maxSide = Mathf.Max(iconTexture.GetWidth(), iconTexture.GetHeight());
@@ -1210,7 +1213,8 @@ public partial class EntityManager : Node
             var labelName = new Label();
             labelName.Text = $"{itemRes.Nome} x{quantity}";
             labelName.Position = new Vector2(-40, 8);
-            labelName.ZIndex = 3;
+            labelName.ZIndex = 0;
+            labelName.ZAsRelative = true;
             labelName.AddThemeFontSizeOverride("font_size", 14);
             labelName.AddThemeColorOverride("font_color", rarityColor);
             labelName.AddThemeConstantOverride("shadow_offset_x", 1);
@@ -1223,7 +1227,8 @@ public partial class EntityManager : Node
         prompt.Text = "[F]";
         prompt.Name = "LootPrompt";
         prompt.Position = new Vector2(-14, -55);
-        prompt.ZIndex = 4;
+        prompt.ZIndex = 2;
+        prompt.ZAsRelative = true;
         prompt.AddThemeFontSizeOverride("font_size", 20);
         prompt.AddThemeColorOverride("font_color", new Color(1.0f, 1.0f, 0.3f));
         prompt.AddThemeConstantOverride("shadow_offset_x", 1);
@@ -1314,24 +1319,22 @@ public partial class EntityManager : Node
             if (computedDir.LengthSquared() > 0.001f)
                 _lastDirections[kvp.Key] = computedDir;
 
-            double elapsed = now - cur.Timestamp;
+            // Mantem a ultima direcao ao parar, sem zerar o lado para o qual olha.
+            Vector2 animDir = computedDir;
+            if (animDir.LengthSquared() < 0.001f && _lastDirections.TryGetValue(kvp.Key, out var lastDir))
+                animDir = lastDir;
 
             if (node is Inimigo inimigo)
             {
-                inimigo.NetworkTargetPos = cur.Position;
+                // O inimigo aplica posicao e animacao juntos no _PhysicsProcess.
+                inimigo.SetNetworkState(cur.Position, animDir, cur.Moving);
             }
             else
             {
                 float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
+                UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
             }
-
-            // Use last direction for idle facing when current direction is zero
-            Vector2 animDir = computedDir;
-            if (animDir.LengthSquared() < 0.001f && _lastDirections.TryGetValue(kvp.Key, out var lastDir))
-                animDir = lastDir;
-
-            UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
         }
 
         UpdateVisibilityCulling(delta);
