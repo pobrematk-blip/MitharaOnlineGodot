@@ -561,7 +561,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dapeq"]
-size = Vector2(26, 46)
+size = Vector2(52, 30)
 
 [node name="Inimigo" type="CharacterBody2D"]
 collision_layer = 4
@@ -574,5 +574,7 @@ sprite_frames = SubResource("SpriteFrames_ghvf1")
 animation = &"goblin_idle_down"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 6)
+position = Vector2(0, 22)
 shape = SubResource("RectangleShape2D_dapeq")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]

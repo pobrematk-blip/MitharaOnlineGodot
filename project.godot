@@ -27,7 +27,6 @@ GameNetwork="*res://Network/GameNetwork.cs"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/stretch/mode="disabled"
 
 [dotnet]
 
@@ -141,3 +140,8 @@ correr={
 2d_physics/layer_1="Cenario"
 2d_physics/layer_2="Jogadores"
 2d_physics/layer_3="Inimigos"
+
+[network]
+
+server_host="mitharaonline.duckdns.org"
+server_port=7777

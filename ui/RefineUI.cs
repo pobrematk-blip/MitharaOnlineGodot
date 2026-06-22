@@ -29,6 +29,10 @@ public partial class RefineUI : Control
     {
         _dropZone = GetNode<Panel>("Panel/DropZone");
         _itemIcone = GetNode<TextureRect>("Panel/DropZone/ItemIcone");
+        _itemIcone.CustomMinimumSize = new Vector2(40, 40);
+        _itemIcone.Size = new Vector2(40, 40);
+        _itemIcone.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _itemIcone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         _itemNome = GetNode<Label>("Panel/DropZone/ItemNome");
         _nivelAtual = GetNode<Label>("Panel/DropZone/NivelAtual");
         _chanceLabel = GetNode<Label>("Panel/InfoContainer/ChanceRow/ChanceLabel");

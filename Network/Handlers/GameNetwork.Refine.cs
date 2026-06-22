@@ -22,4 +22,10 @@ partial class GameNetwork
         Log($"[REFINE] Result: {message} (new level: +{newLevel})");
         EmitSignal(SignalName.OnRefineResult, success, newLevel, message);
     }
+
+    private void HandleOpenRefine()
+    {
+        Log("[REFINE] Abertura autorizada pelo servidor.");
+        EmitSignal(SignalName.OnOpenRefine);
+    }
 }

@@ -51,8 +51,12 @@ public partial class LojaCashUI : Control
 
         var icon = new TextureRect();
         icon.Texture = _coinIcon;
-        icon.CustomMinimumSize = new Vector2(16, 16);
+        icon.CustomMinimumSize = new Vector2(32, 32);
+        icon.Size = new Vector2(32, 32);
+        icon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
         icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        icon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+        icon.SizeFlagsVertical = SizeFlags.ShrinkCenter;
         topo.AddChild(icon);
         topo.MoveChild(icon, _diamantesLabel.GetIndex());
 
@@ -150,8 +154,12 @@ public partial class LojaCashUI : Control
             {
                 var coinIcon = new TextureRect();
                 coinIcon.Texture = _coinIcon;
-                coinIcon.CustomMinimumSize = new Vector2(16, 16);
+                coinIcon.CustomMinimumSize = new Vector2(32, 32);
+                coinIcon.Size = new Vector2(32, 32);
+                coinIcon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
                 coinIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+                coinIcon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+                coinIcon.SizeFlagsVertical = SizeFlags.ShrinkCenter;
                 precoHbox.AddChild(coinIcon);
             }
             var precoLabel = new Label();

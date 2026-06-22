@@ -2,7 +2,10 @@
 using Godot;
 using LiteNetLib.Utils;
 using Mithara.Network;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 public partial class GameNetwork : Node
 {
@@ -95,6 +98,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnDuelRequestedEventHandler(string senderName);
     [Signal] public delegate void OnPartyInviteReceivedEventHandler(string senderName);
     [Signal] public delegate void OnGuildInviteReceivedEventHandler(string senderName);
+    [Signal] public delegate void OnItemUseResultEventHandler(int health, int maxHealth, int mana, int maxMana);
     [Signal] public delegate void OnTradeRequestedEventHandler(string senderName);
     [Signal] public delegate void OnTradeStartEventHandler(ulong partnerId, string partnerName);
     [Signal] public delegate void OnTradeOfferUpdateEventHandler(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers);
@@ -102,6 +106,13 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnTradeEndEventHandler(bool success);
     [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);
     [Signal] public delegate void OnRefineResultEventHandler(bool success, int newLevel, string message);
+    [Signal] public delegate void OnOpenRefineEventHandler();
+    [Signal] public delegate void OnOpenLojinhaEventHandler(ulong lojinhaId, bool isOwner, string ownerName, Godot.Collections.Array<Godot.Collections.Dictionary> items);
+    [Signal] public delegate void OnLojinhaDataEventHandler(ulong lojinhaId, bool isOwner, string ownerName, int goldEarned, Godot.Collections.Array<Godot.Collections.Dictionary> items);
+    [Signal] public delegate void OnLojinhaBuyResultEventHandler(bool success, string message);
+    [Signal] public delegate void OnLojinhaListResultEventHandler(Godot.Collections.Array<Godot.Collections.Dictionary> lojinhas);
+    [Signal] public delegate void OnLojinhaSpawnEventHandler(ulong lojinhaId, string ownerName, float x, float y);
+    [Signal] public delegate void OnLojinhaDespawnEventHandler(ulong lojinhaId);
     [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
     [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
@@ -215,9 +226,101 @@ public partial class GameNetwork : Node
         CallDeferred(nameof(ApplyPendingInventory));
     }
 
-    public void ConnectToServer(string host = "127.0.0.1", int port = 7777)
+    public void ConnectToServer(string host = "", int port = 0)
     {
+        ResolveServerEndpoint(ref host, ref port);
+
+        Log($"Conectando ao servidor {host}:{port}...");
         _client?.ConnectToServer(host, port);
+    }
+
+    private static void ResolveServerEndpoint(ref string host, ref int port)
+    {
+        if (port <= 0)
+        {
+            string environmentPort = OS.GetEnvironment("MITHARA_SERVER_PORT");
+            if (int.TryParse(environmentPort, out int parsedPort) && parsedPort > 0)
+                port = parsedPort;
+        }
+
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            string environmentHost = OS.GetEnvironment("MITHARA_SERVER_HOST");
+            if (!string.IsNullOrWhiteSpace(environmentHost))
+                host = environmentHost.Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(host) || port <= 0)
+        {
+            TryReadExternalEndpoint(ref host, ref port);
+        }
+
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            bool localServerRunning = System.Diagnostics.Process
+                .GetProcessesByName("Mithara.Server")
+                .Length > 0;
+            host = localServerRunning
+                ? "127.0.0.1"
+                : ProjectSettings.GetSetting("network/server_host", "127.0.0.1").AsString();
+        }
+
+        if (port <= 0)
+            port = ProjectSettings.GetSetting("network/server_port", 7777).AsInt32();
+    }
+
+    private static void TryReadExternalEndpoint(ref string host, ref int port)
+    {
+        foreach (string path in GetEndpointConfigPaths())
+        {
+            try
+            {
+                if (!File.Exists(path)) continue;
+
+                using var document = JsonDocument.Parse(File.ReadAllText(path));
+                JsonElement root = document.RootElement;
+
+                if (string.IsNullOrWhiteSpace(host)
+                    && root.TryGetProperty("host", out JsonElement hostElement)
+                    && hostElement.ValueKind == JsonValueKind.String)
+                {
+                    string? configuredHost = hostElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(configuredHost))
+                        host = configuredHost.Trim();
+                }
+
+                if (port <= 0
+                    && root.TryGetProperty("port", out JsonElement portElement)
+                    && portElement.TryGetInt32(out int configuredPort)
+                    && configuredPort > 0)
+                {
+                    port = configuredPort;
+                }
+
+                Log($"Endpoint externo carregado: {Path.GetFileName(path)}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                LogError($"Falha ao ler endpoint externo {path}", ex.Message);
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetEndpointConfigPaths()
+    {
+        string fileName = "server_endpoint.json";
+
+        string baseDirectory = AppContext.BaseDirectory;
+        if (!string.IsNullOrWhiteSpace(baseDirectory))
+            yield return Path.Combine(baseDirectory, fileName);
+
+        string executablePath = OS.GetExecutablePath();
+        string? executableDirectory = Path.GetDirectoryName(executablePath);
+        if (!string.IsNullOrWhiteSpace(executableDirectory))
+            yield return Path.Combine(executableDirectory, fileName);
+
+        yield return ProjectSettings.GlobalizePath($"user://{fileName}");
     }
 
     public void DisconnectFromServer()
@@ -407,6 +510,30 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_RefineResult:
                 HandleRefineResult(r);
+                break;
+            case PacketId.S2C_OpenRefine:
+                HandleOpenRefine();
+                break;
+            case PacketId.S2C_OpenLojinha:
+                HandleOpenLojinha(r);
+                break;
+            case PacketId.S2C_LojinhaData:
+                HandleLojinhaData(r);
+                break;
+            case PacketId.S2C_LojinhaBuyResult:
+                HandleLojinhaBuyResult(r);
+                break;
+            case PacketId.S2C_LojinhaListResult:
+                HandleLojinhaListResult(r);
+                break;
+            case PacketId.S2C_LojinhaSpawn:
+                HandleLojinhaSpawn(r);
+                break;
+            case PacketId.S2C_LojinhaDespawn:
+                HandleLojinhaDespawn(r);
+                break;
+            case PacketId.S2C_ItemUseResult:
+                HandleItemUseResult(r);
                 break;
         } } catch (System.Exception ex)
         {

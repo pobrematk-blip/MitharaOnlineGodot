@@ -122,6 +122,32 @@ public class DatabaseManager
                 FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS lojinhas (
+                id BIGSERIAL PRIMARY KEY,
+                owner_character_id INT NOT NULL,
+                owner_name VARCHAR(255) NOT NULL DEFAULT '',
+                x DOUBLE PRECISION NOT NULL,
+                y DOUBLE PRECISION NOT NULL,
+                channel_id INT NOT NULL DEFAULT 0,
+                gold_earned INT NOT NULL DEFAULT 0,
+                max_slots INT NOT NULL DEFAULT 5,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (owner_character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS lojinha_items (
+                id BIGSERIAL PRIMARY KEY,
+                lojinha_id BIGINT NOT NULL,
+                slot INT NOT NULL DEFAULT 0,
+                item_id INT NOT NULL,
+                quantity INT NOT NULL DEFAULT 1,
+                price INT NOT NULL DEFAULT 0,
+                roll_data TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY (lojinha_id) REFERENCES lojinhas(id) ON DELETE CASCADE
+            );
+
+            ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS max_slots INT NOT NULL DEFAULT 5;
+
             CREATE TABLE IF NOT EXISTS item_definitions (
                 id INT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -602,6 +628,120 @@ public class DatabaseManager
             result.Add((reader.GetInt32(0), reader.GetString(1)));
         }
         return result;
+    }
+
+    public ulong SaveLojinha(LojinhaEntity lojinha)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO lojinhas (owner_character_id, owner_name, x, y, channel_id, gold_earned, max_slots)
+            VALUES (@o, @n, @x, @y, @c, @g, @m)
+            RETURNING id";
+        cmd.Parameters.AddWithValue("@o", lojinha.OwnerCharacterId);
+        cmd.Parameters.AddWithValue("@n", lojinha.OwnerName);
+        cmd.Parameters.AddWithValue("@x", lojinha.X);
+        cmd.Parameters.AddWithValue("@y", lojinha.Y);
+        cmd.Parameters.AddWithValue("@c", lojinha.ChannelId);
+        cmd.Parameters.AddWithValue("@g", lojinha.GoldEarned);
+        cmd.Parameters.AddWithValue("@m", lojinha.MaxSlots);
+        return Convert.ToUInt64(cmd.ExecuteScalar());
+    }
+
+    public void SaveLojinhaItems(ulong lojinhaId, List<LojinhaItem> items)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var del = conn.CreateCommand();
+        del.CommandText = "DELETE FROM lojinha_items WHERE lojinha_id = @l";
+        del.Parameters.AddWithValue("@l", (long)lojinhaId);
+        del.ExecuteNonQuery();
+
+        foreach (var item in items)
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                INSERT INTO lojinha_items (lojinha_id, slot, item_id, quantity, price, roll_data)
+                VALUES (@l, @s, @i, @q, @p, @r)";
+            cmd.Parameters.AddWithValue("@l", (long)lojinhaId);
+            cmd.Parameters.AddWithValue("@s", item.Slot);
+            cmd.Parameters.AddWithValue("@i", item.ItemId);
+            cmd.Parameters.AddWithValue("@q", item.Quantity);
+            cmd.Parameters.AddWithValue("@p", item.PricePerUnit);
+            cmd.Parameters.AddWithValue("@r", item.RollData);
+            cmd.ExecuteNonQuery();
+        }
+    }
+
+    public void DeleteLojinha(ulong lojinhaDbId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM lojinhas WHERE id = @l";
+        cmd.Parameters.AddWithValue("@l", (long)lojinhaDbId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void UpdateLojinhaGold(ulong lojinhaDbId, int goldEarned)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE lojinhas SET gold_earned = @g WHERE id = @l";
+        cmd.Parameters.AddWithValue("@g", goldEarned);
+        cmd.Parameters.AddWithValue("@l", (long)lojinhaDbId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void LoadAllLojinhas(Action<LojinhaEntity> onLojinha, Action<ulong, LojinhaItem> onItem)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, owner_character_id, owner_name, x, y, channel_id, gold_earned, max_slots, created_at FROM lojinhas ORDER BY id";
+        using var reader = cmd.ExecuteReader();
+        var lojinhaById = new Dictionary<ulong, LojinhaEntity>();
+        while (reader.Read())
+        {
+            var lojinha = new LojinhaEntity((float)reader.GetDouble(3), (float)reader.GetDouble(4))
+            {
+                OwnerCharacterId = reader.GetInt32(1),
+                OwnerName = reader.GetString(2),
+                ChannelId = reader.GetInt32(5),
+                GoldEarned = reader.GetInt32(6),
+                MaxSlots = reader.GetInt32(7),
+                CreatedAt = reader.GetDateTime(8),
+            };
+            var dbId = reader.GetInt64(0);
+            lojinha.DbId = (ulong)dbId;
+            lojinhaById[lojinha.Id] = lojinha;
+            onLojinha(lojinha);
+        }
+        reader.Close();
+
+        if (lojinhaById.Count == 0) return;
+
+        using var itemCmd = conn.CreateCommand();
+        itemCmd.CommandText = "SELECT lojinha_id, slot, item_id, quantity, price, roll_data FROM lojinha_items ORDER BY lojinha_id, slot";
+        using var itemReader = itemCmd.ExecuteReader();
+        while (itemReader.Read())
+        {
+            var lojinhaId = itemReader.GetInt64(0);
+            if (!lojinhaById.TryGetValue((ulong)lojinhaId, out var lojinha)) continue;
+            var item = new LojinhaItem
+            {
+                Slot = itemReader.GetInt32(1),
+                ItemId = itemReader.GetInt32(2),
+                Quantity = itemReader.GetInt32(3),
+                PricePerUnit = itemReader.GetInt32(4),
+                RollData = itemReader.IsDBNull(5) ? "" : itemReader.GetString(5),
+            };
+            lojinha.Items.Add(item);
+            onItem(lojinha.Id, item);
+        }
     }
 
     public void SaveGuild(int guildId, string name, int level, int xp, int skillPoints)

@@ -570,8 +570,8 @@ public partial class CharacterUI : Control
 
         if (_player != null)
         {
-            AtualizarStatusLabel("Hp", $"Vida: {_player.CurrentHealth}/{_equipamento.Hp}");
-            AtualizarStatusLabel("Mana", $"Mana: {_player.CurrentMana}/{_equipamento.Mana}");
+            AtualizarStatusLabel("Hp", $"Vida: {_player.CurrentHealth}/{_player.MaxHealth}");
+            AtualizarStatusLabel("Mana", $"Mana: {_player.CurrentMana}/{_player.MaxMana}");
             AtualizarStatusLabel("Stamina", $"Stamina: {_player.CurrentStamina}/{_equipamento.Stamina}");
         }
         else

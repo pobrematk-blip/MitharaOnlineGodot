@@ -42,7 +42,13 @@ public class PlayerEntity : Entity
 
     public int CalculateAttackDamage()
     {
-        return Math.Max(1, BaseAttack + Forca / 2);
+        int atributoOfensivo = CharacterClass.ToLowerInvariant() switch
+        {
+            "arqueiro" or "ladino" or "assassino" => Destreza,
+            "mago" or "prist" or "clerigo" or "clérigo" => Inteligencia,
+            _ => Forca,
+        };
+        return Math.Max(1, BaseAttack + atributoOfensivo / 2);
     }
 
     public int CalculateDefense()

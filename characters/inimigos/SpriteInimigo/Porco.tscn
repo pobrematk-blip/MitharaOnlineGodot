@@ -28,3 +28,5 @@ scale = Vector2(2, 2)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 4)
 shape = SubResource("RectShape")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]

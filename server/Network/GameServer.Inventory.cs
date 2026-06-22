@@ -347,6 +347,9 @@ partial class GameServer
         _db.SaveItem(session.SelectedCharacter.Id, sourceItem);
 
         RecalculatePlayerStats(player);
+        player.Health = Math.Min(player.Health, player.MaxHealth);
+        player.Mana = Math.Min(player.Mana, player.MaxMana);
+        SendStatUpdate(peer, player);
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_EquipUpdate);
         writer.Put(equipSlot);
@@ -388,6 +391,7 @@ partial class GameServer
                 visWriter.Put(player.DirX);
                 visWriter.Put(player.DirY);
                 visWriter.Put(player.Moving);
+                visWriter.Put(player.Sprinting);
                 visWriter.Put(player.Health);
                 visWriter.Put(player.MaxHealth);
                 visWriter.Put(player.Mana);
@@ -395,6 +399,7 @@ partial class GameServer
                 visWriter.Put(player.Level);
                 visWriter.Put(player.Name);
                 visWriter.Put(player.FactionId);
+                visWriter.Put((byte)0);
                 visWriter.Put(player.Experience);
                 visWriter.Put(XpForNextLevel(player.Level));
                 var guild = player.GuildId >= 0 ? _world.Guilds.GetGuild(player.GuildId) : null;
@@ -430,6 +435,9 @@ partial class GameServer
         _db.SaveItem(session.SelectedCharacter.Id, equipped);
 
         RecalculatePlayerStats(player);
+        player.Health = Math.Min(player.Health, player.MaxHealth);
+        player.Mana = Math.Min(player.Mana, player.MaxMana);
+        SendStatUpdate(peer, player);
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_EquipUpdate);
         writer.Put(equipSlot);
@@ -553,6 +561,39 @@ partial class GameServer
             SendVipStatus(peer, newExpiry);
             Logger.Info($"[VIP] Conta {session.AccountId} usou pergaminho VIP de {days} dias. Expira em: {newExpiry:yyyy-MM-dd HH:mm:ss}");
         }
+        else if (ItemDefinitions.GetLojinhaMaxSlots(item.ItemId) > 0)
+        {
+            int maxSlots = ItemDefinitions.GetLojinhaMaxSlots(item.ItemId);
+            var lojinha = new LojinhaEntity(player.X, player.Y)
+            {
+                MaxSlots = maxSlots,
+                OwnerCharacterId = session.SelectedCharacter.Id,
+                OwnerEntityId = player.Id,
+                OwnerName = player.Name,
+                ChannelId = session.ChannelId,
+            };
+
+            ulong dbId = _db.SaveLojinha(lojinha);
+            lojinha.DbId = dbId;
+            channel.AddLojinha(lojinha);
+
+            BroadcastLojinhaSpawn(lojinha, channel);
+
+            item.Quantity--;
+            if (item.Quantity <= 0)
+            {
+                player.Items.Remove(item);
+                _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+            }
+            else
+            {
+                _db.SaveItem(session.SelectedCharacter.Id, item);
+            }
+
+            SendInventoryData(peer, player);
+            SendSystemMessage(peer, "Lojinha colocada! Outros jogadores podem ver e comprar itens.");
+            return;
+        }
         else
         {
             return;
@@ -573,6 +614,13 @@ partial class GameServer
         SendSystemMessage(peer, restoredHealth > 0
             ? $"Poção de Vida usada: +{restoredHealth} HP."
             : $"Poção de Mana usada: +{restoredMana} mana.");
+
+        var result = PacketSerializer.WritePacket(PacketId.S2C_ItemUseResult);
+        result.Put(player.Health);
+        result.Put(player.MaxHealth);
+        result.Put(player.Mana);
+        result.Put(player.MaxMana);
+        peer.Send(result, DeliveryMethod.ReliableOrdered);
     }
 
     private void HandleDropItem(NetPeer peer, NetDataReader reader)
@@ -877,6 +925,9 @@ partial class GameServer
 
         _db.SaveItem(session.SelectedCharacter.Id, item);
         RecalculatePlayerStats(player);
+        player.Health = Math.Min(player.Health, player.MaxHealth);
+        player.Mana = Math.Min(player.Mana, player.MaxMana);
+        SendStatUpdate(peer, player);
 
         SendRefineResult(peer, success, item.RefineLevel, success
             ? "Refino bem-sucedido!"

@@ -156,8 +156,51 @@ partial class GameServer
                     session.SpawnedEntities.Remove(despawnId);
                 }
 
+                SyncLootVisibility(peer, session, channel, playerEntity.X, playerEntity.Y);
                 FlushEntityUpdates(peer, entities, aoiSet, eid, maxPayload);
             }
+        }
+    }
+
+    private static bool IsLootInAoi(LootEntity loot, float x, float y)
+    {
+        float dx = loot.X - x;
+        float dy = loot.Y - y;
+        return (dx * dx) + (dy * dy) <= Channel.AoiRadius * Channel.AoiRadius;
+    }
+
+    private void SyncLootVisibility(NetPeer peer, PlayerSession session, Channel channel, float x, float y)
+    {
+        var visibleLoot = channel.GetAllLoot()
+            .Where(loot => IsLootInAoi(loot, x, y))
+            .ToList();
+        var visibleIds = visibleLoot.Select(loot => loot.Id).ToHashSet();
+
+        foreach (var loot in visibleLoot)
+        {
+            if (session.SpawnedLoot.Contains(loot.Id))
+                continue;
+
+            var spawnWriter = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
+            spawnWriter.Put(loot.Id);
+            spawnWriter.Put(loot.X);
+            spawnWriter.Put(loot.Y);
+            spawnWriter.Put(loot.ItemId);
+            spawnWriter.Put(loot.Quantity);
+            peer.Send(spawnWriter, DeliveryMethod.ReliableOrdered);
+            session.SpawnedLoot.Add(loot.Id);
+        }
+
+        var lootToDespawn = session.SpawnedLoot
+            .Where(lootId => !visibleIds.Contains(lootId) || channel.GetLoot(lootId) == null)
+            .ToList();
+
+        foreach (ulong lootId in lootToDespawn)
+        {
+            var despawnWriter = PacketSerializer.WritePacket(PacketId.S2C_LootDespawn);
+            despawnWriter.Put(lootId);
+            peer.Send(despawnWriter, DeliveryMethod.ReliableOrdered);
+            session.SpawnedLoot.Remove(lootId);
         }
     }
 
@@ -193,6 +236,7 @@ partial class GameServer
             writer.Put(aoiEntity.Level);
             writer.Put(aoiEntity.Name);
             writer.Put(aoiEntity.FactionId);
+            writer.Put(aoiEntity is MonsterEntity monster ? (byte)monster.AIState : (byte)0);
             if (aoiEntity is PlayerEntity remotePlayer)
             {
                 writer.Put(remotePlayer.Experience);

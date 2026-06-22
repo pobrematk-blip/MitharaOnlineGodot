@@ -38,6 +38,26 @@ if (!ItemDefinitions.Exists(ItemDefinitions.PoeiraEstelar))
     Logger.Info("Poeira Estelar (ID 107) registrada como item built-in.");
 }
 
+void RegisterLojinhaItem(int id, string nome)
+{
+    if (!ItemDefinitions.Exists(id))
+    {
+        ItemDefinitions.Register(new ItemDefinition
+        {
+            Id = id,
+            Name = nome,
+            Type = ItemType.Consumable,
+            MaxStack = 99,
+            IsStackable = true,
+        });
+        Logger.Info($"{nome} (ID {id}) registrada como item built-in.");
+    }
+}
+
+RegisterLojinhaItem(ItemDefinitions.LojinhaPequena, "Lojinha Pequena");
+RegisterLojinhaItem(ItemDefinitions.LojinhaMedia, "Lojinha Média");
+RegisterLojinhaItem(ItemDefinitions.LojinhaGrande, "Lojinha Grande");
+
 var server = new GameServer(config, db);
 server.Start();
 

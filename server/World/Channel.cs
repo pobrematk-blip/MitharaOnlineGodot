@@ -25,6 +25,7 @@ public class Channel
     private readonly Dictionary<string, List<ulong>> _spawnedByPrefab = new();
     private readonly List<LootEntity> _lootItems = new();
     private readonly List<ulong> _expiredLoot = new();
+    private readonly Dictionary<ulong, LojinhaEntity> _lojinhas = new();
     private readonly Dictionary<ulong, PathFollower> _pathFollowers = new();
     private readonly Dictionary<ulong, double> _lastPathfindTime = new();
     private ulong _nextEntityId = 1;
@@ -231,9 +232,26 @@ public class Channel
         return _lootItems.FirstOrDefault(l => l.Id == lootId);
     }
 
+    public void AddLojinha(LojinhaEntity lojinha)
+    {
+        _lojinhas[lojinha.Id] = lojinha;
+    }
+
+    public void RemoveLojinha(ulong lojinhaId)
+    {
+        _lojinhas.Remove(lojinhaId);
+    }
+
+    public Dictionary<ulong, LojinhaEntity> Lojinhas => _lojinhas;
+
     public List<LootEntity> GetLootInRadius(float x, float y, float radius)
     {
         return _lootItems.Where(l => !l.PickedUp && MathF.Sqrt(MathF.Pow(l.X - x, 2) + MathF.Pow(l.Y - y, 2)) <= radius).ToList();
+    }
+
+    public List<LootEntity> GetAllLoot()
+    {
+        return _lootItems.Where(l => !l.PickedUp).ToList();
     }
 
     public void Update(float dt, double gameTime)
@@ -361,8 +379,13 @@ public class Channel
         foreach (var kv in _entities.ToList())
         {
             if (kv.Value is not MonsterEntity mob) continue;
-            if (mob.Health <= 0) continue;
+            if (mob.Health <= 0)
+            {
+                mob.AIState = MonsterAIState.Dead;
+                continue;
+            }
 
+            mob.AIState = MonsterAIState.Idle;
             bool usePathfinding = PathGrid != null;
             var pathFollower = usePathfinding ? GetOrCreatePathFollower(mob.Id) : null;
 
@@ -382,6 +405,7 @@ public class Channel
                 float effectiveAttackRange = mob.AttackRange + (mob.Moving ? 0f : 8f);
                 if (dist <= effectiveAttackRange)
                 {
+                    mob.AIState = MonsterAIState.Attack;
                     mob.Moving = false;
                     pathFollower?.Stop();
                     SetMonsterDirection(mob, dx, dy);
@@ -420,6 +444,7 @@ public class Channel
 
                         if (moving)
                         {
+                            mob.AIState = MonsterAIState.Chase;
                             if (IsInNoMobZone(newX, newY))
                             {
                                 mob.TargetEntityId = null;
@@ -433,6 +458,7 @@ public class Channel
                         }
                         else if (!pathFollower.HasPath)
                         {
+                            mob.AIState = MonsterAIState.Chase;
                             float fallbackOldX = mob.X;
                             float fallbackOldY = mob.Y;
                             float moveDist = mob.Speed * dt;
@@ -458,6 +484,7 @@ public class Channel
                     {
                         float oldX = mob.X;
                         float oldY = mob.Y;
+                        mob.AIState = MonsterAIState.Chase;
                         float moveDist = mob.Speed * dt;
                         float ratio = Math.Min(moveDist / dist, 1f);
                         float newFx = mob.X + dx * ratio;
@@ -493,6 +520,7 @@ public class Channel
 
                 if (distFromSpawn > MonsterEntity.MaxWanderRange)
                 {
+                    mob.AIState = MonsterAIState.Return;
                     float returnAngle = MathF.Atan2(-spawnDy, -spawnDx);
                     float returnDist = 50f + MathF.Min(distFromSpawn - MonsterEntity.ReturnRange, 300f);
                     mob.PatrolTargetX = mob.X + MathF.Cos(returnAngle) * returnDist;
@@ -509,6 +537,7 @@ public class Channel
 
                     if (dist < 10f)
                     {
+                        mob.AIState = MonsterAIState.Idle;
                         mob.PatrolTargetX = null;
                         mob.PatrolTargetY = null;
                         mob.PatrolTimer = gameTime + 3.0;
@@ -521,7 +550,13 @@ public class Channel
                         {
                             if (!pathFollower.HasPath)
                             {
-                                pathFollower.SetDestination(mob.X, mob.Y, mob.PatrolTargetX.Value, mob.PatrolTargetY.Value);
+                                if (!_lastPathfindTime.TryGetValue(mob.Id, out var lastPfPatrol))
+                                    lastPfPatrol = double.MinValue;
+                                if (gameTime - lastPfPatrol >= 0.3)
+                                {
+                                    pathFollower.SetDestination(mob.X, mob.Y, mob.PatrolTargetX.Value, mob.PatrolTargetY.Value);
+                                    _lastPathfindTime[mob.Id] = gameTime;
+                                }
                             }
 
                             float oldX = mob.X;
@@ -531,6 +566,7 @@ public class Channel
 
                             if (moving)
                             {
+                                mob.AIState = MonsterAIState.Patrol;
                                 if (IsInNoMobZone(newX, newY))
                                 {
                                     mob.PatrolTargetX = null;
@@ -546,6 +582,7 @@ public class Channel
                             }
                             else if (!pathFollower.HasPath)
                             {
+                                mob.AIState = MonsterAIState.Patrol;
                                 float fallbackOldX = mob.X;
                                 float fallbackOldY = mob.Y;
                                 float moveDist = mob.Speed * dt * 0.5f;
@@ -562,6 +599,7 @@ public class Channel
                                 }
                                 else
                                 {
+                                    mob.AIState = MonsterAIState.Idle;
                                     mob.PatrolTargetX = null;
                                     mob.PatrolTargetY = null;
                                     mob.PatrolTimer = gameTime + 2.0;
@@ -573,6 +611,7 @@ public class Channel
                         {
                             float oldX = mob.X;
                             float oldY = mob.Y;
+                            mob.AIState = MonsterAIState.Patrol;
                             float moveDist = mob.Speed * dt * 0.5f;
                             float ratio = Math.Min(moveDist / dist, 1f);
                             float newFx = mob.X + dx * ratio;
@@ -604,17 +643,22 @@ public class Channel
                         float ty = mob.SpawnY + MathF.Sin(angle) * range;
                         if (!IsInNoMobZone(tx, ty) && (!usePathfinding || PathGrid!.IsWalkableWorld(tx, ty)))
                         {
+                            mob.AIState = MonsterAIState.Patrol;
                             mob.PatrolTargetX = tx;
                             mob.PatrolTargetY = ty;
                             break;
                         }
                     }
                     if (!mob.PatrolTargetX.HasValue)
+                    {
+                        mob.AIState = MonsterAIState.Idle;
                         mob.PatrolTimer = gameTime + 2.0;
+                    }
                     pathFollower?.Stop();
                 }
                 else
                 {
+                    mob.AIState = MonsterAIState.Idle;
                     mob.Moving = false;
                     pathFollower?.Stop();
                 }
@@ -649,6 +693,7 @@ public class Channel
                         }
                         else
                         {
+                            mob.AIState = MonsterAIState.Chase;
                             mob.TargetEntityId = closestPlayer;
                             mob.PatrolTargetX = null;
                             mob.PatrolTargetY = null;

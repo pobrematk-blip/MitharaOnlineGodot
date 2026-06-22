@@ -11,7 +11,7 @@ public partial class MiniMapa : Control
     private Control _borderOverlay;
     private Control _dotsOverlay;
     private Control _resizeHandle;
-    private TextureButton _cashBtn;
+    private Control _cashBtn;
     private Label _vipLabel;
     private SubViewportContainer _viewportContainer;
 
@@ -50,7 +50,7 @@ public partial class MiniMapa : Control
         _borderOverlay = GetNode<Control>("BorderOverlay");
         _dotsOverlay = GetNode<Control>("DotsOverlay");
         _resizeHandle = GetNode<Control>("ResizeHandle");
-        _cashBtn = GetNode<TextureButton>("CashBtn");
+        _cashBtn = GetNode<Control>("CashBtn");
         _vipLabel = GetNode<Label>("VipLabel");
 
         _viewport.TransparentBg = true;
@@ -67,7 +67,7 @@ public partial class MiniMapa : Control
         _resizeHandle.GuiInput += OnResizeHandleInput;
         _resizeHandle.Draw += OnResizeHandleDraw;
         _resizeHandle.Resized += () => _resizeHandle.QueueRedraw();
-        _cashBtn.Pressed += OnCashBtnPressed;
+        _cashBtn.GuiInput += OnCashBtnGuiInput;
 
         Resized += OnRootResized;
 
@@ -349,31 +349,34 @@ public partial class MiniMapa : Control
         return _hudLayer;
     }
 
-    private void OnCashBtnPressed()
+    private void OnCashBtnGuiInput(InputEvent @event)
     {
-        var hud = ObterHudLayer();
-        if (hud == null) return;
-
-        var aberta = hud.FindChild("LojaCashUI", true, false) as LojaCashUI;
-        if (aberta != null && IsInstanceValid(aberta))
+        if (@event is InputEventMouseButton mouse && mouse.Pressed && mouse.ButtonIndex == MouseButton.Left)
         {
-            aberta.Abrir();
-            aberta.Visible = true;
-            aberta.MoveToFront();
-            return;
-        }
+            var hud = ObterHudLayer();
+            if (hud == null) return;
 
-        var lojaCena = ResourceLoader.Load<PackedScene>(SceneConstants.LOJA_CASH_UI);
-        if (lojaCena == null) return;
-        var instancia = lojaCena.Instantiate();
-        if (instancia is not LojaCashUI loja)
-        {
-            GD.PushError("[CASH] A raiz de LojaCashUI.tscn precisa usar o script LojaCashUI.cs.");
-            instancia?.QueueFree();
-            return;
+            var aberta = hud.FindChild("LojaCashUI", true, false) as LojaCashUI;
+            if (aberta != null && IsInstanceValid(aberta))
+            {
+                aberta.Abrir();
+                aberta.Visible = true;
+                aberta.MoveToFront();
+                return;
+            }
+
+            var lojaCena = ResourceLoader.Load<PackedScene>(SceneConstants.LOJA_CASH_UI);
+            if (lojaCena == null) return;
+            var instancia = lojaCena.Instantiate();
+            if (instancia is not LojaCashUI loja)
+            {
+                GD.PushError("[CASH] A raiz de LojaCashUI.tscn precisa usar o script LojaCashUI.cs.");
+                instancia?.QueueFree();
+                return;
+            }
+            hud.AddChild(loja);
+            loja.Abrir();
         }
-        hud.AddChild(loja);
-        loja.Abrir();
     }
 
     private Vector2 WorldToMinimap(Vector2 worldPos)

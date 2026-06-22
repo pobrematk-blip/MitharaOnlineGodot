@@ -29,7 +29,44 @@ partial class GameServer
     private static int[] GetStartingItemsForClass(string className)
     {
         if (string.IsNullOrWhiteSpace(className)) return Array.Empty<int>();
+        var catalogItems = ItemDefinitions.GetAll()
+            .Where(def => !def.IsElite
+                && def.RequiredLevel <= 1
+                && def.Type is ItemType.Weapon or ItemType.Shield
+                && IsItemAllowedForStartingClass(def, className))
+            .OrderBy(def => def.Type == ItemType.Weapon ? 0 : 1)
+            .ThenBy(def => def.Id)
+            .Select(def => def.Id)
+            .Take(2)
+            .ToArray();
+
+        if (catalogItems.Length > 0)
+            return catalogItems;
+
         return _classStartingItems.TryGetValue(className, out var items) ? items : Array.Empty<int>();
+    }
+
+    private static bool IsItemAllowedForStartingClass(ItemDefinition def, string className)
+    {
+        if (string.IsNullOrWhiteSpace(def.AllowedClasses))
+            return true;
+
+        string wanted = NormalizeClassAlias(className);
+        return def.AllowedClasses
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(allowed => NormalizeClassAlias(allowed) == wanted);
+    }
+
+    private static string NormalizeClassAlias(string className)
+    {
+        string normalized = className.Trim().ToLowerInvariant();
+        return normalized switch
+        {
+            "berserker" => "berseker",
+            "guardião" or "guardiÃ£o" => "guardiao",
+            "clerigo" or "clérigo" or "clÃ©rigo" => "prist",
+            _ => normalized,
+        };
     }
 
     private void GiveStartingItems(int characterId, string className)
@@ -67,6 +104,7 @@ partial class GameServer
                 Quantity = 1,
             };
             ItemRoller.EnsureRolled(item, ItemRarity.Common);
+            _db.DeleteItemBySlot(characterId, slot);
             _db.SaveItem(characterId, item);
             count++;
         }
@@ -149,6 +187,7 @@ partial class GameServer
         session.ChannelId = -1;
         session.SelectedCharacter = null;
         session.SpawnedEntities.Clear();
+        session.SpawnedLoot.Clear();
 
         var characters = _db.GetCharacters(session.AccountId);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_LeaveWorld);
@@ -417,6 +456,7 @@ partial class GameServer
 
                 session.SpawnedEntities.Clear();
                 session.SpawnedEntities.Add(entityId);
+                session.SpawnedLoot.Clear();
 
                 int sentNearby = 0;
                 foreach (var eid in aoi)

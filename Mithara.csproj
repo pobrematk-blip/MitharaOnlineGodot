@@ -8,12 +8,17 @@
   <ItemGroup>
     <Compile Remove="server\**\*.cs" />
     <Compile Remove="tests\**\*.cs" />
+    <Compile Remove="launcher\**\*.cs" />
+    <Compile Remove="launcher\**\*" />
     <Content Remove="server\**\*" />
     <Content Remove="tests\**\*" />
+    <Content Remove="launcher\**\*" />
     <EmbeddedResource Remove="server\**\*" />
     <EmbeddedResource Remove="tests\**\*" />
+    <EmbeddedResource Remove="launcher\**\*" />
     <None Remove="server\**\*" />
     <None Remove="tests\**\*" />
+    <None Remove="launcher\**\*" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="2.1.4" />

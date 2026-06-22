@@ -81,16 +81,16 @@ public class SpawnerManager
         {
             PrefabId = "slime",
             Name = "Slime",
-            Level = 1,
-            Health = 40,
-            MaxHealth = 40,
-            AttackDamage = 4,
+            Level = 3,
+            Health = 60,
+            MaxHealth = 60,
+            AttackDamage = 7,
             Forca = 1,
             Agilidade = 1,
             Speed = 72f,
-            ExperienceReward = 3,
-            GoldMin = 1,
-            GoldMax = 4,
+            ExperienceReward = 8,
+            GoldMin = 3,
+            GoldMax = 10,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
@@ -102,17 +102,17 @@ public class SpawnerManager
         {
             PrefabId = "slimeElite",
             Name = "Slime Elite",
-            Level = 3,
-            Health = 160,
-            MaxHealth = 160,
-            AttackDamage = 12,
+            Level = 5,
+            Health = 250,
+            MaxHealth = 250,
+            AttackDamage = 18,
             Forca = 4,
             Agilidade = 2,
             Speed = 84f,
-            ExperienceReward = 18,
+            ExperienceReward = 30,
             Passive = true,
-            GoldMin = 8,
-            GoldMax = 20,
+            GoldMin = 15,
+            GoldMax = 40,
             DropsNormalEquipment = true,
             LootTable = new List<LootEntry>
             {
@@ -208,6 +208,108 @@ public class SpawnerManager
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
                 new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
+            },
+        });
+
+        RegisterTemplate(new MonsterTemplate
+        {
+            PrefabId = "cogumelo",
+            Name = "Cogumelo",
+            Level = 8,
+            Health = 250,
+            MaxHealth = 250,
+            Mana = 10,
+            MaxMana = 10,
+            AttackDamage = 16,
+            Forca = 2,
+            Agilidade = 25,
+            Speed = 60f,
+            AttackRange = 35f,
+            AggroRange = 250f,
+            ExperienceReward = 35,
+            GoldMin = 15,
+            GoldMax = 40,
+            LootTable = new List<LootEntry>
+            {
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.15 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.12 },
+            },
+        });
+
+        RegisterTemplate(new MonsterTemplate
+        {
+            PrefabId = "cogumeloElite",
+            Name = "Cogumelo Elite",
+            Level = 11,
+            Health = 700,
+            MaxHealth = 700,
+            Mana = 20,
+            MaxMana = 20,
+            AttackDamage = 28,
+            Forca = 4,
+            Agilidade = 40,
+            Speed = 60f,
+            AttackRange = 40f,
+            AggroRange = 300f,
+            ExperienceReward = 90,
+            GoldMin = 45,
+            GoldMax = 120,
+            DropsNormalEquipment = true,
+            LootTable = new List<LootEntry>
+            {
+                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
+                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
+            },
+        });
+
+        RegisterTemplate(new MonsterTemplate
+        {
+            PrefabId = "plantaCarnivora",
+            Name = "Planta Carnivora",
+            Level = 10,
+            Health = 350,
+            MaxHealth = 350,
+            Mana = 10,
+            MaxMana = 10,
+            AttackDamage = 20,
+            Forca = 2,
+            Agilidade = 30,
+            Speed = 72f,
+            AttackRange = 40f,
+            AggroRange = 300f,
+            ExperienceReward = 45,
+            GoldMin = 18,
+            GoldMax = 50,
+            LootTable = new List<LootEntry>
+            {
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.15 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.12 },
+            },
+        });
+
+        RegisterTemplate(new MonsterTemplate
+        {
+            PrefabId = "plantaCarnivoraElite",
+            Name = "Planta Carnivora Elite",
+            Level = 13,
+            Health = 900,
+            MaxHealth = 900,
+            Mana = 20,
+            MaxMana = 20,
+            AttackDamage = 35,
+            Forca = 5,
+            Agilidade = 50,
+            Speed = 72f,
+            AttackRange = 45f,
+            AggroRange = 350f,
+            ExperienceReward = 110,
+            GoldMin = 60,
+            GoldMax = 150,
+            DropsNormalEquipment = true,
+            LootTable = new List<LootEntry>
+            {
+                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
+                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
             },
         });
 

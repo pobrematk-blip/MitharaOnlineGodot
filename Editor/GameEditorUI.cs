@@ -18,22 +18,13 @@ public partial class GameEditorUI : Control
         header.GuiInput += OnHeaderDrag;
         _tabs = _panel.GetNode<TabContainer>("Tabs");
 
-        EnsureInputAction();
         _panel.Visible = false;
         CallDeferred(nameof(CarregarEditores));
     }
 
-    private static void EnsureInputAction()
-    {
-        if (InputMap.HasAction("game_editor")) return;
-        InputMap.AddAction("game_editor");
-        InputMap.ActionAddEvent("game_editor", new InputEventKey { PhysicalKeycode = Key.F10, Keycode = Key.F10, Unicode = 0, Pressed = false });
-    }
-
     public override void _Process(double delta)
     {
-        if (Input.IsActionJustPressed("game_editor"))
-            _panel.Visible = !_panel.Visible;
+        // O editor não pode ser aberto pelo cliente de jogo.
     }
 
     public override void _Input(InputEvent @event)

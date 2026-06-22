@@ -164,13 +164,14 @@ partial class GameNetwork
             int level = r.GetInt();
             string name = r.GetString();
             string factionId = r.GetString();
+            byte aiState = r.AvailableBytes > 0 ? r.GetByte() : (byte)0;
             long xp = r.GetLong();
             long xpMax = r.GetLong();
             string guildName = r.GetString();
             string guildTag = r.GetString();
             int guildEmblem = r.GetInt();
 
-            em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting);
+            em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting, aiState);
             em?.AtualizarOverheadRemoto(entityId, name, guildName, guildTag, guildEmblem, xp, xpMax);
             EmitSignal(SignalName.OnEntityHealthUpdate, entityId, health, maxHealth);
         }

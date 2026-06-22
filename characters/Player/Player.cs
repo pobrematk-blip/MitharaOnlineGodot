@@ -33,6 +33,8 @@ public partial class Player : CharacterBody2D
     private bool _wasFPressed = false;
     private bool _projetilDisparado = false;
     private Sprite2D _shadowSprite;
+    private ulong? _selectedTargetId;
+    private Line2D _targetMarker;
 
     private GameNetwork _network;
     private float _moveSendTimer;
@@ -69,6 +71,13 @@ public partial class Player : CharacterBody2D
         CurrentHealth = Mathf.Clamp(health, 0, maxHealth);
         if (CurrentHealth <= 0 && wasAlive)
             Morrer();
+        EmitSignal(SignalName.StatusAtualizado);
+    }
+
+    public void SetManaFromServer(int mana, int maxMana)
+    {
+        MaxMana = maxMana;
+        CurrentMana = Mathf.Clamp(mana, 0, maxMana);
         EmitSignal(SignalName.StatusAtualizado);
     }
 
@@ -189,6 +198,121 @@ public partial class Player : CharacterBody2D
             _network.OnTeleport += OnTeleportReceived;
         }
         _lastSentPosition = GlobalPosition;
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Tab)
+        {
+            SelecionarProximoTarget(key.ShiftPressed ? -1 : 1);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+    }
+
+    private void SelecionarAlvoEm(Vector2 worldPosition)
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null || !net.IsConnected) return;
+
+        if (!TryEncontrarTargetEm(net, worldPosition, out ulong escolhido, out Node2D nodeEscolhido))
+        {
+            LimparTarget();
+            return;
+        }
+
+        AplicarTarget(escolhido, nodeEscolhido);
+    }
+
+    private void SelecionarProximoTarget(int direcao)
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null || !net.IsConnected) return;
+
+        var targets = new List<(ulong Id, Node2D Node, float Distancia)>();
+        foreach (var entry in net.GetAllEntities())
+        {
+            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value) || entry.Value is not Inimigo)
+                continue;
+            targets.Add((entry.Key, entry.Value, GlobalPosition.DistanceSquaredTo(entry.Value.GlobalPosition)));
+        }
+
+        if (targets.Count == 0)
+        {
+            LimparTarget();
+            return;
+        }
+
+        targets.Sort((a, b) => a.Distancia.CompareTo(b.Distancia));
+        int indiceAtual = _selectedTargetId.HasValue
+            ? targets.FindIndex(target => target.Id == _selectedTargetId.Value)
+            : -1;
+        int proximoIndice = indiceAtual < 0
+            ? (direcao >= 0 ? 0 : targets.Count - 1)
+            : (indiceAtual + direcao + targets.Count) % targets.Count;
+
+        var proximo = targets[proximoIndice];
+        AplicarTarget(proximo.Id, proximo.Node);
+    }
+
+    private void AplicarTarget(ulong entityId, Node2D targetNode)
+    {
+        if (_selectedTargetId == entityId)
+            return;
+
+        LimparTarget();
+        _selectedTargetId = entityId;
+        _targetMarker = new Line2D
+        {
+            Name = "TargetMarker",
+            Width = 2.5f,
+            DefaultColor = new Color(1f, 0.18f, 0.12f, 0.95f),
+            Closed = true,
+            ZIndex = 20,
+        };
+        const int segmentos = 28;
+        for (int i = 0; i < segmentos; i++)
+        {
+            float angulo = Mathf.Tau * i / segmentos;
+            _targetMarker.AddPoint(new Vector2(Mathf.Cos(angulo) * 25f, Mathf.Sin(angulo) * 12f + 15f));
+        }
+        targetNode.AddChild(_targetMarker);
+
+        Vector2 dirToTarget = (targetNode.GlobalPosition - GlobalPosition).Normalized();
+        if (dirToTarget.LengthSquared() > 0.001f)
+        {
+            CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget);
+            UpdateAnimation(Vector2.Zero);
+        }
+
+        GD.Print($"[TARGET] Alvo selecionado: {_selectedTargetId.Value}");
+    }
+
+    private static bool TryEncontrarTargetEm(GameNetwork net, Vector2 worldPosition, out ulong entityId, out Node2D targetNode)
+    {
+        entityId = 0;
+        targetNode = null;
+        float menorDistancia = 42f;
+        foreach (var entry in net.GetAllEntities())
+        {
+            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value) || entry.Value is not Inimigo)
+                continue;
+
+            float distancia = worldPosition.DistanceTo(entry.Value.GlobalPosition);
+            if (distancia >= menorDistancia) continue;
+            menorDistancia = distancia;
+            entityId = entry.Key;
+            targetNode = entry.Value;
+        }
+        return targetNode != null;
+    }
+
+    private void LimparTarget()
+    {
+        if (_targetMarker != null && IsInstanceValid(_targetMarker))
+            _targetMarker.QueueFree();
+        _targetMarker = null;
+        _selectedTargetId = null;
     }
 
     private void OnRespawnReceived(ulong entityId, float x, float y, int health, int maxHealth)
@@ -652,6 +776,14 @@ public partial class Player : CharacterBody2D
     {
         if (AnimatedSprite == null) return;
 
+        var targetFinder = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (TryGetSelectedTarget(targetFinder, out var targetNode, out _))
+        {
+            Vector2 dirToTarget = (targetNode.GlobalPosition - GlobalPosition).Normalized();
+            if (dirToTarget.LengthSquared() > 0.001f)
+                CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget);
+        }
+
         string animacaoDeAtaque = $"{NomeDaClasse}_attack_{CurrentDirection}";
 
         // Fallback para animação cardinal se a 8-dir não existir
@@ -680,7 +812,8 @@ public partial class Player : CharacterBody2D
             _network.SendPlayerAction(1, DirectionUtil.DirectionToVector(CurrentDirection));
 
         // Executa a lógica de ataque independente da animação
-        if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase))
         {
             if (ProjetilScene != null)
                 DispararProjetil();
@@ -712,6 +845,12 @@ public partial class Player : CharacterBody2D
         }
 
         Vector2 direcaoDoVetor = DirectionUtil.DirectionToVector(CurrentDirection);
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (TryGetSelectedTarget(gameNet, out var selectedNode, out _))
+        {
+            direcaoDoVetor = (selectedNode.GlobalPosition - GlobalPosition).Normalized();
+            CurrentDirection = DirectionUtil.VectorToDirectionString(direcaoDoVetor);
+        }
 
         // Posiciona o projétil na posição do arco (ou do player, como fallback)
         Vector2 origem = _armaOverlay?.GlobalPosition ?? GlobalPosition;
@@ -739,6 +878,13 @@ public partial class Player : CharacterBody2D
                 proj.DanoMax = equip?.DanoFisicoMax ?? 16;
                 proj.EhDanoMagico = false;
             }
+            else if (string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase))
+            {
+                proj.Speed = 280.0f;
+                proj.DanoMin = equip?.DanoMagicoMin ?? 12;
+                proj.DanoMax = equip?.DanoMagicoMax ?? 18;
+                proj.EhDanoMagico = true;
+            }
         }
         else
         {
@@ -746,11 +892,13 @@ public partial class Player : CharacterBody2D
         }
 
         // Envia pacote para replicar o projétil para outros jogadores
-        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (gameNet != null && gameNet.IsConnected)
         {
-            byte projType = string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ? (byte)1 : (byte)0;
+            byte projType = string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase) ? (byte)1 : (byte)0;
             gameNet.SendProjectileFire(novoProjetil.GlobalPosition.X, novoProjetil.GlobalPosition.Y, direcaoDoVetor.X, direcaoDoVetor.Y, projType);
+            if (TryGetSelectedTarget(gameNet, out _, out float targetDistance) && targetDistance <= 640f)
+                gameNet.SendAttack(_selectedTargetId.Value);
         }
     }
 
@@ -768,7 +916,10 @@ public partial class Player : CharacterBody2D
 
         if (gameNet != null && gameNet.IsConnected)
         {
-            ulong? targetId = FindNearestNetworkEntity(gameNet, out float dist);
+            ulong? targetId = _selectedTargetId;
+            float dist;
+            if (!TryGetSelectedTarget(gameNet, out _, out dist))
+                targetId = FindNearestNetworkEntity(gameNet, out dist);
             if (targetId.HasValue && dist <= MeleeAttackRange)
             {
                 gameNet.SendAttack(targetId.Value);
@@ -784,6 +935,30 @@ public partial class Player : CharacterBody2D
         GD.PrintErr("[PLAYER] Dano melee local bloqueado. Combate deve passar pelo servidor.");
     }
 
+    private bool TryGetSelectedTarget(GameNetwork gameNet, out Node2D targetNode, out float distance)
+    {
+        targetNode = null;
+        distance = float.MaxValue;
+        if (gameNet == null || !_selectedTargetId.HasValue) return false;
+        Node2D node = null;
+        foreach (var entry in gameNet.GetAllEntities())
+        {
+            if (entry.Key == _selectedTargetId.Value)
+            {
+                node = entry.Value;
+                break;
+            }
+        }
+        if (node == null || !IsInstanceValid(node))
+        {
+            LimparTarget();
+            return false;
+        }
+        targetNode = node;
+        distance = GlobalPosition.DistanceTo(node.GlobalPosition);
+        return true;
+    }
+
     private ulong? FindNearestNetworkEntity(GameNetwork gameNet, out float closestDist)
     {
         closestDist = float.MaxValue;
@@ -792,7 +967,7 @@ public partial class Player : CharacterBody2D
         foreach (var kvp in gameNet.GetAllEntities())
         {
             if (kvp.Key == gameNet.LocalPlayerId) continue;
-            if (!IsInstanceValid(kvp.Value)) continue;
+            if (!IsInstanceValid(kvp.Value) || kvp.Value is not Inimigo) continue;
 
             float d = GlobalPosition.DistanceTo(kvp.Value.GlobalPosition);
             if (d < closestDist)

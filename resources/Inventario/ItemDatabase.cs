@@ -22,7 +22,10 @@ public partial class ItemDatabase : Node
 
         if (!DirAccess.DirExistsAbsolute(ItensDir))
         {
-            GD.PrintErr("[ItemDatabase] Pasta Itens/ n?o encontrada.");
+            GD.PrintErr("[ItemDatabase] DirAccess falhou (build exportada?); usando fallback.");
+            ScanFallback();
+            _scanned = true;
+            GD.Print($"[ItemDatabase] Fallback concluido: {_itemMap.Count} itens mapeados.");
             return;
         }
 
@@ -30,6 +33,18 @@ public partial class ItemDatabase : Node
 
         _scanned = true;
         GD.Print($"[ItemDatabase] Scan concluido: {_itemMap.Count} itens mapeados.");
+    }
+
+    private void ScanFallback()
+    {
+        foreach (string path in _fallbackPaths)
+        {
+            var res = GD.Load<ItemResource>(path);
+            if (res is ItemResource item && item.ItemID > 0 && !_itemMap.ContainsKey(item.ItemID))
+            {
+                _itemMap[item.ItemID] = path;
+            }
+        }
     }
 
     private void ScanDirRecursive(string dirPath)

@@ -92,7 +92,8 @@ public class PathFollower
         float movedX = currentX - startX;
         float movedY = currentY - startY;
         float moved = MathF.Sqrt(movedX * movedX + movedY * movedY);
-        return moved > 0.001f
+        bool hasRemainingPath = !IsFinished;
+        return moved > 0.001f && hasRemainingPath
             ? (currentX, currentY, movedX / moved, movedY / moved, true)
             : (currentX, currentY, 0f, 0f, false);
     }

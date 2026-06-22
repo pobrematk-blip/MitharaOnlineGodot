@@ -1,4 +1,5 @@
-﻿using Mithara.Server.Entities;
+﻿using Mithara.Server.Database;
+using Mithara.Server.Entities;
 
 namespace Mithara.Server.World;
 
@@ -47,6 +48,19 @@ public class WorldManager
     {
         var channel = GetChannel(channelId);
         channel?.RemoveEntity(entityId);
+    }
+
+    public void LoadLojinhas(DatabaseManager db)
+    {
+        db.LoadAllLojinhas(
+            onLojinha: lojinha =>
+            {
+                var channel = GetChannel(lojinha.ChannelId);
+                if (channel != null)
+                    channel.AddLojinha(lojinha);
+            },
+            onItem: (lojinhaId, item) => { }
+        );
     }
 
     public void UpdateAll(float dt, double gameTime)

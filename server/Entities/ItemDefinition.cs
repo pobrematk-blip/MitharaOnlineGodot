@@ -82,8 +82,19 @@ public static class ItemDefinitions
     public const int PergaminhoVip30Dias = 105;
     public const int PergaminhoVip7DiasTrial = 106;
     public const int PoeiraEstelar = 107;
+    public const int LojinhaPequena = 108;
+    public const int LojinhaMedia = 109;
     public const int PocaoVida = 110;
     public const int PocaoMana = 111;
+    public const int LojinhaGrande = 112;
+
+    public static int GetLojinhaMaxSlots(int itemId) => itemId switch
+    {
+        LojinhaPequena => 5,
+        LojinhaMedia => 10,
+        LojinhaGrande => 15,
+        _ => 0,
+    };
 
     public static void LoadFromDatabase(DatabaseManager db)
     {

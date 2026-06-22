@@ -89,6 +89,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
 [node name="VBoxSolari" type="VBoxContainer" parent="EtapaFaccao/HBoxFaccoes/BtnEscolherSolari/CardSolari"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
@@ -96,6 +97,7 @@ alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 220)
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 4
 texture = ExtResource("2_solari")
 expand_mode = 1
@@ -104,6 +106,7 @@ stretch_mode = 5
 [node name="NomeSolari" type="Label" parent="EtapaFaccao/HBoxFaccoes/BtnEscolherSolari/CardSolari/VBoxSolari"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 28
 text = "SOLARI"
 horizontal_alignment = 1
@@ -111,6 +114,7 @@ horizontal_alignment = 1
 [node name="DescricaoSolari" type="Label" parent="EtapaFaccao/HBoxFaccoes/BtnEscolherSolari/CardSolari/VBoxSolari"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 14
 text = "Descrição da facção Solari."
 horizontal_alignment = 1
@@ -136,6 +140,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
 [node name="VBoxNoctori" type="VBoxContainer" parent="EtapaFaccao/HBoxFaccoes/BtnEscolherNoctori/CardNoctori"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
@@ -143,6 +148,7 @@ alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 220)
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 4
 texture = ExtResource("3_noctori")
 expand_mode = 1
@@ -151,6 +157,7 @@ stretch_mode = 5
 [node name="NomeNoctori" type="Label" parent="EtapaFaccao/HBoxFaccoes/BtnEscolherNoctori/CardNoctori/VBoxNoctori"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 28
 text = "NOCTORI"
 horizontal_alignment = 1
@@ -158,6 +165,7 @@ horizontal_alignment = 1
 [node name="DescricaoNoctori" type="Label" parent="EtapaFaccao/HBoxFaccoes/BtnEscolherNoctori/CardNoctori/VBoxNoctori"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 14
 text = "Descrição da facção Noctori."
 horizontal_alignment = 1

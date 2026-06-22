@@ -54,6 +54,32 @@
 - **`rank` NÃO é reservado no PostgreSQL**, diferente do MySQL — não precisa de backticks.
 - **Sequences**: `accounts_id_seq`, `characters_id_seq`, `guilds_id_seq` — usar `setval()` se importar dados manuais.
 
+## Servidor Externo / DNS / Launcher
+
+- DNS oficial de teste externo: `mitharaonline.duckdns.org`
+- Porta do jogo: `7777`
+- Protocolo do jogo: UDP via LiteNetLib/ENet-like client (`NetClient`); liberar/redirecionar UDP `7777`.
+- IP publico confirmado em 22/06/2026: `179.104.69.12` apontado pelo DuckDNS.
+- O cliente deve conectar usando `server_endpoint.json` ao lado do executavel:
+  ```json
+  {
+    "host": "mitharaonline.duckdns.org",
+    "port": 7777
+  }
+  ```
+- `project.godot` tambem deve manter `network/server_host="mitharaonline.duckdns.org"` e `network/server_port=7777`.
+- Se amigos receberem "Desconectado do servidor", verificar nesta ordem:
+  1. Servidor `Mithara.Server` rodando.
+  2. `netstat -ano | Select-String ':7777'` mostrando UDP `0.0.0.0:7777`.
+  3. `Resolve-DnsName mitharaonline.duckdns.org` apontando para o IP publico atual.
+  4. DuckDNS atualizado se o IP publico mudar.
+  5. Port forwarding do roteador para o IP LAN correto da maquina do servidor.
+  6. Firewall do Windows liberando entrada UDP `7777`.
+- O launcher busca a release mais recente no GitHub:
+  `pobrematk-blip/MitharaOnlineGodot`
+- Release publicada com DNS DuckDNS: `v0.1.7`.
+- Para atualizar endpoint sem reexportar o jogo inteiro, atualizar `server_endpoint.json` na pasta de build usada pelo launcher, rodar `tools/Build-MitharaUpdate.ps1` com nova versao e publicar nova release com `manifest.json` e `MitharaOnline_Update.zip`.
+
 ## Regras de Criação de Itens (MITTHARA ONLINE)
 
 ### Padrão Geral

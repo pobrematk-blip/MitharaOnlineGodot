@@ -26,6 +26,8 @@ public partial class DialogUI : Control
         {
             _gameNet.OnNpcDialog += OnNpcDialog;
             _gameNet.OnOpenGuildForm += AbrirCriacaoGuilda;
+            _gameNet.OnOpenRefine += AbrirRefine;
+            _gameNet.OnOpenLojinha += AbrirLojinha;
         }
 
         _closeButton.Pressed += Fechar;
@@ -67,13 +69,6 @@ public partial class DialogUI : Control
                 {
                     Fechar();
                     AbrirGuilda();
-                    return;
-                }
-
-                if (action == "open_refine")
-                {
-                    Fechar();
-                    AbrirRefine();
                     return;
                 }
 
@@ -150,6 +145,24 @@ public partial class DialogUI : Control
         }
     }
 
+    private void AbrirLojinha(ulong lojinhaId, bool isOwner, string ownerName, Godot.Collections.Array<Godot.Collections.Dictionary> items)
+    {
+        Fechar();
+        var hud = GetTree().Root.FindChild("HUD", true, false);
+        if (hud == null) return;
+
+        var existing = hud.FindChild("LojinhaUI", true, false);
+        if (existing != null)
+            existing.QueueFree();
+
+        var scene = ResourceLoader.Load<PackedScene>("res://ui/LojinhaUI.tscn");
+        if (scene == null) return;
+
+        var ui = scene.Instantiate<LojinhaUI>();
+        ui.Setup(lojinhaId, isOwner, ownerName, items);
+        hud.AddChild(ui);
+    }
+
     private void AbrirRefine()
     {
         var hud = GetTree().Root.FindChild("HUD", true, false);
@@ -202,6 +215,8 @@ public partial class DialogUI : Control
         {
             _gameNet.OnNpcDialog -= OnNpcDialog;
             _gameNet.OnOpenGuildForm -= AbrirCriacaoGuilda;
+            _gameNet.OnOpenRefine -= AbrirRefine;
+            _gameNet.OnOpenLojinha -= AbrirLojinha;
         }
     }
 }

@@ -91,6 +91,7 @@ public partial class GameServer : INetEventListener
         }
 
         LoadGuildsFromDb();
+        _world.LoadLojinhas(_db);
 
         Logger.Info($"Iniciado na porta {_config.Port}");
         Logger.Info($"Canais: {_config.ChannelCount}");
@@ -483,6 +484,27 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_RefineItem:
                 HandleRefineItem(peer, reader);
                 break;
+            case PacketId.C2S_LojinhaOpen:
+                HandleLojinhaOpen(peer, reader);
+                break;
+            case PacketId.C2S_LojinhaAddItem:
+                HandleLojinhaAddItem(peer, reader);
+                break;
+            case PacketId.C2S_LojinhaRemoveItem:
+                HandleLojinhaRemoveItem(peer, reader);
+                break;
+            case PacketId.C2S_LojinhaBuyItem:
+                HandleLojinhaBuyItem(peer, reader);
+                break;
+            case PacketId.C2S_LojinhaCollect:
+                HandleLojinhaCollect(peer, reader);
+                break;
+            case PacketId.C2S_LojinhaClose:
+                HandleLojinhaClose(peer, reader);
+                break;
+            case PacketId.C2S_LojinhaListRequest:
+                HandleLojinhaListRequest(peer);
+                break;
 
             }
         }
@@ -571,6 +593,7 @@ public class PlayerSession
     public double LastChatTime { get; set; } = -1;
     public double LastActionTime { get; set; } = -1;
     public HashSet<ulong> SpawnedEntities { get; set; } = new();
+    public HashSet<ulong> SpawnedLoot { get; set; } = new();
 
     public bool IsAdminOrAdminMode(ServerConfig config)
     {

@@ -94,18 +94,6 @@ public partial class ItemColetavel : Area2D
 
     public override void _Process(double delta)
     {
-        if (!_playerInRange) return;
-
-        if (!_prompt.Visible)
-            _prompt.Visible = true;
-
-        if (Input.IsKeyPressed(Key.F) && !_wasFPressed)
-        {
-            _wasFPressed = true;
-            TryCollect();
-        }
-        if (!Input.IsKeyPressed(Key.F))
-            _wasFPressed = false;
     }
 
     private void OnBodyEntered(Node2D body)

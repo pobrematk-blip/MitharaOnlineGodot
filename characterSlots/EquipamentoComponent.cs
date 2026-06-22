@@ -50,17 +50,31 @@ public partial class EquipamentoComponent : Node
     private int _bonusStamina;
     private int _bonusReflexaoDano;
     private float _bonusResistenciaControle;
+    private bool _temTotaisServidor;
+    private int _forcaServidor;
+    private int _agilidadeServidor;
+    private int _destrezaServidor;
+    private int _inteligenciaServidor;
 
     public int PontosDisponiveis => _pontosDisponiveis;
-    public int Forca => _forca + _bonusForca;
-    public int Agilidade => _agilidade + _bonusAgilidade;
-    public int Destreza => _destreza + _bonusDestreza;
-    public int Inteligencia => _inteligencia + _bonusInteligencia;
+    public int Forca => _temTotaisServidor ? _forcaServidor : _forca + _bonusForca;
+    public int Agilidade => _temTotaisServidor ? _agilidadeServidor : _agilidade + _bonusAgilidade;
+    public int Destreza => _temTotaisServidor ? _destrezaServidor : _destreza + _bonusDestreza;
+    public int Inteligencia => _temTotaisServidor ? _inteligenciaServidor : _inteligencia + _bonusInteligencia;
 
     // ============ STATUS DERIVADOS ============
     // Dano Físico com variação (por Força) - Base 8-12, aumenta com Força
-    public int DanoFisicoMin => 8 + (Forca / 2) + _bonusDanoFisico + _bonusDanoFisicoMin;
-    public int DanoFisicoMax => 12 + (Forca / 2) + _bonusDanoFisico + _bonusDanoFisicoMax;
+    private int AtributoOfensivoFisico
+    {
+        get
+        {
+            var player = GetParent() as Player;
+            string classe = player?.NomeDaClasse?.ToLowerInvariant() ?? "";
+            return classe is "arqueiro" or "ladino" or "assassino" ? Destreza : Forca;
+        }
+    }
+    public int DanoFisicoMin => 8 + (AtributoOfensivoFisico / 2) + _bonusDanoFisico + _bonusDanoFisicoMin;
+    public int DanoFisicoMax => 12 + (AtributoOfensivoFisico / 2) + _bonusDanoFisico + _bonusDanoFisicoMax;
     public string DanoFisico => $"{DanoFisicoMin}-{DanoFisicoMax}";
     
     // Dano Mágico com variação (por Inteligência) - Base 8-12, aumenta com Inteligência
@@ -107,7 +121,7 @@ public partial class EquipamentoComponent : Node
     public float RegeneracaoMana => Inteligencia / 10f + _bonusRegeneracaoMana;
     
     // Roubo
-    public float RouboVida => MathF.Min(15f, Destreza / 50f + _bonusRouboVida);
+    public float RouboVida => MathF.Min(15f, _bonusRouboVida);
     public float RouboMana => MathF.Min(15f, Inteligencia / 20f + _bonusRouboMana);
     
     // Redução e Bônus
@@ -124,6 +138,42 @@ public partial class EquipamentoComponent : Node
             if (tipo == TipoEquipamento.Nenhum) continue;
             ItensEquipados[tipo] = new SlotInventario();
         }
+
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+            net.OnStatUpdate += OnStatUpdate;
+    }
+
+    public override void _ExitTree()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+            net.OnStatUpdate -= OnStatUpdate;
+    }
+
+    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia,
+        int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia,
+        int maxHealth, int maxMana)
+    {
+        _forca = baseForca;
+        _agilidade = baseAgilidade;
+        _destreza = baseDestreza;
+        _inteligencia = baseInteligencia;
+        _pontosDisponiveis = statPoints;
+        _forcaServidor = totalForca;
+        _agilidadeServidor = totalAgilidade;
+        _destrezaServidor = totalDestreza;
+        _inteligenciaServidor = totalInteligencia;
+        _temTotaisServidor = true;
+
+        var player = GetParent() as Player ?? GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
+        if (player != null)
+        {
+            player.SetHealthFromServer(player.CurrentHealth, maxHealth);
+            player.SetManaFromServer(player.CurrentMana, maxMana);
+        }
+
+        EmitSignal(SignalName.EquipamentoAtualizado);
     }
 
     public void Equipar(TipoEquipamento slot, SlotInventario slotVindoDoInventario)

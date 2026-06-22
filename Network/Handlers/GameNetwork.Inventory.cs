@@ -214,4 +214,16 @@ partial class GameNetwork
             inv.EmitSignal(InventarioComponent.SignalName.InventarioAtualizado);
         }
     }
+
+    private void HandleItemUseResult(NetDataReader r)
+    {
+        int health = r.GetInt();
+        int maxHealth = r.GetInt();
+        int mana = r.GetInt();
+        int maxMana = r.GetInt();
+        var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
+        player?.SetHealthFromServer(health, maxHealth);
+        player?.SetManaFromServer(mana, maxMana);
+        EmitSignal(SignalName.OnItemUseResult, health, maxHealth, mana, maxMana);
+    }
 }

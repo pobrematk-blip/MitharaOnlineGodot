@@ -1,7 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://4n32wneynhk"]
+[gd_scene load_steps=9 format=3 uid="uid://4n32wneynhk"]
 
 [ext_resource type="Script" uid="uid://b0qhj8f2ca5yg" path="res://resources/Inventario/InventarioUI.cs" id="1_x6jdb"]
 [ext_resource type="PackedScene" uid="uid://blo3yab0lyoi3" path="res://resources/Inventario/SlotUI.tscn" id="2_ygxso"]
+[ext_resource type="Theme" path="res://ui/MitharaWindowTheme.tres" id="3_window_theme"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Moeda de Gold.png" id="4_gold_icon"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_x6jdb"]
 
@@ -17,7 +19,7 @@ default_font_size = 14
 [node name="InventarioUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-theme = SubResource("Theme_inv")
+theme = ExtResource("3_window_theme")
 script = ExtResource("1_x6jdb")
 SlotUIPrefab = ExtResource("2_ygxso")
 
@@ -74,9 +76,11 @@ offset_bottom = 64.0
 
 [node name="GoldIcon" type="TextureRect" parent="Panel/Currencies"]
 layout_mode = 2
-custom_minimum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(24, 24)
 size_flags_horizontal = 0
-stretch_mode = 0
+texture = ExtResource("4_gold_icon")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="GoldLabel" type="Label" parent="Panel/Currencies"]
 unique_name_in_owner = true

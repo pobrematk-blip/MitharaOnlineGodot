@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LojaCashData" load_steps=9 format=3]
+[gd_resource type="Resource" script_class="LojaCashData" load_steps=12 format=3]
 [ext_resource type="Script" path="res://SistemaContas/LojaCashData.cs" id="1_script"]
 [ext_resource type="Script" path="res://SistemaContas/LojaCashEntry.cs" id="2_entry"]
 
@@ -44,6 +44,27 @@ PrecoDiamantes = 30
 NomeExibicao = "Pergaminho de Captura de Pet"
 Descricao = "Usado para capturar pets selvagens."
 
+[sub_resource type="Resource" id="LojaCashEntry_lojapeq"]
+script = ExtResource("2_entry")
+ItemID = 108
+PrecoDiamantes = 50
+NomeExibicao = "Lojinha Pequena"
+Descricao = "Coloca uma lojinha portátil com 5 slots para vender itens."
+
+[sub_resource type="Resource" id="LojaCashEntry_lojamed"]
+script = ExtResource("2_entry")
+ItemID = 109
+PrecoDiamantes = 100
+NomeExibicao = "Lojinha Média"
+Descricao = "Coloca uma lojinha portátil com 10 slots para vender itens."
+
+[sub_resource type="Resource" id="LojaCashEntry_lojagrande"]
+script = ExtResource("2_entry")
+ItemID = 112
+PrecoDiamantes = 200
+NomeExibicao = "Lojinha Grande"
+Descricao = "Coloca uma lojinha portátil com 15 slots para vender itens."
+
 [resource]
 script = ExtResource("1_script")
-Itens = Array[ExtResource("2_entry")]([SubResource("LojaCashEntry_slot"), SubResource("LojaCashEntry_vip7"), SubResource("LojaCashEntry_vip15"), SubResource("LojaCashEntry_vip30"), SubResource("LojaCashEntry_guild"), SubResource("LojaCashEntry_petcapture")])
+Itens = Array[ExtResource("2_entry")]([SubResource("LojaCashEntry_slot"), SubResource("LojaCashEntry_vip7"), SubResource("LojaCashEntry_vip15"), SubResource("LojaCashEntry_vip30"), SubResource("LojaCashEntry_guild"), SubResource("LojaCashEntry_petcapture"), SubResource("LojaCashEntry_lojapeq"), SubResource("LojaCashEntry_lojamed"), SubResource("LojaCashEntry_lojagrande")])

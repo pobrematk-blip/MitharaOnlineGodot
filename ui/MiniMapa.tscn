@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://ui/MiniMapa.cs" id="1_xthpk"]
 [ext_resource type="Shader" path="res://shaders/minimapa_circular.gdshader" id="2_jyx4n"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Loja de Cash.png" id="3_lojacash"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/loja de cash.png" id="3_lojacash"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p5mtm"]
 shader = ExtResource("2_jyx4n")
@@ -12,10 +12,10 @@ anchors_preset = 5
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 0.0
-offset_left = -260.0
+offset_left = -310.0
 offset_top = 10.0
 offset_right = -10.0
-offset_bottom = 270.0
+offset_bottom = 320.0
 mouse_filter = 1
 script = ExtResource("1_xthpk")
 
@@ -23,14 +23,14 @@ script = ExtResource("1_xthpk")
 anchors_preset = 0
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 190.0
-offset_bottom = 190.0
+offset_right = 220.0
+offset_bottom = 220.0
 stretch = true
 material = SubResource("ShaderMaterial_p5mtm")
 
 [node name="MiniViewport" type="SubViewport" parent="SubViewportContainer"]
 transparent_bg = true
-size = Vector2i(180, 180)
+size = Vector2i(210, 210)
 render_target_update_mode = 2
 
 [node name="MiniCamera" type="Camera2D" parent="SubViewportContainer/MiniViewport"]
@@ -39,71 +39,82 @@ render_target_update_mode = 2
 anchors_preset = 0
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 190.0
-offset_bottom = 190.0
+offset_right = 220.0
+offset_bottom = 220.0
 mouse_filter = 2
 
 [node name="DotsOverlay" type="Control" parent="."]
 anchors_preset = 0
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 190.0
-offset_bottom = 190.0
+offset_right = 220.0
+offset_bottom = 220.0
 
 [node name="PlayerDot" type="ColorRect" parent="."]
 anchors_preset = 0
-offset_left = 97.0
-offset_top = 97.0
-offset_right = 103.0
-offset_bottom = 103.0
+offset_left = 112.0
+offset_top = 112.0
+offset_right = 118.0
+offset_bottom = 118.0
 color = Color(0, 1, 1, 1)
 mouse_filter = 2
 
 [node name="ResizeHandle" type="Control" parent="."]
 anchors_preset = 0
-offset_left = 234.0
-offset_top = 244.0
-offset_right = 250.0
-offset_bottom = 260.0
+offset_left = 284.0
+offset_top = 294.0
+offset_right = 300.0
+offset_bottom = 310.0
 mouse_filter = 1
 mouse_default_cursor_shape = 7
 
 [node name="FpsLabel" type="Label" parent="."]
 anchors_preset = 0
 offset_left = 15.0
-offset_top = 200.0
-offset_right = 260.0
-offset_bottom = 215.0
+offset_top = 230.0
+offset_right = 300.0
+offset_bottom = 245.0
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_font_sizes/font_size = 11
 
 [node name="PingLabel" type="Label" parent="."]
 anchors_preset = 0
 offset_left = 15.0
-offset_top = 217.0
-offset_right = 260.0
-offset_bottom = 232.0
+offset_top = 246.0
+offset_right = 300.0
+offset_bottom = 261.0
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 11
 
-[node name="CashBtn" type="TextureButton" parent="."]
+[node name="CashBtn" type="Control" parent="."]
 anchors_preset = 0
-offset_left = 105.0
-offset_top = 217.0
-offset_right = 141.0
-offset_bottom = 253.0
-texture_normal = ExtResource("3_lojacash")
-expand = true
-stretch_mode = 1
+offset_left = 125.0
+offset_top = 225.0
+offset_right = 189.0
+offset_bottom = 289.0
+custom_minimum_size = Vector2(64, 64)
+mouse_filter = 0
 mouse_default_cursor_shape = 2
 tooltip_text = "Loja de Cash"
 
+[node name="Icon" type="TextureRect" parent="CashBtn"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+custom_minimum_size = Vector2(64, 64)
+texture = ExtResource("3_lojacash")
+expand_mode = 2
+stretch_mode = 5
+
 [node name="VipLabel" type="Label" parent="."]
 anchors_preset = 0
-offset_left = 130.0
-offset_top = 230.0
-offset_right = 220.0
-offset_bottom = 248.0
+offset_left = 195.0
+offset_top = 237.0
+offset_right = 290.0
+offset_bottom = 275.0
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 theme_override_font_sizes/font_size = 10
 text = "⭐ VIP"

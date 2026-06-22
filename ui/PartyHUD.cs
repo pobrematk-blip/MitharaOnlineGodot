@@ -191,18 +191,26 @@ public partial class PartyHUD : Control
             bars.AddThemeConstantOverride("separation", 1);
             bars.MouseFilter = MouseFilterEnum.Ignore;
 
-            float hpPct = maxHp > 0 ? Mathf.Clamp((float)hp / maxHp, 0, 1) : 1f;
-            var hpBar = new ColorRect();
-            hpBar.CustomMinimumSize = new Vector2(0, 4);
-            hpBar.Size = new Vector2(200 * hpPct, 4);
-            hpBar.Color = new Color(0.9f, 0.12f, 0.12f, 0.92f);
+            var hpBar = new ProgressBar
+            {
+                CustomMinimumSize = new Vector2(0, 7),
+                MaxValue = System.Math.Max(1, maxHp),
+                Value = System.Math.Clamp(hp, 0, System.Math.Max(1, maxHp)),
+                ShowPercentage = false,
+            };
+            hpBar.AddThemeStyleboxOverride("background", CriarBarra(new Color(0.15f, 0.04f, 0.04f, 0.85f)));
+            hpBar.AddThemeStyleboxOverride("fill", CriarBarra(new Color(0.9f, 0.12f, 0.12f, 0.95f)));
             bars.AddChild(hpBar);
 
-            float mpPct = maxMp > 0 ? Mathf.Clamp((float)mp / maxMp, 0, 1) : 1f;
-            var mpBar = new ColorRect();
-            mpBar.CustomMinimumSize = new Vector2(0, 4);
-            mpBar.Size = new Vector2(200 * mpPct, 4);
-            mpBar.Color = new Color(0.2f, 0.4f, 1f, 0.9f);
+            var mpBar = new ProgressBar
+            {
+                CustomMinimumSize = new Vector2(0, 7),
+                MaxValue = System.Math.Max(1, maxMp),
+                Value = System.Math.Clamp(mp, 0, System.Math.Max(1, maxMp)),
+                ShowPercentage = false,
+            };
+            mpBar.AddThemeStyleboxOverride("background", CriarBarra(new Color(0.04f, 0.04f, 0.15f, 0.85f)));
+            mpBar.AddThemeStyleboxOverride("fill", CriarBarra(new Color(0.2f, 0.4f, 1f, 0.95f)));
             bars.AddChild(mpBar);
 
             vbox.AddChild(bars);
@@ -239,6 +247,13 @@ public partial class PartyHUD : Control
         if (!string.IsNullOrEmpty(iconPath) && ResourceLoader.Exists(iconPath))
             return ResourceLoader.Load<Texture2D>(iconPath);
         return null;
+    }
+
+    private static StyleBoxFlat CriarBarra(Color cor)
+    {
+        var style = new StyleBoxFlat { BgColor = cor };
+        style.SetCornerRadiusAll(2);
+        return style;
     }
 
     private void MostrarMenuContexto(ulong targetId, string targetName, bool isSelf, Vector2 screenPos)

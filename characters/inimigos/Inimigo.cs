@@ -14,6 +14,7 @@ public partial class Inimigo : CharacterBody2D
     [Export] public int PetID = 0;
     [Export] public string AnimPrefix = "goblin_";
     [Export] public string MobType = "goblin";
+    public int Level { get; set; }
 
     private readonly Vector2 _healthBarSize = new(80, 6);
     private readonly Vector2 _healthBarOffset = new(0, -48);
@@ -21,13 +22,16 @@ public partial class Inimigo : CharacterBody2D
     private readonly Color _healthBarForeground = new(0.85f, 0.15f, 0.15f, 1);
 
     private AnimatedSprite2D _sprite;
+    private NavigationAgent2D _navigationAgent;
     private Vector2 _facingDirection = Vector2.Down;
     private Vector2 _networkDirection = Vector2.Down;
     private bool _networkMoving;
+    private byte _networkAIState;
     private int _vidaAtual;
     private bool _vidaInicializada;
     private bool _avisouSemNetworkId;
     private bool _avisouDanoLocalBloqueado;
+    private float _serverSpeed;
 
     public int VidaAtual => _vidaAtual;
     public int VidaMax => VidaMaxima;
@@ -58,9 +62,17 @@ public partial class Inimigo : CharacterBody2D
             TocarAnimacao($"idle_{CardinalDirection(_facingDirection)}", true);
         }
 
+        _navigationAgent = GetNodeOrNull<NavigationAgent2D>("NavigationAgent2D");
+        if (_navigationAgent != null)
+        {
+            _navigationAgent.PathDesiredDistance = 4f;
+            _navigationAgent.TargetDesiredDistance = 8f;
+        }
+
         if (!_vidaInicializada)
             _vidaAtual = VidaMaxima;
 
+        _serverSpeed = Velocidade;
         NetworkTargetPos = GlobalPosition;
         DefinirPetPadrao();
         QueueRedraw();
@@ -75,9 +87,8 @@ public partial class Inimigo : CharacterBody2D
             if (!_avisouSemNetworkId)
             {
                 _avisouSemNetworkId = true;
-                GD.PrintErr($"[INIMIGO] {Name} ignorado: monstro sem network_id no cliente. No MMORPG, monstros nascem e se movem pelo servidor.");
+                GD.PrintErr($"[INIMIGO] {Name} ignorado: monstro sem network_id no cliente.");
             }
-
             return;
         }
 
@@ -95,7 +106,6 @@ public partial class Inimigo : CharacterBody2D
         }
         else
         {
-            // Suavizacao independente do FPS, processada no mesmo tick da animacao.
             float t = 1.0f - Mathf.Exp(-(float)delta * 12f);
             GlobalPosition = GlobalPosition.Lerp(NetworkTargetPos, t);
         }
@@ -110,12 +120,15 @@ public partial class Inimigo : CharacterBody2D
     {
         GlobalPosition = posicao;
         NetworkTargetPos = posicao;
+        if (_navigationAgent != null)
+            _navigationAgent.TargetPosition = posicao;
     }
 
-    public void SetNetworkState(Vector2 posicao, Vector2 direcao, bool moving)
+    public void SetNetworkState(Vector2 posicao, Vector2 direcao, bool moving, byte aiState = 0)
     {
         NetworkTargetPos = posicao;
         _networkMoving = moving;
+        _networkAIState = aiState;
 
         if (direcao.LengthSquared() > 0.001f)
             _networkDirection = direcao.Normalized();
@@ -185,7 +198,6 @@ public partial class Inimigo : CharacterBody2D
 
     public static void PreencherDropTable(string mobType, Godot.Collections.Array<DropEntry> table)
     {
-        // Compatibilidade com cenas antigas. Drop real pertence ao servidor.
     }
 
     public override void _Draw()

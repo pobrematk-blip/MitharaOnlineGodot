@@ -67,6 +67,14 @@ public enum PacketId : ushort
     C2S_TradeRemoveOffer = 0x014B,
     C2S_CashShopBuy = 0x014C,
     C2S_RefineItem = 0x0197,
+    C2S_LojinhaOpen = 0x0198,
+    C2S_LojinhaAddItem = 0x0199,
+    C2S_LojinhaRemoveItem = 0x019A,
+    C2S_LojinhaBuyItem = 0x019B,
+    C2S_LojinhaCollect = 0x019C,
+    C2S_LojinhaClose = 0x019D,
+    C2S_LojinhaListRequest = 0x019E,
+    C2S_LojinhaRequestItems = 0x019F,
 
     C2S_Ping = 0x01FF,
 
@@ -135,5 +143,13 @@ public enum PacketId : ushort
     S2C_TradeEnd = 0x029B,
     S2C_CashShopResult = 0x029C,
     S2C_RefineResult = 0x029D,
+    S2C_OpenRefine = 0x029E,
+    S2C_OpenLojinha = 0x029F,
+    S2C_LojinhaData = 0x02A0,
+    S2C_LojinhaBuyResult = 0x02A1,
+    S2C_LojinhaListResult = 0x02A2,
+    S2C_LojinhaDespawn = 0x02A3,
+    S2C_LojinhaSpawn = 0x02A4,
+    S2C_ItemUseResult = 0x02A5,
     S2C_Pong = 0x02FF,
 }

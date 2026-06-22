@@ -41,7 +41,7 @@ public partial class TelaLogin : CanvasLayer
 
         var bgImg = new TextureRect
         {
-            Texture = ResourceLoader.Load<Texture2D>("res://Network/Tela de login.png"),
+            Texture = ResourceLoader.Load<Texture2D>("res://Network/Tela de Login.png"),
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             StretchMode = TextureRect.StretchModeEnum.Scale,
             MouseFilter = Control.MouseFilterEnum.Ignore,

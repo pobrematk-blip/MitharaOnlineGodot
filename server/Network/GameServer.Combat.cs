@@ -382,7 +382,10 @@ partial class GameServer
 
             var peer = channel.GetPlayerPeer(killer.Id);
             if (peer != null)
+            {
                 SendSystemMessage(peer, $"Parabéns! Você alcançou o nível {killer.Level}!");
+                SendStatUpdate(peer, killer);
+            }
         }
 
         _db.SaveCharacterXp(killerSession.SelectedCharacter!.Id, killer.Experience);

@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://dntdyevkybtpn"]
+[gd_scene load_steps=8 format=3 uid="uid://dntdyevkybtpn"]
 
 [ext_resource type="Script" uid="uid://b7k2mnc4p8qwr" path="res://Banco/BancoUI.cs" id="1_bancoui"]
 [ext_resource type="PackedScene" uid="uid://blo3yab0lyoi3" path="res://resources/Inventario/SlotUI.tscn" id="2_slot"]
+[ext_resource type="Theme" path="res://ui/MitharaWindowTheme.tres" id="3_window_theme"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_title"]
 
@@ -17,7 +18,7 @@ default_font_size = 14
 [node name="BancoUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-theme = SubResource("Theme_banco")
+theme = ExtResource("3_window_theme")
 script = ExtResource("1_bancoui")
 SlotUIPrefab = ExtResource("2_slot")
 

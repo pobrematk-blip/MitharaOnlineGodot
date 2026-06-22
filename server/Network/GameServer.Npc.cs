@@ -11,6 +11,17 @@ partial class GameServer
     private static ItemDefinition? GetItemDef(int id) => ItemDefinitions.Get(id);
     private const float NpcInteractionRange = 180f;
 
+    private static bool IsNearNpc(Channel channel, Entity player, string prefabId)
+    {
+        float maxDistanceSq = NpcInteractionRange * NpcInteractionRange;
+        return channel.GetAllEntities().Values
+            .OfType<NPCEntity>()
+            .Any(npc => npc.Health > 0
+                && npc.PrefabId == prefabId
+                && ((npc.X - player.X) * (npc.X - player.X)
+                    + (npc.Y - player.Y) * (npc.Y - player.Y)) <= maxDistanceSq);
+    }
+
     private void HandleNpcInteract(NetPeer peer, NetDataReader reader)
     {
         if (!TryGetPlayer(peer, out var player, out var channel))
@@ -102,6 +113,12 @@ partial class GameServer
                 break;
 
             case "shop":
+                if (!IsNearNpc(channel, player, "general_merchant"))
+                {
+                    SendSystemMessage(peer, "Aproxime-se do General Merchante para abrir a loja.");
+                    break;
+                }
+
                 // Find the NPC first to get shopId
                 string shopId = actionData;
                 // Try to find shop by the shop data passed as action data
@@ -149,8 +166,37 @@ partial class GameServer
                 break;
 
             case "merchant_sell":
+                if (!IsNearNpc(channel, player, "general_merchant"))
+                {
+                    SendSystemMessage(peer, "Aproxime-se do General Merchante para vender itens.");
+                    break;
+                }
+
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
-                SendSystemMessage(peer, "Venda ativada! Clique com botão direito nos itens do inventário para vender ao General Merchante.");
+                SendNpcShopItems(peer, "merchant_sell", new List<ShopEntry>());
+                break;
+
+            case "open_refine":
+                bool nearRefiner = IsNearNpc(channel, player, "refiner");
+
+                if (!nearRefiner)
+                {
+                    SendSystemMessage(peer, "Aproxime-se do Refinador para abrir a forja.");
+                    break;
+                }
+
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                SendOpenRefine(peer);
+                break;
+
+            case "leilao_list":
+                if (!IsNearNpc(channel, player, "merchant_auctioneer"))
+                {
+                    SendSystemMessage(peer, "Aproxime-se do Mercador Leiloeiro para ver os itens.");
+                    break;
+                }
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                HandleLojinhaListRequest(peer);
                 break;
 
             case "close":
@@ -166,6 +212,18 @@ partial class GameServer
         string shopId = reader.GetString();
         int itemId = reader.GetInt();
         int quantity = reader.GetInt();
+
+        if (!IsNearNpc(channel, player, "general_merchant"))
+        {
+            SendNpcBuyResult(peer, false, "Você está longe do General Merchante.");
+            return;
+        }
+
+        if (quantity <= 0 || quantity > 99)
+        {
+            SendNpcBuyResult(peer, false, "Quantidade inválida.");
+            return;
+        }
 
         var shop = _world.Npcs.GetShop(shopId);
         if (shop == null)
@@ -220,10 +278,30 @@ partial class GameServer
         int slot = reader.GetInt();
         int quantity = reader.GetInt();
 
+        if (!IsNearNpc(channel, player, "general_merchant"))
+        {
+            SendNpcSellResult(peer, false, "Você está longe do General Merchante.");
+            return;
+        }
+
         var item = player.Items.FirstOrDefault(i => i.Slot == slot);
         if (item == null)
         {
             SendNpcSellResult(peer, false, "Item não encontrado.");
+            return;
+        }
+
+        if (player.Equipment.Values.Any(equipped =>
+                ReferenceEquals(equipped, item)
+                || (item.DbId > 0 && equipped.DbId == item.DbId)))
+        {
+            SendNpcSellResult(peer, false, "Desequipe o item antes de vendê-lo.");
+            return;
+        }
+
+        if (quantity <= 0 || quantity > item.Quantity)
+        {
+            SendNpcSellResult(peer, false, "Quantidade inválida.");
             return;
         }
 
@@ -234,9 +312,9 @@ partial class GameServer
             return;
         }
 
-        if (itemDef.RequiredLevel != 1)
+        if (itemDef.BuyPrice <= 0)
         {
-            SendNpcSellResult(peer, false, "Só compro itens de nível 1.");
+            SendNpcSellResult(peer, false, "Este item não pode ser vendido.");
             return;
         }
 
@@ -319,6 +397,12 @@ partial class GameServer
     private void SendOpenGuildForm(NetPeer peer)
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_OpenGuildForm);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void SendOpenRefine(NetPeer peer)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_OpenRefine);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }

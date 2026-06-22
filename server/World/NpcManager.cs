@@ -91,10 +91,21 @@ public class NpcManager
             FactionId = "solari",
         });
 
+        RegisterTemplate(new NpcTemplate
+        {
+            PrefabId = "merchant_auctioneer",
+            Name = "Mercador Leiloeiro",
+            DialogId = "leilao",
+            Race = "Mercador",
+            AnimPrefix = "padrao",
+            FactionId = "solari",
+        });
+
         _spawnPoints.Add(new NpcSpawnPoint { X = 1109, Y = 957, PrefabId = "banqueiro" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1098, Y = 1177, PrefabId = "guarda_solareth" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1130, Y = 1040, PrefabId = "general_merchant" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1025, PrefabId = "refiner" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1145, Y = 1040, PrefabId = "merchant_auctioneer" });
     }
 
     private void RegisterDialogs()
@@ -133,7 +144,18 @@ public class NpcManager
             Options = new List<DialogOption>
             {
                 new() { Text = "Comprar itens", Action = "shop", ActionData = "general_merchant_shop" },
-                new() { Text = "Vender itens nível 1", Action = "merchant_sell", ActionData = "" },
+                new() { Text = "Vender itens", Action = "merchant_sell", ActionData = "" },
+                new() { Text = "Sair", Action = "close" },
+            },
+        };
+
+        _dialogs["leilao"] = new DialogNode
+        {
+            Id = "leilao",
+            Text = "Bem-vindo ao Mercado das Lojinhas! Aqui você encontra itens de todos os vendedores ambulantes. Deseja ver o catálogo completo?",
+            Options = new List<DialogOption>
+            {
+                new() { Text = "Ver itens das lojinhas", Action = "leilao_list", ActionData = "" },
                 new() { Text = "Sair", Action = "close" },
             },
         };
@@ -156,7 +178,8 @@ public class NpcManager
     {
         _shops["general_merchant_shop"] = new List<ShopEntry>
         {
-            // Itens serão adicionados pelo usuário posteriormente
+            new() { ItemId = ItemDefinitions.PocaoVida, Price = 10, Stock = -1 },
+            new() { ItemId = ItemDefinitions.PocaoMana, Price = 10, Stock = -1 },
         };
     }
 

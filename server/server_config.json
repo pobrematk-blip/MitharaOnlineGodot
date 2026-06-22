@@ -1,6 +1,6 @@
 {
   "Port": 7777,
-  "BindAddress": "26.109.183.50",
+  "BindAddress": "0.0.0.0",
   "MaxConnections": 500,
   "ChannelCount": 4,
   "TickRate": 20,
@@ -77,6 +77,149 @@
       "PrefabId": "slimeBoss",
       "MaxCount": 1,
       "RespawnDelay": 3600
+    },
+    {
+      "X": 6381,
+      "Y": -4322,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 11232,
+      "Y": -3265,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 11454,
+      "Y": -4618,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 8399,
+      "Y": -5600,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 9812,
+      "Y": -6098,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 9671,
+      "Y": -4066,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 7074,
+      "Y": -6380,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 5540,
+      "Y": -5573,
+      "Radius": 600,
+      "PrefabId": "plantaCarnivora",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "plantaCarnivoraElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 1119,
+      "Y": -6329,
+      "Radius": 600,
+      "PrefabId": "cogumelo",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "cogumeloElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": -2240,
+      "Y": -6146,
+      "Radius": 600,
+      "PrefabId": "cogumelo",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "cogumeloElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 1786,
+      "Y": -5472,
+      "Radius": 600,
+      "PrefabId": "cogumelo",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "cogumeloElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": -2011,
+      "Y": -4110,
+      "Radius": 600,
+      "PrefabId": "cogumelo",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "cogumeloElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
+    },
+    {
+      "X": 129,
+      "Y": -5277,
+      "Radius": 600,
+      "PrefabId": "cogumelo",
+      "MaxCount": 15,
+      "RespawnDelay": 3,
+      "ElitePrefabId": "cogumeloElite",
+      "EliteBaseCount": 2,
+      "EliteEveryKills": 10
     }
   ],
   "NpcSpawnPoints": [
@@ -86,10 +229,10 @@
     { "X": 1070, "Y": 1025, "PrefabId": "refiner" }
   ],
   "PathfindingGridWidth": 700,
-  "PathfindingGridHeight": 340,
+  "PathfindingGridHeight": 400,
   "PathfindingCellSize": 32,
   "PathfindingOriginX": -10000,
-  "PathfindingOriginY": -3000,
+  "PathfindingOriginY": -8000,
   "BlockedAreas": [
     { "X": 400, "Y": 400, "Width": 64, "Height": 64 },
     { "X": 800, "Y": 800, "Width": 128, "Height": 128 },

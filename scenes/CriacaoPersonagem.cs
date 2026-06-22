@@ -83,6 +83,9 @@ public partial class CriacaoPersonagem : Control
         _emblemaSolari = GetNode<TextureRect>("%EmblemaSolari");
         _emblemaNoctori = GetNode<TextureRect>("%EmblemaNoctori");
 
+        ConfigurarConteudoBotaoComoVisual(GetNode<Button>("%BtnEscolherSolari"));
+        ConfigurarConteudoBotaoComoVisual(GetNode<Button>("%BtnEscolherNoctori"));
+
         _aparenciaPanel = GetNode<Control>("%AparenciaPanel");
         _opcaoCabelo = GetNode<OptionButton>("%OpcaoCabelo");
         _opcaoBarba = GetNode<OptionButton>("%OpcaoBarba");
@@ -107,6 +110,15 @@ public partial class CriacaoPersonagem : Control
         _personagemPreview.AnimationFinished += OnPersonagemPreviewAnimacaoFinalizada;
 
         CallDeferred(nameof(ConfigurarAposReady));
+    }
+
+    private static void ConfigurarConteudoBotaoComoVisual(Button botao)
+    {
+        foreach (Node filho in botao.FindChildren("*", recursive: true, owned: false))
+        {
+            if (filho is Control control)
+                control.MouseFilter = Control.MouseFilterEnum.Ignore;
+        }
     }
 
     private void ConfigurarAposReady()

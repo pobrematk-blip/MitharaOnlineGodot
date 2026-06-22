@@ -1,7 +1,18 @@
 ﻿namespace Mithara.Server.Entities;
 
+public enum MonsterAIState : byte
+{
+    Idle,
+    Patrol,
+    Chase,
+    Attack,
+    Return,
+    Dead,
+}
+
 public class MonsterEntity : Entity
 {
+    public MonsterAIState AIState { get; set; } = MonsterAIState.Idle;
     public bool IsBoss { get; set; }
     public int ExperienceReward { get; set; }
     public string PrefabId { get; set; } = "";
