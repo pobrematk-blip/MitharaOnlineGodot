@@ -75,6 +75,12 @@ public partial class ClasseRegistry : Node
             Racas = CriarRacasFallback(Faccoes);
         }
 
+        if (Classes.Count == 0)
+        {
+            GD.PrintErr("[CLASSE REGISTRY] ✘ Nenhuma classe carregada dos arquivos. Criando fallback hardcoded.");
+            Classes = CriarClassesFallback();
+        }
+
         ValidarConteudoPadrao();
 
         ValidarFaccoes();
@@ -149,6 +155,99 @@ public partial class ClasseRegistry : Node
             BonusForca = 3, BonusVidaMaxima = 15, BonusInteligencia = -2, BonusDestreza = -1,
         };
         return new List<RacaResource> { humano, elfo, troll, darkElfo, mortoVivo, orc };
+    }
+
+    private static List<ClasseCustomResource> CriarClassesFallback()
+    {
+        var mago = new ClasseCustomResource
+        {
+            NomeClasse = "Mago",
+            Descricao = "Dano mágico à distância com bola de fogo.",
+            PrefixoAnimacao = "mago",
+            PrefixoAnimacaoAtaque = "mago",
+            AttackAnimSpeedScale = 3f,
+            Forca = 8, Inteligencia = 18,
+            VidaMaxima = 90, ManaMaxima = 80,
+            VelocidadeMovimento = 210f,
+            UsaProjetil = true,
+            DanoProjetilMin = 20, DanoProjetilMax = 30,
+            ProjetilDanoMagico = true,
+            VelocidadeDoProjetil = 220f,
+        };
+        var arqueiro = new ClasseCustomResource
+        {
+            NomeClasse = "Arqueiro",
+            Descricao = "Ataques rápidos com flechas.",
+            PrefixoAnimacao = "arqueiro",
+            PrefixoAnimacaoAtaque = "arqueiro",
+            AttackAnimSpeedScale = 3.5f,
+            Forca = 12, Agilidade = 16, Destreza = 14, Inteligencia = 8,
+            ManaMaxima = 40,
+            VelocidadeMovimento = 235f,
+            UsaProjetil = true,
+            DanoProjetilMin = 10, DanoProjetilMax = 16,
+            ProjetilDanoMagico = false,
+            VelocidadeDoProjetil = 450f,
+        };
+        var ladino = new ClasseCustomResource
+        {
+            NomeClasse = "Ladino",
+            Descricao = "Ataques rápidos corpo a corpo.",
+            PrefixoAnimacao = "arqueiro",
+            PrefixoAnimacaoAtaque = "ladino",
+            AttackAnimSpeedScale = 4f,
+            PontosDisponiveis = 10,
+            Forca = 10, Agilidade = 18, Destreza = 16, Inteligencia = 8,
+            VidaMaxima = 95, ManaMaxima = 35,
+            VelocidadeMovimento = 240f,
+            UsaProjetil = false,
+            AlcanceAtaqueMelee = 44f,
+        };
+        var berseker = new ClasseCustomResource
+        {
+            NomeClasse = "Berseker",
+            Descricao = "Fúria corpo a corpo.",
+            PrefixoAnimacao = "guerreiro",
+            PrefixoAnimacaoAtaque = "guerreiro",
+            AttackAnimSpeedScale = 2.8f,
+            PontosDisponiveis = 8,
+            Forca = 20, Agilidade = 12, Destreza = 8, Inteligencia = 6,
+            VidaMaxima = 140, ManaMaxima = 25,
+            VelocidadeMovimento = 220f,
+            UsaProjetil = false,
+            AlcanceAtaqueMelee = 52f,
+        };
+        var guardiao = new ClasseCustomResource
+        {
+            NomeClasse = "Guardiao",
+            Descricao = "Tanque corpo a corpo. Animações guerreiro (escudo/espada).",
+            PrefixoAnimacao = "guerreiro",
+            PrefixoAnimacaoAtaque = "guerreiro",
+            AttackAnimSpeedScale = 2.2f,
+            PontosDisponiveis = 8,
+            Forca = 16, Agilidade = 8, Destreza = 8, Inteligencia = 8,
+            VidaMaxima = 150, ManaMaxima = 40,
+            VelocidadeMovimento = 195f,
+            UsaProjetil = false,
+            AlcanceAtaqueMelee = 50f,
+        };
+        var prist = new ClasseCustomResource
+        {
+            NomeClasse = "Prist",
+            Descricao = "Suporte à distância com projétil sagrado (animação mago).",
+            PrefixoAnimacao = "mago",
+            PrefixoAnimacaoAtaque = "mago",
+            AttackAnimSpeedScale = 2.8f,
+            PontosDisponiveis = 10,
+            Forca = 8, Agilidade = 10, Destreza = 10, Inteligencia = 16,
+            VidaMaxima = 100, ManaMaxima = 90,
+            VelocidadeMovimento = 205f,
+            UsaProjetil = true,
+            DanoProjetilMin = 12, DanoProjetilMax = 18,
+            ProjetilDanoMagico = true,
+            VelocidadeDoProjetil = 280f,
+        };
+        return new List<ClasseCustomResource> { mago, arqueiro, ladino, berseker, guardiao, prist };
     }
 
     public List<RacaResource> ObterRacasDaFaccao(FaccaoResource faccao)
