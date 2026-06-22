@@ -63,18 +63,21 @@ public partial class ClasseRegistry : Node
 
         CarregarPrefixosAnimacaoAtaque();
 
-        if (Racas.Count == 0)
-            GD.Print("[CLASSE REGISTRY] ✘ Nenhuma raça em res://Racas/. Use o editor para criar.");
-
-        ValidarConteudoPadrao();
-
-        ValidarFaccoes();
-
         if (Faccoes.Count == 0)
         {
             GD.PrintErr("[CLASSE REGISTRY] ✘ Nenhuma facção carregada dos arquivos. Criando fallback hardcoded.");
             Faccoes = CriarFaccoesFallback();
         }
+
+        if (Racas.Count == 0)
+        {
+            GD.PrintErr("[CLASSE REGISTRY] ✘ Nenhuma raça carregada dos arquivos. Criando fallback hardcoded.");
+            Racas = CriarRacasFallback(Faccoes);
+        }
+
+        ValidarConteudoPadrao();
+
+        ValidarFaccoes();
 
         GD.Print($"[CLASSE REGISTRY] {Classes.Count} classes, {Racas.Count} raças, {Faccoes.Count} facções, {Sprites.Count} sprites.");
     }
@@ -96,6 +99,56 @@ public partial class ClasseRegistry : Node
             CorTema = new Color(0.55f, 0.32f, 0.78f, 1f),
         };
         return new List<FaccaoResource> { solari, noctori };
+    }
+
+    private static List<RacaResource> CriarRacasFallback(List<FaccaoResource> faccoes)
+    {
+        var solari = faccoes.FirstOrDefault(f => f.IdFaccao == "solari");
+        var noctori = faccoes.FirstOrDefault(f => f.IdFaccao == "noctori");
+
+        var humano = new RacaResource
+        {
+            NomeRaca = "Humano",
+            Descricao = "Versátil — +1 em todos os atributos. Facção Solari.",
+            Faccao = solari,
+            BonusForca = 1, BonusAgilidade = 1, BonusDestreza = 1, BonusInteligencia = 1,
+        };
+        var elfo = new RacaResource
+        {
+            NomeRaca = "Elfo",
+            Descricao = "Ágil, inteligente e ligado à mana. Facção Solari.",
+            Faccao = solari,
+            BonusAgilidade = 2, BonusInteligencia = 2, BonusDestreza = 1, BonusForca = -1, BonusManaMaxima = 10,
+        };
+        var troll = new RacaResource
+        {
+            NomeRaca = "Troll",
+            Descricao = "Gigante resistente, mas lento. Facção Solari.",
+            Faccao = solari,
+            BonusForca = 4, BonusVidaMaxima = 25, BonusInteligencia = -3, BonusAgilidade = -2, BonusVelocidadeMovimento = -12f,
+        };
+        var darkElfo = new RacaResource
+        {
+            NomeRaca = "Dark Elfo",
+            Descricao = "Inteligência sombria e precisão mortal. Facção Noctori.",
+            Faccao = noctori,
+            BonusAgilidade = 1, BonusDestreza = 2, BonusInteligencia = 3, BonusVidaMaxima = -5,
+        };
+        var mortoVivo = new RacaResource
+        {
+            NomeRaca = "Morto Vivo",
+            Descricao = "Corpo resistente, reflexos lentos. Facção Noctori.",
+            Faccao = noctori,
+            BonusForca = 2, BonusInteligencia = 1, BonusAgilidade = -2, BonusDestreza = -1, BonusVidaMaxima = 15,
+        };
+        var orc = new RacaResource
+        {
+            NomeRaca = "Orc",
+            Descricao = "Força bruta e vigor de batalha. Facção Noctori.",
+            Faccao = noctori,
+            BonusForca = 3, BonusVidaMaxima = 15, BonusInteligencia = -2, BonusDestreza = -1,
+        };
+        return new List<RacaResource> { humano, elfo, troll, darkElfo, mortoVivo, orc };
     }
 
     public List<RacaResource> ObterRacasDaFaccao(FaccaoResource faccao)
