@@ -70,7 +70,32 @@ public partial class ClasseRegistry : Node
 
         ValidarFaccoes();
 
+        if (Faccoes.Count == 0)
+        {
+            GD.PrintErr("[CLASSE REGISTRY] ✘ Nenhuma facção carregada dos arquivos. Criando fallback hardcoded.");
+            Faccoes = CriarFaccoesFallback();
+        }
+
         GD.Print($"[CLASSE REGISTRY] {Classes.Count} classes, {Racas.Count} raças, {Faccoes.Count} facções, {Sprites.Count} sprites.");
+    }
+
+    private static List<FaccaoResource> CriarFaccoesFallback()
+    {
+        var solari = new FaccaoResource
+        {
+            IdFaccao = "solari",
+            NomeFaccao = "Solari",
+            Descricao = "Seguidores da luz de Aethor. Humanos, elfos e trolls defendem a honra, a esperança e Mithara sob o sol dourado. Sua capital é Helion, a Cidade do Sol Eterno.",
+            CorTema = new Color(0.95f, 0.82f, 0.35f, 1f),
+        };
+        var noctori = new FaccaoResource
+        {
+            IdFaccao = "noctori",
+            NomeFaccao = "Noctori",
+            Descricao = "Filhos da sombra de Nyzareth. Dark elfos, mortos-vivos e orcs juraram lealdade ao Senhor do Abismo em Umbrath, o Reino da Lua Negra.",
+            CorTema = new Color(0.55f, 0.32f, 0.78f, 1f),
+        };
+        return new List<FaccaoResource> { solari, noctori };
     }
 
     public List<RacaResource> ObterRacasDaFaccao(FaccaoResource faccao)
@@ -221,7 +246,11 @@ public partial class ClasseRegistry : Node
     {
         var lista = new List<T>();
         var dir = DirAccess.Open(pasta);
-        if (dir == null) return lista;
+        if (dir == null)
+        {
+            GD.PrintErr($"[CLASSE REGISTRY] ✘ Pasta não encontrada: {pasta}");
+            return lista;
+        }
 
         dir.ListDirBegin();
         string nome = dir.GetNext();

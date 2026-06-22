@@ -157,7 +157,11 @@ public partial class CriacaoPersonagem : Control
     {
         var registry = GetNode<ClasseRegistry>("/root/ClasseRegistry");
         _faccaoSelecionada = registry.ObterFaccaoPorId(idFaccao);
-        if (_faccaoSelecionada == null) return;
+        if (_faccaoSelecionada == null)
+        {
+            GD.PrintErr($"[CRIACAO] Facção '{idFaccao}' não encontrada no registro.");
+            return;
+        }
 
         _racaSelecionada = null;
         _classeSelecionada = null;
