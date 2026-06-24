@@ -56,6 +56,9 @@ public partial class GameNetwork : Node
     public int GuildEmblem { get; set; } = -1;
     public bool IsGuildLeader { get; set; }
     public Vector2 PendingPlayerSpawn { get; private set; }
+    public int? PendingTalentPoints { get; private set; }
+    public Godot.Collections.Array<string>? PendingTalentNodes { get; private set; }
+    public Godot.Collections.Array<int>? PendingSkillBarData { get; private set; }
 
     [Signal] public delegate void OnConnectedEventHandler();
     [Signal] public delegate void OnDisconnectedEventHandler();
@@ -86,12 +89,15 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnGuildSkillUpdateEventHandler(string skillId, int newLevel);
 
     [Signal] public delegate void OnEntityHealthUpdateEventHandler(ulong entityId, int health, int maxHealth);
+    [Signal] public delegate void OnEntityManaUpdateEventHandler(ulong entityId, int mana, int maxMana);
     [Signal] public delegate void OnRespawnEventHandler(ulong entityId, float x, float y, int health, int maxHealth);
     [Signal] public delegate void OnTeleportEventHandler(ulong entityId, float x, float y);
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
     [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana);
+    [Signal] public delegate void OnTalentDataEventHandler(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados);
+    [Signal] public delegate void OnSkillBarDataEventHandler(Godot.Collections.Array<int> skillIds);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
     [Signal] public delegate void OnGuildCreateResultEventHandler(int guildId, bool success, string message);
     [Signal] public delegate void OnGuildClearedEventHandler();
@@ -395,6 +401,12 @@ public partial class GameNetwork : Node
             case PacketId.S2C_Teleport:
                 HandleTeleport(r);
                 break;
+            case PacketId.S2C_TalentData:
+                HandleTalentData(r);
+                break;
+            case PacketId.S2C_SkillBarData:
+                HandleSkillBarData(r);
+                break;
             case PacketId.S2C_RecoverResult:
                 HandleRecoverResult(r);
                 break;
@@ -430,6 +442,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_GuildInviteReceived:
                 HandleGuildInviteReceived(r);
+                break;
+            case PacketId.S2C_GuildPromoteLeaderRequest:
+                HandleGuildPromoteLeaderRequest(r);
                 break;
             case PacketId.S2C_LootSpawn:
                 HandleLootSpawn(r);
@@ -808,6 +823,50 @@ public partial class GameNetwork : Node
         VipExpiryBinary = binary;
         var expiry = System.DateTime.FromBinary(binary);
         GD.Print($"[VIP] Status recebido: expiry={expiry:yyyy-MM-dd HH:mm:ss}, ativo={IsVipActive}");
+    }
+
+    public void SendTalentUnlock(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId) || _client == null || !_client.IsConnected)
+            return;
+
+        _client.SendPacket(PacketId.C2S_TalentUnlock, w => w.Put(nodeId));
+    }
+
+    public void SendSetSkillSlot(int slotIndex, int skillId)
+    {
+        if (_client == null || !_client.IsConnected)
+            return;
+
+        _client.SendPacket(PacketId.C2S_SetSkillSlot, w =>
+        {
+            w.Put(slotIndex);
+            w.Put(skillId);
+        });
+    }
+
+    private void HandleTalentData(NetDataReader r)
+    {
+        int points = r.GetInt();
+        int count = r.GetInt();
+        var unlocked = new Godot.Collections.Array<string>();
+        for (int i = 0; i < count; i++)
+            unlocked.Add(r.GetString());
+        PendingTalentPoints = points;
+        PendingTalentNodes = unlocked;
+        GD.Print($"[TALENT] Dados recebidos do servidor: pontos={points}, desbloqueados={count}");
+        EmitSignal(SignalName.OnTalentData, points, unlocked);
+    }
+
+    private void HandleSkillBarData(NetDataReader r)
+    {
+        int count = r.GetInt();
+        var skillIds = new Godot.Collections.Array<int>();
+        for (int i = 0; i < count; i++)
+            skillIds.Add(r.GetInt());
+        PendingSkillBarData = skillIds;
+        GD.Print($"[SKILL BAR] Dados recebidos do servidor: {count} slots");
+        EmitSignal(SignalName.OnSkillBarData, skillIds);
     }
 }
 

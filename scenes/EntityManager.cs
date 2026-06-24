@@ -135,7 +135,7 @@ public partial class EntityManager : Node
             if (_worldNode == null)
             {
                 int rootChildCount = root.GetChildCount();
-                GameNetwork.LogError($"ObterMundo: 'World' n?o encontrado (Root tem {rootChildCount} filhos)");
+                GameNetwork.Log($"ObterMundo: aguardando cena com World (Root tem {rootChildCount} filhos)");
             }
         }
         return _worldNode;
@@ -176,6 +176,7 @@ public partial class EntityManager : Node
     private CanvasLayer? _uiOverlay;
     private PlayerContextMenu? _contextMenu;
     private InvitePopupUI? _invitePopup;
+    private BossHPBar? _bossHPBar;
 
     public override void _Ready()
     {
@@ -188,8 +189,9 @@ public partial class EntityManager : Node
         _gameNet.OnEntityDied += OnEntityDied;
         _gameNet.OnGainExp += OnGainExp;
         _gameNet.OnLevelUp += OnLevelUp;
-        _gameNet.OnEntityHealthUpdate += OnEntityHealthUpdateHandler;
-        _gameNet.OnRespawn += OnRespawnHandler;
+		_gameNet.OnEntityHealthUpdate += OnEntityHealthUpdateHandler;
+		_gameNet.OnEntityManaUpdate += OnEntityManaUpdateHandler;
+		_gameNet.OnRespawn += OnRespawnHandler;
         _gameNet.OnLootSpawn += OnLootSpawn;
         _gameNet.OnLootDespawn += OnLootDespawn;
         _gameNet.OnLojinhaSpawn += OnLojinhaSpawn;
@@ -241,6 +243,10 @@ public partial class EntityManager : Node
         _invitePopup = new InvitePopupUI();
         _invitePopup.Name = "InvitePopupUI";
         _uiOverlay.AddChild(_invitePopup);
+
+        _bossHPBar = new BossHPBar();
+        _bossHPBar.Name = "BossHPBar";
+        _uiOverlay.AddChild(_bossHPBar);
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -926,6 +932,16 @@ public partial class EntityManager : Node
         }
     }
 
+    private void OnEntityManaUpdateHandler(ulong entityId, int mana, int maxMana)
+    {
+        if (entityId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            if (localPlayer != null && IsInstanceValid(localPlayer))
+                localPlayer.SetManaFromServer(mana, maxMana);
+        }
+    }
+
     private void OnCombatResult(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth)
     {
         GameNetwork.Log($"[COMBAT] OnCombatResult: attacker={attackerId} target={targetId} damage={damage} isCrit={isCrit} targetHP={targetHealth}/{targetMaxHealth}");
@@ -1214,7 +1230,7 @@ public partial class EntityManager : Node
         var root = new Area2D();
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
-        root.ZIndex = -1;
+        root.ZIndex = 0;
         root.ZAsRelative = true;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
@@ -1239,27 +1255,27 @@ public partial class EntityManager : Node
         visuals.ZAsRelative = true;
         root.AddChild(visuals);
 
-        Texture2D? iconTexture = itemRes?.Icone ?? GD.Load<Texture2D>("res://Itens/Incones/1.png");
-        if (iconTexture != null)
-        {
-            var icon = new Sprite2D
-            {
-                Name = "ItemIcon",
-                Texture = iconTexture,
-                Position = new Vector2(0, -12),
-                ZIndex = 0,
-                ZAsRelative = true,
-            };
+		Texture2D? iconTexture = itemRes?.Icone ?? GD.Load<Texture2D>("res://Itens/Incones/Moeda de Gold.png");
+		if (iconTexture != null)
+		{
+			var icon = new Sprite2D
+			{
+				Name = "ItemIcon",
+				Texture = iconTexture,
+				Position = new Vector2(0, -12),
+				ZIndex = 0,
+				ZAsRelative = true,
+			};
 
-            float maxSide = Mathf.Max(iconTexture.GetWidth(), iconTexture.GetHeight());
-            if (maxSide > 0f)
-            {
-                float iconScale = 48f / maxSide;
-                icon.Scale = new Vector2(iconScale, iconScale);
-            }
+			float maxSide = Mathf.Max(iconTexture.GetWidth(), iconTexture.GetHeight());
+			if (maxSide > 0f)
+			{
+				float iconScale = itemId == 0 ? 40f / maxSide : 48f / maxSide;
+				icon.Scale = new Vector2(iconScale, iconScale);
+			}
 
-            visuals.AddChild(icon);
-        }
+			visuals.AddChild(icon);
+		}
 
         var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         spawnTween.TweenProperty(root, "scale", Vector2.One * 1.15f, 0.25f);
@@ -1622,8 +1638,9 @@ public partial class EntityManager : Node
             _gameNet.OnEntityDied -= OnEntityDied;
             _gameNet.OnGainExp -= OnGainExp;
             _gameNet.OnLevelUp -= OnLevelUp;
-            _gameNet.OnEntityHealthUpdate -= OnEntityHealthUpdateHandler;
-            _gameNet.OnRespawn -= OnRespawnHandler;
+		_gameNet.OnEntityHealthUpdate -= OnEntityHealthUpdateHandler;
+		_gameNet.OnEntityManaUpdate -= OnEntityManaUpdateHandler;
+		_gameNet.OnRespawn -= OnRespawnHandler;
             _gameNet.OnLootSpawn -= OnLootSpawn;
             _gameNet.OnLootDespawn -= OnLootDespawn;
             _gameNet.OnLojinhaSpawn -= OnLojinhaSpawn;

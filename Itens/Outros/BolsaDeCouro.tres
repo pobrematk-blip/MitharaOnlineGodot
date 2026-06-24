@@ -1,22 +1,15 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
-[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Bag 1.png" id="1_bgdb1"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
 
 [resource]
 script = ExtResource("1_taxcw")
 ItemID = 250
 Nome = "Bolsa de Couro"
 Descricao = "Uma bolsa simples de couro, talvez tenha algo dentro."
-Acumulavel = true
-QuantidadeMaximaPorSlot = 99
-Tipo = 15
-NivelRequerido = 1
+Icone = ExtResource("1_bgdb1")
+QuantidadeMaximaPorSlot = 1
+EhBolsa = true
+SlotsAdicionais = 5
 Valor = 5
-PodeDropar = true
-PodeTrocar = true
-PodeVender = true
-PodeArmazenarBanco = true
-PodeArmazenarBancoGuild = true
-ChanceDrop = 0.0
-TempoDesaparecimento = 30.0
-TipoItem = 0
-Raridade = 0

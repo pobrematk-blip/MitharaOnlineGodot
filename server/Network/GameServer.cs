@@ -31,6 +31,7 @@ public partial class GameServer : INetEventListener
     internal readonly ConcurrentQueue<Action> _mainThreadActions = new();
     internal readonly Dictionary<ulong, ulong> _partyInvites = new();
     internal readonly Dictionary<ulong, ulong> _guildInvites = new();
+    internal readonly Dictionary<ulong, GuildLeaderPromotion> _guildLeaderPromotions = new();
     internal readonly Dictionary<ulong, ulong> _tradeInvites = new();
     internal readonly Dictionary<ulong, TradeSession> _activeTrades = new();
     internal int _nextTradeId = 1;
@@ -244,6 +245,7 @@ public partial class GameServer : INetEventListener
                 }
                 _partyInvites.Remove(session.EntityId);
                 _guildInvites.Remove(session.EntityId);
+                _guildLeaderPromotions.Remove(session.EntityId);
             }
         }
         catch (Exception ex)
@@ -343,6 +345,12 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_SkillUse:
                 HandleSkillUse(peer, reader);
                 break;
+            case PacketId.C2S_TalentUnlock:
+                HandleTalentUnlock(peer, reader);
+                break;
+            case PacketId.C2S_SetSkillSlot:
+                HandleSetSkillSlot(peer, reader);
+                break;
             case PacketId.C2S_Respawn:
                 HandleRespawn(peer);
                 break;
@@ -399,6 +407,12 @@ public partial class GameServer : INetEventListener
                 break;
             case PacketId.C2S_GuildBuySkill:
                 HandleGuildBuySkillPacket(peer, reader);
+                break;
+            case PacketId.C2S_GuildPromoteLeaderAccept:
+                HandleGuildPromoteLeaderAcceptPacket(peer, reader);
+                break;
+            case PacketId.C2S_GuildPromoteLeaderDecline:
+                HandleGuildPromoteLeaderDeclinePacket(peer, reader);
                 break;
             case PacketId.C2S_LootPickup:
                 HandleLootPickup(peer, reader);
@@ -598,5 +612,17 @@ public class PlayerSession
     public bool IsAdminOrAdminMode(ServerConfig config)
     {
         return IsAdmin || config.AdminMode;
+    }
+}
+
+internal class GuildLeaderPromotion
+{
+    public ulong LeaderId { get; }
+    public int GuildId { get; }
+
+    public GuildLeaderPromotion(ulong leaderId, int guildId)
+    {
+        LeaderId = leaderId;
+        GuildId = guildId;
     }
 }

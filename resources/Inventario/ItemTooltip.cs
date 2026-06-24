@@ -19,6 +19,7 @@ public partial class ItemTooltip : Panel
 	public override void _Ready()
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
+		ZIndex = 4096;
 		Visible = false;
 
 		AddThemeStyleboxOverride("panel", new StyleBoxFlat
@@ -48,6 +49,12 @@ public partial class ItemTooltip : Panel
 		outerMargin.AddChild(_container);
 
 		ProcessPriority = int.MaxValue;
+
+		// Ensure tooltip draws on top of all other UI
+		if (GetParent() is Control parent)
+		{
+			parent.MoveChild(this, parent.GetChildCount() - 1);
+		}
 	}
 
 	public void Mostrar(ItemResource item, Vector2 posicaoGlobal, int refinoNivel = 0)
@@ -89,14 +96,19 @@ public partial class ItemTooltip : Panel
 
 		Visible = true;
 
+		if (GetParent() is Control parentTooltip)
+			parentTooltip.MoveChild(this, -1);
+
 		var window = GetWindow();
 		if (window == null) return;
 
 		float cw = CustomMinimumSize.X > 0 ? Mathf.Max(CustomMinimumSize.X, 320) : 320;
-		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 4, window.Size.Y * 0.75f);
+		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 4, window.Size.Y * 0.65f);
 		float mx = posicaoGlobal.X + 16;
-		float my = posicaoGlobal.Y;
+		float my = posicaoGlobal.Y - ch - 16;
 
+		if (my < 0)
+			my = posicaoGlobal.Y + 16;
 		if (mx + cw > window.Size.X)
 			mx = posicaoGlobal.X - cw - 16;
 		if (my + ch > window.Size.Y)
@@ -155,14 +167,19 @@ public partial class ItemTooltip : Panel
 
 		Visible = true;
 
+		if (GetParent() is Control parentTooltipComp)
+			parentTooltipComp.MoveChild(this, -1);
+
 		var window = GetWindow();
 		if (window == null) return;
 
 		float cw = Mathf.Max(CustomMinimumSize.X, 480);
-		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 4, window.Size.Y * 0.75f);
+		float ch = Mathf.Min(_container.GetCombinedMinimumSize().Y + 4, window.Size.Y * 0.65f);
 		float mx = posicaoGlobal.X + 16;
-		float my = posicaoGlobal.Y;
+		float my = posicaoGlobal.Y - ch - 16;
 
+		if (my < 0)
+			my = posicaoGlobal.Y + 16;
 		if (mx + cw > window.Size.X)
 			mx = posicaoGlobal.X - cw - 16;
 		if (my + ch > window.Size.Y)

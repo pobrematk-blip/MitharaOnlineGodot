@@ -97,6 +97,23 @@ partial class GameServer
         { SendSystemMessage(peer, "Jogador não encontrado na guilda."); return; }
 
         int current = guild.GetRank(target.Id);
+
+        // Promover para líder (rank 0) requer confirmação do alvo
+        if (current == 1)
+        {
+            if (targetPeer == null)
+            { SendSystemMessage(peer, "O jogador alvo está offline."); return; }
+
+            _guildLeaderPromotions[target.Id] = new GuildLeaderPromotion(sender.Id, guild.Id);
+            SendSystemMessage(peer, $"Convite de liderança enviado para {target.Name}. Aguardando aceitação.");
+
+            var notify = PacketSerializer.WritePacket(PacketId.S2C_GuildPromoteLeaderRequest);
+            notify.Put(sender.Name);
+            notify.Put(guild.Name);
+            targetPeer.Send(notify, DeliveryMethod.ReliableOrdered);
+            return;
+        }
+
         if (current <= 0)
         { SendSystemMessage(peer, "Este cargo já é o máximo."); return; }
 
@@ -104,6 +121,52 @@ partial class GameServer
         _db.SaveGuildMember(guild.Id, target.Id, target.Name, current - 1);
         BroadcastGuildRankUpdate(guild, target.Id, current - 1);
         SendSystemMessage(peer, $"{target.Name} promovido para cargo {current - 1}.");
+    }
+
+    private void HandleGuildPromoteLeaderAcceptPacket(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var sender, out _)) return;
+        if (sender is not PlayerEntity player) return;
+
+        if (!_guildLeaderPromotions.TryGetValue(sender.Id, out var promotion))
+        { SendSystemMessage(peer, "Você não tem convite de liderança pendente."); return; }
+
+        _guildLeaderPromotions.Remove(sender.Id);
+
+        var guild = _world.Guilds.GetGuild(promotion.GuildId);
+        if (guild == null)
+        { SendSystemMessage(peer, "A guilda não existe mais."); return; }
+
+        var oldLeader = FindEntityById(promotion.LeaderId, out var leaderPeer, out _);
+        if (oldLeader == null)
+        { SendSystemMessage(peer, "O líder atual está offline."); return; }
+
+        guild.SetRank(promotion.LeaderId, 1);
+        guild.SetRank(sender.Id, 0);
+        _db.SaveGuildMember(guild.Id, promotion.LeaderId, oldLeader.Name, 1);
+        _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
+        BroadcastGuildRankUpdate(guild, promotion.LeaderId, 1);
+        BroadcastGuildRankUpdate(guild, sender.Id, 0);
+        BroadcastGuildData(sender);
+        SendSystemMessage(peer, $"Você agora é o líder da guilda '{guild.Name}'!");
+        if (leaderPeer != null)
+            SendSystemMessage(leaderPeer, $"{player.Name} aceitou a liderança da guilda.");
+    }
+
+    private void HandleGuildPromoteLeaderDeclinePacket(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var sender, out _)) return;
+        if (sender is not PlayerEntity player) return;
+
+        if (!_guildLeaderPromotions.TryGetValue(sender.Id, out var promotion))
+        { SendSystemMessage(peer, "Você não tem convite de liderança pendente."); return; }
+
+        _guildLeaderPromotions.Remove(sender.Id);
+
+        var leader = FindPeerByEntityId(promotion.LeaderId);
+        if (leader != null)
+            SendSystemMessage(leader, $"{player.Name} recusou a liderança da guilda.");
+        SendSystemMessage(peer, "Você recusou a liderança da guilda.");
     }
 
     private void HandleGuildDemotePacket(NetPeer peer, NetDataReader reader)

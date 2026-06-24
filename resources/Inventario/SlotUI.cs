@@ -201,12 +201,12 @@ public partial class SlotUI : Control
         var tip = ObterTooltip();
         if (tip == null) return;
 
-        if (EhSlotBolsaInventario)
+        if (EhSlotBolsaInventario && PodeComparar(SlotInterno.Item.Tipo))
         {
             var itemNovo = SlotInterno.Item;
             var equip = ObterEquipamentoComponent();
             if (equip != null && equip.ItensEquipados.TryGetValue(itemNovo.Tipo, out var slotEquipado)
-                && slotEquipado?.Item != null && slotEquipado.Item != itemNovo)
+                && slotEquipado?.Item != null)
             {
                 tip.MostrarComparacao(itemNovo, slotEquipado.Item, GetGlobalMousePosition(), SlotInterno.RefinoNivel, slotEquipado.RefinoNivel);
                 return;
@@ -226,6 +226,25 @@ public partial class SlotUI : Control
     {
         var player = GetTree().CurrentScene?.FindChild("Player", true, false);
         return player?.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+    }
+
+    private static bool PodeComparar(TipoEquipamento tipo)
+    {
+        return tipo switch
+        {
+            TipoEquipamento.Arma => true,
+            TipoEquipamento.Capacete => true,
+            TipoEquipamento.Peitoral => true,
+            TipoEquipamento.Cinto => true,
+            TipoEquipamento.Luvas => true,
+            TipoEquipamento.Calca => true,
+            TipoEquipamento.Botas => true,
+            TipoEquipamento.Escudo => true,
+            TipoEquipamento.Colar => true,
+            TipoEquipamento.Anel => true,
+            TipoEquipamento.Brinco => true,
+            _ => false,
+        };
     }
 
     public void AtualizarSlot(SlotInventario slotLogico)

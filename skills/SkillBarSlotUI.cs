@@ -37,10 +37,11 @@ public partial class SkillBarSlotUI : Panel
 
         _icon = new TextureRect();
         _icon.Name = "Icon";
+        _icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
         _icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         _icon.CustomMinimumSize = new Vector2(40, 40);
-        _icon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-        _icon.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+        _icon.Size = new Vector2(40, 40);
+        _icon.Position = new Vector2(1, 1);
         _icon.MouseFilter = MouseFilterEnum.Ignore;
         AddChild(_icon);
 
@@ -150,8 +151,10 @@ public partial class SkillBarSlotUI : Panel
 
         var preview = new TextureRect();
         preview.Texture = _icon.Texture;
+        preview.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
         preview.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         preview.CustomMinimumSize = new Vector2(40, 40);
+        preview.Size = new Vector2(40, 40);
         SetDragPreview(preview);
 
         return this;

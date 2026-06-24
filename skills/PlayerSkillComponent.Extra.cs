@@ -60,7 +60,7 @@ public partial class PlayerSkillComponent
 
         string dir = _player.CurrentDirection ?? "down";
         Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
-        gameNet.SendSkillUse(slotIndex, _player.GlobalPosition + dirVec * 50f);
+        gameNet.SendSkillUse(slotIndex, skill.SkillId, _player.GlobalPosition + dirVec * 50f);
         bool localSkillEffectsEnabled = false;
         if (!localSkillEffectsEnabled)
             return;

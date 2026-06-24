@@ -12,10 +12,10 @@ anchors_preset = 5
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 0.0
-offset_left = -310.0
+offset_left = -420.0
 offset_top = 10.0
-offset_right = -10.0
-offset_bottom = 320.0
+offset_right = -5.0
+offset_bottom = 430.0
 mouse_filter = 1
 script = ExtResource("1_xthpk")
 
@@ -71,27 +71,27 @@ mouse_default_cursor_shape = 7
 [node name="FpsLabel" type="Label" parent="."]
 anchors_preset = 0
 offset_left = 15.0
-offset_top = 230.0
-offset_right = 300.0
-offset_bottom = 245.0
+offset_top = 280.0
+offset_right = 410.0
+offset_bottom = 295.0
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_font_sizes/font_size = 11
 
 [node name="PingLabel" type="Label" parent="."]
 anchors_preset = 0
 offset_left = 15.0
-offset_top = 246.0
-offset_right = 300.0
-offset_bottom = 261.0
+offset_top = 296.0
+offset_right = 410.0
+offset_bottom = 311.0
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 11
 
 [node name="CashBtn" type="Control" parent="."]
 anchors_preset = 0
 offset_left = 125.0
-offset_top = 225.0
+offset_top = 270.0
 offset_right = 189.0
-offset_bottom = 289.0
+offset_bottom = 334.0
 custom_minimum_size = Vector2(64, 64)
 mouse_filter = 0
 mouse_default_cursor_shape = 2
@@ -111,10 +111,10 @@ stretch_mode = 5
 
 [node name="VipLabel" type="Label" parent="."]
 anchors_preset = 0
-offset_left = 195.0
-offset_top = 237.0
-offset_right = 290.0
-offset_bottom = 275.0
+offset_left = 200.0
+offset_top = 285.0
+offset_right = 300.0
+offset_bottom = 325.0
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 theme_override_font_sizes/font_size = 10
 text = "⭐ VIP"

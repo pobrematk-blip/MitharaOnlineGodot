@@ -114,6 +114,22 @@ public class DatabaseManager
                 UNIQUE (character_id, quest_id)
             );
 
+            CREATE TABLE IF NOT EXISTS character_talents (
+                character_id INT NOT NULL,
+                node_id VARCHAR(150) NOT NULL,
+                unlocked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (character_id, node_id),
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS character_skill_slots (
+                character_id INT NOT NULL,
+                slot_index INT NOT NULL,
+                skill_id INT NOT NULL DEFAULT 0,
+                PRIMARY KEY (character_id, slot_index),
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS character_pets (
                 id SERIAL PRIMARY KEY,
                 character_id INT NOT NULL,
@@ -876,6 +892,16 @@ public class DatabaseManager
         delQuests.Parameters.AddWithValue("@c", characterId);
         delQuests.ExecuteNonQuery();
 
+        using var delTalents = conn.CreateCommand();
+        delTalents.CommandText = "DELETE FROM character_talents WHERE character_id = @c";
+        delTalents.Parameters.AddWithValue("@c", characterId);
+        delTalents.ExecuteNonQuery();
+
+        using var delSkillSlots = conn.CreateCommand();
+        delSkillSlots.CommandText = "DELETE FROM character_skill_slots WHERE character_id = @c";
+        delSkillSlots.Parameters.AddWithValue("@c", characterId);
+        delSkillSlots.ExecuteNonQuery();
+
         using var delGuild = conn.CreateCommand();
         delGuild.CommandText = "DELETE FROM guild_members WHERE name = @n";
         delGuild.Parameters.AddWithValue("@n", characterName);
@@ -923,6 +949,84 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@p", progress);
         cmd.Parameters.AddWithValue("@co", completed ? 1 : 0);
         cmd.Parameters.AddWithValue("@cl", claimed ? 1 : 0);
+        cmd.ExecuteNonQuery();
+    }
+
+    public HashSet<string> GetCharacterTalents(int characterId)
+    {
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT node_id FROM character_talents WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            result.Add(reader.GetString(0));
+        return result;
+    }
+
+    public void SaveCharacterTalent(int characterId, string nodeId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO character_talents (character_id, node_id)
+            VALUES (@c, @n)
+            ON CONFLICT (character_id, node_id) DO NOTHING
+            """;
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@n", nodeId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public int[] GetCharacterSkillSlots(int characterId, int slotCount = 20)
+    {
+        var result = new int[Math.Max(1, slotCount)];
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT slot_index, skill_id FROM character_skill_slots WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            int slot = reader.GetInt32(0);
+            int skillId = reader.GetInt32(1);
+            if (slot >= 0 && slot < result.Length)
+                result[slot] = Math.Max(0, skillId);
+        }
+        return result;
+    }
+
+    public void SaveCharacterSkillSlot(int characterId, int slotIndex, int skillId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        if (skillId <= 0)
+        {
+            cmd.CommandText = "DELETE FROM character_skill_slots WHERE character_id = @c AND slot_index = @s";
+            cmd.Parameters.AddWithValue("@c", characterId);
+            cmd.Parameters.AddWithValue("@s", slotIndex);
+        }
+        else
+        {
+            cmd.CommandText = """
+                INSERT INTO character_skill_slots (character_id, slot_index, skill_id)
+                VALUES (@c, @s, @k)
+                ON CONFLICT (character_id, slot_index) DO UPDATE SET skill_id = @k
+                """;
+            cmd.Parameters.AddWithValue("@c", characterId);
+            cmd.Parameters.AddWithValue("@s", slotIndex);
+            cmd.Parameters.AddWithValue("@k", skillId);
+        }
+
         cmd.ExecuteNonQuery();
     }
 

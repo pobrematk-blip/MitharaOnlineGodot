@@ -26,6 +26,8 @@ public partial class PartyHUD : Control
         _container.Name = "PartyHUDContainer";
         _container.AddThemeConstantOverride("separation", 2);
         _container.MouseFilter = MouseFilterEnum.Ignore;
+        _container.SetAnchorsPreset(LayoutPreset.FullRect);
+        _container.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(_container);
 
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -140,7 +142,7 @@ public partial class PartyHUD : Control
             int level = m.ContainsKey("level") ? (int)m["level"] : 1;
 
             var memberPanel = new Panel();
-            memberPanel.CustomMinimumSize = new Vector2(200, 40);
+            memberPanel.CustomMinimumSize = new Vector2(120, 44);
 
             var style = new StyleBoxFlat();
             style.BgColor = new Color(0, 0, 0, 0.45f);

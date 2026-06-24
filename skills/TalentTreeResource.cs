@@ -61,11 +61,26 @@ public partial class TalentTreeResource : Resource
         if (node.TemRequisitos)
         {
             foreach (var requisito in node.Requisitos)
-            {
-                if (!desbloqueados.Contains(requisito))
+                if (!RequisitoSatisfeito(requisito, desbloqueados))
                     return false;
-            }
         }
+        return true;
+    }
+
+    private bool RequisitoSatisfeito(string requisito, IReadOnlyCollection<string> desbloqueados)
+    {
+        if (desbloqueados.Contains(requisito)) return true;
+
+        var requisitoNode = ObterNo(requisito);
+        if (requisitoNode == null || !requisitoNode.TemEscolhaDeStatus)
+            return false;
+
+        if (requisitoNode.Requisitos == null || requisitoNode.Requisitos.Length == 0)
+            return true;
+
+        foreach (var parent in requisitoNode.Requisitos)
+            if (!RequisitoSatisfeito(parent, desbloqueados))
+                return false;
         return true;
     }
 

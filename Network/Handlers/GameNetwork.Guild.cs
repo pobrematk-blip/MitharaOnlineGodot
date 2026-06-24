@@ -196,4 +196,22 @@ partial class GameNetwork
         Log($"[GUILD] Received guild invite from {senderName}");
         InvitePopupUI.ShowInvite("guild", senderName);
     }
+
+    public void SendGuildPromoteLeaderAccept()
+    {
+        _client?.SendPacket(PacketId.C2S_GuildPromoteLeaderAccept, w => { });
+    }
+
+    public void SendGuildPromoteLeaderDecline()
+    {
+        _client?.SendPacket(PacketId.C2S_GuildPromoteLeaderDecline, w => { });
+    }
+
+    private void HandleGuildPromoteLeaderRequest(NetDataReader r)
+    {
+        string leaderName = r.GetString();
+        string guildName = r.GetString();
+        Log($"[GUILD] Received guild promote leader request from {leaderName} for guild {guildName}");
+        InvitePopupUI.ShowInvite("guild_promote", leaderName);
+    }
 }

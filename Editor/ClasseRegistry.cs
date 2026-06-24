@@ -403,6 +403,12 @@ public partial class ClasseRegistry : Node
         var dir = DirAccess.Open(pasta);
         if (dir == null)
         {
+            if (pasta == PastaSprites)
+            {
+                GD.Print($"[CLASSE REGISTRY] Pasta opcional não encontrada: {pasta}. Usando sprites padrão do Player.");
+                return lista;
+            }
+
             GD.PrintErr($"[CLASSE REGISTRY] ✘ Pasta não encontrada: {pasta}");
             return lista;
         }

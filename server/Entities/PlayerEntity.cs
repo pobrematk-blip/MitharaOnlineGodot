@@ -29,6 +29,10 @@ public class PlayerEntity : Entity
     public List<ItemInstance> Items { get; set; } = new();
     public Dictionary<int, ItemInstance> Equipment { get; set; } = new();
     public int Gold { get; set; }
+    public Dictionary<int, double> SkillCooldowns { get; } = new();
+    public Dictionary<string, double> ActiveServerBuffs { get; } = new();
+    public HashSet<string> UnlockedTalents { get; set; } = new();
+    public int[] SkillBarSlots { get; set; } = new int[20];
 
     public Dictionary<int, PlayerQuest> Quests { get; set; } = new();
 

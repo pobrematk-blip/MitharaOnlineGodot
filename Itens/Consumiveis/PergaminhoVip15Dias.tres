@@ -1,24 +1,15 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
-[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
-[ext_resource type="Texture2D" uid="uid://dms06w56d4s31" path="res://Itens/Incones/1.png" id="2_icon"]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Vip 2.png" id="1_y4qq2"]
 
 [resource]
 script = ExtResource("1_taxcw")
 ItemID = 104
 Nome = "Pergaminho VIP (15 Dias)"
 Descricao = "Ativa VIP por 15 dias. Ganhe 2x XP e 2x chance de drop."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_y4qq2")
 Acumulavel = true
-QuantidadeMaximaPorSlot = 99
 Tipo = 17
-NivelRequerido = 1
-Valor = 0
 PodeDropar = false
-PodeTrocar = true
 PodeVender = false
-PodeArmazenarBanco = true
-PodeArmazenarBancoGuild = true
-ChanceDrop = 0.0
-TempoDesaparecimento = 30.0
-TipoItem = 0
-Raridade = 3

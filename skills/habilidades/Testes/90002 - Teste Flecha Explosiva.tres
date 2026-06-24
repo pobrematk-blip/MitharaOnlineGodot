@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/10.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 90002
+Nome = "Teste Flecha Explosiva"
+Descricao = "Skill de teste para validar ataque de arqueiro, icone e efeito visual."
+Icone = ExtResource("2_icon")
+Valor = 24
+CustoMana = 10
+ClasseRestrita = "Arqueiro"
+EfeitoVisualPath = "res://skills/Animação/10.png"
+Cooldown = 3.5
+TargetType = 2
+EffectType = 7
+Especializacao = "Teste"
+NivelRequerido = 1
+Tipo = "Ativa"
+EfeitoPrincipal = "Dano"
+DanoEscala = "Destreza"
+Observacoes = "Recurso temporario para testes da arvore de talentos."

@@ -1,24 +1,14 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
-[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" uid="uid://dmjvog2cq7sd2" path="res://Itens/Incones/Pergaminho de Criação de Guild.png" id="2_icon"]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Fragmento Estelar.png" id="1_v5nwj"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 107
 Nome = "Poeira Estelar"
 Descricao = "Um pó mágico estelar usado para refinar equipamentos na forja."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_v5nwj")
 Acumulavel = true
-QuantidadeMaximaPorSlot = 99
 Tipo = 17
-NivelRequerido = 1
 Valor = 50
-PodeDropar = true
-PodeTrocar = true
-PodeVender = true
-PodeArmazenarBanco = true
-PodeArmazenarBancoGuild = true
-ChanceDrop = 0.0
-TempoDesaparecimento = 30.0
-TipoItem = 0
-Raridade = 0

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public partial class PlayerSkillComponent : Node
 {
+    [Signal] public delegate void SkillSlotsAtualizadosEventHandler();
+
     [Export]
     public SkillResource[] SkillSlots { get; set; } = new SkillResource[20];
 
@@ -15,6 +17,7 @@ public partial class PlayerSkillComponent : Node
     // Internal state used by the Extra partial
     private readonly Dictionary<string, double> _cooldownTimers = new();
     private readonly List<object> _activeBuffs = new();
+    private readonly Dictionary<int, SkillResource> _skillCatalog = new();
     private Player _player;
 
     public override void _Ready()
@@ -22,5 +25,69 @@ public partial class PlayerSkillComponent : Node
         _player = GetParent() as Player;
         if (_player == null)
             GD.PrintErr("[SKILLCOMP] Player não encontrado como pai do componente de skills.");
+        CarregarCatalogoDeSkills();
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null)
+        {
+            gameNet.OnSkillBarData += AplicarBarraServidor;
+            if (gameNet.PendingSkillBarData != null)
+                AplicarBarraServidor(gameNet.PendingSkillBarData);
+        }
+    }
+
+    public SkillResource ObterSkillPorId(int skillId)
+    {
+        return _skillCatalog.TryGetValue(skillId, out var skill) ? skill : null;
+    }
+
+    public void AplicarBarraServidor(Godot.Collections.Array<int> skillIds)
+    {
+        for (int i = 0; i < SkillSlots.Length; i++)
+        {
+            int skillId = i < skillIds.Count ? skillIds[i] : 0;
+            SkillSlots[i] = skillId > 0 ? ObterSkillPorId(skillId) : null;
+        }
+
+        GD.Print($"[SKILLCOMP] Barra do servidor aplicada: {skillIds.Count} slots");
+        EmitSignal(SignalName.SkillSlotsAtualizados);
+    }
+
+    private void CarregarCatalogoDeSkills()
+    {
+        _skillCatalog.Clear();
+        CarregarCatalogoDeSkillsEm("res://skills/habilidades");
+        GD.Print($"[SKILLCOMP] Catálogo local de skills carregado: {_skillCatalog.Count}");
+    }
+
+    private void CarregarCatalogoDeSkillsEm(string path)
+    {
+        using var dir = DirAccess.Open(path);
+        if (dir == null)
+            return;
+
+        dir.ListDirBegin();
+        while (true)
+        {
+            string entry = dir.GetNext();
+            if (string.IsNullOrEmpty(entry))
+                break;
+            if (entry == "." || entry == "..")
+                continue;
+
+            string childPath = $"{path}/{entry}";
+            if (dir.CurrentIsDir())
+            {
+                CarregarCatalogoDeSkillsEm(childPath);
+                continue;
+            }
+
+            if (!entry.EndsWith(".tres", System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var skill = ResourceLoader.Load<SkillResource>(childPath);
+            if (skill != null && skill.SkillId > 0)
+                _skillCatalog[skill.SkillId] = skill;
+        }
     }
 }

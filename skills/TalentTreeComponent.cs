@@ -6,6 +6,7 @@ public partial class TalentTreeComponent : Node
 {
     [Signal] public delegate void TalentoDesbloqueadoEventHandler(TalentNodeResource node);
     [Signal] public delegate void BonusAplicadoEventHandler(string nomeBonus, float valor);
+    [Signal] public delegate void EstadoAtualizadoEventHandler();
 
     [ExportGroup("Configuração")]
     [Export] public TalentTreeResource TalentTree { get; set; }
@@ -24,6 +25,14 @@ public partial class TalentTreeComponent : Node
         _player = GetParent() as Player;
         if (_player == null)
             GD.PrintErr("[TALENT TREE] ✘ Player não encontrado!");
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null)
+        {
+            gameNet.OnTalentData += AplicarEstadoServidor;
+            if (gameNet.PendingTalentPoints.HasValue && gameNet.PendingTalentNodes != null)
+                AplicarEstadoServidor(gameNet.PendingTalentPoints.Value, gameNet.PendingTalentNodes);
+        }
     }
 
     public bool TemNoDesbloqueado(string nodeId)
@@ -44,6 +53,34 @@ public partial class TalentTreeComponent : Node
     {
         GD.PrintErr("[TALENT TREE] Desbloqueio local bloqueado. O servidor deve validar o talento.");
         return false;
+    }
+
+    public void SolicitarDesbloqueioServidor(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId)) return;
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.PrintErr("[TALENT TREE] Sem conexão. Talentos só podem ser desbloqueados pelo servidor.");
+            return;
+        }
+
+        gameNet.SendTalentUnlock(nodeId);
+    }
+
+    private void AplicarEstadoServidor(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados)
+    {
+        _nosDesbloqueados.Clear();
+        foreach (string nodeId in nosDesbloqueados)
+        {
+            if (!string.IsNullOrWhiteSpace(nodeId) && !_nosDesbloqueados.Contains(nodeId))
+                _nosDesbloqueados.Add(nodeId);
+        }
+
+        PontosDisponiveis = pontosDisponiveis;
+        GD.Print($"[TALENT TREE] Estado do servidor aplicado: pontos={PontosDisponiveis}, desbloqueados={_nosDesbloqueados.Count}");
+        EmitSignal(SignalName.EstadoAtualizado);
     }
 
     private void AplicarBonusDoTalento(TalentNodeResource node)

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://characters/Inimigos/Inimigo.cs" id="1_script"]
 
 [sub_resource type="RectangleShape2D" id="RectShape"]
-size = Vector2(34, 44)
+size = Vector2(55, 60)
 
 [node name="Porco" type="CharacterBody2D"]
 collision_layer = 4
@@ -26,7 +26,7 @@ RaioDetectarPlayer = 180.0
 scale = Vector2(2, 2)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 4)
+position = Vector2(0, 2)
 shape = SubResource("RectShape")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]

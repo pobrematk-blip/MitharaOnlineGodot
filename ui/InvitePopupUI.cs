@@ -8,6 +8,11 @@ public partial class InvitePopupUI : Panel
     private Label _titleLabel = null!;
     private string _inviteType = "";
 
+    public InvitePopupUI()
+    {
+        _instance = this;
+    }
+
     public override void _Ready()
     {
         _instance = this;
@@ -63,6 +68,7 @@ public partial class InvitePopupUI : Panel
         {
             "party" => $"{senderName} convidou você para um grupo!",
             "guild" => $"{senderName} convidou você para a guild!",
+            "guild_promote" => $"{senderName} quer passar a liderança da guild para você!",
             "duel" => $"{senderName} desafiou você para um duelo!",
             "trade" => $"{senderName} quer trocar itens com você!",
             _ => $"{senderName} convidou você!",
@@ -81,6 +87,7 @@ public partial class InvitePopupUI : Panel
         {
             case "party": net.SendPartyAccept(); break;
             case "guild": net.SendGuildAccept(); break;
+            case "guild_promote": net.SendGuildPromoteLeaderAccept(); break;
             case "duel": net.SendDuelAccept(); break;
             case "trade": net.SendTradeAccept(); break;
         }
@@ -95,6 +102,7 @@ public partial class InvitePopupUI : Panel
         {
             case "duel": net.SendDuelDecline(); break;
             case "trade": net.SendTradeDecline(); break;
+            case "guild_promote": net.SendGuildPromoteLeaderDecline(); break;
         }
     }
 }

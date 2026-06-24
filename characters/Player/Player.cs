@@ -34,9 +34,10 @@ public partial class Player : CharacterBody2D
     private bool _projetilDisparado = false;
     private Sprite2D _shadowSprite;
     private ulong? _selectedTargetId;
-    private Line2D _targetMarker;
+    private Node2D _targetMarker;
 
     private GameNetwork _network;
+    private LevelProgressionComponent _levelProgression;
     private float _moveSendTimer;
     private Vector2 _lastSentPosition;
     private bool _wasMoving;
@@ -191,13 +192,55 @@ public partial class Player : CharacterBody2D
             skillComp.Owner = this;
         }
 
+        _levelProgression = FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+
         _network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (_network != null)
         {
             _network.OnRespawn += OnRespawnReceived;
             _network.OnTeleport += OnTeleportReceived;
+            _network.OnEnterWorld += AplicarProgressaoServidorPendente;
+            _network.OnGainExp += OnGainExpReceived;
+            _network.OnLevelUp += OnLevelUpReceived;
+            CallDeferred(nameof(AplicarProgressaoServidorPendente));
         }
         _lastSentPosition = GlobalPosition;
+    }
+
+    private void AplicarProgressaoServidorPendente()
+    {
+        if (_network == null)
+            return;
+
+        AplicarProgressaoServidor(_network._pendingLevel, _network._pendingXp);
+    }
+
+    private void OnGainExpReceived(ulong entityId, int amount, long totalExp)
+    {
+        if (_network == null || entityId != _network.LocalPlayerId)
+            return;
+
+        int nivelAtual = _levelProgression?.Nivel ?? _nivel;
+        AplicarProgressaoServidor(nivelAtual, totalExp);
+    }
+
+    private void OnLevelUpReceived(ulong entityId, int newLevel, int remainingXp)
+    {
+        if (_network == null || entityId != _network.LocalPlayerId)
+            return;
+
+        AplicarProgressaoServidor(newLevel, remainingXp);
+    }
+
+    private void AplicarProgressaoServidor(int nivel, long experiencia)
+    {
+        if (nivel <= 0)
+            return;
+
+        _nivel = Mathf.Max(nivel, LevelProgressionUtil.NivelInicial);
+        _levelProgression ??= FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+        int xpAtual = (int)Math.Min(Math.Max(experiencia, 0), int.MaxValue);
+        _levelProgression?.DefinirProgresso(_nivel, xpAtual);
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -205,6 +248,15 @@ public partial class Player : CharacterBody2D
         if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.Tab)
         {
             SelecionarProximoTarget(key.ShiftPressed ? -1 : 1);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+        {
+            SelecionarAlvoEm(GetGlobalMousePosition());
+            if (!IsAttacking)
+                Atacar();
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -232,7 +284,9 @@ public partial class Player : CharacterBody2D
         var targets = new List<(ulong Id, Node2D Node, float Distancia)>();
         foreach (var entry in net.GetAllEntities())
         {
-            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value) || entry.Value is not Inimigo)
+            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value))
+                continue;
+            if (entry.Value is not Inimigo && !entry.Value.HasMeta("player_name"))
                 continue;
             targets.Add((entry.Key, entry.Value, GlobalPosition.DistanceSquaredTo(entry.Value.GlobalPosition)));
         }
@@ -262,20 +316,23 @@ public partial class Player : CharacterBody2D
 
         LimparTarget();
         _selectedTargetId = entityId;
-        _targetMarker = new Line2D
+        _targetMarker = new Node2D
         {
             Name = "TargetMarker",
-            Width = 2.5f,
-            DefaultColor = new Color(1f, 0.18f, 0.12f, 0.95f),
-            Closed = true,
             ZIndex = 20,
         };
-        const int segmentos = 28;
-        for (int i = 0; i < segmentos; i++)
+        var arrow = new Polygon2D
         {
-            float angulo = Mathf.Tau * i / segmentos;
-            _targetMarker.AddPoint(new Vector2(Mathf.Cos(angulo) * 25f, Mathf.Sin(angulo) * 12f + 15f));
-        }
+            Polygon = new Vector2[]
+            {
+                new Vector2(0f, 18f),
+                new Vector2(-12f, -6f),
+                new Vector2(12f, -6f),
+            },
+            Color = new Color(1f, 0.18f, 0.12f, 0.95f),
+            Position = new Vector2(0f, -55f),
+        };
+        _targetMarker.AddChild(arrow);
         targetNode.AddChild(_targetMarker);
 
         Vector2 dirToTarget = (targetNode.GlobalPosition - GlobalPosition).Normalized();
@@ -292,10 +349,12 @@ public partial class Player : CharacterBody2D
     {
         entityId = 0;
         targetNode = null;
-        float menorDistancia = 42f;
+        float menorDistancia = 80f;
         foreach (var entry in net.GetAllEntities())
         {
-            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value) || entry.Value is not Inimigo)
+            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value))
+                continue;
+            if (entry.Value is not Inimigo && !entry.Value.HasMeta("player_name"))
                 continue;
 
             float distancia = worldPosition.DistanceTo(entry.Value.GlobalPosition);
@@ -897,8 +956,6 @@ public partial class Player : CharacterBody2D
             byte projType = string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase) ? (byte)1 : (byte)0;
             gameNet.SendProjectileFire(novoProjetil.GlobalPosition.X, novoProjetil.GlobalPosition.Y, direcaoDoVetor.X, direcaoDoVetor.Y, projType);
-            if (TryGetSelectedTarget(gameNet, out _, out float targetDistance) && targetDistance <= 640f)
-                gameNet.SendAttack(_selectedTargetId.Value);
         }
     }
 

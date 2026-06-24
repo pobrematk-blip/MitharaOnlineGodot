@@ -18,6 +18,8 @@ public partial class SkillBarUI : Control
     private ProgressBar _xpBar;
     private Label _xpLabel;
     private LevelProgressionComponent _xpLevelComp;
+    private PlayerSkillComponent _skillComp;
+    private bool _connectRetryScheduled;
 
     private static readonly string[] NumKeys = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
     private static readonly string[] FuncKeys = { "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10" };
@@ -173,6 +175,7 @@ public partial class SkillBarUI : Control
         if (player == null)
         {
             GD.Print("[SKILL BAR] Player n\u00e3o encontrado para conectar barra de XP.");
+            ScheduleConnectRetry();
             return;
         }
 
@@ -180,12 +183,41 @@ public partial class SkillBarUI : Control
         if (_xpLevelComp == null)
         {
             GD.Print("[SKILL BAR] LevelProgressionComponent n\u00e3o encontrado no Player.");
+            ScheduleConnectRetry();
             return;
         }
 
+        _connectRetryScheduled = false;
+        _xpLevelComp.ProgressaoAtualizada -= UpdateXpBar;
         _xpLevelComp.ProgressaoAtualizada += UpdateXpBar;
+        _skillComp = player.FindChild("PlayerSkillComponent", true, false) as PlayerSkillComponent;
+        if (_skillComp != null)
+        {
+            _skillComp.SkillSlotsAtualizados -= RefreshSkillSlotsFromComponent;
+            _skillComp.SkillSlotsAtualizados += RefreshSkillSlotsFromComponent;
+            RefreshSkillSlotsFromComponent();
+        }
+        else
+        {
+            ScheduleConnectRetry();
+        }
         UpdateXpBar();
         GD.Print("[SKILL BAR] Barra de XP conectada ao Player.");
+    }
+
+    private void ScheduleConnectRetry()
+    {
+        if (_connectRetryScheduled || !IsInsideTree())
+            return;
+
+        _connectRetryScheduled = true;
+        var timer = GetTree().CreateTimer(0.25);
+        timer.Timeout += () =>
+        {
+            _connectRetryScheduled = false;
+            if (IsInsideTree())
+                ConnectXpBar();
+        };
     }
 
     private void UpdateXpBar()
@@ -371,10 +403,15 @@ public partial class SkillBarUI : Control
         int idx = row * SLOT_COUNT + col;
         if (idx >= 0 && idx < comp.SkillSlots.Length)
         {
-            comp.SkillSlots[idx] = skill;
-            comp.ItemSlots[idx] = null;
-            _slots[row, col]?.SetSkill(skill);
-            GD.Print($"[SKILL BAR] Skill '{skill?.Nome}' atribuída ao slot {row},{col} (idx {idx}).");
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet == null || !gameNet.IsConnected)
+            {
+                GD.PrintErr("[SKILL BAR] Sem conexão. Atribuição de skill só pode ser feita pelo servidor.");
+                return;
+            }
+
+            gameNet.SendSetSkillSlot(idx, skill?.SkillId ?? 0);
+            GD.Print($"[SKILL BAR] Pedido ao servidor para atribuir skill '{skill?.Nome}' ao slot {row},{col} (idx {idx}).");
         }
     }
 
@@ -416,10 +453,32 @@ public partial class SkillBarUI : Control
         int idx = row * SLOT_COUNT + col;
         if (idx >= 0 && idx < comp.SkillSlots.Length)
         {
+            bool hadSkill = comp.SkillSlots[idx] != null;
             comp.SkillSlots[idx] = null;
             comp.ItemSlots[idx] = null;
             _slots[row, col]?.SetSkill(null);
+            if (hadSkill)
+            {
+                var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+                gameNet?.SendSetSkillSlot(idx, 0);
+            }
             GD.Print($"[SKILL BAR] Slot {row},{col} (idx {idx}) limpo.");
+        }
+    }
+
+    private void RefreshSkillSlotsFromComponent()
+    {
+        if (_skillComp == null)
+            return;
+
+        for (int row = 0; row < 2; row++)
+        {
+            for (int col = 0; col < SLOT_COUNT; col++)
+            {
+                int idx = row * SLOT_COUNT + col;
+                if (idx >= 0 && idx < _skillComp.SkillSlots.Length)
+                    _slots[row, col]?.SetSkill(_skillComp.SkillSlots[idx]);
+            }
         }
     }
 

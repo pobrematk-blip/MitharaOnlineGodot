@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cwob3pvbkajrp" path="res://scenes/tools/NoMobZoneMarker.cs" id="1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nomob"]
-size = Vector2(16350.5, 6334.375)
+size = Vector2(50391.25, 23494.094)
 
 [node name="NoMobZoneMarker" type="Area2D"]
 editor_description = "[NoMobZone] 8504x6334"
@@ -15,8 +15,7 @@ script = ExtResource("1")
 position = Vector2(3054, -579.9999)
 scale = Vector2(1, 0.9987264)
 color = Color(0.2, 0.55, 1, 0.22)
-polygon = PackedVector2Array(-4252, -3167.1875, 4252, -3167.1875, 12145, -3198.073, 12127, 3214.0933, -4252, 3167.1875)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(6989.25, -555)
+position = Vector2(25286, 11798)
 shape = SubResource("RectangleShape2D_nomob")

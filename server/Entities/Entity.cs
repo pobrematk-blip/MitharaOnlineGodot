@@ -32,6 +32,7 @@ public class Entity
     public bool Sprinting { get; set; }
     public double LastMoveTime { get; set; }
     public string FactionId { get; set; } = "";
+    public double LastCombatTime { get; set; }
 
     public int GridCellX => (int)Math.Floor(X / World.SpatialGrid.CellSize);
     public int GridCellY => (int)Math.Floor(Y / World.SpatialGrid.CellSize);

@@ -37,11 +37,12 @@ partial class GameNetwork
         });
     }
 
-    public void SendSkillUse(int skillSlot, Vector2 targetPosition)
+    public void SendSkillUse(int skillSlot, int skillId, Vector2 targetPosition)
     {
         _client?.SendPacket(PacketId.C2S_SkillUse, w =>
         {
             w.Put(skillSlot);
+            w.Put(skillId);
             w.Put(targetPosition.X);
             w.Put(targetPosition.Y);
         });
@@ -171,9 +172,11 @@ partial class GameNetwork
             string guildTag = r.GetString();
             int guildEmblem = r.GetInt();
 
-            em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting, aiState);
-            em?.AtualizarOverheadRemoto(entityId, name, guildName, guildTag, guildEmblem, xp, xpMax);
-            EmitSignal(SignalName.OnEntityHealthUpdate, entityId, health, maxHealth);
+			if (entityId != LocalPlayerId)
+				em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting, aiState);
+			em?.AtualizarOverheadRemoto(entityId, name, guildName, guildTag, guildEmblem, xp, xpMax);
+			EmitSignal(SignalName.OnEntityHealthUpdate, entityId, health, maxHealth);
+			EmitSignal(SignalName.OnEntityManaUpdate, entityId, mana, maxMana);
         }
     }
 

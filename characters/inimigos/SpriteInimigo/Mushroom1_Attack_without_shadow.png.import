@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdpriduedd2il"
-path="res://.godot/imported/Arco de Madeira.png-9c1889f4365f669067331ea05611127d.ctex"
+uid="uid://ctmndo6hscneu"
+path="res://.godot/imported/Mushroom1_Attack_without_shadow.png-70b34c49a6f7184a2f4119e8ae0c59dc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Itens/Incones/Arco de Madeira.png"
-dest_files=["res://.godot/imported/Arco de Madeira.png-9c1889f4365f669067331ea05611127d.ctex"]
+source_file="res://characters/Inimigos/SpriteInimigo/Mushroom1_Attack_without_shadow.png"
+dest_files=["res://.godot/imported/Mushroom1_Attack_without_shadow.png-70b34c49a6f7184a2f4119e8ae0c59dc.ctex"]
 
 [params]
 

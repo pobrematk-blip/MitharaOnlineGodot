@@ -259,6 +259,33 @@ public class Channel
         UpdateMonsterAI(dt, gameTime);
         UpdateSpawner(gameTime);
         UpdateLootCleanup(gameTime);
+        UpdatePlayerRegen(dt, gameTime);
+    }
+
+    private void UpdatePlayerRegen(float dt, double gameTime)
+    {
+        const double outOfCombatDelay = 30.0;
+        const float regenPercentPerSecond = 0.01f;
+
+        foreach (var kv in _entities)
+        {
+            if (kv.Value is PlayerEntity player)
+            {
+                if (gameTime - player.LastCombatTime >= outOfCombatDelay)
+                {
+                    if (player.Health < player.MaxHealth)
+                    {
+                        int hpRegen = Math.Max(1, (int)(player.MaxHealth * regenPercentPerSecond * dt));
+                        player.Health = Math.Min(player.MaxHealth, player.Health + hpRegen);
+                    }
+                    if (player.Mana < player.MaxMana)
+                    {
+                        int manaRegen = Math.Max(1, (int)(player.MaxMana * regenPercentPerSecond * dt));
+                        player.Mana = Math.Min(player.MaxMana, player.Mana + manaRegen);
+                    }
+                }
+            }
+        }
     }
 
     private void UpdateLootCleanup(double gameTime)

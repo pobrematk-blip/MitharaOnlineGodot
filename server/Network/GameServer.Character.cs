@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Entities;
@@ -12,6 +13,8 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private const int TalentPointsPerLevel = 3;
+
     private static readonly Dictionary<string, int[]> _classStartingItems = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Arqueiro"] = new[] { 1000 },
@@ -318,6 +321,13 @@ partial class GameServer
             StatPoints = statPoints,
         };
 
+        if (!useInline && ch != null)
+        {
+            player.UnlockedTalents = _db.GetCharacterTalents(ch.Id);
+            player.SkillBarSlots = _db.GetCharacterSkillSlots(ch.Id);
+            SanitizeSkillBar(player);
+        }
+
         ulong entityId = _world.SpawnPlayerInChannel(channelId, player, peer);
         session.EntityId = entityId;
         session.ChannelId = channelId;
@@ -441,6 +451,8 @@ partial class GameServer
 
         SendInventoryData(peer, player);
         SendStatUpdate(peer, player);
+        SendTalentData(peer, player);
+        SendSkillBarData(peer, player);
         SendGoldUpdate(peer, player.Gold);
         if (!useInline && ch != null)
             SendPetData(peer, ch.Id);
@@ -477,5 +489,347 @@ partial class GameServer
             }
 
         Logger.Info($"{player.Name} entrou no mundo (canal {channelId})");
+    }
+
+    private void HandleTalentUnlock(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        var player = channel?.GetEntity(session.EntityId) as PlayerEntity;
+        if (player == null || player.Health <= 0)
+            return;
+
+        string nodeId = reader.GetString();
+        if (string.IsNullOrWhiteSpace(nodeId))
+            return;
+
+        var node = ServerTalentCatalog.GetNodeForClass(player.CharacterClass, nodeId);
+        if (node == null)
+        {
+            SendSystemMessage(peer, "Talento inválido para sua classe.");
+            SendTalentData(peer, player);
+            return;
+        }
+
+        if (player.UnlockedTalents.Contains(nodeId))
+        {
+            SendTalentData(peer, player);
+            return;
+        }
+
+        if (player.Level < node.NivelMinimo)
+        {
+            SendSystemMessage(peer, $"Nível {node.NivelMinimo} necessário para desbloquear {node.Nome}.");
+            SendTalentData(peer, player);
+            return;
+        }
+
+        int available = GetAvailableTalentPoints(player);
+        if (available < node.CustoPontos)
+        {
+            SendSystemMessage(peer, "Pontos de talento insuficientes.");
+            SendTalentData(peer, player);
+            return;
+        }
+
+        if (!ServerTalentCatalog.RequirementsSatisfied(player.CharacterClass, node, player.UnlockedTalents))
+        {
+            SendSystemMessage(peer, "Requisitos do talento ainda não foram cumpridos.");
+            SendTalentData(peer, player);
+            return;
+        }
+
+        player.UnlockedTalents.Add(nodeId);
+        _db.SaveCharacterTalent(session.SelectedCharacter.Id, nodeId);
+        SendTalentData(peer, player);
+        SendSkillBarData(peer, player);
+        SendSystemMessage(peer, $"Talento desbloqueado: {node.Nome}");
+    }
+
+    private void HandleSetSkillSlot(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        var player = channel?.GetEntity(session.EntityId) as PlayerEntity;
+        if (player == null)
+            return;
+
+        int slotIndex = reader.GetInt();
+        int skillId = reader.GetInt();
+        if (slotIndex < 0 || slotIndex >= player.SkillBarSlots.Length)
+        {
+            SendSkillBarData(peer, player);
+            return;
+        }
+
+        if (skillId > 0)
+        {
+            var skill = ServerSkillCatalog.Get(skillId);
+            if (skill == null)
+            {
+                SendSystemMessage(peer, "Skill inexistente.");
+                SendSkillBarData(peer, player);
+                return;
+            }
+
+            if (!ServerSkillCatalog.ClassMatches(player.CharacterClass, skill.ClasseRestrita))
+            {
+                SendSystemMessage(peer, "Esta skill não pertence à sua classe.");
+                SendSkillBarData(peer, player);
+                return;
+            }
+
+            if (!ServerTalentCatalog.IsSkillUnlocked(player.CharacterClass, player.UnlockedTalents, skillId))
+            {
+                SendSystemMessage(peer, "Desbloqueie esta skill na árvore de talentos antes de colocar na barra.");
+                SendSkillBarData(peer, player);
+                return;
+            }
+        }
+
+        player.SkillBarSlots[slotIndex] = Math.Max(0, skillId);
+        _db.SaveCharacterSkillSlot(session.SelectedCharacter.Id, slotIndex, player.SkillBarSlots[slotIndex]);
+        SendSkillBarData(peer, player);
+    }
+
+    private void SendTalentData(NetPeer peer, PlayerEntity player)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_TalentData);
+        writer.Put(GetAvailableTalentPoints(player));
+        writer.Put(player.UnlockedTalents.Count);
+        foreach (string nodeId in player.UnlockedTalents.OrderBy(id => id, StringComparer.Ordinal))
+            writer.Put(nodeId);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void SendSkillBarData(NetPeer peer, PlayerEntity player)
+    {
+        SanitizeSkillBar(player);
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_SkillBarData);
+        writer.Put(player.SkillBarSlots.Length);
+        foreach (int skillId in player.SkillBarSlots)
+            writer.Put(skillId);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private static void SanitizeSkillBar(PlayerEntity player)
+    {
+        if (player.SkillBarSlots == null || player.SkillBarSlots.Length != 20)
+            player.SkillBarSlots = new int[20];
+
+        for (int i = 0; i < player.SkillBarSlots.Length; i++)
+        {
+            int skillId = player.SkillBarSlots[i];
+            if (skillId <= 0)
+                continue;
+
+            var skill = ServerSkillCatalog.Get(skillId);
+            if (skill == null
+                || !ServerSkillCatalog.ClassMatches(player.CharacterClass, skill.ClasseRestrita)
+                || !ServerTalentCatalog.IsSkillUnlocked(player.CharacterClass, player.UnlockedTalents, skillId))
+            {
+                player.SkillBarSlots[i] = 0;
+            }
+        }
+    }
+
+    private static int GetAvailableTalentPoints(PlayerEntity player)
+    {
+        int earned = Math.Max(1, player.Level) * TalentPointsPerLevel;
+        int spent = ServerTalentCatalog.GetSpentPoints(player.CharacterClass, player.UnlockedTalents);
+        return Math.Max(0, earned - spent);
+    }
+}
+
+internal sealed class ServerTalentNode
+{
+    public string NodeId { get; init; } = "";
+    public string Nome { get; init; } = "";
+    public int CustoPontos { get; init; } = 1;
+    public int NivelMinimo { get; init; } = 1;
+    public int SkillId { get; init; }
+    public bool TemEscolhaStatus { get; init; }
+    public string[] Requisitos { get; init; } = Array.Empty<string>();
+}
+
+internal static class ServerTalentCatalog
+{
+    private static readonly Lazy<Dictionary<string, Dictionary<string, ServerTalentNode>>> Trees = new(LoadAll);
+
+    public static ServerTalentNode? GetNodeForClass(string className, string nodeId)
+    {
+        var tree = GetTreeForClass(className);
+        if (tree == null) return null;
+        tree.TryGetValue(nodeId, out var node);
+        return node;
+    }
+
+    public static int GetSpentPoints(string className, HashSet<string> unlocked)
+    {
+        var tree = GetTreeForClass(className);
+        if (tree == null) return 0;
+        int total = 0;
+        foreach (string nodeId in unlocked)
+            if (tree.TryGetValue(nodeId, out var node))
+                total += Math.Max(0, node.CustoPontos);
+        return total;
+    }
+
+    public static bool RequirementsSatisfied(string className, ServerTalentNode node, HashSet<string> unlocked)
+    {
+        var tree = GetTreeForClass(className);
+        if (tree == null) return false;
+        foreach (string req in node.Requisitos)
+            if (!RequirementSatisfied(tree, req, unlocked))
+                return false;
+        return true;
+    }
+
+    public static bool IsSkillUnlocked(string className, HashSet<string> unlocked, int skillId)
+    {
+        if (skillId <= 0) return false;
+        var tree = GetTreeForClass(className);
+        if (tree == null) return false;
+
+        foreach (var node in tree.Values)
+            if (node.SkillId == skillId)
+                return unlocked.Contains(node.NodeId);
+
+        return false;
+    }
+
+    private static bool RequirementSatisfied(Dictionary<string, ServerTalentNode> tree, string nodeId, HashSet<string> unlocked)
+    {
+        if (unlocked.Contains(nodeId)) return true;
+        if (!tree.TryGetValue(nodeId, out var reqNode) || !reqNode.TemEscolhaStatus)
+            return false;
+        foreach (string parent in reqNode.Requisitos)
+            if (!RequirementSatisfied(tree, parent, unlocked))
+                return false;
+        return true;
+    }
+
+    private static Dictionary<string, ServerTalentNode>? GetTreeForClass(string className)
+    {
+        foreach (var (key, tree) in Trees.Value)
+            if (ServerSkillCatalog.ClassMatches(className, key))
+                return tree;
+        return null;
+    }
+
+    private static Dictionary<string, Dictionary<string, ServerTalentNode>> LoadAll()
+    {
+        var result = new Dictionary<string, Dictionary<string, ServerTalentNode>>(StringComparer.OrdinalIgnoreCase);
+        string? root = FindProjectRoot();
+        if (root == null) return result;
+
+        string treeDir = Path.Combine(root, "skills", "ArvoresClasses");
+        if (!Directory.Exists(treeDir)) return result;
+
+        foreach (string path in Directory.EnumerateFiles(treeDir, "Arvore*.tres"))
+        {
+            string className = Path.GetFileNameWithoutExtension(path).Replace("Arvore", "", StringComparison.OrdinalIgnoreCase);
+            if (string.Equals(className, "Berserk", StringComparison.OrdinalIgnoreCase))
+                className = "Berseker";
+            if (string.Equals(className, "Sacerdote", StringComparison.OrdinalIgnoreCase))
+                className = "Clerigo";
+
+            string text = File.ReadAllText(path);
+            var skillResourceIds = GetSkillResourceIds(root, text);
+            var tree = new Dictionary<string, ServerTalentNode>(StringComparer.Ordinal);
+            foreach (Match block in Regex.Matches(text, @"(?s)\[sub_resource[^\]]+\]\s*(?<body>.*?)(?=\n\[sub_resource|\n\[resource\]|\z)"))
+            {
+                string body = block.Groups["body"].Value;
+                string nodeId = GetString(body, "NodeId");
+                if (string.IsNullOrWhiteSpace(nodeId)) continue;
+
+                tree[nodeId] = new ServerTalentNode
+                {
+                    NodeId = nodeId,
+                    Nome = GetString(body, "Nome"),
+                    CustoPontos = Math.Max(0, GetInt(body, "CustoPontos", 1)),
+                    NivelMinimo = Math.Max(1, GetInt(body, "NivelMinimo", 1)),
+                    SkillId = GetNodeSkillId(body, skillResourceIds),
+                    TemEscolhaStatus = body.Contains("StatOptionIds", StringComparison.Ordinal),
+                    Requisitos = GetRequirements(body),
+                };
+            }
+
+            if (tree.Count > 0)
+                result[className] = tree;
+        }
+
+        Logger.Info($"TalentCatalog: {result.Count} árvore(s) carregada(s).");
+        return result;
+    }
+
+    private static string? FindProjectRoot()
+    {
+        foreach (string start in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+        {
+            var dir = new DirectoryInfo(start);
+            while (dir != null)
+            {
+                if (Directory.Exists(Path.Combine(dir.FullName, "skills", "ArvoresClasses")))
+                    return dir.FullName;
+                dir = dir.Parent;
+            }
+        }
+        return null;
+    }
+
+    private static string GetString(string text, string key)
+    {
+        var match = Regex.Match(text, $@"(?m)^{Regex.Escape(key)}\s*=\s*""(?<v>(?:\\""|[^""])*)""");
+        return match.Success ? match.Groups["v"].Value.Replace("\\\"", "\"") : "";
+    }
+
+    private static Dictionary<string, int> GetSkillResourceIds(string root, string treeText)
+    {
+        var result = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (Match match in Regex.Matches(treeText, @"\[ext_resource[^\]]*script_class=""SkillResource""[^\]]*path=""(?<path>[^""]+)""[^\]]*id=""(?<id>[^""]+)""[^\]]*\]"))
+        {
+            string id = match.Groups["id"].Value;
+            string resourcePath = match.Groups["path"].Value;
+            if (!resourcePath.StartsWith("res://", StringComparison.Ordinal))
+                continue;
+
+            string filePath = Path.Combine(root, resourcePath["res://".Length..].Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(filePath))
+                continue;
+
+            int skillId = GetInt(File.ReadAllText(filePath), "SkillId", 0);
+            if (skillId > 0)
+                result[id] = skillId;
+        }
+        return result;
+    }
+
+    private static int GetNodeSkillId(string body, Dictionary<string, int> skillResourceIds)
+    {
+        var match = Regex.Match(body, @"(?m)^HabilidadeAtiva\s*=\s*ExtResource\(""(?<id>[^""]+)""\)");
+        return match.Success && skillResourceIds.TryGetValue(match.Groups["id"].Value, out int skillId)
+            ? skillId
+            : 0;
+    }
+
+    private static int GetInt(string text, string key, int fallback)
+    {
+        var match = Regex.Match(text, $@"(?m)^{Regex.Escape(key)}\s*=\s*(?<v>-?\d+)");
+        return match.Success && int.TryParse(match.Groups["v"].Value, out int value) ? value : fallback;
+    }
+
+    private static string[] GetRequirements(string text)
+    {
+        var match = Regex.Match(text, @"(?m)^Requisitos\s*=\s*PackedStringArray\((?<v>[^\)]*)\)");
+        if (!match.Success) return Array.Empty<string>();
+        return Regex.Matches(match.Groups["v"].Value, @"""(?<id>[^""]+)""")
+            .Select(m => m.Groups["id"].Value)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .ToArray();
     }
 }

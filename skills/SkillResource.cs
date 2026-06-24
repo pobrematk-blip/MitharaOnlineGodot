@@ -67,6 +67,9 @@ public partial class SkillResource : Resource
     public string CenaInvocacao { get; set; } = string.Empty;
 
     [Export]
+    public string EfeitoVisualPath { get; set; } = string.Empty;
+
+    [Export]
     public string BuffType { get; set; } = string.Empty;
 
     [Export]

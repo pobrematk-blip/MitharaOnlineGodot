@@ -210,10 +210,9 @@ partial class GameServer
         int batchFrom = 0;
         int index = 0;
 
-        foreach (var aoiEid in aoi)
-        {
-            if (aoiEid == playerEntityId) continue;
-            if (!entities.TryGetValue(aoiEid, out var aoiEntity)) continue;
+		foreach (var aoiEid in aoi)
+		{
+			if (!entities.TryGetValue(aoiEid, out var aoiEntity)) continue;
 
             if (index > batchFrom && writer.Length + EstimateEntitySize(aoiEntity) > maxPayload)
             {

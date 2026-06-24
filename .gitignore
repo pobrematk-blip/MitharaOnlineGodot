@@ -11,3 +11,25 @@ tests/obj/
 
 # Test databases
 *.db
+
+# NuGet package cache
+.nuget_packages/
+.dotnet_cli/
+
+# Godot export caches
+.godot_export_*/
+
+# Build / Export artifacts
+build/
+build_update*/
+release/
+export_*.log
+export_presets.cfg
+launcher/bin/
+launcher/obj/
+
+# Animation asset packs (external)
+skills/Animação/
+
+# Large zip files (exceeds GitHub 100MB limit)
+*.zip

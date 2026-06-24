@@ -15,6 +15,7 @@ public partial class TalentTreeUI : Control
     private Control _board;
     private PanelContainer _slotTemplate;
     private TalentTreeComponent _talentTreeComponent;
+    private TalentTreeComponent _connectedTalentTreeComponent;
     private int _playerNivel;
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
@@ -26,9 +27,9 @@ public partial class TalentTreeUI : Control
     private const float AttributeNodeSize = 28f;
     private const float ChoiceNodeWidth = 104f;
     private const float ChoiceNodeAreaSize = 112f;
-    private const float SkillNodeSize = 58f;
-    private const float SkillClusterWidth = 96f;
-    private const float SkillClusterHeight = 98f;
+    private const float SkillNodeSize = 72f;
+    private const float SkillClusterWidth = 78f;
+    private const float SkillClusterHeight = 78f;
     private const float SkillStatusNodeSize = 22f;
     private const float ManualLayoutSpacing = 1.38f;
     private const float UnlockNodeSize = 40f;
@@ -314,10 +315,11 @@ public partial class TalentTreeUI : Control
     {
         var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
         if (player == null) { _pointsLabel.Text = "Sem jogador"; return; }
-        _playerNivel = player.Nivel;
+        _playerNivel = ObterNivelOnline(player);
 
         _talentTreeComponent = player.GetNodeOrNull<TalentTreeComponent>("TalentTreeComponent");
         if (_talentTreeComponent?.TalentTree == null) { _pointsLabel.Text = "Sem árvore"; return; }
+        ConectarAtualizacaoDaArvore(_talentTreeComponent);
 
         UpdatePointsLabel();
 
@@ -419,9 +421,11 @@ public partial class TalentTreeUI : Control
             Vector2 nodeDimensions = ObterDimensaoNo(node, tree);
             var slot = new TalentNodeSlotUI
             {
-                NodeData = unlocked ? node : null,
+                NodeData = node,
+                IsUnlocked = unlocked,
                 MouseFilter = MouseFilterEnum.Stop,
             };
+            slot.GuiInput += inputEvent => OnTalentNodeGuiInput(inputEvent, id);
             slot.Visible = true;
             slot.TooltipText = CriarTooltip(node);
             slot.AnchorLeft = 0;
@@ -440,7 +444,7 @@ public partial class TalentTreeUI : Control
 
                 var skillFrame = new PanelContainer
                 {
-                    Position = new Vector2((SkillClusterWidth - SkillNodeSize) * 0.5f, SkillClusterHeight - SkillNodeSize),
+                    Position = new Vector2((SkillClusterWidth - SkillNodeSize) * 0.5f, (SkillClusterHeight - SkillNodeSize) * 0.5f),
                     Size = Vector2.One * SkillNodeSize,
                     CustomMinimumSize = Vector2.One * SkillNodeSize,
                     MouseFilter = MouseFilterEnum.Pass,
@@ -453,7 +457,10 @@ public partial class TalentTreeUI : Control
                     ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                     StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
                     MouseFilter = MouseFilterEnum.Ignore,
+                    CustomMinimumSize = Vector2.One * SkillNodeSize,
+                    Size = Vector2.One * SkillNodeSize,
                 };
+                icon.SetAnchorsPreset(LayoutPreset.FullRect);
                 skillFrame.AddChild(icon);
                 CriarFallbackDeIcone(skillFrame, node, nodeIcon);
 
@@ -476,6 +483,7 @@ public partial class TalentTreeUI : Control
                     StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
                     MouseFilter = MouseFilterEnum.Ignore,
                 };
+                icon.SetAnchorsPreset(LayoutPreset.FullRect);
                 slot.AddChild(icon);
                 CriarFallbackDeIcone(slot, node, nodeIcon);
 
@@ -555,6 +563,52 @@ public partial class TalentTreeUI : Control
         foreach (string parentId in hiddenNode.Requisitos)
             foreach (string visibleId in ObterRequisitosVisuais(tree, parentId, visibleSlots, visited))
                 yield return visibleId;
+    }
+
+    private void OnTalentNodeGuiInput(InputEvent inputEvent, string nodeId)
+    {
+        if (inputEvent is not InputEventMouseButton mouse || !mouse.Pressed || mouse.ButtonIndex != MouseButton.Left)
+            return;
+
+        if (_talentTreeComponent == null || !_talentTreeComponent.PodeDesbloquear(nodeId, _playerNivel))
+            return;
+
+        _talentTreeComponent.SolicitarDesbloqueioServidor(nodeId);
+        GetViewport().SetInputAsHandled();
+    }
+
+    private void ConectarAtualizacaoDaArvore(TalentTreeComponent component)
+    {
+        if (_connectedTalentTreeComponent == component)
+            return;
+
+        if (_connectedTalentTreeComponent != null)
+            _connectedTalentTreeComponent.EstadoAtualizado -= OnTalentTreeStateUpdated;
+
+        _connectedTalentTreeComponent = component;
+        if (_connectedTalentTreeComponent != null)
+            _connectedTalentTreeComponent.EstadoAtualizado += OnTalentTreeStateUpdated;
+    }
+
+    private void OnTalentTreeStateUpdated()
+    {
+        if (_bgPanel == null || !_bgPanel.Visible)
+            return;
+
+        UpdateTreeView();
+    }
+
+    private int ObterNivelOnline(Player player)
+    {
+        var levelComp = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+        if (levelComp != null && levelComp.Nivel > LevelProgressionUtil.NivelInicial)
+            return levelComp.Nivel;
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet._pendingLevel > LevelProgressionUtil.NivelInicial)
+            return gameNet._pendingLevel;
+
+        return player.Nivel;
     }
 
     private Dictionary<string, Vector2> CalculateNodePositions(TalentTreeResource tree, TalentNodeResource[] nodes, out int maxDepth)
@@ -974,6 +1028,7 @@ public partial class TalentTreeUI : Control
 
     private static void Estilo(PanelContainer slot, Color bg, Color border, float nodeSize)
     {
+        int corner = Mathf.IsEqualApprox(nodeSize, SkillNodeSize) ? 7 : (int)(nodeSize * 0.5f);
         slot.AddThemeStyleboxOverride("panel", new StyleBoxFlat
         {
             BgColor = bg,
@@ -982,10 +1037,10 @@ public partial class TalentTreeUI : Control
             BorderWidthRight = 3,
             BorderWidthBottom = 3,
             BorderColor = border,
-            CornerRadiusTopLeft = (int)(nodeSize * 0.5f),
-            CornerRadiusTopRight = (int)(nodeSize * 0.5f),
-            CornerRadiusBottomRight = (int)(nodeSize * 0.5f),
-            CornerRadiusBottomLeft = (int)(nodeSize * 0.5f),
+            CornerRadiusTopLeft = corner,
+            CornerRadiusTopRight = corner,
+            CornerRadiusBottomRight = corner,
+            CornerRadiusBottomLeft = corner,
             ContentMarginLeft = 0,
             ContentMarginTop = 0,
             ContentMarginRight = 0,

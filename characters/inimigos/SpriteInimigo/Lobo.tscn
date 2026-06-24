@@ -5,7 +5,7 @@
 [sub_resource type="SpriteFrames" id="SpriteFrames_gj7p0"]
 
 [sub_resource type="RectangleShape2D" id="RectShape"]
-size = Vector2(30, 48)
+size = Vector2(55, 65)
 
 [node name="Lobo" type="CharacterBody2D"]
 collision_layer = 4
@@ -25,7 +25,7 @@ scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_gj7p0")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 5)
+position = Vector2(0, 2)
 shape = SubResource("RectShape")
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
