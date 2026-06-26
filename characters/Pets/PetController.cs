@@ -200,7 +200,11 @@ public partial class PetController : Node
         if (sprite != null)
         {
             var frames = MobSpriteFramesBuilder.GetOrBuild(mobType);
-            if (frames != null)
+            if (frames == null || frames.GetAnimationNames().Length == 0)
+            {
+                frames = CarregarSpriteFramesFallback(mobType, petNome);
+            }
+            if (frames != null && frames.GetAnimationNames().Length > 0)
                 sprite.SpriteFrames = frames;
         }
 
@@ -217,6 +221,71 @@ public partial class PetController : Node
         _hudPanel.Visible = true;
 
         GD.Print($"[PET] {petNome} invocado!");
+    }
+
+    private SpriteFrames CarregarSpriteFramesFallback(string mobType, string petNome)
+    {
+        string petFile = petNome.Replace(" ", "");
+        string[] framePaths = {
+            $"res://characters/Pets/{petFile}PetFrames.tres",
+            $"res://characters/Pets/{petFile}PetFrames.res",
+        };
+        foreach (var p in framePaths)
+        {
+            if (ResourceLoader.Exists(p))
+            {
+                var loaded = ResourceLoader.Load<SpriteFrames>(p);
+                if (loaded != null && loaded.GetAnimationNames().Length > 0)
+                    return loaded;
+            }
+        }
+        string mobScene = $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn";
+        if (ResourceLoader.Exists(mobScene))
+        {
+            var scene = ResourceLoader.Load<PackedScene>(mobScene);
+            if (scene != null)
+            {
+                var temp = scene.Instantiate();
+                var animSprite = temp?.FindChild("AnimatedSprite2D", true, false) as AnimatedSprite2D;
+                if (animSprite?.SpriteFrames != null)
+                {
+                    var original = animSprite.SpriteFrames;
+                    var prefix = _petResource?.AnimPrefix ?? mobType;
+                    if (MontarFramesDoMob(original, prefix, out var novo))
+                    {
+                        temp.QueueFree();
+                        return novo;
+                    }
+                }
+                temp?.QueueFree();
+            }
+        }
+        return new SpriteFrames();
+    }
+
+    private static bool MontarFramesDoMob(SpriteFrames original, string prefix, out SpriteFrames novo)
+    {
+        novo = new SpriteFrames();
+        string[] anims = original.GetAnimationNames();
+        bool achou = false;
+        foreach (var oldName in anims)
+        {
+            int idx = oldName.IndexOf('_');
+            if (idx < 0) continue;
+            string newName = prefix + oldName.Substring(idx);
+            novo.AddAnimation(newName);
+            novo.SetAnimationLoop(newName, original.GetAnimationLoop(oldName));
+            novo.SetAnimationSpeed(newName, original.GetAnimationSpeed(oldName));
+            int frameCount = original.GetFrameCount(oldName);
+            for (int f = 0; f < frameCount; f++)
+            {
+                var tex = original.GetFrameTexture(oldName, f);
+                float duration = original.GetFrameDuration(oldName, f);
+                novo.AddFrame(newName, tex, duration);
+            }
+            achou = true;
+        }
+        return achou;
     }
 
     private void DespawnPet()

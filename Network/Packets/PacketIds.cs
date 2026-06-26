@@ -80,6 +80,11 @@ public enum PacketId : ushort
     C2S_LojinhaListRequest = 0x019E,
     C2S_LojinhaRequestItems = 0x019F,
 
+    C2S_SceneTeleport = 0x01A0,
+
+    C2S_MapEditorPlaceTile = 0x01B0,
+    C2S_MapEditorRequestTiles = 0x01B1,
+
     C2S_Ping = 0x01FF,
 
     S2C_LoginResult = 0x0201,
@@ -158,5 +163,8 @@ public enum PacketId : ushort
     S2C_LojinhaDespawn = 0x02A3,
     S2C_LojinhaSpawn = 0x02A4,
     S2C_ItemUseResult = 0x02A5,
+    S2C_SceneChange = 0x02A6,
+    S2C_MapEditorTileData = 0x02B0,
+    S2C_MapEditorTileUpdate = 0x02B1,
     S2C_Pong = 0x02FF,
 }

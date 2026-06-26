@@ -1,34 +1,31 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/p11.png" id="1_urfuj"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300027
 Nome = "Manto de Valebosque"
 Descricao = "Tecida com fios arcanos de Valebosque, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_urfuj")
 QuantidadeMaximaPorSlot = 1
 Tipo = 2
 CategoriaPeso = 0
 TipoItem = 1
 NivelRequerido = 20
 Valor = 200
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 17
-HpMin = 15
-HpMax = 20
-Mana = 24
-ManaMin = 20
-ManaMax = 28
 DefesaFisica = 8
 DefesaFisicaMin = 7
 DefesaFisicaMax = 10
 DefesaMagica = 17
 DefesaMagicaMin = 15
 DefesaMagicaMax = 20
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 17
+HpMin = 15
+HpMax = 20
+Mana = 24
+ManaMin = 20
+ManaMax = 28
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

@@ -95,6 +95,15 @@ partial class GameNetwork
         EmitSignal(SignalName.OnTeleport, entityId, x, y);
     }
 
+    private void HandleSceneChange(NetDataReader r)
+    {
+        string sceneName = r.GetString();
+        float x = r.GetFloat();
+        float y = r.GetFloat();
+        Log($"[SCENE] Mudança de cena: {sceneName} -> ({x:F1}, {y:F1})");
+        EmitSignal(SignalName.OnSceneChange, sceneName, x, y);
+    }
+
     private void HandleLootSpawn(NetDataReader r)
     {
         ulong lootId = r.GetULong();

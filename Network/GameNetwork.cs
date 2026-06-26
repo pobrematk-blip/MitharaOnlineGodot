@@ -105,6 +105,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnPartyInviteReceivedEventHandler(string senderName);
     [Signal] public delegate void OnGuildInviteReceivedEventHandler(string senderName);
     [Signal] public delegate void OnItemUseResultEventHandler(int health, int maxHealth, int mana, int maxMana);
+    [Signal] public delegate void OnSceneChangeEventHandler(string sceneName, float x, float y);
     [Signal] public delegate void OnTradeRequestedEventHandler(string senderName);
     [Signal] public delegate void OnTradeStartEventHandler(ulong partnerId, string partnerName);
     [Signal] public delegate void OnTradeOfferUpdateEventHandler(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers);
@@ -446,6 +447,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_GuildPromoteLeaderRequest:
                 HandleGuildPromoteLeaderRequest(r);
                 break;
+            case PacketId.S2C_SceneChange:
+                HandleSceneChange(r);
+                break;
             case PacketId.S2C_LootSpawn:
                 HandleLootSpawn(r);
                 break;
@@ -549,6 +553,12 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_ItemUseResult:
                 HandleItemUseResult(r);
+                break;
+            case PacketId.S2C_MapEditorTileData:
+                HandleMapEditorTileData(r);
+                break;
+            case PacketId.S2C_MapEditorTileUpdate:
+                HandleMapEditorTileUpdate(r);
                 break;
         } } catch (System.Exception ex)
         {

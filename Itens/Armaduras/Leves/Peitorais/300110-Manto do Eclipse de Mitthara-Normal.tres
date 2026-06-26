@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/p12.png" id="1_2ibvt"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300110
 Nome = "Manto do Eclipse de Mitthara"
 Descricao = "Tecida com fios arcanos de Eclipse de Mitthara, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_2ibvt")
 QuantidadeMaximaPorSlot = 1
 Tipo = 2
 CategoriaPeso = 0
 NivelRequerido = 90
 Valor = 900
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 59
-HpMin = 51
-HpMax = 68
-Mana = 84
-ManaMin = 71
-ManaMax = 97
 DefesaFisica = 27
 DefesaFisicaMin = 23
 DefesaFisicaMax = 31
 DefesaMagica = 56
 DefesaMagicaMin = 48
 DefesaMagicaMax = 64
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 59
+HpMin = 51
+HpMax = 68
+Mana = 84
+ManaMin = 71
+ManaMax = 97
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

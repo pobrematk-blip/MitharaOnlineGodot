@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Montros.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/b42.png" id="1_o1a2u"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300080
 Nome = "Passos de Umbra Alta"
 Descricao = "Tecida com fios arcanos de Umbra Alta, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_o1a2u")
 QuantidadeMaximaPorSlot = 1
 Tipo = 6
 CategoriaPeso = 0
 NivelRequerido = 60
 Valor = 600
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 12
-HpMin = 10
-HpMax = 14
-Mana = 16
-ManaMin = 14
-ManaMax = 18
 DefesaFisica = 5
 DefesaFisicaMin = 5
 DefesaFisicaMax = 6
 DefesaMagica = 11
 DefesaMagicaMin = 10
 DefesaMagicaMax = 13
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 12
+HpMin = 10
+HpMax = 14
+Mana = 16
+ManaMin = 14
+ManaMax = 18
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

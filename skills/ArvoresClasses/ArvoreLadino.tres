@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=89 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=117 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -29,7 +29,35 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/006 - Chuva de Shurikens.tres" id="sk_25"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/007 - Troca de Lugar.tres" id="sk_26"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/008 - Dança das Lâminas.tres" id="sk_27"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/009 - Tempestade Ninja.tres" id="sk_28"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/009 - Tempestade Ninja.tres" id="sk_28"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/41.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/47.png" id="icon_sk_10"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/33.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/15.png" id="icon_sk_12"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/16.png" id="icon_sk_13"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/11.png" id="icon_sk_14"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/6.png" id="icon_sk_15"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/29.png" id="icon_sk_16"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/38.png" id="icon_sk_17"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/12.png" id="icon_sk_18"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/44.png" id="icon_sk_19"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/35.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/31.png" id="icon_sk_20"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/46.png" id="icon_sk_21"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/20.png" id="icon_sk_22"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/43.png" id="icon_sk_23"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/39.png" id="icon_sk_24"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/28.png" id="icon_sk_25"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/36.png" id="icon_sk_26"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/42.png" id="icon_sk_27"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/48.png" id="icon_sk_28"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/43.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/23.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/10.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/25.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/24.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/28.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/37.png" id="icon_sk_9"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "lad_base"
@@ -88,6 +116,7 @@ NodeId = "lad_assassino_skill_1"
 Nome = "Passo Sombrio"
 Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 716.2)
 Requisitos = PackedStringArray("lad_assassino_escolha_interna_1")
@@ -100,6 +129,7 @@ NodeId = "lad_assassino_skill_2"
 Nome = "Golpe Sombrio"
 Descricao = "Um corte rápido e silencioso feito para iniciar o combate."
 HabilidadeAtiva = ExtResource("sk_2")
+Icone = ExtResource("icon_sk_2")
 NodeType = 1
 Posicao = Vector2(950, 680)
 Requisitos = PackedStringArray("lad_assassino_escolha_interna_2")
@@ -112,6 +142,7 @@ NodeId = "lad_assassino_skill_3"
 Nome = "Invisibilidade Profunda"
 Descricao = "O Assassino desaparece completamente nas sombras por mais tempo que o Passo Sombrio."
 HabilidadeAtiva = ExtResource("sk_3")
+Icone = ExtResource("icon_sk_3")
 NodeType = 1
 Posicao = Vector2(1085, 716.2)
 Requisitos = PackedStringArray("lad_assassino_escolha_interna_3")
@@ -144,6 +175,7 @@ NodeId = "lad_assassino_skill_4"
 Nome = "Salto nas Costas"
 Descricao = "O Assassino salta diretamente para trás do alvo escolhido."
 HabilidadeAtiva = ExtResource("sk_4")
+Icone = ExtResource("icon_sk_4")
 NodeType = 1
 Posicao = Vector2(662.3, 630.4)
 Requisitos = PackedStringArray("lad_assassino_desbloqueio_esquerdo")
@@ -156,6 +188,7 @@ NodeId = "lad_assassino_skill_5"
 Nome = "Golpe Atordoante"
 Descricao = "Um ataque preciso que interrompe o inimigo e o deixa vulnerável."
 HabilidadeAtiva = ExtResource("sk_5")
+Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(846, 532.8)
 Requisitos = PackedStringArray("lad_assassino_desbloqueio_esquerdo")
@@ -168,6 +201,7 @@ NodeId = "lad_assassino_skill_6"
 Nome = "Punhalada nas Costas"
 Descricao = "Uma facada brutal nas costas que atinge pontos vitais."
 HabilidadeAtiva = ExtResource("sk_6")
+Icone = ExtResource("icon_sk_6")
 NodeType = 1
 Posicao = Vector2(1054, 532.8)
 Requisitos = PackedStringArray("lad_assassino_desbloqueio_direito")
@@ -180,6 +214,7 @@ NodeId = "lad_assassino_skill_7"
 Nome = "Marca da Morte"
 Descricao = "Marca a vítima para receber ataques letais."
 HabilidadeAtiva = ExtResource("sk_7")
+Icone = ExtResource("icon_sk_7")
 NodeType = 1
 Posicao = Vector2(1237.7, 630.4)
 Requisitos = PackedStringArray("lad_assassino_desbloqueio_direito")
@@ -225,6 +260,7 @@ NodeId = "lad_assassino_skill_8"
 Nome = "Sequência Mortal"
 Descricao = "Uma sequência veloz de cortes contra o mesmo alvo."
 HabilidadeAtiva = ExtResource("sk_8")
+Icone = ExtResource("icon_sk_8")
 NodeType = 1
 Posicao = Vector2(554, 554)
 Requisitos = PackedStringArray("lad_assassino_escolha_externa_1")
@@ -237,6 +273,7 @@ NodeId = "lad_assassino_skill_9"
 Nome = "Reflexos Assassinos"
 Descricao = "O Assassino entra em estado de foco mortal."
 HabilidadeAtiva = ExtResource("sk_9")
+Icone = ExtResource("icon_sk_9")
 NodeType = 1
 Posicao = Vector2(950, 390)
 Requisitos = PackedStringArray("lad_assassino_escolha_externa_2")
@@ -249,6 +286,7 @@ NodeId = "lad_assassino_skill_10"
 Nome = "Execução Final"
 Descricao = "O golpe definitivo do Assassino, usado para finalizar vítimas vulneráveis."
 HabilidadeAtiva = ExtResource("sk_10")
+Icone = ExtResource("icon_sk_10")
 NodeType = 1
 Posicao = Vector2(1346, 554)
 Requisitos = PackedStringArray("lad_assassino_escolha_externa_3")
@@ -304,6 +342,7 @@ NodeId = "lad_gatuno_skill_1"
 Nome = "Passo Sombrio"
 Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(1220, 950)
 Requisitos = PackedStringArray("lad_gatuno_escolha_interna_1")
@@ -316,6 +355,7 @@ NodeId = "lad_gatuno_skill_2"
 Nome = "Lâmina Envenenada"
 Descricao = "Reveste a adaga com veneno antes de atacar."
 HabilidadeAtiva = ExtResource("sk_11")
+Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(1183.8, 1085)
 Requisitos = PackedStringArray("lad_gatuno_escolha_interna_2")
@@ -328,6 +368,7 @@ NodeId = "lad_gatuno_skill_3"
 Nome = "Bomba de Fumaça"
 Descricao = "Lança uma bomba de fumaça que atrapalha os inimigos próximos."
 HabilidadeAtiva = ExtResource("sk_12")
+Icone = ExtResource("icon_sk_12")
 NodeType = 1
 Posicao = Vector2(1085, 1183.8)
 Requisitos = PackedStringArray("lad_gatuno_escolha_interna_3")
@@ -360,6 +401,7 @@ NodeId = "lad_gatuno_skill_4"
 Nome = "Nuvem Tóxica"
 Descricao = "Cria uma nuvem venenosa em uma área."
 HabilidadeAtiva = ExtResource("sk_13")
+Icone = ExtResource("icon_sk_13")
 NodeType = 1
 Posicao = Vector2(1370.6, 860.6)
 Requisitos = PackedStringArray("lad_gatuno_desbloqueio_esquerdo")
@@ -372,6 +414,7 @@ NodeId = "lad_gatuno_skill_5"
 Nome = "Armadilha Venenosa"
 Descricao = "Coloca uma armadilha que libera veneno ao ser ativada."
 HabilidadeAtiva = ExtResource("sk_14")
+Icone = ExtResource("icon_sk_14")
 NodeType = 1
 Posicao = Vector2(1363.3, 1068.5)
 Requisitos = PackedStringArray("lad_gatuno_desbloqueio_esquerdo")
@@ -384,6 +427,7 @@ NodeId = "lad_gatuno_skill_6"
 Nome = "Sangramento Profundo"
 Descricao = "Um corte calculado que faz o alvo sangrar."
 HabilidadeAtiva = ExtResource("sk_15")
+Icone = ExtResource("icon_sk_15")
 NodeType = 1
 Posicao = Vector2(1259.3, 1248.7)
 Requisitos = PackedStringArray("lad_gatuno_desbloqueio_direito")
@@ -396,6 +440,7 @@ NodeId = "lad_gatuno_skill_7"
 Nome = "Enfraquecer"
 Descricao = "O Gatuno ataca pontos de pressão para reduzir a força do inimigo."
 HabilidadeAtiva = ExtResource("sk_16")
+Icone = ExtResource("icon_sk_16")
 NodeType = 1
 Posicao = Vector2(1082.9, 1359)
 Requisitos = PackedStringArray("lad_gatuno_desbloqueio_direito")
@@ -441,6 +486,7 @@ NodeId = "lad_gatuno_skill_8"
 Nome = "Roubo de Energia"
 Descricao = "O Gatuno drena energia vital e mágica do inimigo."
 HabilidadeAtiva = ExtResource("sk_17")
+Icone = ExtResource("icon_sk_17")
 NodeType = 1
 Posicao = Vector2(1490.9, 805.1)
 Requisitos = PackedStringArray("lad_gatuno_escolha_externa_1")
@@ -453,6 +499,7 @@ NodeId = "lad_gatuno_skill_9"
 Nome = "Mestre dos Venenos"
 Descricao = "O Gatuno aprimora todos os seus venenos temporariamente."
 HabilidadeAtiva = ExtResource("sk_18")
+Icone = ExtResource("icon_sk_18")
 NodeType = 1
 Posicao = Vector2(1435, 1230)
 Requisitos = PackedStringArray("lad_gatuno_escolha_externa_2")
@@ -465,6 +512,7 @@ NodeId = "lad_gatuno_skill_10"
 Nome = "Praga do Submundo"
 Descricao = "Espalha uma praga tóxica devastadora que corrói os inimigos afetados."
 HabilidadeAtiva = ExtResource("sk_19")
+Icone = ExtResource("icon_sk_19")
 NodeType = 1
 Posicao = Vector2(1094.9, 1490.9)
 Requisitos = PackedStringArray("lad_gatuno_escolha_externa_3")
@@ -520,6 +568,7 @@ NodeId = "lad_ninja_skill_1"
 Nome = "Passo Sombrio"
 Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
 Requisitos = PackedStringArray("lad_ninja_escolha_interna_1")
@@ -532,6 +581,7 @@ NodeId = "lad_ninja_skill_2"
 Nome = "Shuriken Rápida"
 Descricao = "O Ninja arremessa uma shuriken em alta velocidade."
 HabilidadeAtiva = ExtResource("sk_20")
+Icone = ExtResource("icon_sk_20")
 NodeType = 1
 Posicao = Vector2(716.2, 1085)
 Requisitos = PackedStringArray("lad_ninja_escolha_interna_2")
@@ -544,6 +594,7 @@ NodeId = "lad_ninja_skill_3"
 Nome = "Passos Relâmpago"
 Descricao = "O Ninja acelera seus movimentos e ataca com mais velocidade."
 HabilidadeAtiva = ExtResource("sk_21")
+Icone = ExtResource("icon_sk_21")
 NodeType = 1
 Posicao = Vector2(680, 950)
 Requisitos = PackedStringArray("lad_ninja_escolha_interna_3")
@@ -576,6 +627,7 @@ NodeId = "lad_ninja_skill_4"
 Nome = "Shuriken Dupla"
 Descricao = "Arremessa duas shurikens em rápida sequência."
 HabilidadeAtiva = ExtResource("sk_22")
+Icone = ExtResource("icon_sk_22")
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
 Requisitos = PackedStringArray("lad_ninja_desbloqueio_esquerdo")
@@ -588,6 +640,7 @@ NodeId = "lad_ninja_skill_5"
 Nome = "Clone das Sombras"
 Descricao = "Cria um clone ilusório que confunde os inimigos."
 HabilidadeAtiva = ExtResource("sk_23")
+Icone = ExtResource("icon_sk_23")
 NodeType = 1
 Posicao = Vector2(640.7, 1248.7)
 Requisitos = PackedStringArray("lad_ninja_desbloqueio_esquerdo")
@@ -600,6 +653,7 @@ NodeId = "lad_ninja_skill_6"
 Nome = "Corte Fantasma"
 Descricao = "O Ninja atravessa o alvo com um corte rápido."
 HabilidadeAtiva = ExtResource("sk_24")
+Icone = ExtResource("icon_sk_24")
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
 Requisitos = PackedStringArray("lad_ninja_desbloqueio_direito")
@@ -612,6 +666,7 @@ NodeId = "lad_ninja_skill_7"
 Nome = "Chuva de Shurikens"
 Descricao = "Lança várias shurikens ao redor em rápida sucessão."
 HabilidadeAtiva = ExtResource("sk_25")
+Icone = ExtResource("icon_sk_25")
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
 Requisitos = PackedStringArray("lad_ninja_desbloqueio_direito")
@@ -657,6 +712,7 @@ NodeId = "lad_ninja_skill_8"
 Nome = "Troca de Lugar"
 Descricao = "O Ninja troca de posição com seu clone ativo."
 HabilidadeAtiva = ExtResource("sk_26")
+Icone = ExtResource("icon_sk_26")
 NodeType = 1
 Posicao = Vector2(805.1, 1490.9)
 Requisitos = PackedStringArray("lad_ninja_escolha_externa_1")
@@ -669,6 +725,7 @@ NodeId = "lad_ninja_skill_9"
 Nome = "Dança das Lâminas"
 Descricao = "O Ninja entra em um fluxo de ataques contínuos."
 HabilidadeAtiva = ExtResource("sk_27")
+Icone = ExtResource("icon_sk_27")
 NodeType = 1
 Posicao = Vector2(465, 1230)
 Requisitos = PackedStringArray("lad_ninja_escolha_externa_2")
@@ -681,6 +738,7 @@ NodeId = "lad_ninja_skill_10"
 Nome = "Tempestade Ninja"
 Descricao = "O Ninja se move como um vulto, atacando múltiplos inimigos em alta velocidade."
 HabilidadeAtiva = ExtResource("sk_28")
+Icone = ExtResource("icon_sk_28")
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
 Requisitos = PackedStringArray("lad_ninja_escolha_externa_3")

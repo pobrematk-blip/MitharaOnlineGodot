@@ -1,0 +1,137 @@
+using LiteNetLib;
+using LiteNetLib.Utils;
+using Mithara.Server.Packets;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+
+namespace Mithara.Server.Network;
+
+public partial class GameServer
+{
+    private static readonly Dictionary<string, Dictionary<(int X, int Y), byte>> _tileData = new();
+    private static readonly Dictionary<string, Dictionary<(int X, int Y), TeleportTileInfo>> _teleportTargets = new();
+
+    public class TeleportTileInfo
+    {
+        public string TargetScene { get; set; } = "main";
+        public float TargetX { get; set; }
+        public float TargetY { get; set; }
+    }
+
+    public void LoadTileData()
+    {
+        _tileData.Clear();
+        _teleportTargets.Clear();
+
+        string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+        string dataDir = Path.GetFullPath(Path.Combine(exeDir, "..", "..", "..", "data", "tiles"));
+
+        if (!Directory.Exists(dataDir))
+        {
+            Logger.Info($"[TILE DATA] Diretorio nao encontrado: {dataDir}");
+            return;
+        }
+
+        foreach (string file in Directory.GetFiles(dataDir, "*.json"))
+        {
+            string sceneName = Path.GetFileNameWithoutExtension(file).ToLower();
+            string json = File.ReadAllText(file);
+            var entries = JsonSerializer.Deserialize<List<JsonElement>>(json);
+            if (entries == null) continue;
+
+            var tiles = new Dictionary<(int, int), byte>();
+            var teleports = new Dictionary<(int, int), TeleportTileInfo>();
+
+            foreach (var entry in entries)
+            {
+                int tileX = entry.GetProperty("tileX").GetInt32();
+                int tileY = entry.GetProperty("tileY").GetInt32();
+                byte type = entry.GetProperty("type").GetByte();
+                tiles[(tileX, tileY)] = type;
+
+                if (type == 1 && entry.TryGetProperty("targetScene", out var ts))
+                {
+                    teleports[(tileX, tileY)] = new TeleportTileInfo
+                    {
+                        TargetScene = ts.GetString() ?? "main",
+                        TargetX = (float)entry.GetProperty("targetX").GetDouble(),
+                        TargetY = (float)entry.GetProperty("targetY").GetDouble(),
+                    };
+                }
+            }
+
+            _tileData[sceneName] = tiles;
+            if (teleports.Count > 0)
+                _teleportTargets[sceneName] = teleports;
+
+            Logger.Info($"[TILE DATA] Carregado: {sceneName} ({tiles.Count} tiles, {teleports.Count} teleportes)");
+        }
+    }
+
+    private void HandleMapEditorPlaceTile(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        if (session.SelectedCharacter == null) return;
+
+        string sceneName = reader.GetString();
+        int tileX = reader.GetInt();
+        int tileY = reader.GetInt();
+        byte type = reader.GetByte();
+        bool remove = reader.GetBool();
+
+        if (!_tileData.ContainsKey(sceneName))
+            _tileData[sceneName] = new Dictionary<(int, int), byte>();
+
+        var data = _tileData[sceneName];
+        var key = (tileX, tileY);
+
+        if (remove)
+            data.Remove(key);
+        else
+            data[key] = type;
+
+        foreach (var kvp in _sessions)
+        {
+            var s = kvp.Value;
+            if (s.SelectedCharacter == null) continue;
+            if (s.CurrentMap != sceneName) continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_MapEditorTileUpdate);
+            writer.Put(sceneName);
+            writer.Put(tileX);
+            writer.Put(tileY);
+            writer.Put(type);
+            writer.Put(remove);
+            kvp.Key.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+    }
+
+    private void HandleMapEditorRequestTiles(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        if (session.SelectedCharacter == null) return;
+
+        string sceneName = reader.GetString();
+
+        if (!_tileData.TryGetValue(sceneName, out var tiles))
+        {
+            var emptyWriter = PacketSerializer.WritePacket(PacketId.S2C_MapEditorTileData);
+            emptyWriter.Put(sceneName);
+            emptyWriter.Put(0);
+            peer.Send(emptyWriter, DeliveryMethod.ReliableOrdered);
+            return;
+        }
+
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_MapEditorTileData);
+        writer.Put(sceneName);
+        writer.Put(tiles.Count);
+        foreach (var kvp in tiles)
+        {
+            writer.Put(kvp.Key.X);
+            writer.Put(kvp.Key.Y);
+            writer.Put(kvp.Value);
+        }
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+}

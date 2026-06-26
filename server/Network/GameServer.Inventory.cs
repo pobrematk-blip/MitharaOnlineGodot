@@ -541,6 +541,33 @@ partial class GameServer
             player.Mana += restoredMana;
             BroadcastPartyMemberUpdateForEntity(player.Id);
         }
+        else if (item.ItemId == ItemDefinitions.PergaminhoResetTalentos)
+        {
+            player.UnlockedTalents.Clear();
+            if (player.SkillBarSlots == null || player.SkillBarSlots.Length != 20)
+                player.SkillBarSlots = new int[20];
+            Array.Fill(player.SkillBarSlots, 0);
+
+            _db.DeleteCharacterTalents(session.SelectedCharacter.Id);
+            _db.DeleteCharacterSkillSlots(session.SelectedCharacter.Id);
+
+            item.Quantity--;
+            if (item.Quantity <= 0)
+            {
+                player.Items.Remove(item);
+                _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+            }
+            else
+            {
+                _db.SaveItem(session.SelectedCharacter.Id, item);
+            }
+
+            SendInventoryData(peer, player);
+            SendTalentData(peer, player);
+            SendSkillBarData(peer, player);
+            SendSystemMessage(peer, "Talentos resetados. Seus pontos foram devolvidos.");
+            return;
+        }
         else if (item.ItemId is ItemDefinitions.PergaminhoVip7Dias or ItemDefinitions.PergaminhoVip15Dias or ItemDefinitions.PergaminhoVip30Dias or ItemDefinitions.PergaminhoVip7DiasTrial)
         {
             int days = item.ItemId switch

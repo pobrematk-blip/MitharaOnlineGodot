@@ -37,6 +37,8 @@ public class MonsterTemplate
     public int GoldMax { get; set; }
     public bool DropsNormalEquipment { get; set; }
     public bool DropsEliteEquipment { get; set; }
+    public double EliteDropChance { get; set; } = 1.0;
+    public double GoldDropChance { get; set; } = 1.0;
 }
 
 public class SpawnPoint
@@ -203,11 +205,13 @@ public class SpawnerManager
             Passive = false,
             GoldMin = 100,
             GoldMax = 500,
+            GoldDropChance = 0.20,
             DropsEliteEquipment = true,
+            EliteDropChance = 0.01,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
-                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
+                new() { ItemId = ItemDefinitions.PoeiraEstelar, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.30 },
+                new() { ItemId = ItemDefinitions.PergaminhoDoPet5, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.01 },
             },
         });
 

@@ -12,6 +12,25 @@ public partial class Main : Node2D
             world.YSortEnabled = true;
             GarantirPlayerNoWorld(world);
         }
+
+        CallDeferred(nameof(AdicionarMapEditor));
+    }
+
+    private void AdicionarMapEditor()
+    {
+        if (GetNodeOrNull("MapEditorLayer") != null) return;
+
+        var scene = ResourceLoader.Load<PackedScene>("res://ui/MapEditor/MapEditor.tscn");
+        if (scene == null)
+        {
+            GD.PrintErr("[MAIN] Falha ao carregar MapEditor.tscn");
+            return;
+        }
+
+        var editor = scene.Instantiate();
+        AddChild(editor);
+        editor.Name = "MapEditorLayer";
+        MoveChild(editor, 0);
     }
 
     private void GarantirPlayerNoWorld(Node2D world)
@@ -43,5 +62,10 @@ public partial class Main : Node2D
         tema.SetFontSize("font_size", "Window", 13);
 
         GetTree().Root.Theme = tema;
+    }
+
+    public CanvasLayer GetHUD()
+    {
+        return GetNodeOrNull<CanvasLayer>("HUD");
     }
 }

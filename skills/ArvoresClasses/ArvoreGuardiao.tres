@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,37 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/006 - Purificação.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/007 - Aura Sagrada.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/008 - Guardião Celestial.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/009 - Avatar do Templo.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/009 - Avatar do Templo.tres" id="sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/33.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/16.png" id="icon_sk_10"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/17.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/44.png" id="icon_sk_12"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/34.png" id="icon_sk_13"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/46.png" id="icon_sk_14"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/10.png" id="icon_sk_15"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/12.png" id="icon_sk_16"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/17.png" id="icon_sk_17"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/22.png" id="icon_sk_18"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/37.png" id="icon_sk_19"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/19.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/32.png" id="icon_sk_20"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/16.png" id="icon_sk_21"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/47.png" id="icon_sk_22"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/33.png" id="icon_sk_23"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/38.png" id="icon_sk_24"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/21.png" id="icon_sk_25"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/27.png" id="icon_sk_26"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/36.png" id="icon_sk_27"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/2.png" id="icon_sk_28"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/43.png" id="icon_sk_29"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/11.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/26.png" id="icon_sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/14.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/37.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/43.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/18.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/15.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/21.png" id="icon_sk_9"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "gua_base"
@@ -90,6 +120,7 @@ NodeId = "gua_protetor_skill_1"
 Nome = "Segundo Fôlego"
 Descricao = "O Guardião reúne suas forças no meio da batalha, respirando fundo para recuperar parte de sua vitalidade e energia."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 716.2)
 Requisitos = PackedStringArray("gua_protetor_escolha_interna_1")
@@ -102,6 +133,7 @@ NodeId = "gua_protetor_skill_2"
 Nome = "Provocação"
 Descricao = "O Protetor ergue seu escudo e desafia os inimigos próximos, forçando-os a encará-lo como a maior ameaça do campo de batalha."
 HabilidadeAtiva = ExtResource("sk_2")
+Icone = ExtResource("icon_sk_2")
 NodeType = 1
 Posicao = Vector2(950, 680)
 Requisitos = PackedStringArray("gua_protetor_escolha_interna_2")
@@ -114,6 +146,7 @@ NodeId = "gua_protetor_skill_3"
 Nome = "Escudo Protetor"
 Descricao = "O Protetor posiciona seu escudo à frente do corpo, absorvendo parte do impacto de ataques recebidos."
 HabilidadeAtiva = ExtResource("sk_3")
+Icone = ExtResource("icon_sk_3")
 NodeType = 1
 Posicao = Vector2(1085, 716.2)
 Requisitos = PackedStringArray("gua_protetor_escolha_interna_3")
@@ -146,6 +179,7 @@ NodeId = "gua_protetor_skill_4"
 Nome = "Golpe de Escudo"
 Descricao = "Um impacto brutal com o escudo atinge o inimigo de frente, quebrando seu equilíbrio e interrompendo sua ofensiva."
 HabilidadeAtiva = ExtResource("sk_4")
+Icone = ExtResource("icon_sk_4")
 NodeType = 1
 Posicao = Vector2(662.3, 630.4)
 Requisitos = PackedStringArray("gua_protetor_desbloqueio_esquerdo")
@@ -158,6 +192,7 @@ NodeId = "gua_protetor_skill_5"
 Nome = "Guardião dos Fracos"
 Descricao = "O Protetor cria um juramento de proteção sobre aliados próximos, assumindo parte dos danos que eles receberiam."
 HabilidadeAtiva = ExtResource("sk_5")
+Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(846, 532.8)
 Requisitos = PackedStringArray("gua_protetor_desbloqueio_esquerdo")
@@ -170,6 +205,7 @@ NodeId = "gua_protetor_skill_6"
 Nome = "Muralha Humana"
 Descricao = "O Guardião transforma seu corpo em uma muralha viva, resistindo a ataques que derrubariam guerreiros comuns."
 HabilidadeAtiva = ExtResource("sk_6")
+Icone = ExtResource("icon_sk_6")
 NodeType = 1
 Posicao = Vector2(1054, 532.8)
 Requisitos = PackedStringArray("gua_protetor_desbloqueio_direito")
@@ -182,6 +218,7 @@ NodeId = "gua_protetor_skill_7"
 Nome = "Desafio"
 Descricao = "O Protetor bate sua arma contra o escudo e emite um desafio ensurdecedor, atraindo a atenção de todos ao redor."
 HabilidadeAtiva = ExtResource("sk_7")
+Icone = ExtResource("icon_sk_7")
 NodeType = 1
 Posicao = Vector2(1237.7, 630.4)
 Requisitos = PackedStringArray("gua_protetor_desbloqueio_direito")
@@ -227,6 +264,7 @@ NodeId = "gua_protetor_skill_8"
 Nome = "Fortificação"
 Descricao = "O Protetor endurece sua postura e fortalece sua armadura com disciplina absoluta."
 HabilidadeAtiva = ExtResource("sk_8")
+Icone = ExtResource("icon_sk_8")
 NodeType = 1
 Posicao = Vector2(554, 554)
 Requisitos = PackedStringArray("gua_protetor_escolha_externa_1")
@@ -239,6 +277,7 @@ NodeId = "gua_protetor_skill_9"
 Nome = "Bastião"
 Descricao = "O Guardião se torna o centro de uma formação defensiva, protegendo aliados que lutam próximos a ele."
 HabilidadeAtiva = ExtResource("sk_9")
+Icone = ExtResource("icon_sk_9")
 NodeType = 1
 Posicao = Vector2(950, 390)
 Requisitos = PackedStringArray("gua_protetor_escolha_externa_2")
@@ -251,6 +290,7 @@ NodeId = "gua_protetor_skill_10"
 Nome = "Muralha Inabalável"
 Descricao = "O Protetor desperta sua determinação máxima e se torna uma fortaleza impossível de ignorar."
 HabilidadeAtiva = ExtResource("sk_10")
+Icone = ExtResource("icon_sk_10")
 NodeType = 1
 Posicao = Vector2(1346, 554)
 Requisitos = PackedStringArray("gua_protetor_escolha_externa_3")
@@ -306,6 +346,7 @@ NodeId = "gua_vanguarda_skill_1"
 Nome = "Investida"
 Descricao = "O Guardião abaixa o escudo e avança com todo o peso de sua armadura, abrindo caminho até o inimigo."
 HabilidadeAtiva = ExtResource("sk_11")
+Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(1220, 950)
 Requisitos = PackedStringArray("gua_vanguarda_escolha_interna_1")
@@ -318,6 +359,7 @@ NodeId = "gua_vanguarda_skill_2"
 Nome = "Impacto Brutal"
 Descricao = "A Vanguarda desfere um golpe pesado capaz de deslocar o inimigo pela força do impacto."
 HabilidadeAtiva = ExtResource("sk_12")
+Icone = ExtResource("icon_sk_12")
 NodeType = 1
 Posicao = Vector2(1183.8, 1085)
 Requisitos = PackedStringArray("gua_vanguarda_escolha_interna_2")
@@ -330,6 +372,7 @@ NodeId = "gua_vanguarda_skill_3"
 Nome = "Onda de Choque"
 Descricao = "O Guardião golpeia o chão com o escudo, criando uma onda de impacto que se espalha à sua frente."
 HabilidadeAtiva = ExtResource("sk_13")
+Icone = ExtResource("icon_sk_13")
 NodeType = 1
 Posicao = Vector2(1085, 1183.8)
 Requisitos = PackedStringArray("gua_vanguarda_escolha_interna_3")
@@ -362,6 +405,7 @@ NodeId = "gua_vanguarda_skill_4"
 Nome = "Pisotear"
 Descricao = "A Vanguarda pisa violentamente no solo, abalando a área ao redor e dificultando o avanço dos inimigos."
 HabilidadeAtiva = ExtResource("sk_14")
+Icone = ExtResource("icon_sk_14")
 NodeType = 1
 Posicao = Vector2(1370.6, 860.6)
 Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_esquerdo")
@@ -374,6 +418,7 @@ NodeId = "gua_vanguarda_skill_5"
 Nome = "Golpe Atordoante"
 Descricao = "Um golpe calculado atinge um ponto vulnerável do inimigo, deixando-o desnorteado por alguns instantes."
 HabilidadeAtiva = ExtResource("sk_15")
+Icone = ExtResource("icon_sk_15")
 NodeType = 1
 Posicao = Vector2(1363.3, 1068.5)
 Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_esquerdo")
@@ -386,6 +431,7 @@ NodeId = "gua_vanguarda_skill_6"
 Nome = "Quebra Defesa"
 Descricao = "A Vanguarda golpeia a proteção do inimigo com precisão, abrindo falhas em sua guarda."
 HabilidadeAtiva = ExtResource("sk_16")
+Icone = ExtResource("icon_sk_16")
 NodeType = 1
 Posicao = Vector2(1259.3, 1248.7)
 Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_direito")
@@ -398,6 +444,7 @@ NodeId = "gua_vanguarda_skill_7"
 Nome = "Investida Devastadora"
 Descricao = "O Guardião avança como um aríete vivo, atingindo todos os inimigos em sua trajetória."
 HabilidadeAtiva = ExtResource("sk_17")
+Icone = ExtResource("icon_sk_17")
 NodeType = 1
 Posicao = Vector2(1082.9, 1359)
 Requisitos = PackedStringArray("gua_vanguarda_desbloqueio_direito")
@@ -443,6 +490,7 @@ NodeId = "gua_vanguarda_skill_8"
 Nome = "Tremor de Guerra"
 Descricao = "A Vanguarda golpeia o chão com força suficiente para rachar a terra e abalar todos ao redor."
 HabilidadeAtiva = ExtResource("sk_18")
+Icone = ExtResource("icon_sk_18")
 NodeType = 1
 Posicao = Vector2(1490.9, 805.1)
 Requisitos = PackedStringArray("gua_vanguarda_escolha_externa_1")
@@ -455,6 +503,7 @@ NodeId = "gua_vanguarda_skill_9"
 Nome = "Comandante de Batalha"
 Descricao = "A presença da Vanguarda inspira aliados próximos, fortalecendo sua resistência e coragem."
 HabilidadeAtiva = ExtResource("sk_19")
+Icone = ExtResource("icon_sk_19")
 NodeType = 1
 Posicao = Vector2(1435, 1230)
 Requisitos = PackedStringArray("gua_vanguarda_escolha_externa_2")
@@ -467,6 +516,7 @@ NodeId = "gua_vanguarda_skill_10"
 Nome = "Colapso da Terra"
 Descricao = "A Vanguarda concentra toda sua força em um golpe devastador que faz o campo de batalha ruir."
 HabilidadeAtiva = ExtResource("sk_20")
+Icone = ExtResource("icon_sk_20")
 NodeType = 1
 Posicao = Vector2(1094.9, 1490.9)
 Requisitos = PackedStringArray("gua_vanguarda_escolha_externa_3")
@@ -522,6 +572,7 @@ NodeId = "gua_templario_skill_1"
 Nome = "Postura Defensiva"
 Descricao = "O Guardião finca os pés no chão e assume uma posição de defesa total, preparando-se para receber grandes impactos."
 HabilidadeAtiva = ExtResource("sk_21")
+Icone = ExtResource("icon_sk_21")
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
 Requisitos = PackedStringArray("gua_templario_escolha_interna_1")
@@ -534,6 +585,7 @@ NodeId = "gua_templario_skill_2"
 Nome = "Golpe Sagrado"
 Descricao = "O Templário canaliza energia sagrada na lâmina e desfere um golpe purificador contra o inimigo."
 HabilidadeAtiva = ExtResource("sk_22")
+Icone = ExtResource("icon_sk_22")
 NodeType = 1
 Posicao = Vector2(716.2, 1085)
 Requisitos = PackedStringArray("gua_templario_escolha_interna_2")
@@ -546,6 +598,7 @@ NodeId = "gua_templario_skill_3"
 Nome = "Luz Protetora"
 Descricao = "Uma luz divina envolve um aliado, formando uma camada protetora contra ataques futuros."
 HabilidadeAtiva = ExtResource("sk_23")
+Icone = ExtResource("icon_sk_23")
 NodeType = 1
 Posicao = Vector2(680, 950)
 Requisitos = PackedStringArray("gua_templario_escolha_interna_3")
@@ -578,6 +631,7 @@ NodeId = "gua_templario_skill_4"
 Nome = "Julgamento"
 Descricao = "O Templário julga um inimigo diante da luz, castigando suas falhas e marcando-o para punição."
 HabilidadeAtiva = ExtResource("sk_24")
+Icone = ExtResource("icon_sk_24")
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
 Requisitos = PackedStringArray("gua_templario_desbloqueio_esquerdo")
@@ -590,6 +644,7 @@ NodeId = "gua_templario_skill_5"
 Nome = "Escudo da Fé"
 Descricao = "A fé do Templário fortalece sua alma e sua armadura contra ataques mágicos."
 HabilidadeAtiva = ExtResource("sk_25")
+Icone = ExtResource("icon_sk_25")
 NodeType = 1
 Posicao = Vector2(640.7, 1248.7)
 Requisitos = PackedStringArray("gua_templario_desbloqueio_esquerdo")
@@ -602,6 +657,7 @@ NodeId = "gua_templario_skill_6"
 Nome = "Martelo Divino"
 Descricao = "Um martelo de luz desce dos céus esmagando os inimigos em uma pequena área."
 HabilidadeAtiva = ExtResource("sk_26")
+Icone = ExtResource("icon_sk_26")
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
 Requisitos = PackedStringArray("gua_templario_desbloqueio_direito")
@@ -614,6 +670,7 @@ NodeId = "gua_templario_skill_7"
 Nome = "Purificação"
 Descricao = "O Templário invoca uma luz purificadora capaz de remover energias nocivas de seus aliados."
 HabilidadeAtiva = ExtResource("sk_27")
+Icone = ExtResource("icon_sk_27")
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
 Requisitos = PackedStringArray("gua_templario_desbloqueio_direito")
@@ -659,6 +716,7 @@ NodeId = "gua_templario_skill_8"
 Nome = "Aura Sagrada"
 Descricao = "Uma aura de fé envolve o Templário e fortalece todos os aliados próximos."
 HabilidadeAtiva = ExtResource("sk_28")
+Icone = ExtResource("icon_sk_28")
 NodeType = 1
 Posicao = Vector2(805.1, 1490.9)
 Requisitos = PackedStringArray("gua_templario_escolha_externa_1")
@@ -671,6 +729,7 @@ NodeId = "gua_templario_skill_9"
 Nome = "Guardião Celestial"
 Descricao = "O Templário invoca uma proteção celestial sobre o grupo, reduzindo o impacto de ataques inimigos."
 HabilidadeAtiva = ExtResource("sk_29")
+Icone = ExtResource("icon_sk_29")
 NodeType = 1
 Posicao = Vector2(465, 1230)
 Requisitos = PackedStringArray("gua_templario_escolha_externa_2")
@@ -683,6 +742,7 @@ NodeId = "gua_templario_skill_10"
 Nome = "Avatar do Templo"
 Descricao = "O Templário assume a forma de um campeão sagrado, unindo força, fé e proteção em um único corpo."
 HabilidadeAtiva = ExtResource("sk_30")
+Icone = ExtResource("icon_sk_30")
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
 Requisitos = PackedStringArray("gua_templario_escolha_externa_3")

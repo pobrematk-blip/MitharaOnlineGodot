@@ -76,6 +76,7 @@ public static class ItemDefinitions
 {
     private static readonly Dictionary<int, ItemDefinition> _defs = new();
 
+    public const int PergaminhoDoPet = 100;
     public const int PergaminhoCriacaoCla = 102;
     public const int PergaminhoVip7Dias = 103;
     public const int PergaminhoVip15Dias = 104;
@@ -87,6 +88,8 @@ public static class ItemDefinitions
     public const int PocaoVida = 110;
     public const int PocaoMana = 111;
     public const int LojinhaGrande = 112;
+    public const int PergaminhoResetTalentos = 113;
+    public const int PergaminhoDoPet5 = 114;
 
     public static int GetLojinhaMaxSlots(int itemId) => itemId switch
     {

@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/p10.png" id="1_igl2b"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Capa de Monstros.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300038
 Nome = "Manto da Vigília Cinzenta"
 Descricao = "Tecida com fios arcanos de Vigília Cinzenta, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_igl2b")
 QuantidadeMaximaPorSlot = 1
 Tipo = 2
 CategoriaPeso = 0
 NivelRequerido = 30
 Valor = 300
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 21
-HpMin = 18
-HpMax = 24
-Mana = 28
-ManaMin = 24
-ManaMax = 32
 DefesaFisica = 9
 DefesaFisicaMin = 8
 DefesaFisicaMax = 11
 DefesaMagica = 19
 DefesaMagicaMin = 16
 DefesaMagicaMax = 22
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 21
+HpMin = 18
+HpMax = 24
+Mana = 28
+ManaMin = 24
+ManaMax = 32
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

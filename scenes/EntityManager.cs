@@ -1198,8 +1198,8 @@ public partial class EntityManager : Node
 
     private void OnProjectileSpawn(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType)
     {
-        if (_gameNet == null || entityId == _gameNet.LocalPlayerId) return;
-        if (!_networkNodes.TryGetValue(entityId, out var _)) return;
+        if (_gameNet == null) return;
+        if (entityId != _gameNet.LocalPlayerId && !_networkNodes.TryGetValue(entityId, out var _)) return;
 
         string scenePath = projectileType switch
         {
@@ -1219,6 +1219,7 @@ public partial class EntityManager : Node
 
         if (projetil is Projetil proj)
         {
+            proj.VisualOnlyOnline = true;
             proj.DefinirDirecao(new Vector2(dirX, dirY));
         }
     }

@@ -54,6 +54,13 @@ partial class GameServer
     private void HandlePlayerMove(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
+
+        if (session.IsTransitioning)
+        {
+            if (_gameTime - session.TransitionStartTime < 3.0) return;
+            session.IsTransitioning = false;
+        }
+
         var channel = _world.GetChannel(session.ChannelId);
         if (channel == null) return;
 
@@ -89,6 +96,9 @@ partial class GameServer
         entity.LastMoveTime = _gameTime;
         channel.MoveEntity(session.EntityId, targetX, targetY);
 
+        if (CheckTeleportTile(peer, session, channel, entity, targetX, targetY))
+            return;
+
         var aoi = channel.GetEntitiesInAoi(targetX, targetY);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_EntityMove);
         writer.Put(session.EntityId);
@@ -110,6 +120,7 @@ partial class GameServer
     private void HandlePlayerStop(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
+        if (session.IsTransitioning) return;
         var channel = _world.GetChannel(session.ChannelId);
         if (channel == null) return;
 
@@ -126,7 +137,42 @@ partial class GameServer
         }
 
         if (session.SelectedCharacter != null)
-            _db.SaveCharacterPosition(session.SelectedCharacter.Id, entity.X, entity.Y);
+            _db.SaveCharacterPosition(session.SelectedCharacter.Id, entity.X, entity.Y, session.CurrentMap);
+    }
+
+    private bool CheckTeleportTile(NetPeer peer, PlayerSession session, Channel channel, Entity entity, float x, float y)
+    {
+        if (_gameTime - session.LastTeleportTime < 1.0) return false;
+        string sceneName = session.CurrentMap;
+        if (!_tileData.TryGetValue(sceneName, out var tiles)) return false;
+
+        int tileX = (int)MathF.Floor(x / 32f);
+        int tileY = (int)MathF.Floor(y / 32f);
+
+        if (!tiles.TryGetValue((tileX, tileY), out byte type)) return false;
+        if (type != 1) return false;
+
+        if (!_teleportTargets.TryGetValue(sceneName, out var teleports)) return false;
+        if (!teleports.TryGetValue((tileX, tileY), out var info)) return false;
+
+        session.LastTeleportTime = _gameTime;
+        session.IsTransitioning = true;
+        session.TransitionStartTime = _gameTime;
+        session.TeleportEntryX = x;
+        session.TeleportEntryY = y;
+        session.CurrentMap = info.TargetScene;
+
+        if (session.SelectedCharacter != null)
+        {
+            session.SelectedCharacter.PosX = info.TargetX;
+            session.SelectedCharacter.PosY = info.TargetY;
+            _db.SaveCharacterPosition(session.SelectedCharacter.Id, info.TargetX, info.TargetY, info.TargetScene);
+        }
+
+        channel.MoveEntity(entity.Id, info.TargetX, info.TargetY);
+        SendSceneChange(peer, info.TargetScene, info.TargetX, info.TargetY);
+        Logger.Info($"[TELEPORT] {entity.Name} tile ({tileX},{tileY}) -> {info.TargetScene} ({info.TargetX:F1},{info.TargetY:F1})");
+        return true;
     }
 
     private void HandleChannelSwitch(NetPeer peer, NetDataReader reader)

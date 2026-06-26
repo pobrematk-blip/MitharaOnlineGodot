@@ -12,11 +12,11 @@ public partial class RefineDropZone : Panel
     public override bool _CanDropData(Vector2 atPosition, Variant data)
     {
         if (_refine == null) return false;
-        return _refine.CanDropOnSlot(data);
+        return _refine.CanDropOnSlot(this, data);
     }
 
     public override void _DropData(Vector2 atPosition, Variant data)
     {
-        _refine?.DropOnSlot(data);
+        _refine?.DropOnSlot(this, data);
     }
 }

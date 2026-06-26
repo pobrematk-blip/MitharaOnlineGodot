@@ -8,6 +8,7 @@ public partial class Projetil : Area2D
     public int DanoMin = 8;              // Dano mínimo
     public int DanoMax = 12;             // Dano máximo
     public bool EhDanoMagico = false;    // Se for true, usa DanoMagico, se false usa DanoFisico
+    public bool VisualOnlyOnline = false;
     
     private Vector2 _direcao = Vector2.Zero;
     private EquipamentoComponent _equipamentoDoPlayer;  // Referência ao sistema de status do Player
@@ -68,6 +69,12 @@ public partial class Projetil : Area2D
 
         if (body.IsInGroup("Inimigos"))
         {
+            if (VisualOnlyOnline)
+            {
+                QueueFree();
+                return;
+            }
+
             if (online)
             {
                 ulong? targetId = null;

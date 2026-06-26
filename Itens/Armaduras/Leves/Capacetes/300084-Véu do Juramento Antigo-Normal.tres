@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/E20.png" id="1_4ojqn"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300084
 Nome = "Véu do Juramento Antigo"
 Descricao = "Tecida com fios arcanos de Juramento Antigo, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_4ojqn")
 QuantidadeMaximaPorSlot = 1
 Tipo = 1
 CategoriaPeso = 0
 NivelRequerido = 70
 Valor = 700
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 16
-HpMin = 14
-HpMax = 19
-Mana = 22
-ManaMin = 19
-ManaMax = 26
 DefesaFisica = 8
 DefesaFisicaMin = 7
 DefesaFisicaMax = 9
 DefesaMagica = 16
 DefesaMagicaMin = 14
 DefesaMagicaMax = 19
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 16
+HpMin = 14
+HpMax = 19
+Mana = 22
+ManaMin = 19
+ManaMax = 26
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

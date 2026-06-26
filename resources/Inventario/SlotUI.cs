@@ -423,18 +423,21 @@ public partial class SlotUI : Control
         {
             TentarReviverAliadoComPergaminho();
         }
-        else if (itemId == 100 || (itemNome != null && itemNome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
+        else if (itemId == 100 || itemId == 114 || (itemNome != null && itemNome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
         {
-            TentarCapturarPetComPergaminho();
+            int maxTent = itemId == 114 ? 5 : 7;
+            TentarCapturarPetComPergaminho(maxTent);
         }
     }
 
-    private void TentarCapturarPetComPergaminho()
+    private void TentarCapturarPetComPergaminho(int maxTent = 7)
     {
-        GD.PrintErr("[PERGAMINHO] Captura local bloqueada. Captura de pet deve ser validada pelo servidor.");
-        bool localPetCaptureEnabled = false;
-        if (!localPetCaptureEnabled)
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.PrintErr("[PERGAMINHO] Sem conexão com o servidor para capturar pet.");
             return;
+        }
 
         var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Node2D;
         if (player == null) return;
@@ -528,7 +531,7 @@ public partial class SlotUI : Control
                 miniGame.QueueFree();
         }));
 
-        miniGame.IniciarMiniGame(petId, petNome);
+        miniGame.IniciarMiniGame(petId, petNome, maxTent);
     }
 
     private void TentarReviverAliadoComPergaminho()

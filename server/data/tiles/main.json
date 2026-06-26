@@ -1,0 +1,10 @@
+[
+  {
+    "tileX": 103,
+    "tileY": -2,
+    "type": 1,
+    "targetScene": "alfaiataria",
+    "targetX": 1.0,
+    "targetY": 32.0
+  }
+]

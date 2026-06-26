@@ -1,34 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/p2.png" id="1_bhfs8"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300003
 Nome = "Manto do Despertar"
 Descricao = "Tecida com fios arcanos de aldeias iniciais, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_bhfs8")
 QuantidadeMaximaPorSlot = 1
 Tipo = 2
 CategoriaPeso = 0
 TipoItem = 1
-NivelRequerido = 1
 Valor = 10
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 4
-HpMin = 4
-HpMax = 5
-Mana = 7
-ManaMin = 6
-ManaMax = 8
 DefesaFisica = 2
 DefesaFisicaMin = 2
 DefesaFisicaMax = 3
 DefesaMagica = 4
 DefesaMagicaMin = 4
 DefesaMagicaMax = 5
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 4
+HpMin = 4
+HpMax = 5
+Mana = 7
+ManaMin = 6
+ManaMax = 8
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

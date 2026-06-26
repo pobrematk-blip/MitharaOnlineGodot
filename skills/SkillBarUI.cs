@@ -403,6 +403,9 @@ public partial class SkillBarUI : Control
         int idx = row * SLOT_COUNT + col;
         if (idx >= 0 && idx < comp.SkillSlots.Length)
         {
+            comp.ItemSlots[idx] = null;
+            if (comp.ItemSlotIndexes != null && idx < comp.ItemSlotIndexes.Length)
+                comp.ItemSlotIndexes[idx] = -1;
             var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
             if (gameNet == null || !gameNet.IsConnected)
             {
@@ -416,7 +419,7 @@ public partial class SkillBarUI : Control
     }
 
     // Assign an item to a slot (called by slot UI on drop from inventory)
-    public void AssignItem(int row, int col, ItemResource item)
+    public void AssignItem(int row, int col, ItemResource item, int inventorySlot = -1)
     {
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null)
@@ -435,10 +438,18 @@ public partial class SkillBarUI : Control
         int idx = row * SLOT_COUNT + col;
         if (idx >= 0 && idx < comp.ItemSlots.Length)
         {
+            bool hadSkill = comp.SkillSlots[idx] != null;
             comp.SkillSlots[idx] = null;
             comp.ItemSlots[idx] = item;
-            _slots[row, col]?.SetItem(item);
-            GD.Print($"[SKILL BAR] Item '{item?.Nome}' atribuído ao slot {row},{col} (idx {idx}).");
+            if (comp.ItemSlotIndexes != null && idx < comp.ItemSlotIndexes.Length)
+                comp.ItemSlotIndexes[idx] = inventorySlot;
+            _slots[row, col]?.SetItem(item, inventorySlot);
+            if (hadSkill)
+            {
+                var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+                gameNet?.SendSetSkillSlot(idx, 0);
+            }
+            GD.Print($"[SKILL BAR] Item '{item?.Nome}' atribuido ao slot {row},{col} (idx {idx}) usando inventario slot {inventorySlot}.");
         }
     }
 
@@ -454,15 +465,18 @@ public partial class SkillBarUI : Control
         if (idx >= 0 && idx < comp.SkillSlots.Length)
         {
             bool hadSkill = comp.SkillSlots[idx] != null;
+            bool hadItem = comp.ItemSlots[idx] != null;
             comp.SkillSlots[idx] = null;
             comp.ItemSlots[idx] = null;
+            if (comp.ItemSlotIndexes != null && idx < comp.ItemSlotIndexes.Length)
+                comp.ItemSlotIndexes[idx] = -1;
             _slots[row, col]?.SetSkill(null);
             if (hadSkill)
             {
                 var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
                 gameNet?.SendSetSkillSlot(idx, 0);
             }
-            GD.Print($"[SKILL BAR] Slot {row},{col} (idx {idx}) limpo.");
+            GD.Print($"[SKILL BAR] Slot {row},{col} (idx {idx}) limpo. tinhaSkill={hadSkill}, tinhaItem={hadItem}");
         }
     }
 
@@ -477,7 +491,19 @@ public partial class SkillBarUI : Control
             {
                 int idx = row * SLOT_COUNT + col;
                 if (idx >= 0 && idx < _skillComp.SkillSlots.Length)
-                    _slots[row, col]?.SetSkill(_skillComp.SkillSlots[idx]);
+                {
+                    if (_skillComp.SkillSlots[idx] != null)
+                        _slots[row, col]?.SetSkill(_skillComp.SkillSlots[idx]);
+                    else if (_skillComp.ItemSlots != null && idx < _skillComp.ItemSlots.Length && _skillComp.ItemSlots[idx] != null)
+                    {
+                        int invSlot = _skillComp.ItemSlotIndexes != null && idx < _skillComp.ItemSlotIndexes.Length
+                            ? _skillComp.ItemSlotIndexes[idx]
+                            : -1;
+                        _slots[row, col]?.SetItem(_skillComp.ItemSlots[idx], invSlot);
+                    }
+                    else
+                        _slots[row, col]?.SetSkill(null);
+                }
             }
         }
     }

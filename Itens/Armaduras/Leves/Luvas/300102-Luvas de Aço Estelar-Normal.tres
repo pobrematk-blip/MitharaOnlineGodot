@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Luva de couro.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/43.png" id="1_qf7jg"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300102
 Nome = "Luvas de Aço Estelar"
 Descricao = "Tecida com fios arcanos de Aço Estelar, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_qf7jg")
 QuantidadeMaximaPorSlot = 1
 Tipo = 4
 CategoriaPeso = 0
 NivelRequerido = 80
 Valor = 800
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 15
-HpMin = 13
-HpMax = 18
-Mana = 21
-ManaMin = 18
-ManaMax = 25
 DefesaFisica = 7
 DefesaFisicaMin = 6
 DefesaFisicaMax = 8
 DefesaMagica = 15
 DefesaMagicaMin = 13
 DefesaMagicaMax = 17
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 15
+HpMin = 13
+HpMax = 18
+Mana = 21
+ManaMin = 18
+ManaMax = 25
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

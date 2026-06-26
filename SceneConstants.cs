@@ -27,7 +27,22 @@ public static class SceneConstants
     public const string PARTY_UI = "res://ui/PartyUI.tscn";
     public const string QUEST_UI = "res://ui/QuestUI.tscn";
 
+    // Interiores (carregados como filhos do World)
+    public const string ALFAIATARIA = "res://scenes/Interiors/Alfaiataria.tscn";
+
     // Prefabs de Entidades
     public const string PLAYER = "res://characters/Player/player.tscn";
     public const string PROJETIL = "res://resources/Projetil/Projetil.tscn";
+
+    // Nomes das cenas (usados nos pacotes de rede)
+    public const string SCENE_MAIN = "main";
+    public const string SCENE_ALFAIATARIA = "alfaiataria";
+
+    // IDs de teleporte predefinidos
+    public const string TELEPORT_ALFAIATARIA_ENTRAR = "alfaiataria_entrar";
+    public const string TELEPORT_ALFAIATARIA_SAIR = "alfaiataria_sair";
+
+    // Offset para interiores (longe do mapa principal)
+    public const float INTERIOR_OFFSET_X = 100000f;
+    public const float INTERIOR_OFFSET_Y = 100000f;
 }

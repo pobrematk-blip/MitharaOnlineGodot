@@ -58,6 +58,19 @@ RegisterLojinhaItem(ItemDefinitions.LojinhaPequena, "Lojinha Pequena");
 RegisterLojinhaItem(ItemDefinitions.LojinhaMedia, "Lojinha Média");
 RegisterLojinhaItem(ItemDefinitions.LojinhaGrande, "Lojinha Grande");
 
+if (!ItemDefinitions.Exists(ItemDefinitions.PergaminhoDoPet5))
+{
+    ItemDefinitions.Register(new ItemDefinition
+    {
+        Id = ItemDefinitions.PergaminhoDoPet5,
+        Name = "Pergaminho do Pet (5 Tentativas)",
+        Type = ItemType.Consumable,
+        MaxStack = 99,
+        IsStackable = true,
+    });
+    Logger.Info("Pergaminho do Pet (5 Tentativas) (ID 114) registrada como item built-in.");
+}
+
 var server = new GameServer(config, db);
 server.Start();
 

@@ -23,7 +23,7 @@ public partial class PetScrollMiniGame : Control
     private int _acertos;
     private int _tentativas;
     private const int MaxAcertos = 5;
-    private const int MaxTentativas = 7;
+    private int _maxTentativas = 7;
     private float _markerPos;
     private float _markerSpeed;
     private float _sweetSpotPos;
@@ -139,8 +139,9 @@ public partial class PetScrollMiniGame : Control
         _panel.Visible = false;
     }
 
-    public void IniciarMiniGame(int petId, string petNome)
+    public void IniciarMiniGame(int petId, string petNome, int maxTentativas = 7)
     {
+        _maxTentativas = maxTentativas;
         _petIdReward = petId;
         _petNameReward = petNome;
         _acertos = 0;
@@ -150,10 +151,10 @@ public partial class PetScrollMiniGame : Control
         _titulo.Text = $"Capture: {petNome}";
         _instrucao.Text = "Clique quando a seta estiver na faixa vermelha!";
         _statusLabel.Text = "";
-        _chancesLabel.Text = $"Tentativas: {MaxTentativas}/{MaxTentativas}";
+        _chancesLabel.Text = $"Tentativas: {_maxTentativas}/{_maxTentativas}";
         AtualizarProgresso();
 
-        GD.Print($"[PET MINIGAME] Iniciando captura de '{petNome}' ({MaxAcertos} acertos em {MaxTentativas} tentativas)");
+        GD.Print($"[PET MINIGAME] Iniciando captura de '{petNome}' ({MaxAcertos} acertos em {_maxTentativas} tentativas)");
         _panel.Visible = true;
         IniciarRodada();
     }
@@ -220,8 +221,8 @@ public partial class PetScrollMiniGame : Control
                     && _markerPos <= _sweetSpotPos + halfWidth;
 
         _tentativas++;
-        int restantes = MaxTentativas - _tentativas;
-        _chancesLabel.Text = $"Tentativas: {restantes}/{MaxTentativas}";
+        int restantes = _maxTentativas - _tentativas;
+        _chancesLabel.Text = $"Tentativas: {restantes}/{_maxTentativas}";
 
         if (acertou)
         {

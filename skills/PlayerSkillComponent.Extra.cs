@@ -254,72 +254,28 @@ public partial class PlayerSkillComponent
 
     private void UsarItemDoSlot(int slotIndex)
     {
-        GD.PrintErr("[SKILLCOMP] Uso local de item pela barra bloqueado. Itens devem ser usados pelo servidor.");
-        bool localItemUseEnabled = false;
-        if (!localItemUseEnabled)
-            return;
-
         var item = ItemSlots[slotIndex];
-        if (item == null) return;
+        if (item == null)
+            return;
 
-        if (_player == null)
+        int inventorySlot = ItemSlotIndexes != null && slotIndex < ItemSlotIndexes.Length ? ItemSlotIndexes[slotIndex] : -1;
+        if (inventorySlot < 0)
         {
-            GD.Print("[SKILLCOMP] Player não encontrado para usar item.");
+            GD.PrintErr("[SKILLCOMP] Slot de inventario do item da barra nao encontrado.");
             return;
         }
 
-        if (item.ItemID == 101)
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
         {
-            TentarReviverAliado(_player);
-            ItemSlots[slotIndex] = null;
-            NotificarSkillBarSlotLimpo(slotIndex);
+            GD.PrintErr("[SKILLCOMP] Sem conexao. Uso de item deve passar pelo servidor.");
             return;
         }
 
-        if (item.ItemID == 100 || (item.Nome != null && item.Nome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
-        {
-            TentarCapturarPet(_player, item);
-            ItemSlots[slotIndex] = null;
-            NotificarSkillBarSlotLimpo(slotIndex);
-            return;
-        }
-
-        var inv = _player.FindChild("InventarioComponent", true, false) as InventarioComponent;
-        if (inv == null)
-        {
-            GD.Print("[SKILLCOMP] InventarioComponent não encontrado.");
-            return;
-        }
-
-        // Procura o item no inventário (para poções etc.)
-        for (int i = 0; i < inv.Slots.Count; i++)
-        {
-            var slot = inv.Slots[i];
-            if (slot.Item != null && slot.Item.ItemID == item.ItemID && slot.Quantidade > 0)
-            {
-                GD.Print($"[SKILLCOMP] Usando item '{item.Nome}' do inventário (slot {i}).");
-
-                // Consome uma unidade
-                slot.Quantidade--;
-                if (slot.Quantidade <= 0)
-                {
-                    slot.Item = null;
-                    slot.Quantidade = 0;
-                }
-
-                inv.NotificarMudancaExterna();
-
-                if (item.ItemID == 1)
-                    _player.CallDeferred("Heal", 50);
-                else if (item.ItemID == 2)
-                    _player.CallDeferred("RestoreMana", 30);
-
-                return;
-            }
-        }
-
-        GD.Print($"[SKILLCOMP] Item '{item.Nome}' não encontrado no inventário.");
+        gameNet.SendUseItem(inventorySlot);
+        GD.Print($"[SKILLCOMP] Pedido ao servidor para usar '{item.Nome}' do inventario slot {inventorySlot}.");
     }
+
 
     private void TentarCapturarPet(Player player, ItemResource item)
     {

@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/E48.png" id="1_alh1y"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300120
 Nome = "Véu da Ascensão"
 Descricao = "Tecida com fios arcanos de Ascensão, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_alh1y")
 QuantidadeMaximaPorSlot = 1
 Tipo = 1
 CategoriaPeso = 0
 NivelRequerido = 100
 Valor = 1000
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 21
-HpMin = 18
-HpMax = 25
-Mana = 31
-ManaMin = 27
-ManaMax = 36
 DefesaFisica = 10
 DefesaFisicaMin = 9
 DefesaFisicaMax = 12
 DefesaMagica = 20
 DefesaMagicaMin = 17
 DefesaMagicaMax = 23
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 21
+HpMin = 18
+HpMax = 25
+Mana = 31
+ManaMin = 27
+ManaMax = 36
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

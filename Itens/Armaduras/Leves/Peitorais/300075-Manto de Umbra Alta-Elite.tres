@@ -1,34 +1,31 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/p21.png" id="1_dnkvo"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral de Monstro 1.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300075
 Nome = "Manto de Umbra Alta"
 Descricao = "Tecida com fios arcanos de Umbra Alta, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_dnkvo")
 QuantidadeMaximaPorSlot = 1
 Tipo = 2
 CategoriaPeso = 0
 TipoItem = 1
 NivelRequerido = 60
 Valor = 600
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 52
-HpMin = 45
-HpMax = 60
-Mana = 70
-ManaMin = 60
-ManaMax = 80
 DefesaFisica = 24
 DefesaFisicaMin = 20
 DefesaFisicaMax = 28
 DefesaMagica = 50
 DefesaMagicaMin = 43
 DefesaMagicaMax = 58
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 52
+HpMin = 45
+HpMax = 60
+Mana = 70
+ManaMin = 60
+ManaMax = 80
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

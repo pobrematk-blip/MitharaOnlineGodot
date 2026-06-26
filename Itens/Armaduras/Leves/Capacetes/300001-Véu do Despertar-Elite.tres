@@ -1,34 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Icon Bandana de Arqueiro.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/E8.png" id="1_ut5wa"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300001
 Nome = "Véu do Despertar"
 Descricao = "Tecida com fios arcanos de aldeias iniciais, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_ut5wa")
 QuantidadeMaximaPorSlot = 1
 Tipo = 1
 CategoriaPeso = 0
 TipoItem = 1
-NivelRequerido = 1
 Valor = 10
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 1
-HpMin = 1
-HpMax = 2
-Mana = 2
-ManaMin = 2
-ManaMax = 3
 DefesaFisica = 1
 DefesaFisicaMin = 1
 DefesaFisicaMax = 1
 DefesaMagica = 1
 DefesaMagicaMin = 1
 DefesaMagicaMax = 2
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 1
+HpMin = 1
+HpMax = 2
+Mana = 2
+ManaMin = 2
+ManaMax = 3
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

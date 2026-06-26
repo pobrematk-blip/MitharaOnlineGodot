@@ -1,0 +1,54 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://ui/MapEditor/MapEditor.cs" id="1"]
+
+[node name="MapEditorLayer" type="CanvasLayer"]
+layer = 5
+
+[node name="Editor" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="BtnBlock" type="ColorRect" parent="Editor"]
+visible = false
+color = Color(1, 0, 0, 1)
+size = Vector2(48, 48)
+mouse_filter = 0
+
+[node name="Label" type="Label" parent="Editor/BtnBlock"]
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 10.0
+text = "B"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="BtnTeleport" type="ColorRect" parent="Editor"]
+visible = false
+color = Color(0, 1, 0, 1)
+size = Vector2(48, 48)
+mouse_filter = 0
+
+[node name="Label" type="Label" parent="Editor/BtnTeleport"]
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 10.0
+text = "T"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="BtnNpc" type="ColorRect" parent="Editor"]
+visible = false
+color = Color(0.4, 0.7, 1, 1)
+size = Vector2(48, 48)
+mouse_filter = 0
+
+[node name="Label" type="Label" parent="Editor/BtnNpc"]
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 10.0
+text = "N"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=90 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=119 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -30,7 +30,36 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/006 - Marca do Executor.tres" id="sk_26"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/007 - Impacto Repulsor.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/008 - Olho da Águia.tres" id="sk_28"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/48.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/23.png" id="icon_sk_10"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/18.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/10.png" id="icon_sk_12"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/37.png" id="icon_sk_13"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/43.png" id="icon_sk_14"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/9.png" id="icon_sk_15"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/16.png" id="icon_sk_16"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/29.png" id="icon_sk_17"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/4.png" id="icon_sk_18"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_19"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/42.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/36.png" id="icon_sk_20"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/14.png" id="icon_sk_21"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_22"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/38.png" id="icon_sk_23"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/13.png" id="icon_sk_24"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/39.png" id="icon_sk_25"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/17.png" id="icon_sk_26"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/16.png" id="icon_sk_27"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/24.png" id="icon_sk_28"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/45.png" id="icon_sk_29"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/26.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/31.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/32.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/44.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/25.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/35.png" id="icon_sk_9"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "arq_base"
@@ -89,6 +118,7 @@ NodeId = "arq_cacador_skill_1"
 Nome = "Segundo Fôlego"
 Descricao = "Recupera HP e Mana."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 716.2)
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_1")
@@ -101,6 +131,7 @@ NodeId = "arq_cacador_skill_2"
 Nome = "Sherigan"
 Descricao = "Lobo espiritual companheiro."
 HabilidadeAtiva = ExtResource("sk_2")
+Icone = ExtResource("icon_sk_2")
 NodeType = 1
 Posicao = Vector2(950, 680)
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_2")
@@ -113,6 +144,7 @@ NodeId = "arq_cacador_skill_3"
 Nome = "Armadilha de Aprisionamento"
 Descricao = "Prende o alvo."
 HabilidadeAtiva = ExtResource("sk_3")
+Icone = ExtResource("icon_sk_3")
 NodeType = 1
 Posicao = Vector2(1085, 716.2)
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_3")
@@ -145,6 +177,7 @@ NodeId = "arq_cacador_skill_4"
 Nome = "Comando de Ataque"
 Descricao = "Ordena ataque."
 HabilidadeAtiva = ExtResource("sk_4")
+Icone = ExtResource("icon_sk_4")
 NodeType = 1
 Posicao = Vector2(662.3, 630.4)
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_esquerdo")
@@ -157,6 +190,7 @@ NodeId = "arq_cacador_skill_5"
 Nome = "Instinto de Sobrevivência"
 Descricao = "Recupera HP e Mana."
 HabilidadeAtiva = ExtResource("sk_5")
+Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(846, 532.8)
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_esquerdo")
@@ -169,6 +203,7 @@ NodeId = "arq_cacador_skill_6"
 Nome = "Armadilha Explosiva"
 Descricao = "Armadilha explosiva."
 HabilidadeAtiva = ExtResource("sk_6")
+Icone = ExtResource("icon_sk_6")
 NodeType = 1
 Posicao = Vector2(1054, 532.8)
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_direito")
@@ -181,6 +216,7 @@ NodeId = "arq_cacador_skill_7"
 Nome = "Marca da Caçada"
 Descricao = "Marca o alvo."
 HabilidadeAtiva = ExtResource("sk_7")
+Icone = ExtResource("icon_sk_7")
 NodeType = 1
 Posicao = Vector2(1237.7, 630.4)
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_direito")
@@ -226,6 +262,7 @@ NodeId = "arq_cacador_skill_8"
 Nome = "Rede de Caça"
 Descricao = "Reduz movimento."
 HabilidadeAtiva = ExtResource("sk_8")
+Icone = ExtResource("icon_sk_8")
 NodeType = 1
 Posicao = Vector2(554, 554)
 Requisitos = PackedStringArray("arq_cacador_escolha_externa_1")
@@ -238,6 +275,7 @@ NodeId = "arq_cacador_skill_9"
 Nome = "Uivo de Guerra"
 Descricao = "Buff do pet."
 HabilidadeAtiva = ExtResource("sk_9")
+Icone = ExtResource("icon_sk_9")
 NodeType = 1
 Posicao = Vector2(950, 390)
 Requisitos = PackedStringArray("arq_cacador_escolha_externa_2")
@@ -250,6 +288,7 @@ NodeId = "arq_cacador_skill_10"
 Nome = "Rei da Selva"
 Descricao = "Forma ancestral."
 HabilidadeAtiva = ExtResource("sk_10")
+Icone = ExtResource("icon_sk_10")
 NodeType = 1
 Posicao = Vector2(1346, 554)
 Requisitos = PackedStringArray("arq_cacador_escolha_externa_3")
@@ -305,6 +344,7 @@ NodeId = "arq_ranger_skill_1"
 Nome = "Salto para Trás"
 Descricao = "Salta para trás 3 tiles."
 HabilidadeAtiva = ExtResource("sk_11")
+Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(1220, 950)
 Requisitos = PackedStringArray("arq_ranger_escolha_interna_1")
@@ -317,6 +357,7 @@ NodeId = "arq_ranger_skill_2"
 Nome = "Disparo Múltiplo"
 Descricao = "3 flechas em V."
 HabilidadeAtiva = ExtResource("sk_12")
+Icone = ExtResource("icon_sk_12")
 NodeType = 1
 Posicao = Vector2(1183.8, 1085)
 Requisitos = PackedStringArray("arq_ranger_escolha_interna_2")
@@ -329,6 +370,7 @@ NodeId = "arq_ranger_skill_3"
 Nome = "Flecha Envenenada"
 Descricao = "Aplica veneno."
 HabilidadeAtiva = ExtResource("sk_13")
+Icone = ExtResource("icon_sk_13")
 NodeType = 1
 Posicao = Vector2(1085, 1183.8)
 Requisitos = PackedStringArray("arq_ranger_escolha_interna_3")
@@ -361,6 +403,7 @@ NodeId = "arq_ranger_skill_4"
 Nome = "Chuva de Flechas"
 Descricao = "Flechas caem na área."
 HabilidadeAtiva = ExtResource("sk_14")
+Icone = ExtResource("icon_sk_14")
 NodeType = 1
 Posicao = Vector2(1370.6, 860.6)
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_esquerdo")
@@ -373,6 +416,7 @@ NodeId = "arq_ranger_skill_5"
 Nome = "Flechas Perfurantes"
 Descricao = "Atravessa inimigos."
 HabilidadeAtiva = ExtResource("sk_15")
+Icone = ExtResource("icon_sk_15")
 NodeType = 1
 Posicao = Vector2(1363.3, 1068.5)
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_esquerdo")
@@ -385,6 +429,7 @@ NodeId = "arq_ranger_skill_6"
 Nome = "Flecha Explosiva"
 Descricao = "Explode ao atingir."
 HabilidadeAtiva = ExtResource("sk_16")
+Icone = ExtResource("icon_sk_16")
 NodeType = 1
 Posicao = Vector2(1259.3, 1248.7)
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_direito")
@@ -397,6 +442,7 @@ NodeId = "arq_ranger_skill_7"
 Nome = "Tiro Ricochete"
 Descricao = "Salta entre alvos."
 HabilidadeAtiva = ExtResource("sk_17")
+Icone = ExtResource("icon_sk_17")
 NodeType = 1
 Posicao = Vector2(1082.9, 1359)
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_direito")
@@ -442,6 +488,7 @@ NodeId = "arq_ranger_skill_8"
 Nome = "Disparo em Leque"
 Descricao = "7 flechas em cone."
 HabilidadeAtiva = ExtResource("sk_18")
+Icone = ExtResource("icon_sk_18")
 NodeType = 1
 Posicao = Vector2(1490.9, 805.1)
 Requisitos = PackedStringArray("arq_ranger_escolha_externa_1")
@@ -454,6 +501,7 @@ NodeId = "arq_ranger_skill_9"
 Nome = "Olho do Falcão"
 Descricao = "Aumenta reflexos."
 HabilidadeAtiva = ExtResource("sk_19")
+Icone = ExtResource("icon_sk_19")
 NodeType = 1
 Posicao = Vector2(1435, 1230)
 Requisitos = PackedStringArray("arq_ranger_escolha_externa_2")
@@ -466,6 +514,7 @@ NodeId = "arq_ranger_skill_10"
 Nome = "Postura do Mestre Ranger"
 Descricao = "Estado perfeito."
 HabilidadeAtiva = ExtResource("sk_20")
+Icone = ExtResource("icon_sk_20")
 NodeType = 1
 Posicao = Vector2(1094.9, 1490.9)
 Requisitos = PackedStringArray("arq_ranger_escolha_externa_3")
@@ -521,6 +570,7 @@ NodeId = "arq_sniper_skill_1"
 Nome = "Salto para Trás"
 Descricao = "Salta para trás 3 tiles."
 HabilidadeAtiva = ExtResource("sk_11")
+Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_1")
@@ -533,6 +583,7 @@ NodeId = "arq_sniper_skill_2"
 Nome = "Tiro Preciso"
 Descricao = "Flecha precisa."
 HabilidadeAtiva = ExtResource("sk_21")
+Icone = ExtResource("icon_sk_21")
 NodeType = 1
 Posicao = Vector2(716.2, 1085)
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_2")
@@ -545,6 +596,7 @@ NodeId = "arq_sniper_skill_3"
 Nome = "Mira Apurada"
 Descricao = "Aumenta foco."
 HabilidadeAtiva = ExtResource("sk_22")
+Icone = ExtResource("icon_sk_22")
 NodeType = 1
 Posicao = Vector2(680, 950)
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_3")
@@ -577,6 +629,7 @@ NodeId = "arq_sniper_skill_4"
 Nome = "Tiro Penetrante"
 Descricao = "Ignora defesa."
 HabilidadeAtiva = ExtResource("sk_23")
+Icone = ExtResource("icon_sk_23")
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
@@ -589,6 +642,7 @@ NodeId = "arq_sniper_skill_5"
 Nome = "Tiro Paralisante"
 Descricao = "Atordoa alvo."
 HabilidadeAtiva = ExtResource("sk_24")
+Icone = ExtResource("icon_sk_24")
 NodeType = 1
 Posicao = Vector2(640.7, 1248.7)
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
@@ -601,6 +655,7 @@ NodeId = "arq_sniper_skill_6"
 Nome = "Disparo Crítico"
 Descricao = "Golpe crítico."
 HabilidadeAtiva = ExtResource("sk_25")
+Icone = ExtResource("icon_sk_25")
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
@@ -613,6 +668,7 @@ NodeId = "arq_sniper_skill_7"
 Nome = "Marca do Executor"
 Descricao = "Marca alvo."
 HabilidadeAtiva = ExtResource("sk_26")
+Icone = ExtResource("icon_sk_26")
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
@@ -658,6 +714,7 @@ NodeId = "arq_sniper_skill_8"
 Nome = "Impacto Repulsor"
 Descricao = "Empurra alvo."
 HabilidadeAtiva = ExtResource("sk_27")
+Icone = ExtResource("icon_sk_27")
 NodeType = 1
 Posicao = Vector2(805.1, 1490.9)
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_1")
@@ -670,6 +727,7 @@ NodeId = "arq_sniper_skill_9"
 Nome = "Olho da Águia"
 Descricao = "Sentidos aguçados."
 HabilidadeAtiva = ExtResource("sk_28")
+Icone = ExtResource("icon_sk_28")
 NodeType = 1
 Posicao = Vector2(465, 1230)
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_2")
@@ -682,6 +740,7 @@ NodeId = "arq_sniper_skill_10"
 Nome = "Tiro da Execução"
 Descricao = "Disparo mortal."
 HabilidadeAtiva = ExtResource("sk_29")
+Icone = ExtResource("icon_sk_29")
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_3")

@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/b12.png" id="1_7tquf"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Montros.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300116
 Nome = "Passos do Eclipse de Mitthara"
 Descricao = "Tecida com fios arcanos de Eclipse de Mitthara, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_7tquf")
 QuantidadeMaximaPorSlot = 1
 Tipo = 6
 CategoriaPeso = 0
 NivelRequerido = 90
 Valor = 900
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 17
-HpMin = 14
-HpMax = 20
-Mana = 24
-ManaMin = 20
-ManaMax = 28
 DefesaFisica = 8
 DefesaFisicaMin = 7
 DefesaFisicaMax = 9
 DefesaMagica = 16
 DefesaMagicaMin = 14
 DefesaMagicaMax = 18
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 17
+HpMin = 14
+HpMax = 20
+Mana = 24
+ManaMin = 20
+ManaMax = 28
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

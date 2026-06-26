@@ -7,6 +7,7 @@ public partial class SkillBarSlotUI : Panel
     private string _keyName;
     private SkillResource _assignedSkill;
     private ItemResource _assignedItem;
+    private int _assignedItemInventorySlot = -1;
     private SkillBarUI _owner;
 
     public int Row { get; set; }
@@ -14,6 +15,7 @@ public partial class SkillBarSlotUI : Panel
 
     public SkillResource AssignedSkill => _assignedSkill;
     public ItemResource AssignedItem => _assignedItem;
+    public int AssignedItemInventorySlot => _assignedItemInventorySlot;
     public bool IsItemSlot => _assignedItem != null;
 
     public void Initialize(string keyName, SkillBarUI owner)
@@ -59,14 +61,16 @@ public partial class SkillBarSlotUI : Panel
     public void SetSkill(SkillResource skill)
     {
         _assignedItem = null;
+        _assignedItemInventorySlot = -1;
         _assignedSkill = skill;
         AtualizarVisual();
     }
 
-    public void SetItem(ItemResource item)
+    public void SetItem(ItemResource item, int inventorySlot = -1)
     {
         _assignedSkill = null;
         _assignedItem = item;
+        _assignedItemInventorySlot = item != null ? inventorySlot : -1;
         AtualizarVisual();
     }
 
@@ -74,6 +78,7 @@ public partial class SkillBarSlotUI : Panel
     {
         _assignedSkill = null;
         _assignedItem = null;
+        _assignedItemInventorySlot = -1;
         AtualizarVisual();
         _owner?.ClearSlot(Row, Col);
     }
@@ -102,7 +107,6 @@ public partial class SkillBarSlotUI : Panel
 
     public override bool _CanDropData(Vector2 position, Variant data)
     {
-        if (Row != 0) return false;
         var obj = data.AsGodotObject();
         if (obj is SkillResource) return true;
         if (obj is SkillBarSlotUI) return true;
@@ -122,7 +126,7 @@ public partial class SkillBarSlotUI : Panel
             if (sourceSlot._assignedSkill != null)
                 _owner.AssignSkill(Row, Col, sourceSlot._assignedSkill);
             else if (sourceSlot._assignedItem != null)
-                _owner.AssignItem(Row, Col, sourceSlot._assignedItem);
+                _owner.AssignItem(Row, Col, sourceSlot._assignedItem, sourceSlot._assignedItemInventorySlot);
             sourceSlot.Clear();
         }
         else if (data.AsGodotObject() is SlotUI slot && _owner != null)
@@ -130,16 +134,7 @@ public partial class SkillBarSlotUI : Panel
             var item = slot.SlotInterno?.Item;
             if (item != null && item.Tipo == TipoEquipamento.Consumivel)
             {
-                _owner.AssignItem(Row, Col, item);
-                slot.SlotInterno.Quantidade--;
-                if (slot.SlotInterno.Quantidade <= 0)
-                {
-                    slot.SlotInterno.Item = null;
-                    slot.SlotInterno.Quantidade = 0;
-                }
-                var inv = slot.GetTree()?.CurrentScene?.FindChild("Player", true, false)
-                    ?.FindChild("InventarioComponent", true, false) as InventarioComponent;
-                inv?.NotificarMudancaExterna();
+                _owner.AssignItem(Row, Col, item, slot.SlotIndex);
             }
         }
     }

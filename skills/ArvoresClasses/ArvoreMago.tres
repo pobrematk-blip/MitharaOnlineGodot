@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,37 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/006 - Fortalecer Invocação.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/007 - Sacrifício Arcano.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/008 - Exército Arcano.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/009 - Senhor das Invocações.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/009 - Senhor das Invocações.tres" id="sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/21.png" id="icon_sk_10"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/39.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/19.png" id="icon_sk_12"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/29.png" id="icon_sk_13"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/35.png" id="icon_sk_14"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/14.png" id="icon_sk_15"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/38.png" id="icon_sk_16"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/33.png" id="icon_sk_17"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/31.png" id="icon_sk_18"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/28.png" id="icon_sk_19"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/19.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/26.png" id="icon_sk_20"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/6.png" id="icon_sk_21"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/7.png" id="icon_sk_22"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/8.png" id="icon_sk_23"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/24.png" id="icon_sk_24"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/35.png" id="icon_sk_25"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/16.png" id="icon_sk_26"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/5.png" id="icon_sk_27"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/22.png" id="icon_sk_28"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/25.png" id="icon_sk_29"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/31.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/27.png" id="icon_sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/48.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/16.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/33.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/15.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/22.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/34.png" id="icon_sk_9"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "mag_base"
@@ -90,6 +120,7 @@ NodeId = "mag_elementalista_skill_1"
 Nome = "Segundo Fôlego"
 Descricao = "Recupera HP e Mana."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 716.2)
 Requisitos = PackedStringArray("mag_elementalista_escolha_interna_1")
@@ -102,6 +133,7 @@ NodeId = "mag_elementalista_skill_2"
 Nome = "Bola de Fogo"
 Descricao = "Projétil de fogo."
 HabilidadeAtiva = ExtResource("sk_2")
+Icone = ExtResource("icon_sk_2")
 NodeType = 1
 Posicao = Vector2(950, 680)
 Requisitos = PackedStringArray("mag_elementalista_escolha_interna_2")
@@ -114,6 +146,7 @@ NodeId = "mag_elementalista_skill_3"
 Nome = "Lança de Gelo"
 Descricao = "Lança de gelo."
 HabilidadeAtiva = ExtResource("sk_3")
+Icone = ExtResource("icon_sk_3")
 NodeType = 1
 Posicao = Vector2(1085, 716.2)
 Requisitos = PackedStringArray("mag_elementalista_escolha_interna_3")
@@ -146,6 +179,7 @@ NodeId = "mag_elementalista_skill_4"
 Nome = "Raio Estático"
 Descricao = "Raio elétrico."
 HabilidadeAtiva = ExtResource("sk_4")
+Icone = ExtResource("icon_sk_4")
 NodeType = 1
 Posicao = Vector2(662.3, 630.4)
 Requisitos = PackedStringArray("mag_elementalista_desbloqueio_esquerdo")
@@ -158,6 +192,7 @@ NodeId = "mag_elementalista_skill_5"
 Nome = "Tornado"
 Descricao = "Invoca tornado."
 HabilidadeAtiva = ExtResource("sk_5")
+Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(846, 532.8)
 Requisitos = PackedStringArray("mag_elementalista_desbloqueio_esquerdo")
@@ -170,6 +205,7 @@ NodeId = "mag_elementalista_skill_6"
 Nome = "Prisão de Gelo"
 Descricao = "Congela alvo."
 HabilidadeAtiva = ExtResource("sk_6")
+Icone = ExtResource("icon_sk_6")
 NodeType = 1
 Posicao = Vector2(1054, 532.8)
 Requisitos = PackedStringArray("mag_elementalista_desbloqueio_direito")
@@ -182,6 +218,7 @@ NodeId = "mag_elementalista_skill_7"
 Nome = "Tempestade Elétrica"
 Descricao = "Raios em cadeia."
 HabilidadeAtiva = ExtResource("sk_7")
+Icone = ExtResource("icon_sk_7")
 NodeType = 1
 Posicao = Vector2(1237.7, 630.4)
 Requisitos = PackedStringArray("mag_elementalista_desbloqueio_direito")
@@ -227,6 +264,7 @@ NodeId = "mag_elementalista_skill_8"
 Nome = "Explosão Vulcânica"
 Descricao = "Explosão de fogo."
 HabilidadeAtiva = ExtResource("sk_8")
+Icone = ExtResource("icon_sk_8")
 NodeType = 1
 Posicao = Vector2(554, 554)
 Requisitos = PackedStringArray("mag_elementalista_escolha_externa_1")
@@ -239,6 +277,7 @@ NodeId = "mag_elementalista_skill_9"
 Nome = "Fúria Elemental"
 Descricao = "Amplifica elementos."
 HabilidadeAtiva = ExtResource("sk_9")
+Icone = ExtResource("icon_sk_9")
 NodeType = 1
 Posicao = Vector2(950, 390)
 Requisitos = PackedStringArray("mag_elementalista_escolha_externa_2")
@@ -251,6 +290,7 @@ NodeId = "mag_elementalista_skill_10"
 Nome = "Chuva de Meteoros"
 Descricao = "Meteoros devastadores."
 HabilidadeAtiva = ExtResource("sk_10")
+Icone = ExtResource("icon_sk_10")
 NodeType = 1
 Posicao = Vector2(1346, 554)
 Requisitos = PackedStringArray("mag_elementalista_escolha_externa_3")
@@ -306,6 +346,7 @@ NodeId = "mag_mago_negro_skill_1"
 Nome = "Teleporte Arcano"
 Descricao = "Teleporta 4 tiles."
 HabilidadeAtiva = ExtResource("sk_11")
+Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(1220, 950)
 Requisitos = PackedStringArray("mag_mago_negro_escolha_interna_1")
@@ -318,6 +359,7 @@ NodeId = "mag_mago_negro_skill_2"
 Nome = "Seta Sombria"
 Descricao = "Projétil sombrio."
 HabilidadeAtiva = ExtResource("sk_12")
+Icone = ExtResource("icon_sk_12")
 NodeType = 1
 Posicao = Vector2(1183.8, 1085)
 Requisitos = PackedStringArray("mag_mago_negro_escolha_interna_2")
@@ -330,6 +372,7 @@ NodeId = "mag_mago_negro_skill_3"
 Nome = "Maldição da Fraqueza"
 Descricao = "Enfraquece alvo."
 HabilidadeAtiva = ExtResource("sk_13")
+Icone = ExtResource("icon_sk_13")
 NodeType = 1
 Posicao = Vector2(1085, 1183.8)
 Requisitos = PackedStringArray("mag_mago_negro_escolha_interna_3")
@@ -362,6 +405,7 @@ NodeId = "mag_mago_negro_skill_4"
 Nome = "Drenar Vida"
 Descricao = "Rouba vida do alvo."
 HabilidadeAtiva = ExtResource("sk_14")
+Icone = ExtResource("icon_sk_14")
 NodeType = 1
 Posicao = Vector2(1370.6, 860.6)
 Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_esquerdo")
@@ -374,6 +418,7 @@ NodeId = "mag_mago_negro_skill_5"
 Nome = "Escuridão Profunda"
 Descricao = "Reduz precisão."
 HabilidadeAtiva = ExtResource("sk_15")
+Icone = ExtResource("icon_sk_15")
 NodeType = 1
 Posicao = Vector2(1363.3, 1068.5)
 Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_esquerdo")
@@ -386,6 +431,7 @@ NodeId = "mag_mago_negro_skill_6"
 Nome = "Correntes das Trevas"
 Descricao = "Imobiliza alvo."
 HabilidadeAtiva = ExtResource("sk_16")
+Icone = ExtResource("icon_sk_16")
 NodeType = 1
 Posicao = Vector2(1259.3, 1248.7)
 Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_direito")
@@ -398,6 +444,7 @@ NodeId = "mag_mago_negro_skill_7"
 Nome = "Praga Sombria"
 Descricao = "Dano contínuo."
 HabilidadeAtiva = ExtResource("sk_17")
+Icone = ExtResource("icon_sk_17")
 NodeType = 1
 Posicao = Vector2(1082.9, 1359)
 Requisitos = PackedStringArray("mag_mago_negro_desbloqueio_direito")
@@ -443,6 +490,7 @@ NodeId = "mag_mago_negro_skill_8"
 Nome = "Explosão Negra"
 Descricao = "Explosão sombria."
 HabilidadeAtiva = ExtResource("sk_18")
+Icone = ExtResource("icon_sk_18")
 NodeType = 1
 Posicao = Vector2(1490.9, 805.1)
 Requisitos = PackedStringArray("mag_mago_negro_escolha_externa_1")
@@ -455,6 +503,7 @@ NodeId = "mag_mago_negro_skill_9"
 Nome = "Forma das Sombras"
 Descricao = "Fortalece magia negra."
 HabilidadeAtiva = ExtResource("sk_19")
+Icone = ExtResource("icon_sk_19")
 NodeType = 1
 Posicao = Vector2(1435, 1230)
 Requisitos = PackedStringArray("mag_mago_negro_escolha_externa_2")
@@ -467,6 +516,7 @@ NodeId = "mag_mago_negro_skill_10"
 Nome = "Apocalipse Sombrio"
 Descricao = "Onda de trevas."
 HabilidadeAtiva = ExtResource("sk_20")
+Icone = ExtResource("icon_sk_20")
 NodeType = 1
 Posicao = Vector2(1094.9, 1490.9)
 Requisitos = PackedStringArray("mag_mago_negro_escolha_externa_3")
@@ -522,6 +572,7 @@ NodeId = "mag_summoner_skill_1"
 Nome = "Escudo Arcano"
 Descricao = "Escudo de mana."
 HabilidadeAtiva = ExtResource("sk_21")
+Icone = ExtResource("icon_sk_21")
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
 Requisitos = PackedStringArray("mag_summoner_escolha_interna_1")
@@ -534,6 +585,7 @@ NodeId = "mag_summoner_skill_2"
 Nome = "Familiar Arcano"
 Descricao = "Invoca familiar mágico."
 HabilidadeAtiva = ExtResource("sk_22")
+Icone = ExtResource("icon_sk_22")
 NodeType = 1
 Posicao = Vector2(716.2, 1085)
 Requisitos = PackedStringArray("mag_summoner_escolha_interna_2")
@@ -546,6 +598,7 @@ NodeId = "mag_summoner_skill_3"
 Nome = "Comando Arcano"
 Descricao = "Ordena ataque."
 HabilidadeAtiva = ExtResource("sk_23")
+Icone = ExtResource("icon_sk_23")
 NodeType = 1
 Posicao = Vector2(680, 950)
 Requisitos = PackedStringArray("mag_summoner_escolha_interna_3")
@@ -578,6 +631,7 @@ NodeId = "mag_summoner_skill_4"
 Nome = "Invocar Golem"
 Descricao = "Invoca golem."
 HabilidadeAtiva = ExtResource("sk_24")
+Icone = ExtResource("icon_sk_24")
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
 Requisitos = PackedStringArray("mag_summoner_desbloqueio_esquerdo")
@@ -590,6 +644,7 @@ NodeId = "mag_summoner_skill_5"
 Nome = "Transferência Vital"
 Descricao = "Transfere vida."
 HabilidadeAtiva = ExtResource("sk_25")
+Icone = ExtResource("icon_sk_25")
 NodeType = 1
 Posicao = Vector2(640.7, 1248.7)
 Requisitos = PackedStringArray("mag_summoner_desbloqueio_esquerdo")
@@ -602,6 +657,7 @@ NodeId = "mag_summoner_skill_6"
 Nome = "Espírito Elemental"
 Descricao = "Invoca elemental."
 HabilidadeAtiva = ExtResource("sk_26")
+Icone = ExtResource("icon_sk_26")
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
 Requisitos = PackedStringArray("mag_summoner_desbloqueio_direito")
@@ -614,6 +670,7 @@ NodeId = "mag_summoner_skill_7"
 Nome = "Fortalecer Invocação"
 Descricao = "Fortalece invocações."
 HabilidadeAtiva = ExtResource("sk_27")
+Icone = ExtResource("icon_sk_27")
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
 Requisitos = PackedStringArray("mag_summoner_desbloqueio_direito")
@@ -659,6 +716,7 @@ NodeId = "mag_summoner_skill_8"
 Nome = "Sacrifício Arcano"
 Descricao = "Sacrifica invocação."
 HabilidadeAtiva = ExtResource("sk_28")
+Icone = ExtResource("icon_sk_28")
 NodeType = 1
 Posicao = Vector2(805.1, 1490.9)
 Requisitos = PackedStringArray("mag_summoner_escolha_externa_1")
@@ -671,6 +729,7 @@ NodeId = "mag_summoner_skill_9"
 Nome = "Exército Arcano"
 Descricao = "Invoca vários servos."
 HabilidadeAtiva = ExtResource("sk_29")
+Icone = ExtResource("icon_sk_29")
 NodeType = 1
 Posicao = Vector2(465, 1230)
 Requisitos = PackedStringArray("mag_summoner_escolha_externa_2")
@@ -683,6 +742,7 @@ NodeId = "mag_summoner_skill_10"
 Nome = "Senhor das Invocações"
 Descricao = "Fortalece todas as invocações."
 HabilidadeAtiva = ExtResource("sk_30")
+Icone = ExtResource("icon_sk_30")
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
 Requisitos = PackedStringArray("mag_summoner_escolha_externa_3")

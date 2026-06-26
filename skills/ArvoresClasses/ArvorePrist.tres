@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=91 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,37 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/006 - Queima da Alma.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/007 - Sentença Final.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/008 - Fanatismo.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/009 - Apocalipse Sagrado.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/009 - Apocalipse Sagrado.tres" id="sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/37.png" id="icon_sk_10"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/36.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/47.png" id="icon_sk_12"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/6.png" id="icon_sk_13"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/19.png" id="icon_sk_14"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/27.png" id="icon_sk_15"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/40.png" id="icon_sk_16"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/38.png" id="icon_sk_17"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/48.png" id="icon_sk_18"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/43.png" id="icon_sk_19"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/38.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/47.png" id="icon_sk_20"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/47.png" id="icon_sk_21"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/19.png" id="icon_sk_22"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/27.png" id="icon_sk_23"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/48.png" id="icon_sk_24"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/3.png" id="icon_sk_25"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/38.png" id="icon_sk_26"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/35.png" id="icon_sk_27"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/44.png" id="icon_sk_28"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/40.png" id="icon_sk_29"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/47.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/41.png" id="icon_sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/37.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/48.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/6.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/44.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/48.png" id="icon_sk_9"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "pri_base"
@@ -90,6 +120,7 @@ NodeId = "pri_sacerdote_skill_1"
 Nome = "Segundo Fôlego"
 Descricao = "O aventureiro reúne suas forças interiores, respirando fundo e restaurando parte de sua vitalidade e energia espiritual para continuar lutando."
 HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 716.2)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_interna_1")
@@ -102,6 +133,7 @@ NodeId = "pri_sacerdote_skill_2"
 Nome = "Cura Menor"
 Descricao = "O Sacerdote canaliza uma pequena quantidade de luz divina nas mãos, fechando ferimentos recentes e restaurando a força de um aliado."
 HabilidadeAtiva = ExtResource("sk_2")
+Icone = ExtResource("icon_sk_2")
 NodeType = 1
 Posicao = Vector2(950, 680)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_interna_2")
@@ -114,6 +146,7 @@ NodeId = "pri_sacerdote_skill_3"
 Nome = "Bênção Sagrada"
 Descricao = "Uma prece luminosa fortalece os aliados próximos, elevando sua coragem e protegendo seus corpos contra os perigos do combate."
 HabilidadeAtiva = ExtResource("sk_3")
+Icone = ExtResource("icon_sk_3")
 NodeType = 1
 Posicao = Vector2(1085, 716.2)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_interna_3")
@@ -146,6 +179,7 @@ NodeId = "pri_sacerdote_skill_4"
 Nome = "Cura em Área"
 Descricao = "Ondas de luz restauradora se espalham ao redor do Sacerdote, curando todos os aliados que estiverem dentro do alcance da oração."
 HabilidadeAtiva = ExtResource("sk_4")
+Icone = ExtResource("icon_sk_4")
 NodeType = 1
 Posicao = Vector2(662.3, 630.4)
 Requisitos = PackedStringArray("pri_sacerdote_desbloqueio_esquerdo")
@@ -158,6 +192,7 @@ NodeId = "pri_sacerdote_skill_5"
 Nome = "Purificação"
 Descricao = "O Sacerdote invoca uma luz pura que dissolve venenos, maldições e energias nocivas presas ao corpo de um aliado."
 HabilidadeAtiva = ExtResource("sk_5")
+Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(846, 532.8)
 Requisitos = PackedStringArray("pri_sacerdote_desbloqueio_esquerdo")
@@ -170,6 +205,7 @@ NodeId = "pri_sacerdote_skill_6"
 Nome = "Renovação"
 Descricao = "Uma bênção persistente envolve o aliado, restaurando sua vida lentamente enquanto a luz divina permanece ativa."
 HabilidadeAtiva = ExtResource("sk_6")
+Icone = ExtResource("icon_sk_6")
 NodeType = 1
 Posicao = Vector2(1054, 532.8)
 Requisitos = PackedStringArray("pri_sacerdote_desbloqueio_direito")
@@ -182,6 +218,7 @@ NodeId = "pri_sacerdote_skill_7"
 Nome = "Escudo Sagrado"
 Descricao = "O Sacerdote ergue uma barreira de fé sobre um aliado, reduzindo o impacto dos próximos ataques recebidos."
 HabilidadeAtiva = ExtResource("sk_7")
+Icone = ExtResource("icon_sk_7")
 NodeType = 1
 Posicao = Vector2(1237.7, 630.4)
 Requisitos = PackedStringArray("pri_sacerdote_desbloqueio_direito")
@@ -227,6 +264,7 @@ NodeId = "pri_sacerdote_skill_8"
 Nome = "Luz Restauradora"
 Descricao = "Uma poderosa coluna de luz desce sobre o aliado ferido, restaurando uma grande quantidade de vida em um único instante."
 HabilidadeAtiva = ExtResource("sk_8")
+Icone = ExtResource("icon_sk_8")
 NodeType = 1
 Posicao = Vector2(554, 554)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_externa_1")
@@ -239,6 +277,7 @@ NodeId = "pri_sacerdote_skill_9"
 Nome = "Ressurreição"
 Descricao = "O Sacerdote chama a alma de um aliado caído de volta ao corpo, permitindo que ele retorne à batalha sob a graça divina."
 HabilidadeAtiva = ExtResource("sk_9")
+Icone = ExtResource("icon_sk_9")
 NodeType = 1
 Posicao = Vector2(950, 390)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_externa_2")
@@ -251,6 +290,7 @@ NodeId = "pri_sacerdote_skill_10"
 Nome = "Milagre Divino"
 Descricao = "Uma intervenção celestial toma conta do campo de batalha, restaurando aliados e envolvendo o grupo em uma proteção radiante."
 HabilidadeAtiva = ExtResource("sk_10")
+Icone = ExtResource("icon_sk_10")
 NodeType = 1
 Posicao = Vector2(1346, 554)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_externa_3")
@@ -306,6 +346,7 @@ NodeId = "pri_paladino_skill_1"
 Nome = "Passo Divino"
 Descricao = "O Clérigo é envolvido por um brilho sagrado e avança rapidamente pelo campo de batalha, como se fosse guiado por uma força divina."
 HabilidadeAtiva = ExtResource("sk_11")
+Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(1220, 950)
 Requisitos = PackedStringArray("pri_paladino_escolha_interna_1")
@@ -318,6 +359,7 @@ NodeId = "pri_paladino_skill_2"
 Nome = "Golpe Sagrado"
 Descricao = "O Paladino golpeia o inimigo com seu martelo imbuído de luz, misturando força física e energia sagrada em um único impacto."
 HabilidadeAtiva = ExtResource("sk_12")
+Icone = ExtResource("icon_sk_12")
 NodeType = 1
 Posicao = Vector2(1183.8, 1085)
 Requisitos = PackedStringArray("pri_paladino_escolha_interna_2")
@@ -330,6 +372,7 @@ NodeId = "pri_paladino_skill_3"
 Nome = "Escudo da Fé"
 Descricao = "A fé do Paladino se manifesta como uma muralha invisível, reduzindo o dano recebido e mantendo sua posição na linha de frente."
 HabilidadeAtiva = ExtResource("sk_13")
+Icone = ExtResource("icon_sk_13")
 NodeType = 1
 Posicao = Vector2(1085, 1183.8)
 Requisitos = PackedStringArray("pri_paladino_escolha_interna_3")
@@ -362,6 +405,7 @@ NodeId = "pri_paladino_skill_4"
 Nome = "Provocação Divina"
 Descricao = "O Paladino desafia os inimigos em nome da luz, forçando criaturas próximas a voltarem sua atenção para ele."
 HabilidadeAtiva = ExtResource("sk_14")
+Icone = ExtResource("icon_sk_14")
 NodeType = 1
 Posicao = Vector2(1370.6, 860.6)
 Requisitos = PackedStringArray("pri_paladino_desbloqueio_esquerdo")
@@ -374,6 +418,7 @@ NodeId = "pri_paladino_skill_5"
 Nome = "Martelo da Justiça"
 Descricao = "Um golpe pesado carregado com energia divina atinge o inimigo com tanta força que interrompe seus movimentos."
 HabilidadeAtiva = ExtResource("sk_15")
+Icone = ExtResource("icon_sk_15")
 NodeType = 1
 Posicao = Vector2(1363.3, 1068.5)
 Requisitos = PackedStringArray("pri_paladino_desbloqueio_esquerdo")
@@ -386,6 +431,7 @@ NodeId = "pri_paladino_skill_6"
 Nome = "Aura da Coragem"
 Descricao = "Uma aura dourada envolve o Paladino e seus aliados, fortalecendo a determinação do grupo diante de qualquer ameaça."
 HabilidadeAtiva = ExtResource("sk_16")
+Icone = ExtResource("icon_sk_16")
 NodeType = 1
 Posicao = Vector2(1259.3, 1248.7)
 Requisitos = PackedStringArray("pri_paladino_desbloqueio_direito")
@@ -398,6 +444,7 @@ NodeId = "pri_paladino_skill_7"
 Nome = "Julgamento"
 Descricao = "O Paladino ergue seu martelo e invoca um julgamento divino sobre o alvo, punindo-o por sua corrupção."
 HabilidadeAtiva = ExtResource("sk_17")
+Icone = ExtResource("icon_sk_17")
 NodeType = 1
 Posicao = Vector2(1082.9, 1359)
 Requisitos = PackedStringArray("pri_paladino_desbloqueio_direito")
@@ -443,6 +490,7 @@ NodeId = "pri_paladino_skill_8"
 Nome = "Proteção Celestial"
 Descricao = "As bênçãos celestiais se espalham pelo campo, cobrindo aliados próximos com uma proteção luminosa."
 HabilidadeAtiva = ExtResource("sk_18")
+Icone = ExtResource("icon_sk_18")
 NodeType = 1
 Posicao = Vector2(1490.9, 805.1)
 Requisitos = PackedStringArray("pri_paladino_escolha_externa_1")
@@ -455,6 +503,7 @@ NodeId = "pri_paladino_skill_9"
 Nome = "Guardião Sagrado"
 Descricao = "O Paladino assume uma postura sagrada de proteção, tornando-se uma muralha viva entre seus aliados e os inimigos."
 HabilidadeAtiva = ExtResource("sk_19")
+Icone = ExtResource("icon_sk_19")
 NodeType = 1
 Posicao = Vector2(1435, 1230)
 Requisitos = PackedStringArray("pri_paladino_escolha_externa_2")
@@ -467,6 +516,7 @@ NodeId = "pri_paladino_skill_10"
 Nome = "Avatar da Luz"
 Descricao = "O Paladino se torna um campeão da luz, irradiando poder sagrado e protegendo todos ao seu redor."
 HabilidadeAtiva = ExtResource("sk_20")
+Icone = ExtResource("icon_sk_20")
 NodeType = 1
 Posicao = Vector2(1094.9, 1490.9)
 Requisitos = PackedStringArray("pri_paladino_escolha_externa_3")
@@ -522,6 +572,7 @@ NodeId = "pri_inquisidor_skill_1"
 Nome = "Bênção Divina"
 Descricao = "Uma aura de proteção celestial envolve o Clérigo, formando uma barreira luminosa capaz de absorver parte do dano recebido."
 HabilidadeAtiva = ExtResource("sk_21")
+Icone = ExtResource("icon_sk_21")
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
 Requisitos = PackedStringArray("pri_inquisidor_escolha_interna_1")
@@ -534,6 +585,7 @@ NodeId = "pri_inquisidor_skill_2"
 Nome = "Chama Sagrada"
 Descricao = "O Inquisidor conjura uma chama pura que queima o corpo e a alma do inimigo, causando dor sagrada imediata."
 HabilidadeAtiva = ExtResource("sk_22")
+Icone = ExtResource("icon_sk_22")
 NodeType = 1
 Posicao = Vector2(716.2, 1085)
 Requisitos = PackedStringArray("pri_inquisidor_escolha_interna_2")
@@ -546,6 +598,7 @@ NodeId = "pri_inquisidor_skill_3"
 Nome = "Marca da Heresia"
 Descricao = "O alvo é marcado como herege, tornando-se mais vulnerável aos julgamentos e punições sagradas do Inquisidor."
 HabilidadeAtiva = ExtResource("sk_23")
+Icone = ExtResource("icon_sk_23")
 NodeType = 1
 Posicao = Vector2(680, 950)
 Requisitos = PackedStringArray("pri_inquisidor_escolha_interna_3")
@@ -578,6 +631,7 @@ NodeId = "pri_inquisidor_skill_4"
 Nome = "Exorcismo"
 Descricao = "Uma explosão de energia sagrada atravessa o alvo, expulsando forças malignas e causando dano severo."
 HabilidadeAtiva = ExtResource("sk_24")
+Icone = ExtResource("icon_sk_24")
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
 Requisitos = PackedStringArray("pri_inquisidor_desbloqueio_esquerdo")
@@ -590,6 +644,7 @@ NodeId = "pri_inquisidor_skill_5"
 Nome = "Correntes Sagradas"
 Descricao = "Correntes de luz descem do alto e prendem o inimigo ao chão, impedindo sua fuga por alguns instantes."
 HabilidadeAtiva = ExtResource("sk_25")
+Icone = ExtResource("icon_sk_25")
 NodeType = 1
 Posicao = Vector2(640.7, 1248.7)
 Requisitos = PackedStringArray("pri_inquisidor_desbloqueio_esquerdo")
@@ -602,6 +657,7 @@ NodeId = "pri_inquisidor_skill_6"
 Nome = "Punição Divina"
 Descricao = "Um raio de luz celestial cai sobre o inimigo, punindo-o com força divina."
 HabilidadeAtiva = ExtResource("sk_26")
+Icone = ExtResource("icon_sk_26")
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
 Requisitos = PackedStringArray("pri_inquisidor_desbloqueio_direito")
@@ -614,6 +670,7 @@ NodeId = "pri_inquisidor_skill_7"
 Nome = "Queima da Alma"
 Descricao = "Chamas invisíveis consomem a essência do alvo, causando dano contínuo que ignora parte de sua resistência espiritual."
 HabilidadeAtiva = ExtResource("sk_27")
+Icone = ExtResource("icon_sk_27")
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
 Requisitos = PackedStringArray("pri_inquisidor_desbloqueio_direito")
@@ -659,6 +716,7 @@ NodeId = "pri_inquisidor_skill_8"
 Nome = "Sentença Final"
 Descricao = "O Inquisidor pronuncia uma sentença sagrada, liberando uma explosão de luz concentrada sobre o alvo condenado."
 HabilidadeAtiva = ExtResource("sk_28")
+Icone = ExtResource("icon_sk_28")
 NodeType = 1
 Posicao = Vector2(805.1, 1490.9)
 Requisitos = PackedStringArray("pri_inquisidor_escolha_externa_1")
@@ -671,6 +729,7 @@ NodeId = "pri_inquisidor_skill_9"
 Nome = "Fanatismo"
 Descricao = "Tomado por fervor absoluto, o Inquisidor aumenta sua velocidade de conjuração e o poder de suas punições sagradas."
 HabilidadeAtiva = ExtResource("sk_29")
+Icone = ExtResource("icon_sk_29")
 NodeType = 1
 Posicao = Vector2(465, 1230)
 Requisitos = PackedStringArray("pri_inquisidor_escolha_externa_2")
@@ -683,6 +742,7 @@ NodeId = "pri_inquisidor_skill_10"
 Nome = "Apocalipse Sagrado"
 Descricao = "O céu se abre em luz devastadora, castigando inimigos em uma ampla área e marcando-os com julgamento divino."
 HabilidadeAtiva = ExtResource("sk_30")
+Icone = ExtResource("icon_sk_30")
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
 Requisitos = PackedStringArray("pri_inquisidor_escolha_externa_3")

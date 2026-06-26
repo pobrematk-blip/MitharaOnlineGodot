@@ -93,6 +93,7 @@ public partial class GameServer : INetEventListener
 
         LoadGuildsFromDb();
         _world.LoadLojinhas(_db);
+        LoadTileData();
 
         Logger.Info($"Iniciado na porta {_config.Port}");
         Logger.Info($"Canais: {_config.ChannelCount}");
@@ -180,7 +181,7 @@ public partial class GameServer : INetEventListener
                     var session = _sessions.Values.FirstOrDefault(s => s.EntityId == kv.Key);
                     if (session?.SelectedCharacter != null)
                     {
-                        _db.SaveCharacterPosition(session.SelectedCharacter.Id, player.X, player.Y);
+                        _db.SaveCharacterPosition(session.SelectedCharacter.Id, player.X, player.Y, session.CurrentMap);
                         _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
                         _db.SaveCharacterXp(session.SelectedCharacter.Id, player.Experience);
                         _db.SaveCharacterLevel(session.SelectedCharacter.Id, player.Level);
@@ -363,6 +364,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_RecoverPassword:
                 HandleRecoverPassword(peer, reader);
                 break;
+            case PacketId.C2S_SceneTeleport:
+                HandleSceneTeleport(peer, reader);
+                break;
             case PacketId.C2S_DeleteCharacter:
                 HandleDeleteCharacter(peer, reader);
                 break;
@@ -520,6 +524,13 @@ public partial class GameServer : INetEventListener
                 HandleLojinhaListRequest(peer);
                 break;
 
+            case PacketId.C2S_MapEditorPlaceTile:
+                HandleMapEditorPlaceTile(peer, reader);
+                break;
+            case PacketId.C2S_MapEditorRequestTiles:
+                HandleMapEditorRequestTiles(peer, reader);
+                break;
+
             }
         }
         catch (Exception ex)
@@ -530,14 +541,27 @@ public partial class GameServer : INetEventListener
 
     private void HandlePetCapture(NetPeer peer, NetDataReader reader)
     {
-        if (!_sessions.TryGetValue(peer, out var session)) return;
-        if (session.SelectedCharacter == null) return;
+        if (!TryGetPlayer(peer, out var player, out _)) return;
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null) return;
 
         int petId = reader.GetInt();
         string petName = reader.GetString();
 
+        var scroll = player.Items.FirstOrDefault(i => (i.ItemId == ItemDefinitions.PergaminhoDoPet || i.ItemId == ItemDefinitions.PergaminhoDoPet5) && i.Quantity > 0);
+        if (scroll == null)
+        {
+            Logger.Info($"[PET] {session.SelectedCharacter.Name} tentou capturar sem pergaminho.");
+            return;
+        }
+
+        scroll.Quantity--;
+        if (scroll.Quantity <= 0)
+            player.Items.Remove(scroll);
+        _db.SaveItem(session.SelectedCharacter.Id, scroll);
+
         _db.SavePet(session.SelectedCharacter.Id, petId, petName);
         SendPetData(peer, session.SelectedCharacter.Id);
+        SendInventoryData(peer, player);
 
         Logger.Info($"[PET] {session.SelectedCharacter.Name} capturou pet '{petName}' (ID:{petId})");
     }
@@ -564,22 +588,7 @@ public partial class GameServer : INetEventListener
             dirY /= length;
         }
 
-        var nearby = channel.GetEntitiesInAoi(entity.X, entity.Y);
-        foreach (var eid in nearby)
-        {
-            if (eid == entityId) continue;
-            var targetPeer = channel.GetPlayerPeer(eid);
-            if (targetPeer == null) continue;
-
-            var writer = PacketSerializer.WritePacket(PacketId.S2C_ProjectileSpawn);
-            writer.Put(entityId);
-            writer.Put(originX);
-            writer.Put(originY);
-            writer.Put(dirX);
-            writer.Put(dirY);
-            writer.Put(projectileType);
-            targetPeer.Send(writer, DeliveryMethod.ReliableOrdered);
-        }
+        BroadcastProjectileSpawn(channel, entityId, originX, originY, dirX, dirY, projectileType, includeCaster: false);
     }
 
     private void SendPetData(NetPeer peer, int characterId)
@@ -608,6 +617,12 @@ public class PlayerSession
     public double LastActionTime { get; set; } = -1;
     public HashSet<ulong> SpawnedEntities { get; set; } = new();
     public HashSet<ulong> SpawnedLoot { get; set; } = new();
+    public float TeleportEntryX { get; set; }
+    public float TeleportEntryY { get; set; }
+    public string CurrentMap { get; set; } = "main";
+    public double LastTeleportTime { get; set; } = -1;
+    public bool IsTransitioning { get; set; }
+    public double TransitionStartTime { get; set; }
 
     public bool IsAdminOrAdminMode(ServerConfig config)
     {

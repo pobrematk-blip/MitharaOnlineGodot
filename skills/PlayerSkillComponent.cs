@@ -11,6 +11,8 @@ public partial class PlayerSkillComponent : Node
     [Export]
     public ItemResource[] ItemSlots { get; set; } = new ItemResource[20];
 
+    public int[] ItemSlotIndexes { get; set; } = new int[20];
+
     [Export]
     public SkillResource[] SkillsDisponiveis { get; set; } = System.Array.Empty<SkillResource>();
 
@@ -25,6 +27,7 @@ public partial class PlayerSkillComponent : Node
         _player = GetParent() as Player;
         if (_player == null)
             GD.PrintErr("[SKILLCOMP] Player não encontrado como pai do componente de skills.");
+        System.Array.Fill(ItemSlotIndexes, -1);
         CarregarCatalogoDeSkills();
 
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -47,6 +50,12 @@ public partial class PlayerSkillComponent : Node
         {
             int skillId = i < skillIds.Count ? skillIds[i] : 0;
             SkillSlots[i] = skillId > 0 ? ObterSkillPorId(skillId) : null;
+            if (SkillSlots[i] != null && ItemSlots != null && i < ItemSlots.Length)
+            {
+                ItemSlots[i] = null;
+                if (ItemSlotIndexes != null && i < ItemSlotIndexes.Length)
+                    ItemSlotIndexes[i] = -1;
+            }
         }
 
         GD.Print($"[SKILLCOMP] Barra do servidor aplicada: {skillIds.Count} slots");

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/Pets/PetResource.cs" id="1"]
+[ext_resource type="Texture2D" path="res://characters/Inimigos/SpriteInimigo/Mushroom1_Idle_without_shadow.png" id="2"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+atlas = ExtResource("2")
+region = Rect2(0, 0, 64, 64)
+
+[resource]
+script = ExtResource("1")
+PetID = 2
+Nome = "Cogumelo"
+Descricao = "Um cogumelo capturado que luta ao seu lado."
+Icone = SubResource("AtlasTexture_icon")
+SpriteAtlas = ExtResource("2")
+Tipo = 1
+Level = 1
+HP = 100
+Mana = 10
+AttackDamage = 6
+Forca = 1
+Agilidade = 1
+Destreza = 1
+Inteligencia = 0
+Speed = 200.0
+AttackRange = 50.0
+AttackCooldown = 1.0
+ColetaRange = 100.0
+GuardRange = 200.0
+AnimPrefix = "cogumelo"

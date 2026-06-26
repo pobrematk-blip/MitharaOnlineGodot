@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/Pets/PetResource.cs" id="1"]
+[ext_resource type="Texture2D" path="res://characters/Inimigos/SpriteInimigo/Plant1_Idle_without_shadow.png" id="2"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_icon"]
+atlas = ExtResource("2")
+region = Rect2(0, 0, 64, 64)
+
+[resource]
+script = ExtResource("1")
+PetID = 4
+Nome = "PlantaCarnivora"
+Descricao = "Uma planta carnivora capturada que devora seus inimigos."
+Icone = SubResource("AtlasTexture_icon")
+SpriteAtlas = ExtResource("2")
+Tipo = 1
+Level = 2
+HP = 140
+Mana = 15
+AttackDamage = 10
+Forca = 2
+Agilidade = 1
+Destreza = 1
+Inteligencia = 1
+Speed = 180.0
+AttackRange = 65.0
+AttackCooldown = 1.2
+ColetaRange = 100.0
+GuardRange = 200.0
+AnimPrefix = "plantaCarnivora"

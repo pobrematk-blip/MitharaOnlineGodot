@@ -64,7 +64,41 @@ public partial class TalentTreeResource : Resource
                 if (!RequisitoSatisfeito(requisito, desbloqueados))
                     return false;
         }
+
+        if (!EspecializacaoPermitida(node, desbloqueados))
+            return false;
+
         return true;
+    }
+
+    private bool EspecializacaoPermitida(TalentNodeResource node, IReadOnlyCollection<string> desbloqueados)
+    {
+        string nodeSpec = ObterEspecializacao(node?.NodeId);
+        if (string.IsNullOrWhiteSpace(nodeSpec))
+            return true;
+
+        foreach (string unlockedId in desbloqueados)
+        {
+            string unlockedSpec = ObterEspecializacao(unlockedId);
+            if (string.IsNullOrWhiteSpace(unlockedSpec))
+                continue;
+            return unlockedSpec == nodeSpec;
+        }
+
+        return true;
+    }
+
+    private static string ObterEspecializacao(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId))
+            return "";
+
+        string[] parts = nodeId.Split('_', System.StringSplitOptions.RemoveEmptyEntries | System.StringSplitOptions.TrimEntries);
+        if (parts.Length < 3)
+            return "";
+
+        string key = parts[1];
+        return key.Equals("base", System.StringComparison.OrdinalIgnoreCase) ? "" : key;
     }
 
     private bool RequisitoSatisfeito(string requisito, IReadOnlyCollection<string> desbloqueados)

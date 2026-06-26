@@ -1,34 +1,31 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/c42.png" id="1_3j42d"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300077
 Nome = "Calças de Umbra Alta"
 Descricao = "Tecida com fios arcanos de Umbra Alta, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_3j42d")
 QuantidadeMaximaPorSlot = 1
 Tipo = 5
 CategoriaPeso = 0
 TipoItem = 1
 NivelRequerido = 60
 Valor = 600
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 34
-HpMin = 29
-HpMax = 40
-Mana = 46
-ManaMin = 39
-ManaMax = 53
 DefesaFisica = 15
 DefesaFisicaMin = 13
 DefesaFisicaMax = 18
 DefesaMagica = 33
 DefesaMagicaMin = 28
 DefesaMagicaMax = 38
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 34
+HpMin = 29
+HpMax = 40
+Mana = 46
+ManaMin = 39
+ManaMax = 53
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

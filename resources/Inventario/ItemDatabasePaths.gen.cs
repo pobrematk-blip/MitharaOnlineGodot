@@ -537,6 +537,7 @@ partial class ItemDatabase
     "res://Itens/Consumiveis/LojinhaPequena.tres",
     "res://Itens/Consumiveis/PergaminhoDeCriacaoDeCla.tres",
     "res://Itens/Consumiveis/PergaminhoDoPet.tres",
+    "res://Itens/Consumiveis/PergaminhoDoPet5.tres",
     "res://Itens/Consumiveis/PergaminhoVip15Dias.tres",
     "res://Itens/Consumiveis/PergaminhoVip30Dias.tres",
     "res://Itens/Consumiveis/PergaminhoVip7Dias.tres",

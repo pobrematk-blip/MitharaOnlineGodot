@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/E10.png" id="1_87bb8"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300036
 Nome = "Véu da Vigília Cinzenta"
 Descricao = "Tecida com fios arcanos de Vigília Cinzenta, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_87bb8")
 QuantidadeMaximaPorSlot = 1
 Tipo = 1
 CategoriaPeso = 0
 NivelRequerido = 30
 Valor = 300
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 7
-HpMin = 6
-HpMax = 8
-Mana = 9
-ManaMin = 8
-ManaMax = 11
 DefesaFisica = 3
 DefesaFisicaMin = 3
 DefesaFisicaMax = 4
 DefesaMagica = 7
 DefesaMagicaMin = 6
 DefesaMagicaMax = 8
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 7
+HpMin = 6
+HpMax = 8
+Mana = 9
+ManaMin = 8
+ManaMax = 11
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

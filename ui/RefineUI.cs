@@ -4,10 +4,13 @@ public partial class RefineUI : Control
 {
     private static readonly int[] RefineSuccessRates = { 100, 80, 70, 60, 50, 40, 30, 20, 10, 5 };
 
-    private Panel _dropZone;
     private TextureRect _itemIcone;
     private Label _itemNome;
     private Label _nivelAtual;
+    private Panel _poeiraSlot;
+    private TextureRect _poeiraIcone;
+    private Label _poeiraNome;
+    private Label _poeiraQtd;
     private Label _chanceLabel;
     private Label _custoGold;
     private Label _custoPoeira;
@@ -21,20 +24,31 @@ public partial class RefineUI : Control
     private int _selectedSlot = -1;
     private int _selectedItemId;
     private int _selectedRefineLevel;
+    private int _stardustSlot = -1;
+    private int _stardustQuantity;
     private GameNetwork _net;
     private CashManager _cash;
     private bool _processando;
 
     public override void _Ready()
     {
-        _dropZone = GetNode<Panel>("Panel/DropZone");
-        _itemIcone = GetNode<TextureRect>("Panel/DropZone/ItemIcone");
+        _itemIcone = GetNode<TextureRect>("Panel/EquipSlot/ItemIcone");
         _itemIcone.CustomMinimumSize = new Vector2(40, 40);
         _itemIcone.Size = new Vector2(40, 40);
         _itemIcone.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
         _itemIcone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-        _itemNome = GetNode<Label>("Panel/DropZone/ItemNome");
-        _nivelAtual = GetNode<Label>("Panel/DropZone/NivelAtual");
+        _itemNome = GetNode<Label>("Panel/EquipSlot/ItemNome");
+        _nivelAtual = GetNode<Label>("Panel/EquipSlot/NivelAtual");
+
+        _poeiraSlot = GetNode<Panel>("Panel/PoeiraSlot");
+        _poeiraIcone = GetNode<TextureRect>("Panel/PoeiraSlot/PoeiraIcone");
+        _poeiraIcone.CustomMinimumSize = new Vector2(40, 40);
+        _poeiraIcone.Size = new Vector2(40, 40);
+        _poeiraIcone.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _poeiraIcone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _poeiraNome = GetNode<Label>("Panel/PoeiraSlot/PoeiraNome");
+        _poeiraQtd = GetNode<Label>("Panel/PoeiraSlot/PoeiraQtd");
+
         _chanceLabel = GetNode<Label>("Panel/InfoContainer/ChanceRow/ChanceLabel");
         _custoGold = GetNode<Label>("Panel/InfoContainer/GoldRow/CustoGold");
         _custoPoeira = GetNode<Label>("Panel/InfoContainer/PoeiraRow/CustoPoeira");
@@ -57,27 +71,41 @@ public partial class RefineUI : Control
         AtualizarUI();
     }
 
-    public bool CanDropOnSlot(Variant data)
+    public bool CanDropOnSlot(Panel slot, Variant data)
     {
         if (_processando) return false;
-        if (data.Obj is SlotUI slot && slot.SlotInterno?.Item != null)
+        if (data.Obj is SlotUI slotUI && slotUI.SlotInterno?.Item != null)
         {
-            var tipo = slot.SlotInterno.Item.Tipo;
+            if (slot == _poeiraSlot)
+                return slotUI.SlotInterno.Item.ItemID == 107;
+
+            var tipo = slotUI.SlotInterno.Item.Tipo;
             return tipo != TipoEquipamento.Nenhum && tipo != TipoEquipamento.Consumivel && tipo != TipoEquipamento.Moeda && tipo != TipoEquipamento.Feitico;
         }
         return false;
     }
 
-    public void DropOnSlot(Variant data)
+    public void DropOnSlot(Panel slot, Variant data)
     {
-        if (data.Obj is SlotUI slot && slot.SlotInterno?.Item != null)
+        if (data.Obj is SlotUI slotUI && slotUI.SlotInterno?.Item != null)
         {
-            _selectedSlot = slot.SlotIndex;
-            _selectedItemId = slot.SlotInterno.Item.ItemID;
-            _selectedRefineLevel = slot.SlotInterno.RefinoNivel;
-            _itemIcone.Texture = slot.SlotInterno.Item.Icone;
-            _itemIcone.Visible = true;
-            _itemNome.Text = slot.SlotInterno.Item.Nome;
+            if (slot == _poeiraSlot)
+            {
+                _stardustSlot = slotUI.SlotIndex;
+                _stardustQuantity = slotUI.SlotInterno.Quantidade;
+                _poeiraIcone.Texture = slotUI.SlotInterno.Item.Icone;
+                _poeiraIcone.Visible = true;
+                _poeiraNome.Text = slotUI.SlotInterno.Item.Nome;
+            }
+            else
+            {
+                _selectedSlot = slotUI.SlotIndex;
+                _selectedItemId = slotUI.SlotInterno.Item.ItemID;
+                _selectedRefineLevel = slotUI.SlotInterno.RefinoNivel;
+                _itemIcone.Texture = slotUI.SlotInterno.Item.Icone;
+                _itemIcone.Visible = true;
+                _itemNome.Text = slotUI.SlotInterno.Item.Nome;
+            }
             AtualizarUI();
         }
     }
@@ -89,7 +117,14 @@ public partial class RefineUI : Control
         _selectedRefineLevel = 0;
         _itemIcone.Texture = null;
         _itemIcone.Visible = false;
-        _itemNome.Text = "Arraste um item para refinar";
+        _itemNome.Text = "Arraste um equipamento para refinar";
+
+        _stardustSlot = -1;
+        _stardustQuantity = 0;
+        _poeiraIcone.Texture = null;
+        _poeiraIcone.Visible = false;
+        _poeiraNome.Text = "Arraste Poeira Estelar";
+        _poeiraQtd.Text = "";
     }
 
     private void AtualizarUI()
@@ -122,12 +157,16 @@ public partial class RefineUI : Control
         _chanceLabel.Text = $"{chance}%";
         _custoGold.Text = $"{goldCost} Gold";
         _custoPoeira.Text = $"{stardustCost}x Poeira Estelar";
-        _refinarBtn.Disabled = false;
+
+        if (_stardustSlot >= 0)
+            _poeiraQtd.Text = $"{_stardustQuantity}x";
+
+        _refinarBtn.Disabled = _stardustSlot < 0;
     }
 
     private void OnRefinar()
     {
-        if (_selectedSlot < 0 || _net == null || !_net.IsConnected || _processando) return;
+        if (_selectedSlot < 0 || _stardustSlot < 0 || _net == null || !_net.IsConnected || _processando) return;
 
         _processando = true;
         _feedbackLabel.Text = "⏳ Refinando...";
@@ -138,6 +177,13 @@ public partial class RefineUI : Control
     private void OnRefineResult(bool success, int newLevel, string message)
     {
         _processando = false;
+
+        _stardustSlot = -1;
+        _stardustQuantity = 0;
+        _poeiraIcone.Texture = null;
+        _poeiraIcone.Visible = false;
+        _poeiraNome.Text = "Arraste Poeira Estelar";
+        _poeiraQtd.Text = "";
 
         if (success)
         {

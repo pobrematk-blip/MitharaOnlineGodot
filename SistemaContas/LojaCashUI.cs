@@ -6,7 +6,8 @@ public partial class LojaCashUI : Control
     private Button _fecharBtn;
     private Control _feedback;
     private Label _feedbackLabel;
-    private VBoxContainer _itensContainer;
+    private ScrollContainer _itensContainer;
+    private GridContainer _gridContainer;
     private CashManager _cash;
     private LojaCashData _lojaData;
     private GameNetwork _net;
@@ -24,7 +25,8 @@ public partial class LojaCashUI : Control
         _fecharBtn = GetNode<Button>("%FecharBtn");
         _feedback = GetNode<Control>("%Feedback");
         _feedbackLabel = GetNode<Label>("%FeedbackLabel");
-        _itensContainer = GetNode<VBoxContainer>("%ItensContainer");
+        _itensContainer = GetNode<ScrollContainer>("%ItensContainer");
+        _gridContainer = GetNode<GridContainer>("%Grid");
         _tituloLabel = GetNode<Label>("%TituloLabel");
 
         _cash = GetNode<CashManager>("/root/CashManager");
@@ -95,10 +97,10 @@ public partial class LojaCashUI : Control
 
     private void PopularItens()
     {
-        foreach (var child in _itensContainer.GetChildren())
+        foreach (var child in _gridContainer.GetChildren())
             child.QueueFree();
 
-        var itemDB = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
+        var itemDB = GetNodeOrNull<ItemDatabase>("/root/GameNetwork/ItemDatabase");
 
         foreach (var entry in _lojaData.Itens)
         {
@@ -117,68 +119,80 @@ public partial class LojaCashUI : Control
             card.AddThemeStyleboxOverride("panel", style);
             card.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
-            var hbox = new HBoxContainer();
-            hbox.ThemeTypeVariation = "HBoxContainer";
-            hbox.AddThemeConstantOverride("separation", 8);
-            card.AddChild(hbox);
+            var vbox = new VBoxContainer();
+            vbox.CustomMinimumSize = new Vector2(0, 200);
+            vbox.AddThemeConstantOverride("separation", 6);
+            vbox.ThemeTypeVariation = "VBoxContainer";
+            card.AddChild(vbox);
 
             string nome = !string.IsNullOrEmpty(entry.NomeExibicao) ? entry.NomeExibicao : $"Item #{entry.ItemID}";
+            Texture2D itemIcon = null;
             if (itemDB != null)
             {
                 var item = itemDB.GetItem(entry.ItemID);
-                if (item != null && string.IsNullOrEmpty(entry.NomeExibicao))
-                    nome = item.Nome;
+                if (item != null)
+                {
+                    if (string.IsNullOrEmpty(entry.NomeExibicao))
+                        nome = item.Nome;
+                    itemIcon = item.Icone;
+                }
             }
-
-            var infoVbox = new VBoxContainer();
-            infoVbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            hbox.AddChild(infoVbox);
 
             var nomeLabel = new Label();
             nomeLabel.Text = nome;
-            nomeLabel.AddThemeFontSizeOverride("font_size", 14);
-            infoVbox.AddChild(nomeLabel);
+            nomeLabel.AddThemeFontSizeOverride("font_size", 12);
+            nomeLabel.AddThemeColorOverride("font_color", new Color(0.85f, 0.85f, 0.95f));
+            nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            nomeLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            nomeLabel.MaxLinesVisible = 2;
+            vbox.AddChild(nomeLabel);
 
-            if (!string.IsNullOrEmpty(entry.Descricao))
-            {
-                var descLabel = new Label();
-                descLabel.Text = entry.Descricao;
-                descLabel.AddThemeFontSizeOverride("font_size", 11);
-                descLabel.AddThemeColorOverride("font_color", new Color(0.6f, 0.65f, 0.75f));
-                infoVbox.AddChild(descLabel);
-            }
+            var iconContainer = new CenterContainer();
+            iconContainer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            iconContainer.SizeFlagsVertical = SizeFlags.ExpandFill;
+            iconContainer.CustomMinimumSize = new Vector2(96, 96);
+            vbox.AddChild(iconContainer);
 
-            var precoHbox = new HBoxContainer();
-            precoHbox.AddThemeConstantOverride("separation", 4);
-            if (_coinIcon != null)
-            {
-                var coinIcon = new TextureRect();
-                coinIcon.Texture = _coinIcon;
-                coinIcon.CustomMinimumSize = new Vector2(32, 32);
-                coinIcon.Size = new Vector2(32, 32);
-                coinIcon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
-                coinIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-                coinIcon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-                coinIcon.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-                precoHbox.AddChild(coinIcon);
-            }
+            var iconRect = new TextureRect();
+            iconRect.Texture = itemIcon;
+            iconRect.CustomMinimumSize = new Vector2(80, 80);
+            iconRect.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+            iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+            iconContainer.AddChild(iconRect);
+
+            var precoContainer = new HBoxContainer();
+            precoContainer.Alignment = BoxContainer.AlignmentMode.Center;
+            precoContainer.AddThemeConstantOverride("separation", 4);
+            vbox.AddChild(precoContainer);
+
+            var coinIconRect = new TextureRect();
+            coinIconRect.Texture = _coinIcon;
+            coinIconRect.CustomMinimumSize = new Vector2(20, 20);
+            coinIconRect.Size = new Vector2(20, 20);
+            coinIconRect.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+            coinIconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+            coinIconRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+            coinIconRect.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+            precoContainer.AddChild(coinIconRect);
+
             var precoLabel = new Label();
             precoLabel.Text = $"{entry.PrecoDiamantes}";
-            precoLabel.AddThemeFontSizeOverride("font_size", 16);
+            precoLabel.AddThemeFontSizeOverride("font_size", 14);
             precoLabel.AddThemeColorOverride("font_color", new Color(0.91f, 0.77f, 0.28f));
             precoLabel.VerticalAlignment = VerticalAlignment.Center;
-            precoHbox.AddChild(precoLabel);
-            hbox.AddChild(precoHbox);
+            precoContainer.AddChild(precoLabel);
 
             var comprarBtn = new Button();
             comprarBtn.Text = "Comprar";
-            comprarBtn.CustomMinimumSize = new Vector2(70, 32);
+            comprarBtn.CustomMinimumSize = new Vector2(0, 28);
+            comprarBtn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            comprarBtn.AddThemeFontSizeOverride("font_size", 11);
             int capturedItemId = entry.ItemID;
             int capturedPreco = entry.PrecoDiamantes;
             comprarBtn.Pressed += () => OnComprarItem(capturedItemId, capturedPreco);
-            hbox.AddChild(comprarBtn);
+            vbox.AddChild(comprarBtn);
 
-            _itensContainer.AddChild(card);
+            _gridContainer.AddChild(card);
         }
 
         if (_lojaData.Itens.Count == 0)
@@ -187,7 +201,7 @@ public partial class LojaCashUI : Control
             vazio.Text = "Nenhum item disponivel na loja.";
             vazio.HorizontalAlignment = HorizontalAlignment.Center;
             vazio.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.5f));
-            _itensContainer.AddChild(vazio);
+            _gridContainer.AddChild(vazio);
         }
     }
 

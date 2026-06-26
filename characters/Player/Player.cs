@@ -202,6 +202,7 @@ public partial class Player : CharacterBody2D
             _network.OnEnterWorld += AplicarProgressaoServidorPendente;
             _network.OnGainExp += OnGainExpReceived;
             _network.OnLevelUp += OnLevelUpReceived;
+            _network.OnSceneChange += OnSceneChangeReceived;
             CallDeferred(nameof(AplicarProgressaoServidorPendente));
         }
         _lastSentPosition = GlobalPosition;
@@ -387,6 +388,80 @@ public partial class Player : CharacterBody2D
             GlobalPosition = new Vector2(x, y);
             _lastSentPosition = GlobalPosition;
         }
+    }
+
+    private void OnSceneChangeReceived(string sceneName, float x, float y)
+    {
+        if (sceneName == SceneConstants.SCENE_MAIN)
+            CarregarCenaPrincipal(x, y);
+        else
+            CarregarInterior(sceneName, x, y);
+    }
+
+    private void CarregarCenaPrincipal(float x, float y)
+    {
+        var world = GetParent();
+        var interioresNode = world?.GetNodeOrNull("Interiores");
+        if (interioresNode != null)
+        {
+            foreach (var child in interioresNode.GetChildren())
+                child.QueueFree();
+        }
+
+        GlobalPosition = new Vector2(x, y);
+        _lastSentPosition = GlobalPosition;
+    }
+
+    private void CarregarInterior(string sceneName, float x, float y)
+    {
+        string scenePath = sceneName switch
+        {
+            SceneConstants.SCENE_ALFAIATARIA => SceneConstants.ALFAIATARIA,
+            _ => "",
+        };
+
+        if (string.IsNullOrEmpty(scenePath))
+        {
+            GD.PrintErr($"[SCENE] Cena interior desconhecida: {sceneName}");
+            return;
+        }
+
+        var world = GetParent();
+        if (world == null) return;
+
+        Node2D interiores = world.GetNodeOrNull<Node2D>("Interiores");
+        if (interiores == null)
+        {
+            interiores = new Node2D { Name = "Interiores" };
+            world.AddChild(interiores);
+        }
+        else
+        {
+            foreach (var child in interiores.GetChildren())
+                child.QueueFree();
+        }
+
+        var interiorScene = ResourceLoader.Load<PackedScene>(scenePath);
+        if (interiorScene == null)
+        {
+            GD.PrintErr($"[SCENE] Falha ao carregar: {scenePath}");
+            return;
+        }
+
+        var interior = interiorScene.Instantiate<Node2D>();
+        interiores.AddChild(interior);
+
+        float interiorX = x + SceneConstants.INTERIOR_OFFSET_X;
+        float interiorY = y + SceneConstants.INTERIOR_OFFSET_Y;
+
+        var spawnPoint = interior.GetNodeOrNull<Marker2D>("SpawnPoint");
+        if (spawnPoint != null)
+            interiores.Position = new Vector2(interiorX - spawnPoint.Position.X, interiorY - spawnPoint.Position.Y);
+        else
+            interiores.Position = new Vector2(interiorX, interiorY);
+
+        GlobalPosition = new Vector2(interiorX, interiorY);
+        _lastSentPosition = GlobalPosition;
     }
 
     public virtual void InitClass() { }
@@ -655,6 +730,7 @@ public partial class Player : CharacterBody2D
             bool isMoving = velocity.LengthSquared() > 0.01f;
             Vector2 pos = GlobalPosition;
             Vector2 dir = velocity.Normalized();
+            Vector2 netPos = ToNetworkPos(pos);
 
             _moveSendTimer += (float)delta;
 
@@ -662,7 +738,7 @@ public partial class Player : CharacterBody2D
             {
                 if (_moveSendTimer >= 0.1f || pos.DistanceSquaredTo(_lastSentPosition) > 400f)
                 {
-                    _network.SendPlayerMove(pos, dir, true, IsSprinting);
+                    _network.SendPlayerMove(netPos, dir, true, IsSprinting);
                     _lastSentPosition = pos;
                     _moveSendTimer = 0f;
                 }
@@ -670,11 +746,25 @@ public partial class Player : CharacterBody2D
             }
             else if (_wasMoving)
             {
-                _network.SendPlayerStop(pos);
+                _network.SendPlayerStop(netPos);
                 _wasMoving = false;
                 _moveSendTimer = 0f;
             }
         }
+    }
+
+    private Vector2 ToNetworkPos(Vector2 globalPos)
+    {
+        if (IsInInterior())
+            return globalPos - new Vector2(SceneConstants.INTERIOR_OFFSET_X, SceneConstants.INTERIOR_OFFSET_Y);
+        return globalPos;
+    }
+
+    private bool IsInInterior()
+    {
+        var world = GetParent();
+        var interiores = world?.GetNodeOrNull<Node2D>("Interiores");
+        return interiores != null && interiores.GetChildCount() > 0;
     }
 
     private void SincronizarOverlays()
@@ -1557,6 +1647,7 @@ public partial class Player : CharacterBody2D
         {
             _network.OnRespawn -= OnRespawnReceived;
             _network.OnTeleport -= OnTeleportReceived;
+            _network.OnSceneChange -= OnSceneChangeReceived;
         }
     }
 }

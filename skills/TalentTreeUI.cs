@@ -1,7 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 
 public partial class TalentTreeUI : Control
 {
@@ -46,6 +48,10 @@ public partial class TalentTreeUI : Control
     private static readonly Color CorDisponivel = new(0.35f, 0.2f, 0.45f);
     private static readonly Color CorNormal = new(0.08f, 0.08f, 0.12f);
     private static readonly Color CorDesbloqueado = new(0.35f, 0.5f, 0.9f);
+    private static readonly Dictionary<string, SkillResource> SkillCatalogByName = new();
+    private static readonly Dictionary<string, Dictionary<string, string>> TreeIconPathCache = new();
+    private static readonly Dictionary<string, string> SkillIconPathCache = new();
+    private static bool _skillCatalogLoaded;
     private TextureButton _toggleButton;
 
     public override void _ExitTree()
@@ -58,6 +64,7 @@ public partial class TalentTreeUI : Control
     {
         _bgPanel = GetNodeOrNull<Panel>("BgPanel");
         if (_bgPanel == null) { GD.PrintErr("[TALENT] Scene inválida"); return; }
+        EnsureSkillCatalogLoaded();
 
         _titleBar = _bgPanel.GetNodeOrNull<Panel>("TitleBar");
         _pointsLabel = _bgPanel.GetNodeOrNull<Label>("TitleBar/PointsLabel");
@@ -295,6 +302,13 @@ public partial class TalentTreeUI : Control
 
     private void OnBoardGuiInput(InputEvent @event)
     {
+        if (MouseSobreNoTalento())
+        {
+            if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
+                _draggingBoard = false;
+            return;
+        }
+
         if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
         {
             _draggingBoard = mouseEvent.Pressed;
@@ -407,6 +421,8 @@ public partial class TalentTreeUI : Control
         CallDeferred(nameof(CentralizarCanvas));
 
         var slotMap = new Dictionary<string, PanelContainer>();
+        int skillNodesWithVisual = 0;
+        int skillNodesMissingIcon = 0;
         foreach (var node in nodes)
         {
             // As escolhas de status são apresentadas como uma coroa sobre cada skill.
@@ -427,7 +443,16 @@ public partial class TalentTreeUI : Control
             };
             slot.GuiInput += inputEvent => OnTalentNodeGuiInput(inputEvent, id);
             slot.Visible = true;
-            slot.TooltipText = CriarTooltip(node);
+            SkillResource nodeSkill = ObterSkillDoNo(node);
+            if (node.HabilidadeAtiva == null && nodeSkill != null)
+                node.HabilidadeAtiva = nodeSkill;
+            bool isSkillNode = nodeSkill != null || node.NodeType == TalentNodeType.Skill;
+            if (unlocked && isSkillNode)
+                slot.MouseDefaultCursorShape = CursorShape.Move;
+            else if (!unlocked)
+                slot.MouseDefaultCursorShape = CursorShape.PointingHand;
+            var choiceSource = isSkillNode ? ObterEscolhaParaSkill(node, nodes) : null;
+            slot.TooltipText = CriarTooltip(node, unlocked, canUnlock, nodeSkill, choiceSource);
             slot.AnchorLeft = 0;
             slot.AnchorTop = 0;
             slot.AnchorRight = 0;
@@ -437,56 +462,74 @@ public partial class TalentTreeUI : Control
             _board.AddChild(slot);
             slotMap[id] = slot;
 
-            Texture2D nodeIcon = node.Icone ?? node.HabilidadeAtiva?.Icone;
-            if (node.HabilidadeAtiva != null)
+            Texture2D nodeIcon = ObterIconeDoNo(tree, node, nodeSkill);
+            if (nodeSkill != null && nodeSkill.Icone == null && nodeIcon != null)
+                nodeSkill.Icone = nodeIcon;
+            slot.IconTexture = isSkillNode ? null : nodeIcon;
+            slot.FallbackText = isSkillNode ? "" : ObterTextoFallback(node);
+            if (isSkillNode)
             {
+                skillNodesWithVisual++;
+                if (nodeIcon == null)
+                    skillNodesMissingIcon++;
+
                 slot.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
-
-                var skillFrame = new PanelContainer
-                {
-                    Position = new Vector2((SkillClusterWidth - SkillNodeSize) * 0.5f, (SkillClusterHeight - SkillNodeSize) * 0.5f),
-                    Size = Vector2.One * SkillNodeSize,
-                    CustomMinimumSize = Vector2.One * SkillNodeSize,
-                    MouseFilter = MouseFilterEnum.Pass,
-                };
-                slot.AddChild(skillFrame);
-
-                var icon = new TextureRect
-                {
-                    Texture = nodeIcon,
-                    ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-                    MouseFilter = MouseFilterEnum.Ignore,
-                    CustomMinimumSize = Vector2.One * SkillNodeSize,
-                    Size = Vector2.One * SkillNodeSize,
-                };
-                icon.SetAnchorsPreset(LayoutPreset.FullRect);
-                skillFrame.AddChild(icon);
-                CriarFallbackDeIcone(skillFrame, node, nodeIcon);
 
                 Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
                 Color bg = CorNormal;
                 if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
                 else if (canUnlock) { bg = new Color(0.28f, 0.18f, 0.4f); border = CorDisponivel; }
-                Estilo(skillFrame, bg, border, SkillNodeSize);
 
-                var choiceSource = ObterEscolhaParaSkill(node, nodes);
+                var skillFrame = new PanelContainer
+                {
+                    Position = new Vector2((nodeDimensions.X - SkillNodeSize) * 0.5f, (nodeDimensions.Y - SkillNodeSize) * 0.5f),
+                    Size = Vector2.One * SkillNodeSize,
+                    CustomMinimumSize = Vector2.One * SkillNodeSize,
+                    MouseFilter = MouseFilterEnum.Ignore,
+                    TooltipText = slot.TooltipText,
+                    ZIndex = 20,
+                };
+                Estilo(skillFrame, bg, border, SkillNodeSize);
+                slot.AddChild(skillFrame);
+
+                if (nodeIcon != null)
+                {
+                    float iconPadding = 6f;
+                    var icon = new TextureRect
+                    {
+                        Texture = nodeIcon,
+                        Modulate = ObterCorIconeSkill(unlocked, canUnlock),
+                        ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional,
+                        StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+                        MouseFilter = MouseFilterEnum.Ignore,
+                        TooltipText = slot.TooltipText,
+                        ZIndex = 21,
+                        Position = skillFrame.Position + new Vector2(iconPadding, iconPadding),
+                        Size = Vector2.One * (SkillNodeSize - iconPadding * 2f),
+                    };
+                    slot.AddChild(icon);
+                }
+
+                if (!unlocked)
+                {
+                    float iconPadding = 6f;
+                    var darkOverlay = new ColorRect
+                    {
+                        Color = canUnlock ? new Color(0f, 0f, 0f, 0.34f) : new Color(0f, 0f, 0f, 0.58f),
+                        MouseFilter = MouseFilterEnum.Ignore,
+                        TooltipText = slot.TooltipText,
+                        ZIndex = 22,
+                        Position = skillFrame.Position + new Vector2(iconPadding, iconPadding),
+                        Size = Vector2.One * (SkillNodeSize - iconPadding * 2f),
+                    };
+                    slot.AddChild(darkOverlay);
+                }
+
                 if (choiceSource != null)
                     CriarCoroaDeStatus(slot, choiceSource, unlocked, canUnlock);
             }
             else
             {
-                var icon = new TextureRect
-                {
-                    Texture = nodeIcon,
-                    ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-                    MouseFilter = MouseFilterEnum.Ignore,
-                };
-                icon.SetAnchorsPreset(LayoutPreset.FullRect);
-                slot.AddChild(icon);
-                CriarFallbackDeIcone(slot, node, nodeIcon);
-
                 Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
                 Color bg = CorNormal;
                 if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
@@ -499,6 +542,8 @@ public partial class TalentTreeUI : Control
             if (node.NodeId.EndsWith("_rota", StringComparison.Ordinal))
                 CriarRotuloCaminho(node, positions[id]);
         }
+
+        GD.Print($"[TALENT UI] Renderizou {skillNodesWithVisual} nos de skill em '{tree.NomeArvore}'. Sem icone: {skillNodesMissingIcon}.");
 
         foreach (var node in nodes)
         {
@@ -570,11 +615,33 @@ public partial class TalentTreeUI : Control
         if (inputEvent is not InputEventMouseButton mouse || !mouse.Pressed || mouse.ButtonIndex != MouseButton.Left)
             return;
 
-        if (_talentTreeComponent == null || !_talentTreeComponent.PodeDesbloquear(nodeId, _playerNivel))
+        if (_talentTreeComponent == null)
             return;
 
-        _talentTreeComponent.SolicitarDesbloqueioServidor(nodeId);
+        var node = _talentTreeComponent.TalentTree?.ObterNo(nodeId);
+        bool unlocked = _talentTreeComponent.TemNoDesbloqueado(nodeId);
+        bool isUnlockedSkill = unlocked && (node?.HabilidadeAtiva != null || ObterSkillDoNo(node) != null || node?.NodeType == TalentNodeType.Skill);
+        if (isUnlockedSkill)
+        {
+            _draggingBoard = false;
+            return;
+        }
+
         GetViewport().SetInputAsHandled();
+        GD.Print($"[TALENT UI] Solicitando desbloqueio do talento: {nodeId}");
+        _talentTreeComponent.SolicitarDesbloqueioServidor(nodeId);
+    }
+
+    private bool MouseSobreNoTalento()
+    {
+        var hovered = GetViewport()?.GuiGetHoveredControl();
+        while (hovered != null)
+        {
+            if (hovered is TalentNodeSlotUI)
+                return true;
+            hovered = hovered.GetParent() as Control;
+        }
+        return false;
     }
 
     private void ConectarAtualizacaoDaArvore(TalentTreeComponent component)
@@ -875,8 +942,8 @@ public partial class TalentTreeUI : Control
                 Position = new Vector2(startX + index * (SkillStatusNodeSize + 7f), 5f + Math.Abs(index - 1) * 5f),
                 Size = Vector2.One * SkillStatusNodeSize,
                 CustomMinimumSize = Vector2.One * SkillStatusNodeSize,
-                TooltipText = $"{statId}: {value:+0.0;-0.0}\nOpção de status desta habilidade",
-                MouseFilter = MouseFilterEnum.Pass,
+                ZIndex = 3,
+                MouseFilter = MouseFilterEnum.Ignore,
             };
 
             Color border = TalentNodeResource.ObterCorTipo(TalentNodeType.Attribute).Darkened(0.35f);
@@ -917,6 +984,19 @@ public partial class TalentTreeUI : Control
         fallback.AddThemeFontSizeOverride("font_size", node.NodeType == TalentNodeType.Skill ? 22 : 13);
         fallback.AddThemeColorOverride("font_color", new Color(0.88f, 0.9f, 0.94f));
         parent.AddChild(fallback);
+    }
+
+    private static string ObterTextoFallback(TalentNodeResource node)
+    {
+        if (node == null)
+            return "?";
+
+        return node.NodeType switch
+        {
+            TalentNodeType.Skill => "?",
+            TalentNodeType.Unlock => "D",
+            _ => "+",
+        };
     }
 
     private static void CriarOpcoesDeStatus(
@@ -990,21 +1070,265 @@ public partial class TalentTreeUI : Control
             : statId[..Math.Min(3, statId.Length)].ToUpperInvariant();
     }
 
-    private static string CriarTooltip(TalentNodeResource node)
+    private static void EnsureSkillCatalogLoaded()
+    {
+        if (_skillCatalogLoaded)
+            return;
+
+        _skillCatalogLoaded = true;
+        SkillCatalogByName.Clear();
+        CarregarSkillsEm("res://skills/habilidades");
+        GD.Print($"[TALENT] Catalogo visual de skills carregado: {SkillCatalogByName.Count}");
+    }
+
+    private static void CarregarSkillsEm(string path)
+    {
+        using var dir = DirAccess.Open(path);
+        if (dir == null)
+            return;
+
+        dir.ListDirBegin();
+        while (true)
+        {
+            string entry = dir.GetNext();
+            if (string.IsNullOrEmpty(entry))
+                break;
+            if (entry == "." || entry == "..")
+                continue;
+
+            string childPath = $"{path}/{entry}";
+            if (dir.CurrentIsDir())
+            {
+                CarregarSkillsEm(childPath);
+                continue;
+            }
+
+            if (!entry.EndsWith(".tres", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var skill = ResourceLoader.Load<SkillResource>(childPath);
+            if (skill == null || string.IsNullOrWhiteSpace(skill.Nome))
+                continue;
+
+            string key = NormalizarChave(skill.Nome);
+            if (!SkillCatalogByName.ContainsKey(key))
+                SkillCatalogByName[key] = skill;
+        }
+        dir.ListDirEnd();
+    }
+
+    private static SkillResource ObterSkillDoNo(TalentNodeResource node)
+    {
+        if (node == null)
+            return null;
+        if (node.HabilidadeAtiva != null)
+            return node.HabilidadeAtiva;
+
+        EnsureSkillCatalogLoaded();
+        string key = NormalizarChave(node.Nome);
+        if (SkillCatalogByName.TryGetValue(key, out var skill))
+            return skill;
+
+        return null;
+    }
+
+    private static string NormalizarChave(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        string formD = value.Trim().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(formD.Length);
+        foreach (char c in formD)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(char.ToLowerInvariant(c));
+        }
+        return sb.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    private static Texture2D ObterIconeDoNo(TalentTreeResource tree, TalentNodeResource node, SkillResource skill)
+    {
+        if (node == null)
+            return null;
+        if (node.Icone != null)
+            return node.Icone;
+        if (skill?.Icone != null)
+            return skill.Icone;
+        string skillFileIconPath = ObterCaminhoIconeDaSkillPorArquivo(skill);
+        if (!string.IsNullOrWhiteSpace(skillFileIconPath) && ResourceLoader.Exists(skillFileIconPath))
+            return ResourceLoader.Load<Texture2D>(skillFileIconPath);
+        if (tree != null)
+        {
+            var icons = ObterCaminhosIconesDaArvore(tree);
+            if (icons.TryGetValue(node.NodeId ?? "", out string treeIconPath)
+                && !string.IsNullOrWhiteSpace(treeIconPath)
+                && ResourceLoader.Exists(treeIconPath))
+                return ResourceLoader.Load<Texture2D>(treeIconPath);
+        }
+
+        string iconPath = skill?.IconPath;
+        if (!string.IsNullOrWhiteSpace(iconPath) && ResourceLoader.Exists(iconPath))
+            return ResourceLoader.Load<Texture2D>(iconPath);
+
+        return null;
+    }
+
+    private static string ObterCaminhoIconeDaSkillPorArquivo(SkillResource skill)
+    {
+        string skillPath = skill?.ResourcePath ?? "";
+        if (string.IsNullOrWhiteSpace(skillPath))
+            return "";
+        if (SkillIconPathCache.TryGetValue(skillPath, out string cached))
+            return cached;
+
+        SkillIconPathCache[skillPath] = "";
+        if (!FileAccess.FileExists(skillPath))
+            return "";
+
+        string text = FileAccess.GetFileAsString(skillPath);
+        if (string.IsNullOrWhiteSpace(text))
+            return "";
+
+        var match = System.Text.RegularExpressions.Regex.Match(
+            text,
+            "\\[ext_resource[^\\]]*type=\"Texture2D\"[^\\]]*path=\"(?<path>[^\"]+)\"[^\\]]*\\]");
+        if (!match.Success)
+            return "";
+
+        string iconPath = match.Groups["path"].Value;
+        if (string.IsNullOrWhiteSpace(iconPath) || !ResourceLoader.Exists(iconPath))
+            return "";
+
+        SkillIconPathCache[skillPath] = iconPath;
+        GD.Print($"[TALENT UI] Caminho do icone da skill: {skillPath} -> {iconPath}");
+        return iconPath;
+    }
+
+    private static Dictionary<string, string> ObterCaminhosIconesDaArvore(TalentTreeResource tree)
+    {
+        string treePath = tree?.ResourcePath ?? "";
+        if (string.IsNullOrWhiteSpace(treePath))
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        if (TreeIconPathCache.TryGetValue(treePath, out var cached))
+            return cached;
+
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        TreeIconPathCache[treePath] = result;
+
+        if (!FileAccess.FileExists(treePath))
+            return result;
+
+        string text = FileAccess.GetFileAsString(treePath);
+        if (string.IsNullOrWhiteSpace(text))
+            return result;
+
+        var texturePathsById = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(
+            text,
+            "\\[ext_resource[^\\]]*type=\"Texture2D\"[^\\]]*path=\"(?<path>[^\"]+)\"[^\\]]*id=\"(?<id>[^\"]+)\"[^\\]]*\\]"))
+        {
+            texturePathsById[match.Groups["id"].Value] = match.Groups["path"].Value;
+        }
+
+        foreach (System.Text.RegularExpressions.Match block in System.Text.RegularExpressions.Regex.Matches(
+            text,
+            "(?s)\\[sub_resource[^\\]]+\\]\\s*(?<body>.*?)(?=\\n\\[sub_resource|\\n\\[resource\\]|\\z)"))
+        {
+            string body = block.Groups["body"].Value;
+            var nodeMatch = System.Text.RegularExpressions.Regex.Match(body, "(?m)^NodeId\\s*=\\s*\"(?<id>[^\"]+)\"");
+            var iconMatch = System.Text.RegularExpressions.Regex.Match(body, "(?m)^Icone\\s*=\\s*ExtResource\\(\"(?<id>[^\"]+)\"\\)");
+            if (!nodeMatch.Success || !iconMatch.Success)
+                continue;
+
+            string nodeId = nodeMatch.Groups["id"].Value;
+            string iconId = iconMatch.Groups["id"].Value;
+            if (!texturePathsById.TryGetValue(iconId, out string iconPath))
+                continue;
+            if (!ResourceLoader.Exists(iconPath))
+                continue;
+
+            result[nodeId] = iconPath;
+        }
+
+        GD.Print($"[TALENT UI] Caminhos de icones lidos de {treePath}: {result.Count}");
+        return result;
+    }
+
+    private static string CriarTooltip(
+        TalentNodeResource node,
+        bool unlocked,
+        bool canUnlock,
+        SkillResource resolvedSkill,
+        TalentNodeResource choiceSource = null)
     {
         var linhas = new List<string>
         {
             node.Nome,
             TalentNodeResource.ObterRotuloTipo(node.NodeType),
-            node.Descricao,
-            $"Custo: {node.CustoPontos} ponto(s) | Nível: {node.NivelMinimo}",
+            unlocked ? "Status: liberada" : canUnlock ? "Status: disponivel para liberar" : "Status: bloqueada",
+            $"Custo para liberar: {node.CustoPontos} ponto(s)",
+            $"Nivel necessario: {node.NivelMinimo}",
         };
+
+        if (!string.IsNullOrWhiteSpace(node.Descricao))
+            linhas.Add(node.Descricao);
         if (!string.IsNullOrWhiteSpace(node.StatId) && !Mathf.IsZeroApprox(node.BonusValor))
             linhas.Add($"{node.StatId}: {node.BonusValor:+0.0;-0.0}");
         if (node.TemEscolhaDeStatus)
-            linhas.Add("Escolha uma das três opções deste grupo.");
+            linhas.Add("Escolha uma das tres opcoes deste grupo.");
+
+        var skill = resolvedSkill ?? node.HabilidadeAtiva;
+        if (skill != null)
+        {
+            linhas.Add("");
+            linhas.Add($"Skill: {skill.Nome}");
+            if (skill.SkillId > 0)
+                linhas.Add($"ID: {skill.SkillId}");
+            if (!string.IsNullOrWhiteSpace(skill.Descricao))
+                linhas.Add(skill.Descricao);
+            if (skill.Valor != 0)
+                linhas.Add($"Dano/valor: {skill.Valor}");
+            if (!string.IsNullOrWhiteSpace(skill.DanoEscala))
+                linhas.Add($"Escala de dano: {skill.DanoEscala}");
+            if (!string.IsNullOrWhiteSpace(skill.EfeitoPrincipal))
+                linhas.Add($"Efeito: {skill.EfeitoPrincipal}");
+            if (!string.IsNullOrWhiteSpace(skill.Tipo))
+                linhas.Add($"Tipo: {skill.Tipo}");
+            if (!string.IsNullOrWhiteSpace(skill.Escopo))
+                linhas.Add($"Escopo: {skill.Escopo}");
+            if (!string.IsNullOrWhiteSpace(skill.BuffDebuff))
+                linhas.Add($"Buff/Debuff: {skill.BuffDebuff}");
+            if (skill.CustoMana > 0)
+                linhas.Add($"Mana: {skill.CustoMana}");
+            if (skill.Cooldown > 0)
+                linhas.Add($"Cooldown: {skill.Cooldown:0.#}s");
+            if (skill.Duracao > 0)
+                linhas.Add($"Duracao: {skill.Duracao:0.#}s");
+            else if (!string.IsNullOrWhiteSpace(skill.DuracaoTexto))
+                linhas.Add($"Duracao: {skill.DuracaoTexto}");
+            if (skill.NivelRequerido > 1)
+                linhas.Add($"Nivel da skill: {skill.NivelRequerido}");
+            if (!string.IsNullOrWhiteSpace(skill.ClasseRestrita))
+                linhas.Add($"Classe: {skill.ClasseRestrita}");
+            if (!string.IsNullOrWhiteSpace(skill.Progressao))
+                linhas.Add($"Progressao: {skill.Progressao}");
+            if (!string.IsNullOrWhiteSpace(skill.Observacoes))
+                linhas.Add($"Obs: {skill.Observacoes}");
+        }
+
         return string.Join("\n", linhas.Where(l => !string.IsNullOrWhiteSpace(l)));
     }
+
+    private static Color ObterCorIconeSkill(bool unlocked, bool canUnlock)
+    {
+        if (unlocked)
+            return new Color(1.08f, 1.08f, 1.08f, 1f);
+        if (canUnlock)
+            return new Color(0.62f, 0.62f, 0.7f, 0.88f);
+        return new Color(0.32f, 0.32f, 0.38f, 0.72f);
+    }
+
 
     private void CriarRotuloCaminho(TalentNodeResource node, Vector2 center)
     {

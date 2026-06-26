@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/E11.png" id="1_41okg"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Capacete Perdido.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300024
 Nome = "Véu de Valebosque"
 Descricao = "Tecida com fios arcanos de Valebosque, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_41okg")
 QuantidadeMaximaPorSlot = 1
 Tipo = 1
 CategoriaPeso = 0
 NivelRequerido = 20
 Valor = 200
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 5
-HpMin = 4
-HpMax = 6
-Mana = 7
-ManaMin = 6
-ManaMax = 8
 DefesaFisica = 2
 DefesaFisicaMin = 2
 DefesaFisicaMax = 3
 DefesaMagica = 5
 DefesaMagicaMin = 4
 DefesaMagicaMax = 6
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 5
+HpMin = 4
+HpMax = 6
+Mana = 7
+ManaMin = 6
+ManaMax = 8
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

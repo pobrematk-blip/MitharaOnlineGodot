@@ -277,6 +277,9 @@ partial class GameServer
         if (supportSkill)
             return ApplySupportSkill(peer, channel, caster, skill, targetX, targetY);
 
+        if (IsProjectileSkill(caster, skill))
+            return ApplyProjectileSkill(peer, channel, caster, session, skill, targetX, targetY);
+
         float range = skill.TargetType == 0 ? 0f : 720f;
         float dxTarget = targetX - caster.X;
         float dyTarget = targetY - caster.Y;
@@ -333,6 +336,127 @@ partial class GameServer
         }
 
         return true;
+    }
+
+    private bool ApplyProjectileSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float targetX, float targetY)
+    {
+        float dirX = targetX - caster.X;
+        float dirY = targetY - caster.Y;
+        float len = MathF.Sqrt(dirX * dirX + dirY * dirY);
+        if (len < 0.001f)
+        {
+            dirX = caster.DirX;
+            dirY = caster.DirY;
+            len = MathF.Sqrt(dirX * dirX + dirY * dirY);
+        }
+        if (len < 0.001f)
+        {
+            SendSystemMessage(peer, "Vire para uma direcao antes de usar esta habilidade.");
+            return false;
+        }
+
+        dirX /= len;
+        dirY /= len;
+
+        const float projectileRange = 760f;
+        const float projectileRadius = 34f;
+        const float originOffset = 42f;
+        float originX = caster.X + dirX * originOffset;
+        float originY = caster.Y + dirY * originOffset;
+
+        BroadcastProjectileSpawn(channel, caster.Id, originX, originY, dirX, dirY, ProjectileTypeForSkill(caster, skill), includeCaster: true);
+
+        var target = FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, projectileRange, projectileRadius);
+        if (target == null)
+        {
+            SendSystemMessage(peer, $"{skill.Nome}: projetil disparado, mas nao acertou nenhum alvo.");
+            return true;
+        }
+
+        int damage = CalculateSkillDamage(caster, target, skill, out bool isCrit);
+        target.Health = Math.Max(0, target.Health - damage);
+        if (target is PlayerEntity playerTarget)
+        {
+            playerTarget.LastCombatTime = _gameTime;
+            BroadcastPartyMemberUpdateForEntity(playerTarget.Id);
+        }
+        if (target is MonsterEntity hitMob)
+            hitMob.TargetEntityId = caster.Id;
+
+        BroadcastCombatResult(channel, caster.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, caster.X, caster.Y);
+        ApplySkillDebuff(target, skill);
+
+        if (target is MonsterEntity killedMob && target.Health <= 0)
+            HandleMonsterDeath(channel, killedMob, caster, session, target.Id);
+
+        return true;
+    }
+
+    private Entity? FindFirstProjectileHit(Channel channel, PlayerEntity caster, float originX, float originY, float dirX, float dirY, float range, float radius)
+    {
+        return channel.GetEntitiesInAoi(caster.X, caster.Y)
+            .Select(id => channel.GetEntity(id))
+            .Where(e => e != null && e.Health > 0 && e.Id != caster.Id)
+            .Where(e => e is MonsterEntity mob && mob.FactionId != caster.FactionId || e is PlayerEntity p && p.FactionId != caster.FactionId)
+            .Select(e => new { Entity = e!, Hit = ProjectileHitDistance(originX, originY, dirX, dirY, e!.X, e.Y, range) })
+            .Where(x => x.Hit.Along >= 0f && x.Hit.Along <= range && x.Hit.Perpendicular <= radius)
+            .OrderBy(x => x.Hit.Along)
+            .Select(x => x.Entity)
+            .FirstOrDefault();
+    }
+
+    private static (float Along, float Perpendicular) ProjectileHitDistance(float originX, float originY, float dirX, float dirY, float targetX, float targetY, float range)
+    {
+        float relX = targetX - originX;
+        float relY = targetY - originY;
+        float along = relX * dirX + relY * dirY;
+        float clampedAlong = MathF.Max(0f, MathF.Min(range, along));
+        float closestX = originX + dirX * clampedAlong;
+        float closestY = originY + dirY * clampedAlong;
+        float perpX = targetX - closestX;
+        float perpY = targetY - closestY;
+        return (along, MathF.Sqrt(perpX * perpX + perpY * perpY));
+    }
+
+    private static bool IsProjectileSkill(PlayerEntity caster, ServerSkillDefinition skill)
+    {
+        if (skill.EffectType is not (7 or 8 or 9 or 12 or 13 or 15 or 16 or 24 or 25))
+            return false;
+
+        string cls = caster.CharacterClass.ToLowerInvariant();
+        if (cls.Contains("arqueiro") || cls.Contains("mago"))
+            return !skill.IsArea;
+
+        string skillClass = skill.ClasseRestrita.ToLowerInvariant();
+        return (skillClass.Contains("arqueiro") || skillClass.Contains("mago")) && !skill.IsArea;
+    }
+
+    private static byte ProjectileTypeForSkill(PlayerEntity caster, ServerSkillDefinition skill)
+    {
+        string cls = caster.CharacterClass.ToLowerInvariant();
+        return cls.Contains("mago") ? (byte)1 : (byte)0;
+    }
+
+    private void BroadcastProjectileSpawn(Channel channel, ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType, bool includeCaster)
+    {
+        var nearby = channel.GetEntitiesInAoi(originX, originY);
+        foreach (var eid in nearby)
+        {
+            if (!includeCaster && eid == entityId)
+                continue;
+
+            var targetPeer = channel.GetPlayerPeer(eid);
+            if (targetPeer == null) continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_ProjectileSpawn);
+            writer.Put(entityId);
+            writer.Put(originX);
+            writer.Put(originY);
+            writer.Put(dirX);
+            writer.Put(dirY);
+            writer.Put(projectileType);
+            targetPeer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
     }
 
     private bool ApplySupportSkill(NetPeer peer, Channel channel, PlayerEntity caster, ServerSkillDefinition skill, float targetX, float targetY)
@@ -658,7 +782,8 @@ partial class GameServer
         }
 
         bool dropsEquipment = template.DropsNormalEquipment || template.DropsEliteEquipment;
-        if (dropsEquipment)
+        bool rollElite = !template.DropsEliteEquipment || rng.NextDouble() < template.EliteDropChance;
+        if (dropsEquipment && rollElite)
         {
             int equipmentLevel = mob.Level < 10 ? 1 : Math.Min(100, (mob.Level / 10) * 10);
             bool eliteItem = template.DropsEliteEquipment;
@@ -688,7 +813,7 @@ partial class GameServer
             }
         }
 
-        if (goldAmount > 0)
+        if (goldAmount > 0 && rng.NextDouble() < template.GoldDropChance)
         {
             var goldLoot = new LootEntity(mob.X, mob.Y, 0, goldAmount, killer.Id, _gameTime);
             spawnedLoot.Add(goldLoot);

@@ -210,6 +210,7 @@ public class DatabaseManager
             ("item_definitions", "evasion", "REAL NOT NULL DEFAULT 0"),
             ("item_definitions", "definition_data", "TEXT NOT NULL DEFAULT ''"),
             ("accounts", "vip_expiry", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
+            ("characters", "current_map", "VARCHAR(64) NOT NULL DEFAULT 'main'"),
         };
 
         foreach (var (table, column, type) in columns)
@@ -343,7 +344,7 @@ public class DatabaseManager
         conn.Open();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points FROM characters WHERE account_id = @a ORDER BY slot_index";
+        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points, current_map FROM characters WHERE account_id = @a ORDER BY slot_index";
         cmd.Parameters.AddWithValue("@a", accountId);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -366,6 +367,7 @@ public class DatabaseManager
                 BankGold = reader.GetInt32(13),
                 Gold = reader.GetInt32(14),
                 StatPoints = reader.GetInt32(15),
+                CurrentMap = reader.GetString(16),
             });
         }
         return result;
@@ -435,14 +437,15 @@ public class DatabaseManager
         cmd.ExecuteNonQuery();
     }
 
-    public void SaveCharacterPosition(int characterId, float x, float y)
+    public void SaveCharacterPosition(int characterId, float x, float y, string currentMap = "main")
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE characters SET pos_x = @x, pos_y = @y WHERE id = @i";
+        cmd.CommandText = "UPDATE characters SET pos_x = @x, pos_y = @y, current_map = @m WHERE id = @i";
         cmd.Parameters.AddWithValue("@x", x);
         cmd.Parameters.AddWithValue("@y", y);
+        cmd.Parameters.AddWithValue("@m", currentMap);
         cmd.Parameters.AddWithValue("@i", characterId);
         cmd.ExecuteNonQuery();
     }
@@ -983,6 +986,17 @@ public class DatabaseManager
         cmd.ExecuteNonQuery();
     }
 
+    public void DeleteCharacterTalents(int characterId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM character_talents WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
     public int[] GetCharacterSkillSlots(int characterId, int slotCount = 20)
     {
         var result = new int[Math.Max(1, slotCount)];
@@ -1027,6 +1041,17 @@ public class DatabaseManager
             cmd.Parameters.AddWithValue("@k", skillId);
         }
 
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteCharacterSkillSlots(int characterId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM character_skill_slots WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
         cmd.ExecuteNonQuery();
     }
 
@@ -1450,6 +1475,8 @@ public class DatabaseManager
             new() { Id = ItemDefinitions.PergaminhoVip15Dias, Name = "Pergaminho VIP (15 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
             new() { Id = ItemDefinitions.PergaminhoVip30Dias, Name = "Pergaminho VIP (30 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
             new() { Id = ItemDefinitions.PergaminhoVip7DiasTrial, Name = "Pergaminho VIP Trial (7 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.PergaminhoResetTalentos, Name = "Pergaminho de Reset de Talentos", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 100 },
+            new() { Id = ItemDefinitions.PergaminhoDoPet5, Name = "Pergaminho do Pet (5 Tentativas)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
             new() { Id = 1000, Name = "Arco da Primeira Caçada", Type = ItemType.Weapon, RequiredLevel = 1, IsElite = false, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 1, DestrezaMin = 1, DestrezaMax = 2, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 3, BaseAttackMin = 2, BaseAttackMax = 4, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 10, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
             new() { Id = 11000, Name = "Arco da Primeira Caçada", Type = ItemType.Weapon, RequiredLevel = 1, IsElite = true, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 1, DestrezaMin = 1, DestrezaMax = 2, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 3, BaseAttackMin = 2, BaseAttackMax = 5, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 10, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
             new() { Id = 1001, Name = "Arco do Vento Verde", Type = ItemType.Weapon, RequiredLevel = 10, IsElite = false, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 5, DestrezaMin = 4, DestrezaMax = 6, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 13, BaseAttackMin = 11, BaseAttackMax = 15, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 100, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
@@ -2087,6 +2114,7 @@ public class CharacterRow
     public int BankGold { get; set; }
     public int Gold { get; set; }
     public int StatPoints { get; set; }
+    public string CurrentMap { get; set; } = "main";
 }
 
 

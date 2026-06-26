@@ -1,33 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/c20.png" id="1_cno7c"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de montros 1.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300088
 Nome = "Calças do Juramento Antigo"
 Descricao = "Tecida com fios arcanos de Juramento Antigo, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_cno7c")
 QuantidadeMaximaPorSlot = 1
 Tipo = 5
 CategoriaPeso = 0
 NivelRequerido = 70
 Valor = 700
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 32
-HpMin = 27
-HpMax = 37
-Mana = 43
-ManaMin = 37
-ManaMax = 50
 DefesaFisica = 15
 DefesaFisicaMin = 13
 DefesaFisicaMax = 17
 DefesaMagica = 31
 DefesaMagicaMin = 26
 DefesaMagicaMax = 36
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 32
+HpMin = 27
+HpMax = 37
+Mana = 43
+ManaMin = 37
+ManaMax = 50
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

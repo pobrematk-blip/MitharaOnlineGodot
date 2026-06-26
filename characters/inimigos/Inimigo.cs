@@ -229,8 +229,10 @@ public partial class Inimigo : CharacterBody2D
 
         PetID = MobType switch
         {
+            "slime" => 1,
+            "cogumelo" => 2,
             "goblin" => 3,
-            "lobo" => 2,
+            "plantaCarnivora" => 4,
             _ => 0,
         };
     }

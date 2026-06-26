@@ -1,34 +1,31 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/c11.png" id="1_h03qm"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Calca de monstros 2.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300029
 Nome = "Calças de Valebosque"
 Descricao = "Tecida com fios arcanos de Valebosque, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_h03qm")
 QuantidadeMaximaPorSlot = 1
 Tipo = 5
 CategoriaPeso = 0
 TipoItem = 1
 NivelRequerido = 20
 Valor = 200
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 11
-HpMin = 10
-HpMax = 13
-Mana = 15
-ManaMin = 13
-ManaMax = 18
 DefesaFisica = 6
 DefesaFisicaMin = 5
 DefesaFisicaMax = 7
 DefesaMagica = 11
 DefesaMagicaMin = 10
 DefesaMagicaMax = 13
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 11
+HpMin = 10
+HpMax = 13
+Mana = 15
+ManaMin = 13
+ManaMax = 18
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

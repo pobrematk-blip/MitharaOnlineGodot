@@ -259,6 +259,9 @@ partial class GameServer
         bool useInline = session.SelectedCharacter == null;
         var ch = session.SelectedCharacter;
 
+        if (ch != null)
+            session.CurrentMap = ch.CurrentMap;
+
         string name = useInline ? inlineName : ch!.Name;
         string charClass = useInline ? inlineClass : ch!.Class;
         string race = useInline ? inlineRace : ch!.Race;
@@ -331,6 +334,7 @@ partial class GameServer
         ulong entityId = _world.SpawnPlayerInChannel(channelId, player, peer);
         session.EntityId = entityId;
         session.ChannelId = channelId;
+        session.IsTransitioning = false;
 
         // Restore guild membership
         var (guildId, oldEntityId, rank) = _db.GetCharacterGuildData(name);
@@ -541,6 +545,13 @@ partial class GameServer
             return;
         }
 
+
+        if (!ServerTalentCatalog.SpecializationAllowed(player.CharacterClass, node, player.UnlockedTalents, out string lockedSpec))
+        {
+            SendSystemMessage(peer, $"Voce ja escolheu a especializacao {lockedSpec}. Use um Pergaminho de Reset de Talentos para trocar.");
+            SendTalentData(peer, player);
+            return;
+        }
         player.UnlockedTalents.Add(nodeId);
         _db.SaveCharacterTalent(session.SelectedCharacter.Id, nodeId);
         SendTalentData(peer, player);
@@ -654,6 +665,7 @@ internal sealed class ServerTalentNode
     public int SkillId { get; init; }
     public bool TemEscolhaStatus { get; init; }
     public string[] Requisitos { get; init; } = Array.Empty<string>();
+    public string SpecializationKey { get; init; } = "";
 }
 
 internal static class ServerTalentCatalog
@@ -686,6 +698,31 @@ internal static class ServerTalentCatalog
         foreach (string req in node.Requisitos)
             if (!RequirementSatisfied(tree, req, unlocked))
                 return false;
+        return true;
+    }
+
+    public static bool SpecializationAllowed(string className, ServerTalentNode node, HashSet<string> unlocked, out string lockedSpec)
+    {
+        lockedSpec = "";
+        if (string.IsNullOrWhiteSpace(node.SpecializationKey))
+            return true;
+
+        var tree = GetTreeForClass(className);
+        if (tree == null) return false;
+
+        foreach (string unlockedNodeId in unlocked)
+        {
+            if (!tree.TryGetValue(unlockedNodeId, out var unlockedNode))
+                continue;
+            if (string.IsNullOrWhiteSpace(unlockedNode.SpecializationKey))
+                continue;
+            if (string.Equals(unlockedNode.SpecializationKey, node.SpecializationKey, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            lockedSpec = unlockedNode.SpecializationKey;
+            return false;
+        }
+
         return true;
     }
 
@@ -756,6 +793,7 @@ internal static class ServerTalentCatalog
                     SkillId = GetNodeSkillId(body, skillResourceIds),
                     TemEscolhaStatus = body.Contains("StatOptionIds", StringComparison.Ordinal),
                     Requisitos = GetRequirements(body),
+                    SpecializationKey = GetSpecializationKey(nodeId),
                 };
             }
 
@@ -831,5 +869,20 @@ internal static class ServerTalentCatalog
             .Select(m => m.Groups["id"].Value)
             .Where(id => !string.IsNullOrWhiteSpace(id))
             .ToArray();
+    }
+
+    private static string GetSpecializationKey(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId))
+            return "";
+
+        string[] parts = nodeId.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length < 3)
+            return "";
+
+        string key = parts[1];
+        return key.Equals("base", StringComparison.OrdinalIgnoreCase)
+            ? ""
+            : key;
     }
 }
