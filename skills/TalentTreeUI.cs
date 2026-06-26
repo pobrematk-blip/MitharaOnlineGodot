@@ -304,7 +304,7 @@ public partial class TalentTreeUI : Control
     {
         if (MouseSobreNoTalento())
         {
-            if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
+            if (@event is InputEventMouseButton hoveredMouseEvent && hoveredMouseEvent.ButtonIndex == MouseButton.Left)
                 _draggingBoard = false;
             return;
         }

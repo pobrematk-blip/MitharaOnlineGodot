@@ -124,7 +124,7 @@ public partial class PetController : Node
         }
     }
 
-    private void OnEquipamentoAtualizado()
+    public void OnEquipamentoAtualizado()
     {
         if (_equipamento == null) return;
 
@@ -139,6 +139,11 @@ public partial class PetController : Node
             {
                 SpawnPet(petId, petNome);
             }
+            else if (_petNode.PetID != petId)
+            {
+                DespawnPet();
+                SpawnPet(petId, petNome);
+            }
         }
         else
         {
@@ -150,33 +155,19 @@ public partial class PetController : Node
     {
         if (_player == null || !IsInstanceValid(_player)) return;
 
-        string petFileName = petNome.Replace(" ", "");
-        string[] searchPaths = {
-            $"res://Pets/{petFileName}.tres",
-            $"res://Pets/{petFileName}.res",
-        };
-
-        _petResource = null;
-        foreach (var p in searchPaths)
-        {
-            if (ResourceLoader.Exists(p))
-            {
-                _petResource = ResourceLoader.Load<PetResource>(p);
-                if (_petResource != null) break;
-            }
-        }
+        _petResource = CarregarPetResource(petId, petNome);
 
         _petNode = GD.Load<PackedScene>("res://characters/Pets/PetNode.tscn")?.Instantiate<PetNode>();
         if (_petNode == null) return;
 
         _petNode.PetID = petId;
-        _petNode.NomePet = petNome;
+        _petNode.NomePet = _petResource?.Nome ?? petNome;
 
-        string mobType = petNome.ToLowerInvariant();
+        string mobType = NormalizarMobType(_petResource?.AnimPrefix, _petResource?.Nome ?? petNome);
 
         if (_petResource != null)
         {
-            _petNode.AnimPrefix = _petResource.AnimPrefix;
+            _petNode.AnimPrefix = mobType;
             _petNode.TipoPet = _petResource.Tipo;
             _petNode.Velocidade = _petResource.Speed;
             _petNode.AtaqueRange = _petResource.AttackRange;
@@ -202,7 +193,11 @@ public partial class PetController : Node
             var frames = MobSpriteFramesBuilder.GetOrBuild(mobType);
             if (frames == null || frames.GetAnimationNames().Length == 0)
             {
-                frames = CarregarSpriteFramesFallback(mobType, petNome);
+                frames = CarregarSpriteFramesFallback(mobType, _petResource?.Nome ?? petNome);
+            }
+            if ((frames == null || frames.GetAnimationNames().Length == 0) && _petResource != null)
+            {
+                frames = CriarFramesSimples(_petResource, mobType);
             }
             if (frames != null && frames.GetAnimationNames().Length > 0)
                 sprite.SpriteFrames = frames;
@@ -214,13 +209,93 @@ public partial class PetController : Node
         );
 
         _petNode.Scale = new Vector2(2, 2);
-        _player.GetParent().AddChild(_petNode);
+        var parent = GetTree().CurrentScene?.FindChild("World", true, false) as Node;
+        if (parent == null)
+            parent = _player.GetParent();
+        parent?.AddChild(_petNode);
+        if (_petNode.GetParent() == null)
+            AddChild(_petNode);
         _petNode.DefinirModo(PetMode.Seguir);
 
         AtualizarHUD();
         _hudPanel.Visible = true;
 
         GD.Print($"[PET] {petNome} invocado!");
+    }
+
+    private PetResource CarregarPetResource(int petId, string petNome)
+    {
+        string dir = "res://Pets/";
+        var dirAccess = DirAccess.Open(dir);
+        if (dirAccess != null)
+        {
+            dirAccess.ListDirBegin();
+            string fileName = dirAccess.GetNext();
+            while (!string.IsNullOrEmpty(fileName))
+            {
+                if (fileName.EndsWith(".tres") || fileName.EndsWith(".res"))
+                {
+                    string path = dir + fileName;
+                    var res = ResourceLoader.Load<PetResource>(path);
+                    if (res != null && res.PetID == petId)
+                    {
+                        dirAccess.ListDirEnd();
+                        return res;
+                    }
+                }
+                fileName = dirAccess.GetNext();
+            }
+            dirAccess.ListDirEnd();
+        }
+
+        string petFileName = petNome.Replace(" ", "");
+        string[] searchPaths = {
+            $"res://Pets/{petFileName}.tres",
+            $"res://Pets/{petFileName}.res",
+        };
+
+        foreach (var p in searchPaths)
+        {
+            if (ResourceLoader.Exists(p))
+            {
+                var res = ResourceLoader.Load<PetResource>(p);
+                if (res != null) return res;
+            }
+        }
+
+        GD.PrintErr($"[PET] Recurso do pet ID {petId} ('{petNome}') nao encontrado em res://Pets/.");
+        return null;
+    }
+
+    private static string NormalizarMobType(string animPrefix, string petNome)
+    {
+        string value = string.IsNullOrWhiteSpace(animPrefix) ? petNome : animPrefix;
+        return value.Trim().TrimEnd('_').Replace(" ", "").ToLowerInvariant();
+    }
+
+    private static SpriteFrames CriarFramesSimples(PetResource resource, string prefix)
+    {
+        var tex = resource.SpriteAtlas ?? resource.Icone;
+        if (tex == null)
+            return new SpriteFrames();
+
+        var frames = new SpriteFrames();
+        string[] names =
+        {
+            $"{prefix}_idle_down", $"{prefix}_idle_up", $"{prefix}_idle_left", $"{prefix}_idle_right",
+            $"{prefix}_walk_down", $"{prefix}_walk_up", $"{prefix}_walk_left", $"{prefix}_walk_right",
+            $"{prefix}_attack_down", $"{prefix}_attack_up", $"{prefix}_attack_left", $"{prefix}_attack_right",
+        };
+
+        foreach (var name in names)
+        {
+            frames.AddAnimation(name);
+            frames.SetAnimationLoop(name, true);
+            frames.SetAnimationSpeed(name, 1f);
+            frames.AddFrame(name, tex);
+        }
+
+        return frames;
     }
 
     private SpriteFrames CarregarSpriteFramesFallback(string mobType, string petNome)

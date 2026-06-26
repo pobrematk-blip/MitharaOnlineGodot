@@ -26,6 +26,10 @@ public partial class Player : CharacterBody2D
     private AnimatedSprite2D _capaceteOverlay;
     private AnimatedSprite2D _luvasOverlay;
     private AnimatedSprite2D _botasOverlay;
+    private const string ArcoVisualBaseArmas = "res://Itens/aparence/Armas/Arco 1.png";
+    private const string ArcoVisualAtaqueArmas = "res://Itens/aparence/Armas/Arco 1 Attack.png";
+    private const string ArcoVisualBaseFallback = "res://Itens/aparence/Armaduras/Arco 1.png";
+    private const string ArcoVisualAtaqueFallback = "res://Itens/aparence/Armaduras/Arco 1 Attack.png";
     public string CurrentDirection { get; protected set; } = "down";
     protected bool IsAttacking = false;
     private float _attackTimeoutCounter = 0f;
@@ -373,6 +377,35 @@ public partial class Player : CharacterBody2D
             _targetMarker.QueueFree();
         _targetMarker = null;
         _selectedTargetId = null;
+    }
+
+    public bool TryGetSelectedTargetPosition(out Vector2 targetPosition)
+    {
+        targetPosition = Vector2.Zero;
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (!TryGetSelectedTarget(net, out var targetNode, out _))
+            return false;
+
+        targetPosition = targetNode.GlobalPosition;
+        return true;
+    }
+
+    public void ApplyServerPosition(float x, float y, bool animated = false)
+    {
+        var target = new Vector2(x, y);
+        if (animated && IsInsideTree())
+        {
+            var tween = CreateTween();
+            tween.TweenProperty(this, "global_position", target, 0.18f)
+                .SetTrans(Tween.TransitionType.Cubic)
+                .SetEase(Tween.EaseType.Out);
+        }
+        else
+        {
+            GlobalPosition = target;
+        }
+
+        _lastSentPosition = target;
     }
 
     private void OnRespawnReceived(ulong entityId, float x, float y, int health, int maxHealth)
@@ -856,8 +889,55 @@ public partial class Player : CharacterBody2D
                 return;
             }
         }
+
+        if (TentarAplicarVisualArco(overlay, item))
+            return;
+
         overlay.Visible = false;
         overlay.SpriteFrames = null;
+    }
+
+    private bool TentarAplicarVisualArco(AnimatedSprite2D overlay, ItemResource item)
+    {
+        if (overlay == null || item == null)
+            return false;
+
+        if (item.Tipo != TipoEquipamento.Arma || !item.Nome.Contains("Arco", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        Texture2D baseSheet = CarregarTexturaPrimeiroExistente(ArcoVisualBaseArmas, ArcoVisualBaseFallback);
+        Texture2D ataqueSheet = CarregarTexturaPrimeiroExistente(ArcoVisualAtaqueArmas, ArcoVisualAtaqueFallback);
+        if (baseSheet == null && ataqueSheet == null)
+        {
+            GD.PrintErr("[APARENCIA] Nenhuma spritesheet de arco encontrada em Itens/aparence/Armas ou Itens/aparence/Armaduras.");
+            return false;
+        }
+
+        var frames = LpcSpriteFramesBuilder.ConstruirEquipamento(baseSheet, ataqueSheet, NomeDaClasse);
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            return false;
+
+        overlay.SpriteFrames = frames;
+        overlay.ZIndex = 3;
+        overlay.ZAsRelative = true;
+        overlay.Visible = true;
+        GD.Print($"[APARENCIA] Arco aplicado no personagem: base={baseSheet?.ResourcePath ?? "null"} ataque={ataqueSheet?.ResourcePath ?? "null"} animacoes={frames.GetAnimationNames().Length}");
+        SincronizarOverlays();
+        return true;
+    }
+
+    private static Texture2D CarregarTexturaPrimeiroExistente(params string[] paths)
+    {
+        foreach (string path in paths)
+        {
+            if (!string.IsNullOrWhiteSpace(path) && ResourceLoader.Exists(path))
+            {
+                var tex = GD.Load<Texture2D>(path);
+                if (tex != null)
+                    return tex;
+            }
+        }
+        return null;
     }
 
     private void LimparOverlayEquipamento(AnimatedSprite2D overlay)
@@ -882,10 +962,21 @@ public partial class Player : CharacterBody2D
     private void AtualizarOverlaySlot(EquipamentoComponent equipamento, TipoEquipamento tipo, AnimatedSprite2D overlay)
     {
         var slot = equipamento.ObterSlot(tipo);
-        if (slot != null && slot.Item != null && (slot.Item.SpriteFramesEquipamento != null || slot.Item.SpritesheetEquipamento != null))
+        if (slot != null && slot.Item != null && DeveAplicarOverlayEquipamento(slot.Item))
             AplicarOverlayEquipamento(overlay, slot.Item);
         else
             LimparOverlayEquipamento(overlay);
+    }
+
+    private static bool DeveAplicarOverlayEquipamento(ItemResource item)
+    {
+        if (item == null)
+            return false;
+
+        if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
+            return true;
+
+        return item.Tipo == TipoEquipamento.Arma && item.Nome.Contains("Arco", StringComparison.OrdinalIgnoreCase);
     }
 
     private void UpdateAnimation(Vector2 velocity)

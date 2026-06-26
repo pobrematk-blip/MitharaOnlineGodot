@@ -25,6 +25,7 @@ public partial class SlotUI : Control
 
     public SlotInventario SlotInterno { get; private set; }
     public int SlotIndex { get; set; }
+    private bool _draggingFromThisSlot;
 
     public override void _Ready()
     {
@@ -294,6 +295,7 @@ public partial class SlotUI : Control
     public override Variant _GetDragData(Vector2 position)
     {
         if (SlotInterno == null || SlotInterno.Item == null) return default;
+        _draggingFromThisSlot = true;
 
         Vector2 iconSize = ObterTamanhoIcone();
         var preview = new TextureRect
@@ -308,6 +310,28 @@ public partial class SlotUI : Control
 
         SetDragPreview(preview);
         return this;
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what != NotificationDragEnd || !_draggingFromThisSlot)
+            return;
+
+        _draggingFromThisSlot = false;
+        if (GetViewport()?.GuiIsDragSuccessful() == true)
+            return;
+
+        if (ObterContainerUi() != TipoContainerUi.Inventario || EhQualquerSlotBolsa)
+            return;
+
+        if (SlotInterno?.Item == null || SlotInterno.Quantidade <= 0)
+            return;
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet != null && gameNet.IsConnected)
+            gameNet.SendDropItem(SlotIndex, SlotInterno.Quantidade);
+        else
+            GD.PrintErr("[INVENTARIO] Dropar item no chao bloqueado. Conecte ao servidor.");
     }
 
     private double _ultimoCliqueEsquerdo = 0;
@@ -340,7 +364,11 @@ public partial class SlotUI : Control
                 return;
             }
 
-            EquiparItemDoSlot();
+            if (SlotInterno.Item.ItemID >= 100 && SlotInterno.Item.ItemID < 200)
+                UsarItemNoSlot();
+            else
+                EquiparItemDoSlot();
+
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -406,9 +434,9 @@ public partial class SlotUI : Control
         if (SlotInterno?.Item == null) return;
 
         int itemId = SlotInterno.Item.ItemID;
-        string itemNome = SlotInterno.Item.Nome;
 
-        if (itemId == 110 || itemId == 111)
+        if (itemId == 110 || itemId == 111 || itemId == 103 || itemId == 104 || itemId == 105 || itemId == 106
+            || itemId == 108 || itemId == 109 || itemId == 112)
         {
             var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
             if (gameNet == null || !gameNet.IsConnected)
@@ -423,11 +451,32 @@ public partial class SlotUI : Control
         {
             TentarReviverAliadoComPergaminho();
         }
-        else if (itemId == 100 || itemId == 114 || (itemNome != null && itemNome.IndexOf("Pergaminho", StringComparison.OrdinalIgnoreCase) >= 0))
+        else if (itemId == 100 || itemId == 114)
         {
             int maxTent = itemId == 114 ? 5 : 7;
             TentarCapturarPetComPergaminho(maxTent);
         }
+    }
+
+    private CanvasLayer _ObterHUD()
+    {
+        var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
+        if (hud != null) return hud;
+
+        hud = GetNodeOrNull<CanvasLayer>("/root/Main/HUD");
+        if (hud != null) return hud;
+
+        var root = GetTree()?.Root;
+        if (root != null)
+        {
+            for (int i = 0; i < root.GetChildCount(); i++)
+            {
+                var h = root.GetChild(i).FindChild("HUD", true, false) as CanvasLayer;
+                if (h != null)
+                    return h;
+            }
+        }
+        return null;
     }
 
     private void TentarCapturarPetComPergaminho(int maxTent = 7)
@@ -440,9 +489,14 @@ public partial class SlotUI : Control
         }
 
         var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Node2D;
-        if (player == null) return;
+        if (player == null)
+        {
+            GD.PrintErr("[PERGAMINHO] Player não encontrado na cena.");
+            return;
+        }
 
         var inimigos = GetTree().GetNodesInGroup("Inimigos");
+        GD.Print($"[PERGAMINHO] Encontrados {inimigos.Count} inimigos no grupo 'Inimigos'.");
         Inimigo alvo = null;
         float menorDist = 200f;
 
@@ -451,6 +505,8 @@ public partial class SlotUI : Control
             if (node is Inimigo inimigo)
             {
                 float dist = player.GlobalPosition.DistanceTo(inimigo.GlobalPosition);
+                float hpPct = (float)inimigo.VidaAtual / inimigo.VidaMax;
+                GD.Print($"[PERGAMINHO] Inimigo '{inimigo.NomeDoInimigo}' dist={dist:F1} HP={inimigo.VidaAtual}/{inimigo.VidaMax} ({hpPct:P0}) PetID={inimigo.PetID}");
                 if (dist < menorDist && inimigo.VidaAtual > 0 && inimigo.VidaAtual <= inimigo.VidaMax * 0.5f)
                 {
                     menorDist = dist;
@@ -467,62 +523,45 @@ public partial class SlotUI : Control
 
         if (alvo.PetID <= 0)
         {
-            GD.Print("[PERGAMINHO] Este inimigo não pode ser capturado.");
+            GD.Print("[PERGAMINHO] Este inimigo não pode ser capturado (PetID=0).");
             return;
         }
 
         var inventario = ObterInventario();
-        if (inventario == null) return;
+        if (inventario == null)
+        {
+            GD.PrintErr("[PERGAMINHO] InventarioComponent não encontrado no Player.");
+            return;
+        }
 
         string petNome = alvo.NomeDoInimigo;
         int petId = alvo.PetID;
 
         var miniGame = GD.Load<PackedScene>("res://ui/Pets/PetScrollMiniGame.tscn").Instantiate<PetScrollMiniGame>();
-        var hud = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
-        if (hud == null)
-        {
-            var root = GetTree()?.Root;
-            if (root != null)
-            {
-                for (int i = 0; i < root.GetChildCount(); i++)
-                {
-                    var h = root.GetChild(i).FindChild("HUD", true, false) as CanvasLayer;
-                    if (h != null)
-                    {
-                        hud = h;
-                        break;
-                    }
-                }
-            }
-        }
+        var hud = _ObterHUD();
         if (hud != null)
+        {
             hud.AddChild(miniGame);
+            GD.Print("[PERGAMINHO] Minigame adicionado ao HUD.");
+        }
+        else
+        {
+            GD.PrintErr("[PERGAMINHO] HUD não encontrado! Adicionando minigame à cena atual.");
+            GetTree().CurrentScene?.AddChild(miniGame);
+        }
 
         miniGame.Connect(PetScrollMiniGame.SignalName.MiniGameConcluido, Callable.From((int capturedPetId, string capturedPetNome, bool sucesso) =>
         {
-            // Consome o pergaminho (sucesso ou falha)
-            SlotInterno.Quantidade--;
-            if (SlotInterno.Quantidade <= 0)
-            {
-                SlotInterno.Item = null;
-                SlotInterno.Quantidade = 0;
-            }
-            inventario.NotificarMudancaExterna();
+            var gNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gNet != null && gNet.IsConnected)
+                gNet.SendPetCapture(capturedPetId, capturedPetNome, SlotIndex, sucesso);
 
             if (sucesso && IsInstanceValid(alvo))
             {
-                // Registra o pet na coleção
-                var player = GetTree().CurrentScene?.FindChild("Player", true, false);
-                var colecao = player?.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
-                if (colecao != null)
-                    colecao.RegistrarCaptura(capturedPetId, capturedPetNome);
-
-                var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-                if (gameNet != null && gameNet.IsConnected)
-                    gameNet.SendPetCapture(capturedPetId, capturedPetNome);
-
                 alvo.QueueFree();
                 var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+                if (chat == null)
+                    chat = GetNodeOrNull<ChatUI>("/root/Main/HUD/ChatUI");
                 chat?.AddSystemMessage($"Pet '{capturedPetNome}' capturado com sucesso!");
                 GD.Print($"[PERGAMINHO] Pet {capturedPetNome} capturado!");
             }
@@ -604,8 +643,14 @@ public partial class SlotUI : Control
         if (EhQualquerSlotBolsa)
             return slotOrigem.SlotInterno.Item.EhBolsa;
 
-        if (ObterContainerUi() != slotOrigem.ObterContainerUi())
-            return SlotInterno != null && SlotInterno.Item == null;
+        var containerDestino = ObterContainerUi();
+        var containerOrigem = slotOrigem.ObterContainerUi();
+        if (containerDestino != containerOrigem)
+        {
+            if (containerDestino == TipoContainerUi.Banco || containerDestino == TipoContainerUi.Inventario)
+                return SlotInterno == null || SlotInterno.Item == null;
+            return false;
+        }
 
         return true;
     }
@@ -659,7 +704,28 @@ public partial class SlotUI : Control
         // Transferência entre inventário e banco
         if (containerOrigem != containerDestino)
         {
-            GD.PrintErr("[SLOT] Transfer?ncia invent?rio/banco local bloqueada. Use pacotes do servidor.");
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet == null || !gameNet.IsConnected)
+            {
+                GD.PrintErr("[BANCO] Transferencia bloqueada. Conecte ao servidor.");
+                return;
+            }
+
+            if (containerOrigem == TipoContainerUi.Inventario && containerDestino == TipoContainerUi.Banco)
+            {
+                GD.Print($"[BANCO] Enviando deposito de item: invSlot={slotOrigem.SlotIndex} -> bankSlot={SlotIndex}");
+                gameNet.SendBankDepositItem(slotOrigem.SlotIndex, SlotIndex);
+                return;
+            }
+
+            if (containerOrigem == TipoContainerUi.Banco && containerDestino == TipoContainerUi.Inventario)
+            {
+                GD.Print($"[BANCO] Enviando saque de item: bankSlot={slotOrigem.SlotIndex} -> invSlot={SlotIndex}");
+                gameNet.SendBankWithdrawItem(slotOrigem.SlotIndex, SlotIndex);
+                return;
+            }
+
+            GD.PrintErr("[BANCO] Transferencia entre containers nao suportada.");
             return;
         }
 
@@ -674,7 +740,14 @@ public partial class SlotUI : Control
         }
         else if (containerOrigem == TipoContainerUi.Banco)
         {
-            GD.PrintErr("[BANCO] Mover item local bloqueado. Banco deve passar pelo servidor.");
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected)
+            {
+                GD.Print($"[BANCO] Enviando mover item: bankSlot={slotOrigem.SlotIndex} -> bankSlot={SlotIndex}");
+                gameNet.SendBankMoveItem(slotOrigem.SlotIndex, SlotIndex);
+            }
+            else
+                GD.PrintErr("[BANCO] Mover item bloqueado. Conecte ao servidor.");
         }
     }
 

@@ -31,6 +31,8 @@ public class PlayerEntity : Entity
     public int Gold { get; set; }
     public Dictionary<int, double> SkillCooldowns { get; } = new();
     public Dictionary<string, double> ActiveServerBuffs { get; } = new();
+    public float TemporaryPrecisionBonus { get; set; }
+    public float TemporaryCritChanceBonus { get; set; }
     public HashSet<string> UnlockedTalents { get; set; } = new();
     public int[] SkillBarSlots { get; set; } = new int[20];
 
@@ -62,7 +64,7 @@ public class PlayerEntity : Entity
 
     public int FindEmptyInventorySlot()
     {
-        const int maxSlots = 40;
+        const int maxSlots = 30;
         for (int i = 0; i < maxSlots; i++)
         {
             if (!Items.Any(item => item.Slot == i))

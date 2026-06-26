@@ -145,7 +145,7 @@ public partial class DialogUI : Control
         }
     }
 
-    private void AbrirLojinha(ulong lojinhaId, bool isOwner, string ownerName, Godot.Collections.Array<Godot.Collections.Dictionary> items)
+    private void AbrirLojinha(ulong lojinhaId, bool isOwner, string ownerName, string shopName, bool isOpen, int maxSlots, Godot.Collections.Array<Godot.Collections.Dictionary> items)
     {
         Fechar();
         var hud = GetTree().Root.FindChild("HUD", true, false);
@@ -159,7 +159,7 @@ public partial class DialogUI : Control
         if (scene == null) return;
 
         var ui = scene.Instantiate<LojinhaUI>();
-        ui.Setup(lojinhaId, isOwner, ownerName, items);
+        ui.Setup(lojinhaId, isOwner, ownerName, shopName, isOpen, maxSlots, items);
         hud.AddChild(ui);
     }
 

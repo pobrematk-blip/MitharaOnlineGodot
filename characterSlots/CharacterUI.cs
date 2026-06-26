@@ -32,6 +32,9 @@ public partial class CharacterUI : Control
     private Label _petDetalhesStats;
     private int _petSelecionadoId = -1;
     private TextureButton _toggleButton;
+    private static readonly Color PetPanelBg = new(0.015f, 0.018f, 0.026f, 0.88f);
+    private static readonly Color PetPanelBorder = new(0.18f, 0.58f, 0.82f, 0.85f);
+    private static readonly Color PetGold = new(1.0f, 0.86f, 0.12f, 1f);
 
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
@@ -164,23 +167,28 @@ public partial class CharacterUI : Control
         var vbox = new VBoxContainer();
         vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         vbox.SizeFlagsVertical = SizeFlags.ExpandFill;
+        vbox.AddThemeConstantOverride("separation", 8);
 
-        var gridWrapper = new Control();
+        var gridWrapper = new Panel();
         gridWrapper.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         gridWrapper.SizeFlagsVertical = SizeFlags.ExpandFill;
+        gridWrapper.AddThemeStyleboxOverride("panel", CriarPetStyle(PetPanelBg, PetPanelBorder, 6, 1));
 
         _petGrid = new GridContainer();
         _petGrid.Name = "PetGrid";
         _petGrid.Columns = 3;
         _petGrid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _petGrid.SizeFlagsVertical = SizeFlags.ExpandFill;
+        _petGrid.AddThemeConstantOverride("h_separation", 8);
+        _petGrid.AddThemeConstantOverride("v_separation", 8);
+        _petGrid.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 10);
 
         var gridLabel = new Label();
         gridLabel.Text = "Selecione um pet para ver os detalhes";
         gridLabel.HorizontalAlignment = HorizontalAlignment.Center;
         gridLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         gridLabel.SizeFlagsVertical = SizeFlags.ExpandFill;
-        gridLabel.Modulate = new Color(0.6f, 0.6f, 0.6f);
+        gridLabel.Modulate = new Color(0.85f, 0.9f, 1f);
         _petGrid.AddChild(gridLabel);
 
         gridWrapper.AddChild(_petGrid);
@@ -189,14 +197,16 @@ public partial class CharacterUI : Control
         var separator = new HSeparator();
         vbox.AddChild(separator);
 
-        _petDetalhesPanel = new Control();
+        _petDetalhesPanel = new Panel();
         _petDetalhesPanel.Name = "PetDetalhes";
         _petDetalhesPanel.CustomMinimumSize = new Vector2(0, 160);
         _petDetalhesPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        ((Panel)_petDetalhesPanel).AddThemeStyleboxOverride("panel", CriarPetStyle(new Color(0.02f, 0.025f, 0.036f, 0.90f), PetPanelBorder, 6, 1));
 
         var detalhesScroll = new ScrollContainer();
         detalhesScroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         detalhesScroll.SizeFlagsVertical = SizeFlags.ExpandFill;
+        detalhesScroll.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 8);
         _petDetalhesPanel.AddChild(detalhesScroll);
 
         var detalhesHBox = new HBoxContainer();
@@ -214,15 +224,18 @@ public partial class CharacterUI : Control
 
         _petDetalhesNome = new Label();
         _petDetalhesNome.AddThemeFontSizeOverride("font_size", 18);
+        _petDetalhesNome.AddThemeColorOverride("font_color", PetGold);
         detalhesVBox.AddChild(_petDetalhesNome);
 
         _petDetalhesDescricao = new Label();
         _petDetalhesDescricao.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _petDetalhesDescricao.SizeFlagsVertical = SizeFlags.ExpandFill;
+        _petDetalhesDescricao.AddThemeColorOverride("font_color", new Color(0.86f, 0.91f, 1f, 1f));
         detalhesVBox.AddChild(_petDetalhesDescricao);
 
         _petDetalhesStats = new Label();
         _petDetalhesStats.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        _petDetalhesStats.AddThemeColorOverride("font_color", new Color(0.95f, 0.82f, 0.24f, 1f));
         detalhesVBox.AddChild(_petDetalhesStats);
 
         _petDetalhesPanel.Visible = false;
@@ -289,6 +302,9 @@ public partial class CharacterUI : Control
             var petBtn = new Button();
             petBtn.CustomMinimumSize = new Vector2(80, 80);
             petBtn.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+            petBtn.AddThemeStyleboxOverride("normal", CriarPetStyle(new Color(0.02f, 0.025f, 0.035f, 0.92f), new Color(0.15f, 0.48f, 0.72f, 0.95f), 5, 1));
+            petBtn.AddThemeStyleboxOverride("hover", CriarPetStyle(new Color(0.04f, 0.06f, 0.085f, 0.96f), new Color(0.36f, 0.78f, 1f, 1f), 5, 1));
+            petBtn.AddThemeStyleboxOverride("pressed", CriarPetStyle(new Color(0.07f, 0.08f, 0.10f, 1f), PetGold, 5, 1));
 
             var vbox = new VBoxContainer();
             vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -302,6 +318,7 @@ public partial class CharacterUI : Control
             nome.Text = entry.Nome;
             nome.HorizontalAlignment = HorizontalAlignment.Center;
             nome.AddThemeFontSizeOverride("font_size", 10);
+            nome.AddThemeColorOverride("font_color", PetGold);
             nome.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 
             vbox.AddChild(icon);
@@ -381,10 +398,15 @@ public partial class CharacterUI : Control
         }
 
         var slotAtual = _equipamento.ObterSlot(TipoEquipamento.Pet);
-        if (slotAtual != null && slotAtual.Item != null)
+        if (slotAtual == null)
         {
-            GD.Print("[CHARACTER] Ja existe um pet ativo. Remova-o primeiro.");
-            return;
+            slotAtual = new SlotInventario();
+            _equipamento.ItensEquipados[TipoEquipamento.Pet] = slotAtual;
+        }
+        if (slotAtual != null && slotAtual.Item != null && (slotAtual.Item.ItemID - 200) != petId)
+        {
+            slotAtual.Item = null;
+            slotAtual.Quantidade = 0;
         }
 
         var pets = _petColecao.GetPets();
@@ -405,6 +427,7 @@ public partial class CharacterUI : Control
             ItemID = 200 + entry.PetID,
             Nome = entry.Nome,
             Descricao = entry.Recurso?.Descricao ?? $"Pet: {entry.Nome}",
+            Icone = entry.Recurso?.Icone,
             Tipo = TipoEquipamento.Pet,
             Acumulavel = false,
             QuantidadeMaximaPorSlot = 1,
@@ -414,10 +437,29 @@ public partial class CharacterUI : Control
         {
             slotAtual.Item = itemPet;
             slotAtual.Quantidade = 1;
+            _equipamento.RecalcularBonusEquipamentos();
             _equipamento.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
+            var controller = _player?.FindChild("PetController", true, false) as PetController;
+            controller?.CallDeferred("OnEquipamentoAtualizado");
         }
 
         GD.Print($"[CHARACTER] Pet '{entry.Nome}' spawnado!");
+    }
+
+    private static StyleBoxFlat CriarPetStyle(Color bg, Color border, int radius, int borderWidth)
+    {
+        var style = new StyleBoxFlat();
+        style.BgColor = bg;
+        style.BorderColor = border;
+        style.BorderWidthTop = borderWidth;
+        style.BorderWidthBottom = borderWidth;
+        style.BorderWidthLeft = borderWidth;
+        style.BorderWidthRight = borderWidth;
+        style.CornerRadiusTopLeft = radius;
+        style.CornerRadiusTopRight = radius;
+        style.CornerRadiusBottomLeft = radius;
+        style.CornerRadiusBottomRight = radius;
+        return style;
     }
 
     private void OnCloseButtonPressed()

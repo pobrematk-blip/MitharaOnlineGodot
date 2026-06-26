@@ -28,12 +28,20 @@ partial class GameServer
             return;
         }
 
-        bool isOwner = lojinha.OwnerEntityId == player.Id;
+        bool isOwner = IsLojinhaOwner(peer, player, lojinha);
+        if (!isOwner && !lojinha.IsOpen)
+        {
+            SendSystemMessage(peer, "Esta lojinha ainda nao foi aberta pelo dono.");
+            return;
+        }
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_OpenLojinha);
         writer.Put(lojinha.Id);
         writer.Put(isOwner);
         writer.Put(lojinha.OwnerName);
+        writer.Put(NomeDaLojinha(lojinha));
+        writer.Put(lojinha.IsOpen);
+        writer.Put(lojinha.MaxSlots);
         writer.Put(lojinha.Items.Count);
         foreach (var item in lojinha.Items)
         {
@@ -61,7 +69,7 @@ partial class GameServer
             return;
         }
 
-        if (lojinha.OwnerEntityId != player.Id)
+        if (!IsLojinhaOwner(peer, player, lojinha))
         {
             SendSystemMessage(peer, "Você não é o dono desta lojinha.");
             return;
@@ -146,7 +154,7 @@ partial class GameServer
             return;
         }
 
-        if (lojinha.OwnerEntityId != player.Id)
+        if (!IsLojinhaOwner(peer, player, lojinha))
         {
             SendSystemMessage(peer, "Você não é o dono desta lojinha.");
             return;
@@ -191,9 +199,15 @@ partial class GameServer
             return;
         }
 
-        if (lojinha.OwnerEntityId == player.Id)
+        if (IsLojinhaOwner(peer, player, lojinha))
         {
             SendSystemMessage(peer, "Você não pode comprar da sua própria lojinha.");
+            return;
+        }
+
+        if (!lojinha.IsOpen)
+        {
+            SendSystemMessage(peer, "Esta lojinha ainda nao esta aberta.");
             return;
         }
 
@@ -262,7 +276,7 @@ partial class GameServer
             return;
         }
 
-        if (lojinha.OwnerEntityId != player.Id)
+        if (!IsLojinhaOwner(peer, player, lojinha))
         {
             SendSystemMessage(peer, "Você não é o dono desta lojinha.");
             return;
@@ -298,7 +312,7 @@ partial class GameServer
         if (!channel.Lojinhas.TryGetValue(lojinhaEntityId, out var lojinha))
             return;
 
-        if (lojinha.OwnerEntityId != player.Id)
+        if (!IsLojinhaOwner(peer, player, lojinha))
         {
             SendSystemMessage(peer, "Você não é o dono desta lojinha.");
             return;
@@ -332,7 +346,7 @@ partial class GameServer
         var channel = _world.GetChannel(session.ChannelId);
         if (channel == null) return;
 
-        var allLojinhas = channel.Lojinhas.Values.ToList();
+        var allLojinhas = channel.Lojinhas.Values.Where(l => l.IsOpen).ToList();
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_LojinhaListResult);
         writer.Put(allLojinhas.Count);
@@ -340,6 +354,8 @@ partial class GameServer
         {
             writer.Put(loja.Id);
             writer.Put(loja.OwnerName);
+            writer.Put(NomeDaLojinha(loja));
+            writer.Put(loja.IsOpen);
             writer.Put(loja.X);
             writer.Put(loja.Y);
             writer.Put(loja.ChannelId);
@@ -364,6 +380,9 @@ partial class GameServer
         writer.Put(lojinha.Id);
         writer.Put(isOwner);
         writer.Put(lojinha.OwnerName);
+        writer.Put(NomeDaLojinha(lojinha));
+        writer.Put(lojinha.IsOpen);
+        writer.Put(lojinha.MaxSlots);
         writer.Put(lojinha.GoldEarned);
         writer.Put(lojinha.Items.Count);
         foreach (var item in lojinha.Items)
@@ -385,22 +404,92 @@ partial class GameServer
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
+    private void HandleLojinhaConfigure(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var player, out var channel)) return;
+
+        ulong lojinhaEntityId = reader.GetULong();
+        string shopName = LimparNomeLojinha(reader.GetString());
+        bool abrir = reader.GetBool();
+
+        if (!channel.Lojinhas.TryGetValue(lojinhaEntityId, out var lojinha))
+        {
+            SendSystemMessage(peer, "Esta lojinha nao existe mais.");
+            return;
+        }
+
+        if (!IsLojinhaOwner(peer, player, lojinha))
+        {
+            SendSystemMessage(peer, "Voce nao e o dono desta lojinha.");
+            return;
+        }
+
+        if (abrir && lojinha.Items.Count == 0)
+        {
+            SendSystemMessage(peer, "Coloque pelo menos um item antes de abrir a lojinha.");
+            return;
+        }
+
+        lojinha.ShopName = shopName;
+        lojinha.IsOpen = abrir;
+        _db.UpdateLojinhaConfig(lojinha.DbId, lojinha.ShopName, lojinha.IsOpen);
+
+        SendLojinhaData(peer, lojinha, true);
+        BroadcastLojinhaSpawn(lojinha, channel);
+        SendSystemMessage(peer, abrir ? "Lojinha aberta para outros jogadores." : "Lojinha salva como rascunho.");
+    }
+
     private void BroadcastLojinhaSpawn(LojinhaEntity lojinha, Channel channel)
     {
         var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
-        w.Put(lojinha.Id);
-        w.Put(lojinha.OwnerName);
-        w.Put(lojinha.X);
-        w.Put(lojinha.Y);
+        WriteLojinhaSpawnPacket(w, lojinha);
         foreach (var eid in channel.GetEntitiesInAoi(lojinha.X, lojinha.Y))
         {
             var p = channel.GetPlayerPeer(eid);
             p?.Send(w, DeliveryMethod.ReliableOrdered);
             w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
-            w.Put(lojinha.Id);
-            w.Put(lojinha.OwnerName);
-            w.Put(lojinha.X);
-            w.Put(lojinha.Y);
+            WriteLojinhaSpawnPacket(w, lojinha);
         }
+    }
+
+    private void SendLojinhaSpawnToPeer(NetPeer peer, LojinhaEntity lojinha)
+    {
+        var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
+        WriteLojinhaSpawnPacket(w, lojinha);
+        peer.Send(w, DeliveryMethod.ReliableOrdered);
+    }
+
+    private static void WriteLojinhaSpawnPacket(NetDataWriter writer, LojinhaEntity lojinha)
+    {
+        writer.Put(lojinha.Id);
+        writer.Put(lojinha.OwnerName);
+        writer.Put(NomeDaLojinha(lojinha));
+        writer.Put(lojinha.OwnerClass);
+        writer.Put(lojinha.OwnerRace);
+        writer.Put(lojinha.IsOpen);
+        writer.Put(lojinha.X);
+        writer.Put(lojinha.Y);
+    }
+
+    private static string NomeDaLojinha(LojinhaEntity lojinha)
+    {
+        return string.IsNullOrWhiteSpace(lojinha.ShopName) ? $"Loja de {lojinha.OwnerName}" : lojinha.ShopName;
+    }
+
+    private static string LimparNomeLojinha(string nome)
+    {
+        nome = (nome ?? "").Trim();
+        if (nome.Length == 0) return "Lojinha";
+        if (nome.Length > 32) nome = nome[..32];
+        return nome;
+    }
+
+    private bool IsLojinhaOwner(NetPeer peer, PlayerEntity player, LojinhaEntity lojinha)
+    {
+        if (lojinha.OwnerEntityId == player.Id)
+            return true;
+        return _sessions.TryGetValue(peer, out var session)
+            && session.SelectedCharacter != null
+            && session.SelectedCharacter.Id == lojinha.OwnerCharacterId;
     }
 }

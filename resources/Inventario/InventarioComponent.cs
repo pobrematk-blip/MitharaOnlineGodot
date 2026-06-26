@@ -181,16 +181,45 @@ public partial class InventarioComponent : Node
 
         if (novoItem.Acumulavel)
         {
+            int restante = quantidade;
+            int maxStack = Math.Max(1, novoItem.QuantidadeMaximaPorSlot);
+
             foreach (var slot in Slots)
             {
-                if (slot.Item != null && slot.Item.ItemID == novoItem.ItemID && slot.Quantidade < slot.Item.QuantidadeMaximaPorSlot)
+                if (slot.Item != null && slot.Item.ItemID == novoItem.ItemID && slot.Quantidade < maxStack)
                 {
-                    slot.Quantidade += quantidade;
-                    GD.Print($"[INVENTÁRIO] Adicionado {quantidade}x {novoItem.Nome} ao slot existente. Total: {slot.Quantidade}");
-                    EmitSignal(SignalName.InventarioAtualizado);
-                    return true;
+                    int adicionar = Math.Min(restante, maxStack - slot.Quantidade);
+                    slot.Quantidade += adicionar;
+                    restante -= adicionar;
+                    GD.Print($"[INVENTÁRIO] Adicionado {adicionar}x {novoItem.Nome} ao slot existente. Total: {slot.Quantidade}");
+                    if (restante <= 0)
+                    {
+                        EmitSignal(SignalName.InventarioAtualizado);
+                        return true;
+                    }
                 }
             }
+
+            for (int i = 0; i < Slots.Count && restante > 0; i++)
+            {
+                if (Slots[i].Item != null)
+                    continue;
+
+                int adicionar = Math.Min(restante, maxStack);
+                Slots[i].Item = novoItem;
+                Slots[i].Quantidade = adicionar;
+                restante -= adicionar;
+                GD.Print($"[INVENTÁRIO] {novoItem.Nome} x{adicionar} colocado no Slot {i}!");
+            }
+
+            if (restante <= 0)
+            {
+                EmitSignal(SignalName.InventarioAtualizado);
+                return true;
+            }
+
+            GD.Print("[INVENTÁRIO] Inventário cheio! Não foi possível coletar: ", novoItem.Nome);
+            return false;
         }
 
         for (int i = 0; i < Slots.Count; i++)
@@ -198,7 +227,7 @@ public partial class InventarioComponent : Node
             if (Slots[i].Item == null)
             {
                 Slots[i].Item = novoItem;
-                Slots[i].Quantidade = quantidade; // CORRIGIDO: Atribuição limpa sem variáveis inexistentes
+                Slots[i].Quantidade = quantidade;
                 GD.Print($"[INVENTÁRIO] {novoItem.Nome} colocado no Slot {i}!");
                 EmitSignal(SignalName.InventarioAtualizado);
                 return true;

@@ -13,8 +13,8 @@ public partial class BancoUI : Control
     private Label _infoCapacidade;
 
     private BancoComponent _bancoAlvo;
-    private readonly List<SlotUI> _slotsVisuais = new List<SlotUI>();
-    private readonly List<SlotUI> _slotsBolsasVisuais = new List<SlotUI>();
+    private readonly List<SlotUI> _slotsVisuais = new();
+    private readonly List<SlotUI> _slotsBolsasVisuais = new();
 
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
@@ -26,6 +26,7 @@ public partial class BancoUI : Control
     private Button _depositButton;
     private Button _withdrawButton;
     private Label _goldResult;
+    private Godot.Collections.Array<Godot.Collections.Dictionary> _pendingServerItems;
 
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
@@ -86,27 +87,26 @@ public partial class BancoUI : Control
         }
     }
 
-    private void OnBankData(int onHandGold, int bankGold)
+    private void OnBankData(int onHandGold, int bankGold, Godot.Collections.Array<Godot.Collections.Dictionary> items)
     {
-        _goldOnHand.Text = $"Mãos: {onHandGold}";
+        bool estavaFechado = !_panel.Visible;
+        _goldOnHand.Text = $"Maos: {onHandGold}";
         _goldInBank.Text = $"Banco: {bankGold}";
-        _goldAmount.Value = 10;
+        if (estavaFechado)
+            _goldAmount.Value = 10;
         _goldResult.Text = "";
         _panel.Visible = true;
-        CentralizarPainelNaTela();
+        _pendingServerItems = items;
+        if (_bancoAlvo != null && _gameNet?.ItemDB != null)
+            _bancoAlvo.AplicarDadosServidor(items, _gameNet.ItemDB);
+        if (estavaFechado)
+            CentralizarPainelNaTela();
     }
 
     private void OnBankResult(bool success, string message)
     {
         _goldResult.Text = message;
-        if (success)
-        {
-            _goldResult.AddThemeColorOverride("font_color", new Color(0, 1, 0));
-        }
-        else
-        {
-            _goldResult.AddThemeColorOverride("font_color", new Color(1, 0.3f, 0.3f));
-        }
+        _goldResult.AddThemeColorOverride("font_color", success ? new Color(0, 1, 0) : new Color(1, 0.3f, 0.3f));
     }
 
     private void FecharPainel()
@@ -143,20 +143,22 @@ public partial class BancoUI : Control
         var player = GetTree().CurrentScene.FindChild("Player", true, false);
         if (player == null)
         {
-            GD.PrintErr("[BANCO UI] Player não encontrado!");
+            GD.PrintErr("[BANCO UI] Player nao encontrado!");
             return;
         }
 
         _bancoAlvo = player.FindChild("BancoComponent", true, false) as BancoComponent;
         if (_bancoAlvo == null)
         {
-            GD.PrintErr("[BANCO UI] Player não tem BancoComponent!");
+            GD.PrintErr("[BANCO UI] Player nao tem BancoComponent!");
             return;
         }
 
         MapearSlotsBolsasDoEditor();
         _bancoAlvo.BancoAtualizado += DesenharInterface;
         InicializarGrade();
+        if (_pendingServerItems != null && _gameNet?.ItemDB != null)
+            _bancoAlvo.AplicarDadosServidor(_pendingServerItems, _gameNet.ItemDB);
     }
 
     private void MapearSlotsBolsasDoEditor()
@@ -169,7 +171,7 @@ public partial class BancoUI : Control
             string nome = $"SlotBolsaBanco_{i}";
             if (!_containerBolsas.HasNode(nome))
             {
-                GD.PrintErr($"[BANCO UI] Slot '{nome}' não encontrado!");
+                GD.PrintErr($"[BANCO UI] Slot '{nome}' nao encontrado!");
                 continue;
             }
 
@@ -192,6 +194,7 @@ public partial class BancoUI : Control
         for (int i = 0; i < _bancoAlvo.TamanhoDoBanco; i++)
         {
             SlotUI slot = SlotUIPrefab.Instantiate<SlotUI>();
+            slot.SlotIndex = i;
             _gridContainer.AddChild(slot);
             _slotsVisuais.Add(slot);
         }

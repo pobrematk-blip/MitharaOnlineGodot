@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class SkillBarUI : Control
 {
@@ -20,6 +21,9 @@ public partial class SkillBarUI : Control
     private LevelProgressionComponent _xpLevelComp;
     private PlayerSkillComponent _skillComp;
     private bool _connectRetryScheduled;
+    private HBoxContainer _buffContainer;
+    private readonly Dictionary<int, BuffIconUI> _activeBuffIcons = new();
+    private VipIconUI _vipIcon;
 
     private static readonly string[] NumKeys = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
     private static readonly string[] FuncKeys = { "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10" };
@@ -29,6 +33,14 @@ public partial class SkillBarUI : Control
         BuildUI();
         RegisterInputActions();
         CallDeferred(nameof(ConnectXpBar));
+        CallDeferred(nameof(ConnectVipStatus));
+    }
+
+    public override void _ExitTree()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+            net.OnVipStatus -= OnVipStatus;
     }
 
     private void BuildUI()
@@ -220,6 +232,49 @@ public partial class SkillBarUI : Control
         };
     }
 
+    private void ConnectVipStatus()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null)
+            return;
+
+        net.OnVipStatus -= OnVipStatus;
+        net.OnVipStatus += OnVipStatus;
+        if (net.VipExpiryBinary != 0)
+            OnVipStatus(net.VipExpiryBinary);
+    }
+
+    private void OnVipStatus(long expiryBinary)
+    {
+        var expiry = DateTime.FromBinary(expiryBinary);
+        if (expiry <= DateTime.UtcNow)
+        {
+            if (_vipIcon != null && IsInstanceValid(_vipIcon))
+                _vipIcon.QueueFree();
+            _vipIcon = null;
+            return;
+        }
+
+        EnsureBuffContainer();
+        if (_buffContainer == null)
+            return;
+
+        if (_vipIcon != null && IsInstanceValid(_vipIcon))
+        {
+            _vipIcon.Restart(expiry);
+            return;
+        }
+
+        _vipIcon = new VipIconUI(expiry);
+        _vipIcon.Expired += () =>
+        {
+            if (_vipIcon != null && IsInstanceValid(_vipIcon))
+                _vipIcon.QueueFree();
+            _vipIcon = null;
+        };
+        _buffContainer.AddChild(_vipIcon);
+    }
+
     private void UpdateXpBar()
     {
         if (_xpLevelComp == null) return;
@@ -365,10 +420,18 @@ public partial class SkillBarUI : Control
         string slotId = row == 0 ? $"F{col + 1}" : (col < 9 ? $"{col + 1}" : "0");
 
         GD.Print($"[SKILL BAR] Slot [{slotId}] activated!");
+        var slot = _slots[row, col];
+        if (slot == null)
+            return;
+        if (slot.IsCoolingDown)
+        {
+            GD.Print($"[SKILL BAR] Slot [{slotId}] ainda em cooldown.");
+            return;
+        }
 
-        _slots[row, col].Modulate = new Color(1.6f, 1.6f, 1.3f);
+        slot.Modulate = new Color(1.6f, 1.6f, 1.3f);
         var tween = CreateTween();
-        tween.TweenProperty(_slots[row, col], "modulate", Colors.White, 0.12f);
+        tween.TweenProperty(slot, "modulate", Colors.White, 0.12f);
 
         // Tenta ativar skill via PlayerSkillComponent
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node;
@@ -379,8 +442,33 @@ public partial class SkillBarUI : Control
             {
                 int slotIndex = row * SLOT_COUNT + col;
                 comp.ActivateSlotIndex(slotIndex);
+                var skill = slot.AssignedSkill;
+                if (skill != null)
+                {
+                    slot.StartCooldown(skill.Cooldown);
+                    MostrarBuffSeNecessario(skill);
+                    AplicarBonusVisualMiraApurada(player, skill);
+                }
             }
         }
+    }
+
+    private void AplicarBonusVisualMiraApurada(Node player, SkillResource skill)
+    {
+        if (skill.SkillId != 10202)
+            return;
+
+        var equipamento = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+        if (equipamento == null)
+            return;
+
+        equipamento.SetBonusTemporarioMiraApurada(15f, 15f);
+        var timer = GetTree().CreateTimer(Mathf.Max(0.1f, skill.Duracao));
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(equipamento))
+                equipamento.SetBonusTemporarioMiraApurada(0f, 0f);
+        };
     }
 
     // Assign a skill to a slot (called by slot UI on drop)
@@ -533,5 +621,270 @@ public partial class SkillBarUI : Control
                 return;
             }
         }
+    }
+
+    private void MostrarBuffSeNecessario(SkillResource skill)
+    {
+        if (skill == null || skill.Duracao <= 0f || skill.Icone == null)
+            return;
+
+        bool looksLikeBuff = skill.EffectType is SkillEffectType.Buff
+            or SkillEffectType.Heal
+            or SkillEffectType.Shield
+            or SkillEffectType.Invincibility
+            or SkillEffectType.Reflect
+            || !string.IsNullOrWhiteSpace(skill.BuffDebuff)
+            || !string.IsNullOrWhiteSpace(skill.BuffType);
+        if (!looksLikeBuff)
+            return;
+
+        EnsureBuffContainer();
+        if (_buffContainer == null)
+            return;
+
+        if (_activeBuffIcons.TryGetValue(skill.SkillId, out var existing) && IsInstanceValid(existing))
+        {
+            existing.Restart(skill.Duracao);
+            return;
+        }
+
+        var icon = new BuffIconUI(skill);
+        icon.Expired += () =>
+        {
+            _activeBuffIcons.Remove(skill.SkillId);
+            icon.QueueFree();
+        };
+        _activeBuffIcons[skill.SkillId] = icon;
+        _buffContainer.AddChild(icon);
+    }
+
+    private void EnsureBuffContainer()
+    {
+        if (_buffContainer != null && IsInstanceValid(_buffContainer))
+        {
+            AtualizarPosicaoBuffContainer();
+            return;
+        }
+
+        var parent = GetParent();
+        if (parent == null)
+            return;
+
+        _buffContainer = new HBoxContainer
+        {
+            Name = "PlayerBuffBar",
+            MouseFilter = MouseFilterEnum.Ignore,
+            ZIndex = 120,
+        };
+        _buffContainer.AddThemeConstantOverride("separation", 5);
+        parent.AddChild(_buffContainer);
+        AtualizarPosicaoBuffContainer();
+    }
+
+    private void AtualizarPosicaoBuffContainer()
+    {
+        if (_buffContainer == null || !IsInstanceValid(_buffContainer))
+            return;
+
+        var playerHud = GetTree()?.CurrentScene?.FindChild("PlayerHud", true, false) as Control;
+        if (playerHud != null)
+            _buffContainer.Position = playerHud.GlobalPosition + new Vector2(64f, playerHud.Size.Y + 6f);
+        else
+            _buffContainer.Position = new Vector2(78f, 124f);
+    }
+}
+
+public partial class BuffIconUI : Panel
+{
+    public event Action Expired;
+
+    private readonly SkillResource _skill;
+    private float _remaining;
+    private Label _label;
+
+    public BuffIconUI(SkillResource skill)
+    {
+        _skill = skill;
+        _remaining = skill?.Duracao ?? 0f;
+        CustomMinimumSize = new Vector2(34, 34);
+        Size = new Vector2(34, 34);
+        MouseFilter = MouseFilterEnum.Ignore;
+    }
+
+    public override void _Ready()
+    {
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(0.03f, 0.035f, 0.05f, 0.86f),
+            BorderColor = new Color(0.55f, 0.72f, 1f, 0.9f),
+            BorderWidthBottom = 1,
+            BorderWidthLeft = 1,
+            BorderWidthRight = 1,
+            BorderWidthTop = 1,
+            CornerRadiusBottomLeft = 4,
+            CornerRadiusBottomRight = 4,
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+        });
+
+        var icon = new TextureRect
+        {
+            Texture = _skill?.Icone,
+            MouseFilter = MouseFilterEnum.Ignore,
+            ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+            Position = new Vector2(3, 3),
+            Size = new Vector2(28, 28),
+        };
+        AddChild(icon);
+
+        _label = new Label
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            ZIndex = 2,
+        };
+        _label.SetAnchorsPreset(LayoutPreset.FullRect);
+        _label.AddThemeFontSizeOverride("font_size", 10);
+        _label.AddThemeColorOverride("font_color", Colors.White);
+        AddChild(_label);
+
+        TooltipText = $"{_skill?.Nome}\n{_skill?.Descricao}";
+        AtualizarLabel();
+        SetProcess(true);
+    }
+
+    public void Restart(float duration)
+    {
+        _remaining = duration;
+        AtualizarLabel();
+        SetProcess(true);
+    }
+
+    public override void _Process(double delta)
+    {
+        _remaining = Mathf.Max(0f, _remaining - (float)delta);
+        AtualizarLabel();
+        if (_remaining <= 0f)
+        {
+            SetProcess(false);
+            Expired?.Invoke();
+        }
+    }
+
+    private void AtualizarLabel()
+    {
+        if (_label != null)
+            _label.Text = Mathf.CeilToInt(_remaining).ToString();
+    }
+}
+
+public partial class VipIconUI : Panel
+{
+    public event Action Expired;
+
+    private DateTime _expiryUtc;
+    private Label _label;
+
+    public VipIconUI(DateTime expiryUtc)
+    {
+        _expiryUtc = expiryUtc.ToUniversalTime();
+        CustomMinimumSize = new Vector2(34, 34);
+        Size = new Vector2(34, 34);
+        MouseFilter = MouseFilterEnum.Ignore;
+    }
+
+    public override void _Ready()
+    {
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(0.07f, 0.045f, 0.015f, 0.88f),
+            BorderColor = new Color(1f, 0.78f, 0.22f, 0.95f),
+            BorderWidthBottom = 1,
+            BorderWidthLeft = 1,
+            BorderWidthRight = 1,
+            BorderWidthTop = 1,
+            CornerRadiusBottomLeft = 4,
+            CornerRadiusBottomRight = 4,
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+        });
+
+        var icon = new TextureRect
+        {
+            Texture = ResourceLoader.Load<Texture2D>("res://Itens/Incones/Vip 1.png"),
+            MouseFilter = MouseFilterEnum.Ignore,
+            ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+            Position = new Vector2(3, 3),
+            Size = new Vector2(28, 28),
+        };
+        AddChild(icon);
+
+        _label = new Label
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            ZIndex = 2,
+        };
+        _label.SetAnchorsPreset(LayoutPreset.FullRect);
+        _label.AddThemeFontSizeOverride("font_size", 9);
+        _label.AddThemeColorOverride("font_color", Colors.White);
+        _label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.85f));
+        _label.AddThemeConstantOverride("shadow_offset_x", 1);
+        _label.AddThemeConstantOverride("shadow_offset_y", 1);
+        AddChild(_label);
+
+        AtualizarLabel();
+        SetProcess(true);
+    }
+
+    public void Restart(DateTime expiryUtc)
+    {
+        _expiryUtc = expiryUtc.ToUniversalTime();
+        AtualizarLabel();
+        SetProcess(true);
+    }
+
+    public override void _Process(double delta)
+    {
+        AtualizarLabel();
+        if (_expiryUtc <= DateTime.UtcNow)
+        {
+            SetProcess(false);
+            Expired?.Invoke();
+        }
+    }
+
+    private void AtualizarLabel()
+    {
+        TimeSpan remaining = _expiryUtc - DateTime.UtcNow;
+        if (remaining < TimeSpan.Zero)
+            remaining = TimeSpan.Zero;
+
+        if (_label != null)
+            _label.Text = FormatarTempo(remaining);
+
+        TooltipText = $"VIP ativo\n2x XP e 2x chance de drop\nExpira em: {FormatarTooltip(remaining)}";
+    }
+
+    private static string FormatarTempo(TimeSpan remaining)
+    {
+        if (remaining.TotalDays >= 1)
+            return $"{Math.Max(1, (int)Math.Ceiling(remaining.TotalDays))}d";
+        if (remaining.TotalHours >= 1)
+            return $"{Math.Max(1, (int)Math.Ceiling(remaining.TotalHours))}h";
+        return $"{Math.Max(0, (int)Math.Ceiling(remaining.TotalMinutes))}m";
+    }
+
+    private static string FormatarTooltip(TimeSpan remaining)
+    {
+        if (remaining.TotalDays >= 1)
+            return $"{(int)remaining.TotalDays}d {remaining.Hours}h";
+        if (remaining.TotalHours >= 1)
+            return $"{(int)remaining.TotalHours}h {remaining.Minutes}m";
+        return $"{remaining.Minutes}m {remaining.Seconds}s";
     }
 }

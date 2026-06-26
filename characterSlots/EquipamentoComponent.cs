@@ -29,6 +29,7 @@ public partial class EquipamentoComponent : Node
     private float _bonusVelocidadeMovimento;
     private float _bonusVelocidadeAtaque;
     private float _bonusChanceCritica;
+    private float _bonusTemporarioChanceCritica;
     private float _bonusEvasao;
     private int _bonusDanoFisicoMin;
     private int _bonusDanoFisicoMax;
@@ -37,6 +38,7 @@ public partial class EquipamentoComponent : Node
     private int _bonusDanoMagicoMax;
     private int _bonusDefesaMagica;
     private float _bonusPrecisao;
+    private float _bonusTemporarioPrecisao;
     private float _bonusTenacidade;
     private int _bonusDanoPvp;
     private int _bonusDefesaPvp;
@@ -89,7 +91,7 @@ public partial class EquipamentoComponent : Node
     public int Mana => 50 + (Inteligencia * 3) + _bonusMana;
     
     // Chance Crítica e Evasão (por Destreza + bônus de itens)
-    public float ChanceCritica => MathF.Min(75f, (Destreza * 0.25f) + _bonusChanceCritica);
+    public float ChanceCritica => MathF.Min(75f, (Destreza * 0.25f) + _bonusChanceCritica + _bonusTemporarioChanceCritica);
     public float Evasao => MathF.Min(40f, (Destreza * 0.3f) + _bonusEvasao);
     
     // Dano Crítico - Base 1.5x, bônus máximo +100% (cap 1.0f)
@@ -105,7 +107,7 @@ public partial class EquipamentoComponent : Node
     public int DefesaMagica => (Inteligencia / 3) + _bonusDefesaMagica;
     
     // Limites globais definidos no catálogo de armaduras.
-    public float Precisao => MathF.Min(75f, (Agilidade / 2f) + Destreza + _bonusPrecisao);
+    public float Precisao => MathF.Min(75f, (Agilidade / 2f) + Destreza + _bonusPrecisao + _bonusTemporarioPrecisao);
     public float Tenacidade => MathF.Min(75f, (Forca / 5f) + _bonusTenacidade);
     
     // PvP
@@ -328,6 +330,13 @@ public partial class EquipamentoComponent : Node
     {
         _bonusDanoCritico -= bonusPercentual;
         _bonusDanoCritico = Mathf.Max(_bonusDanoCritico, 0f);
+        EmitSignal(SignalName.EquipamentoAtualizado);
+    }
+
+    public void SetBonusTemporarioMiraApurada(float precisao, float chanceCritica)
+    {
+        _bonusTemporarioPrecisao = MathF.Max(0f, precisao);
+        _bonusTemporarioChanceCritica = MathF.Max(0f, chanceCritica);
         EmitSignal(SignalName.EquipamentoAtualizado);
     }
 

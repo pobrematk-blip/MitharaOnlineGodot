@@ -9,6 +9,8 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private const int InventorySlotCount = 30;
+
     private void HandleAdminUpdateItemDefinition(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session) || !session.IsAdminOrAdminMode(_config))
@@ -131,7 +133,11 @@ partial class GameServer
         var stackAdds = new List<(ItemInstance item, int amount)>();
         if (stackable)
         {
-            foreach (var existing in player.Items.Where(i => i.ItemId == itemId && i.Quantity < maxStack).OrderBy(i => i.Slot))
+            foreach (var existing in player.Items.Where(i =>
+                         i.Slot >= 0
+                         && i.Slot < InventorySlotCount
+                         && i.ItemId == itemId
+                         && i.Quantity < maxStack).OrderBy(i => i.Slot))
             {
                 int add = Math.Min(remaining, maxStack - existing.Quantity);
                 if (add <= 0) continue;
@@ -147,7 +153,7 @@ partial class GameServer
             ? (int)Math.Ceiling(remaining / (double)maxStack)
             : remaining;
 
-        for (int slot = 0; slot < 40 && newSlots.Count < newStacksNeeded; slot++)
+        for (int slot = 0; slot < InventorySlotCount && newSlots.Count < newStacksNeeded; slot++)
         {
             if (usedSlots.Contains(slot)) continue;
             usedSlots.Add(slot);
@@ -193,7 +199,7 @@ partial class GameServer
 
         int? TakeFreeSlot()
         {
-            for (int slot = 0; slot < 40; slot++)
+            for (int slot = 0; slot < InventorySlotCount; slot++)
             {
                 if (usedSlots.Contains(slot))
                     continue;
@@ -287,6 +293,13 @@ partial class GameServer
 
         int invSlot = reader.GetInt();
         int equipSlot = reader.GetInt();
+
+        if (invSlot < 0 || invSlot >= InventorySlotCount)
+        {
+            SendSystemMessage(peer, "Slot de inventario invalido.");
+            SendInventoryData(peer, player);
+            return;
+        }
 
         var sourceItem = player.Items.FirstOrDefault(i => i.Slot == invSlot);
         if (sourceItem == null) return;
@@ -424,8 +437,23 @@ partial class GameServer
 
         if (!player.Equipment.TryGetValue(equipSlot, out var equipped)) return;
 
+        if (targetInvSlot < 0)
+            targetInvSlot = FindEmptyInventorySlot(player);
+
+        if (targetInvSlot < 0 || targetInvSlot >= InventorySlotCount)
+        {
+            SendSystemMessage(peer, "Inventario cheio!");
+            SendInventoryData(peer, player);
+            return;
+        }
+
         var existing = player.Items.FirstOrDefault(i => i.Slot == targetInvSlot);
-        if (existing != null && existing.ItemId != 0) return;
+        if (existing != null && existing.ItemId != 0)
+        {
+            SendSystemMessage(peer, "Slot de inventario ocupado.");
+            SendInventoryData(peer, player);
+            return;
+        }
 
         player.Equipment.Remove(equipSlot);
         equipped.Slot = targetInvSlot;
@@ -454,6 +482,17 @@ partial class GameServer
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
+    private static int FindEmptyInventorySlot(PlayerEntity player)
+    {
+        for (int slot = 0; slot < InventorySlotCount; slot++)
+        {
+            if (!player.Items.Any(item => item.Slot == slot))
+                return slot;
+        }
+
+        return -1;
+    }
+
     private void HandleMoveItem(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
@@ -464,6 +503,13 @@ partial class GameServer
 
         int fromSlot = reader.GetInt();
         int toSlot = reader.GetInt();
+
+        if (fromSlot < 0 || fromSlot >= InventorySlotCount || toSlot < 0 || toSlot >= InventorySlotCount)
+        {
+            SendSystemMessage(peer, "Slot de inventario invalido.");
+            SendInventoryData(peer, player);
+            return;
+        }
 
         var fromItem = player.Items.FirstOrDefault(i => i.Slot == fromSlot);
         var toItem = player.Items.FirstOrDefault(i => i.Slot == toSlot);
@@ -519,6 +565,7 @@ partial class GameServer
 
         int restoredHealth = 0;
         int restoredMana = 0;
+        string? customUseMessage = null;
         if (item.ItemId == ItemDefinitions.PocaoVida && def.Hp > 0)
         {
             restoredHealth = Math.Min(def.Hp, player.MaxHealth - player.Health);
@@ -586,7 +633,30 @@ partial class GameServer
             _db.SaveVipExpiry(session.AccountId, newExpiry);
             player.VipExpiry = newExpiry;
             SendVipStatus(peer, newExpiry);
+            customUseMessage = $"VIP ativado ate {newExpiry:dd/MM/yyyy HH:mm} UTC. Bonus: 2x XP e 2x chance de drop.";
             Logger.Info($"[VIP] Conta {session.AccountId} usou pergaminho VIP de {days} dias. Expira em: {newExpiry:yyyy-MM-dd HH:mm:ss}");
+
+            item.Quantity--;
+            if (item.Quantity <= 0)
+            {
+                player.Items.Remove(item);
+                _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+            }
+            else
+            {
+                _db.SaveItem(session.SelectedCharacter.Id, item);
+            }
+
+            SendInventoryData(peer, player);
+            SendSystemMessage(peer, customUseMessage);
+
+            var vipResult = PacketSerializer.WritePacket(PacketId.S2C_ItemUseResult);
+            vipResult.Put(player.Health);
+            vipResult.Put(player.MaxHealth);
+            vipResult.Put(player.Mana);
+            vipResult.Put(player.MaxMana);
+            peer.Send(vipResult, DeliveryMethod.ReliableOrdered);
+            return;
         }
         else if (ItemDefinitions.GetLojinhaMaxSlots(item.ItemId) > 0)
         {
@@ -594,11 +664,15 @@ partial class GameServer
             var lojinha = new LojinhaEntity(player.X, player.Y)
             {
                 MaxSlots = maxSlots,
-                OwnerCharacterId = session.SelectedCharacter.Id,
-                OwnerEntityId = player.Id,
-                OwnerName = player.Name,
-                ChannelId = session.ChannelId,
-            };
+                  OwnerCharacterId = session.SelectedCharacter.Id,
+                  OwnerEntityId = player.Id,
+                  OwnerName = player.Name,
+                  ShopName = $"Loja de {player.Name}",
+                  OwnerClass = player.CharacterClass,
+                  OwnerRace = player.Race,
+                  IsOpen = false,
+                  ChannelId = session.ChannelId,
+              };
 
             ulong dbId = _db.SaveLojinha(lojinha);
             lojinha.DbId = dbId;
@@ -618,9 +692,9 @@ partial class GameServer
             }
 
             SendInventoryData(peer, player);
-            SendSystemMessage(peer, "Lojinha colocada! Outros jogadores podem ver e comprar itens.");
-            return;
-        }
+              SendSystemMessage(peer, "Lojinha colocada! Clique no seu clone para configurar e abrir a loja.");
+              return;
+          }
         else
         {
             return;

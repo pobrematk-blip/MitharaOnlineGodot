@@ -136,7 +136,7 @@ partial class GameServer
                 var ch = session.SelectedCharacter;
                 if (ch == null) return;
                 int bankGold = ch.BankGold;
-                SendBankData(peer, player.Gold, bankGold);
+                SendBankData(peer, player.Gold, bankGold, ch.Id);
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
 

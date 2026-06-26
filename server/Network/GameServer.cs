@@ -34,6 +34,7 @@ public partial class GameServer : INetEventListener
     internal readonly Dictionary<ulong, GuildLeaderPromotion> _guildLeaderPromotions = new();
     internal readonly Dictionary<ulong, ulong> _tradeInvites = new();
     internal readonly Dictionary<ulong, TradeSession> _activeTrades = new();
+    internal readonly List<PendingProjectileHit> _pendingProjectileHits = new();
     internal int _nextTradeId = 1;
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
@@ -143,6 +144,7 @@ public partial class GameServer : INetEventListener
     {
         _gameTime += dt;
         _world.UpdateAll(dt, _gameTime);
+        ProcessPendingProjectileHits();
 
         foreach (var ch in _world.GetAllChannels())
         {
@@ -451,6 +453,15 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_BankRequest:
                 HandleBankRequest(peer, reader);
                 break;
+            case PacketId.C2S_BankDepositItem:
+                HandleBankDepositItem(peer, reader);
+                break;
+            case PacketId.C2S_BankWithdrawItem:
+                HandleBankWithdrawItem(peer, reader);
+                break;
+            case PacketId.C2S_BankMoveItem:
+                HandleBankMoveItem(peer, reader);
+                break;
             case PacketId.C2S_MobDropConfig:
                 Logger.Info("C2S_MobDropConfig ignorado: drop table e autoridade do servidor.");
                 break;
@@ -523,6 +534,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_LojinhaListRequest:
                 HandleLojinhaListRequest(peer);
                 break;
+            case PacketId.C2S_LojinhaRequestItems:
+                HandleLojinhaConfigure(peer, reader);
+                break;
 
             case PacketId.C2S_MapEditorPlaceTile:
                 HandleMapEditorPlaceTile(peer, reader);
@@ -546,24 +560,52 @@ public partial class GameServer : INetEventListener
 
         int petId = reader.GetInt();
         string petName = reader.GetString();
+        int scrollSlot = reader.AvailableBytes >= 4 ? reader.GetInt() : -1;
+        bool sucesso = reader.AvailableBytes >= 1 ? reader.GetBool() : true;
 
-        var scroll = player.Items.FirstOrDefault(i => (i.ItemId == ItemDefinitions.PergaminhoDoPet || i.ItemId == ItemDefinitions.PergaminhoDoPet5) && i.Quantity > 0);
+        bool IsPetScroll(ItemInstance item) =>
+            (item.ItemId == ItemDefinitions.PergaminhoDoPet || item.ItemId == ItemDefinitions.PergaminhoDoPet5)
+            && item.Quantity > 0;
+
+        var scroll = scrollSlot >= 0
+            ? player.Items.FirstOrDefault(i => i.Slot == scrollSlot && IsPetScroll(i))
+            : player.Items.FirstOrDefault(IsPetScroll);
+
         if (scroll == null)
         {
             Logger.Info($"[PET] {session.SelectedCharacter.Name} tentou capturar sem pergaminho.");
+            SendSystemMessage(peer, "Voce nao possui o pergaminho de captura de pet.");
             return;
         }
 
         scroll.Quantity--;
         if (scroll.Quantity <= 0)
+        {
             player.Items.Remove(scroll);
-        _db.SaveItem(session.SelectedCharacter.Id, scroll);
+            if (scroll.DbId > 0)
+                _db.DeleteItem(session.SelectedCharacter.Id, scroll.DbId);
+            else
+                _db.DeleteItemBySlot(session.SelectedCharacter.Id, scroll.Slot);
+        }
+        else
+        {
+            _db.SaveItem(session.SelectedCharacter.Id, scroll);
+        }
 
-        _db.SavePet(session.SelectedCharacter.Id, petId, petName);
-        SendPetData(peer, session.SelectedCharacter.Id);
+        if (sucesso)
+        {
+            _db.SavePet(session.SelectedCharacter.Id, petId, petName);
+            SendPetData(peer, session.SelectedCharacter.Id);
+            SendSystemMessage(peer, $"Pet '{petName}' capturado com sucesso!");
+            Logger.Info($"[PET] {session.SelectedCharacter.Name} capturou pet '{petName}' (ID:{petId}) usando slot {scroll.Slot}");
+        }
+        else
+        {
+            SendSystemMessage(peer, $"A captura de '{petName}' falhou.");
+            Logger.Info($"[PET] {session.SelectedCharacter.Name} falhou ao capturar pet '{petName}' (ID:{petId}) usando slot {scroll.Slot}");
+        }
+
         SendInventoryData(peer, player);
-
-        Logger.Info($"[PET] {session.SelectedCharacter.Name} capturou pet '{petName}' (ID:{petId})");
     }
 
     private void HandleProjectileFire(NetPeer peer, NetDataReader reader)

@@ -7,6 +7,10 @@ public class LojinhaEntity
     public int OwnerCharacterId { get; set; }
     public ulong OwnerEntityId { get; set; }
     public string OwnerName { get; set; } = "";
+    public string ShopName { get; set; } = "";
+    public string OwnerClass { get; set; } = "";
+    public string OwnerRace { get; set; } = "";
+    public bool IsOpen { get; set; }
     public float X { get; set; }
     public float Y { get; set; }
     public int ChannelId { get; set; }

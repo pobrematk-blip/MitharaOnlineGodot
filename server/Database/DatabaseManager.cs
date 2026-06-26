@@ -142,6 +142,10 @@ public class DatabaseManager
                 id BIGSERIAL PRIMARY KEY,
                 owner_character_id INT NOT NULL,
                 owner_name VARCHAR(255) NOT NULL DEFAULT '',
+                shop_name VARCHAR(255) NOT NULL DEFAULT '',
+                owner_class VARCHAR(80) NOT NULL DEFAULT '',
+                owner_race VARCHAR(80) NOT NULL DEFAULT '',
+                is_open SMALLINT NOT NULL DEFAULT 0,
                 x DOUBLE PRECISION NOT NULL,
                 y DOUBLE PRECISION NOT NULL,
                 channel_id INT NOT NULL DEFAULT 0,
@@ -163,6 +167,10 @@ public class DatabaseManager
             );
 
             ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS max_slots INT NOT NULL DEFAULT 5;
+            ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS shop_name VARCHAR(255) NOT NULL DEFAULT '';
+            ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS owner_class VARCHAR(80) NOT NULL DEFAULT '';
+            ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS owner_race VARCHAR(80) NOT NULL DEFAULT '';
+            ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS is_open SMALLINT NOT NULL DEFAULT 0;
 
             CREATE TABLE IF NOT EXISTS item_definitions (
                 id INT PRIMARY KEY,
@@ -546,6 +554,41 @@ public class DatabaseManager
         return result;
     }
 
+    public List<Mithara.Server.Entities.ItemInstance> LoadBankItems(int characterId)
+    {
+        var result = new List<Mithara.Server.Entities.ItemInstance>();
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id, item_id, slot, quantity, refine_level, roll_data FROM items WHERE character_id = @c AND slot >= 1000 AND slot < 1100 ORDER BY slot";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var instance = new Mithara.Server.Entities.ItemInstance
+            {
+                DbId = reader.GetInt32(0),
+                ItemId = reader.GetInt32(1),
+                Slot = reader.GetInt32(2) - 1000,
+                Quantity = reader.GetInt32(3),
+                RefineLevel = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+            };
+            if (!reader.IsDBNull(5) && !string.IsNullOrWhiteSpace(reader.GetString(5)))
+            {
+                try
+                {
+                    instance.Roll = System.Text.Json.JsonSerializer.Deserialize<Mithara.Server.Entities.ItemRoll>(reader.GetString(5)) ?? new();
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    instance.Roll = new();
+                }
+            }
+            result.Add(instance);
+        }
+        return result;
+    }
+
     public void SaveItem(int characterId, Mithara.Server.Entities.ItemInstance item)
     {
         Mithara.Server.Entities.ItemRoller.EnsureRolled(item);
@@ -655,11 +698,15 @@ public class DatabaseManager
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO lojinhas (owner_character_id, owner_name, x, y, channel_id, gold_earned, max_slots)
-            VALUES (@o, @n, @x, @y, @c, @g, @m)
+            INSERT INTO lojinhas (owner_character_id, owner_name, shop_name, owner_class, owner_race, is_open, x, y, channel_id, gold_earned, max_slots)
+            VALUES (@o, @n, @sn, @oc, @or, @io, @x, @y, @c, @g, @m)
             RETURNING id";
         cmd.Parameters.AddWithValue("@o", lojinha.OwnerCharacterId);
         cmd.Parameters.AddWithValue("@n", lojinha.OwnerName);
+        cmd.Parameters.AddWithValue("@sn", lojinha.ShopName);
+        cmd.Parameters.AddWithValue("@oc", lojinha.OwnerClass);
+        cmd.Parameters.AddWithValue("@or", lojinha.OwnerRace);
+        cmd.Parameters.AddWithValue("@io", lojinha.IsOpen ? 1 : 0);
         cmd.Parameters.AddWithValue("@x", lojinha.X);
         cmd.Parameters.AddWithValue("@y", lojinha.Y);
         cmd.Parameters.AddWithValue("@c", lojinha.ChannelId);
@@ -714,25 +761,41 @@ public class DatabaseManager
         cmd.ExecuteNonQuery();
     }
 
+    public void UpdateLojinhaConfig(ulong lojinhaDbId, string shopName, bool isOpen)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE lojinhas SET shop_name = @n, is_open = @o WHERE id = @l";
+        cmd.Parameters.AddWithValue("@n", shopName);
+        cmd.Parameters.AddWithValue("@o", isOpen ? 1 : 0);
+        cmd.Parameters.AddWithValue("@l", (long)lojinhaDbId);
+        cmd.ExecuteNonQuery();
+    }
+
     public void LoadAllLojinhas(Action<LojinhaEntity> onLojinha, Action<ulong, LojinhaItem> onItem)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, owner_character_id, owner_name, x, y, channel_id, gold_earned, max_slots, created_at FROM lojinhas ORDER BY id";
+        cmd.CommandText = "SELECT id, owner_character_id, owner_name, shop_name, owner_class, owner_race, is_open, x, y, channel_id, gold_earned, max_slots, created_at FROM lojinhas ORDER BY id";
         using var reader = cmd.ExecuteReader();
         var lojinhaById = new Dictionary<ulong, LojinhaEntity>();
         while (reader.Read())
         {
-            var lojinha = new LojinhaEntity((float)reader.GetDouble(3), (float)reader.GetDouble(4))
+            var lojinha = new LojinhaEntity((float)reader.GetDouble(7), (float)reader.GetDouble(8))
             {
                 OwnerCharacterId = reader.GetInt32(1),
                 OwnerName = reader.GetString(2),
-                ChannelId = reader.GetInt32(5),
-                GoldEarned = reader.GetInt32(6),
-                MaxSlots = reader.GetInt32(7),
-                CreatedAt = reader.GetDateTime(8),
+                ShopName = reader.GetString(3),
+                OwnerClass = reader.GetString(4),
+                OwnerRace = reader.GetString(5),
+                IsOpen = reader.GetInt16(6) != 0,
+                ChannelId = reader.GetInt32(9),
+                GoldEarned = reader.GetInt32(10),
+                MaxSlots = reader.GetInt32(11),
+                CreatedAt = reader.GetDateTime(12),
             };
             var dbId = reader.GetInt64(0);
             lojinha.DbId = (ulong)dbId;
@@ -1468,7 +1531,7 @@ public class DatabaseManager
         {
             new() { Id = ItemDefinitions.PocaoVida, Name = "Poção de Vida", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, Hp = 50, BuyPrice = 10 },
             new() { Id = ItemDefinitions.PocaoMana, Name = "Poção de Mana", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, Mana = 30, BuyPrice = 10 },
-            new() { Id = 100, Name = "Pergaminho do Pet", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 50 },
+            new() { Id = 100, Name = "Pergaminho do Pet (7 Tentativas)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 50 },
             new() { Id = 101, Name = "Pergaminho de Ressurreicao", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 100 },
             new() { Id = ItemDefinitions.PergaminhoCriacaoCla, Name = "Pergaminho de Criacao de Cla", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 100 },
             new() { Id = ItemDefinitions.PergaminhoVip7Dias, Name = "Pergaminho VIP (7 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },

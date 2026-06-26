@@ -40,7 +40,7 @@ public partial class BankUI : Control
         _panel.Visible = false;
     }
 
-    private void OnBankData(int onHandGold, int bankGold)
+    private void OnBankData(int onHandGold, int bankGold, Godot.Collections.Array<Godot.Collections.Dictionary> items)
     {
         _goldLabel.Text = $"Ouro em mãos: {onHandGold}";
         _bankGoldLabel.Text = $"Ouro no Banco: {bankGold}";

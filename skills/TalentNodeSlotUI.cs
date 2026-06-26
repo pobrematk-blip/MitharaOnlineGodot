@@ -31,6 +31,7 @@ public partial class TalentNodeSlotUI : PanelContainer
     private TextureRect _iconView;
     private Label _fallbackLabel;
     private PanelContainer _hoverTooltip;
+    private CanvasLayer _hoverTooltipLayer;
 
     public override void _Ready()
     {
@@ -211,7 +212,13 @@ public partial class TalentNodeSlotUI : PanelContainer
         label.AddThemeColorOverride("font_color", new Color(0.92f, 0.94f, 1f));
         _hoverTooltip.AddChild(label);
 
-        GetTree()?.Root.AddChild(_hoverTooltip);
+        _hoverTooltipLayer = new CanvasLayer
+        {
+            Name = "TalentTooltipLayer",
+            Layer = 128,
+        };
+        GetTree()?.Root.AddChild(_hoverTooltipLayer);
+        _hoverTooltipLayer.AddChild(_hoverTooltip);
         _hoverTooltip.ResetSize();
         AtualizarPosicaoTooltip();
         SetProcess(true);
@@ -219,8 +226,11 @@ public partial class TalentNodeSlotUI : PanelContainer
 
     private void EsconderTooltipCustom()
     {
-        if (_hoverTooltip != null && IsInstanceValid(_hoverTooltip))
+        if (_hoverTooltipLayer != null && IsInstanceValid(_hoverTooltipLayer))
+            _hoverTooltipLayer.QueueFree();
+        else if (_hoverTooltip != null && IsInstanceValid(_hoverTooltip))
             _hoverTooltip.QueueFree();
+        _hoverTooltipLayer = null;
         _hoverTooltip = null;
         SetProcess(false);
     }

@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_taxcw")
 ItemID = 100
-Nome = "Pergaminho do Pet"
-Descricao = "Um pergaminho encantado que permite capturar um pet enfraquecido."
+Nome = "Pergaminho do Pet (7 Tentativas)"
+Descricao = "Um pergaminho encantado que permite capturar um pet enfraquecido. Versao com 7 tentativas."
 Icone = ExtResource("2_peticon")
 Acumulavel = true
 QuantidadeMaximaPorSlot = 99

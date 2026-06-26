@@ -66,11 +66,24 @@ public partial class GameNetwork
         _client.SendPacket(PacketId.C2S_LojinhaListRequest, w => { });
     }
 
+    public void SendLojinhaConfigure(ulong lojinhaId, string shopName, bool abrir)
+    {
+        _client.SendPacket(PacketId.C2S_LojinhaRequestItems, w =>
+        {
+            w.Put(lojinhaId);
+            w.Put(shopName ?? "");
+            w.Put(abrir);
+        });
+    }
+
     private void HandleOpenLojinha(NetDataReader r)
     {
         ulong lojinhaId = r.GetULong();
         bool isOwner = r.GetBool();
         string ownerName = r.GetString();
+        string shopName = r.GetString();
+        bool isOpen = r.GetBool();
+        int maxSlots = r.GetInt();
         int itemCount = r.GetInt();
         var items = new Godot.Collections.Array<Godot.Collections.Dictionary>();
         for (int i = 0; i < itemCount; i++)
@@ -85,7 +98,7 @@ public partial class GameNetwork
             };
             items.Add(dict);
         }
-        EmitSignal(SignalName.OnOpenLojinha, lojinhaId, isOwner, ownerName, items);
+        EmitSignal(SignalName.OnOpenLojinha, lojinhaId, isOwner, ownerName, shopName, isOpen, maxSlots, items);
     }
 
     private void HandleLojinhaData(NetDataReader r)
@@ -93,6 +106,9 @@ public partial class GameNetwork
         ulong lojinhaId = r.GetULong();
         bool isOwner = r.GetBool();
         string ownerName = r.GetString();
+        string shopName = r.GetString();
+        bool isOpen = r.GetBool();
+        int maxSlots = r.GetInt();
         int goldEarned = r.GetInt();
         int itemCount = r.GetInt();
         var items = new Godot.Collections.Array<Godot.Collections.Dictionary>();
@@ -108,7 +124,7 @@ public partial class GameNetwork
             };
             items.Add(dict);
         }
-        EmitSignal(SignalName.OnLojinhaData, lojinhaId, isOwner, ownerName, goldEarned, items);
+        EmitSignal(SignalName.OnLojinhaData, lojinhaId, isOwner, ownerName, shopName, isOpen, maxSlots, goldEarned, items);
     }
 
     private void HandleLojinhaBuyResult(NetDataReader r)
@@ -124,16 +140,25 @@ public partial class GameNetwork
         var lojinhas = new Godot.Collections.Array<Godot.Collections.Dictionary>();
         for (int i = 0; i < count; i++)
         {
+            ulong lojinhaId = r.GetULong();
+            string ownerName = r.GetString();
+            string shopName = r.GetString();
+            bool isOpen = r.GetBool();
+            float x = r.GetFloat();
+            float y = r.GetFloat();
+            int channelId = r.GetInt();
+            int itemCount = r.GetInt();
             var dict = new Godot.Collections.Dictionary
             {
-                ["lojinha_id"] = r.GetULong(),
-                ["owner_name"] = r.GetString(),
-                ["x"] = r.GetFloat(),
-                ["y"] = r.GetFloat(),
-                ["channel_id"] = r.GetInt(),
-                ["item_count"] = r.GetInt(),
+                ["lojinha_id"] = lojinhaId,
+                ["owner_name"] = ownerName,
+                ["shop_name"] = shopName,
+                ["is_open"] = isOpen,
+                ["x"] = x,
+                ["y"] = y,
+                ["channel_id"] = channelId,
+                ["item_count"] = itemCount,
             };
-            int itemCount = r.GetInt();
             var items = new Godot.Collections.Array<Godot.Collections.Dictionary>();
             for (int j = 0; j < itemCount; j++)
             {
@@ -158,9 +183,13 @@ public partial class GameNetwork
     {
         ulong lojinhaId = r.GetULong();
         string ownerName = r.GetString();
+        string shopName = r.GetString();
+        string ownerClass = r.GetString();
+        string ownerRace = r.GetString();
+        bool isOpen = r.GetBool();
         float x = r.GetFloat();
         float y = r.GetFloat();
-        EmitSignal(SignalName.OnLojinhaSpawn, lojinhaId, ownerName, x, y);
+        EmitSignal(SignalName.OnLojinhaSpawn, lojinhaId, ownerName, shopName, ownerClass, ownerRace, isOpen, x, y);
     }
 
     private void HandleLojinhaDespawn(NetDataReader r)

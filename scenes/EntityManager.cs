@@ -46,6 +46,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _networkNodes = new();
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
     private readonly Dictionary<ulong, Node2D> _lojinhaNodes = new();
+    private ulong _lojinhaInteracaoAtual;
     private Node2D? _worldNode;
 
     private static readonly Dictionary<Raridade, Color> RarityColors = new()
@@ -251,6 +252,16 @@ public partial class EntityManager : Node
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.F)
+        {
+            if (_lojinhaInteracaoAtual != 0)
+            {
+                _gameNet?.SendLojinhaOpen(_lojinhaInteracaoAtual);
+                GetViewport()?.SetInputAsHandled();
+                return;
+            }
+        }
+
         if (@event is InputEventMouseButton mb && mb.Pressed)
         {
             if (mb.ButtonIndex == MouseButton.Left)
@@ -652,7 +663,16 @@ public partial class EntityManager : Node
     public void AtualizarOverheadRemoto(ulong entityId, string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
     {
         if (!_networkNodes.TryGetValue(entityId, out var node)) return;
+        if (node == null || !IsInstanceValid(node) || node.IsQueuedForDeletion())
+        {
+            _networkNodes.Remove(entityId);
+            return;
+        }
+
         var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
+        if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
+            return;
+
         overhead?.AtualizarDadosRemotos(nome, guildName, guildTag, guildEmblem, xp, xpMax);
     }
 
@@ -702,6 +722,7 @@ public partial class EntityManager : Node
             inimigo.IsBoss = isBoss;
             inimigo.Level = level;
             inimigo.MobType = mobType;
+            inimigo.AtualizarPetPadrao();
             inimigo.AnimPrefix = MobSpriteFramesBuilder.ObterPrefixo(mobType);
             inimigo.SetMeta("network_id", entityId);
             inimigo.SetMeta(MetaAnimPrefix, inimigo.AnimPrefix);
@@ -1332,15 +1353,16 @@ public partial class EntityManager : Node
             _lootNodes[lootId] = root;
         }
 
-        private void OnLojinhaSpawn(ulong lojinhaId, string ownerName, float x, float y)
+        private void OnLojinhaSpawn(ulong lojinhaId, string ownerName, string shopName, string ownerClass, string ownerRace, bool isOpen, float x, float y)
         {
-            if (_lojinhaNodes.ContainsKey(lojinhaId)) return;
+            if (_lojinhaNodes.TryGetValue(lojinhaId, out var oldNode) && IsInstanceValid(oldNode))
+                oldNode.QueueFree();
+            _lojinhaNodes.Remove(lojinhaId);
 
             var root = new Area2D();
             root.Position = new Vector2(x, y);
             root.Name = $"Lojinha_{lojinhaId}";
-            root.ZIndex = -1;
-            root.ZAsRelative = true;
+            PrepararEntidadeYSort(root);
             root.SetMeta("lojinha_id", (long)lojinhaId);
 
             var col = new CollisionShape2D();
@@ -1351,36 +1373,91 @@ public partial class EntityManager : Node
             visuals.Name = "Visuals";
             root.AddChild(visuals);
 
-            var icon = new Sprite2D
+            var sprite = new AnimatedSprite2D
             {
-                Texture = GD.Load<Texture2D>("res://Itens/Incones/1.png"),
-                Position = new Vector2(0, -12),
-                ZIndex = 0,
-                ZAsRelative = true,
-                Scale = new Vector2(2, 2),
+                Name = "AnimatedSprite",
+                Scale = new Vector2(2f, 2f),
             };
-            visuals.AddChild(icon);
+
+            string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(ownerClass);
+            string raceFile = (ownerRace ?? "Humano").Trim() switch
+            {
+                "Dark Elfo" => "DarkElfo",
+                "Morto Vivo" => "MortoVivo",
+                _ => (ownerRace ?? "Humano").Replace(" ", "")
+            };
+            string sheetPath = LpcSpriteFramesBuilder.PastaSpritesRaca + raceFile + ".png";
+            if (ResourceLoader.Exists(sheetPath))
+            {
+                var sheet = ResourceLoader.Load<Texture2D>(sheetPath);
+                if (sheet != null)
+                {
+                    var frames = LpcSpriteFramesBuilder.Construir(sheet, animPrefix);
+                    if (frames != null && frames.GetAnimationNames().Length > 0)
+                    {
+                        sprite.SpriteFrames = frames;
+                        sprite.Play("idle_down");
+                    }
+                }
+            }
+            visuals.AddChild(sprite);
+
+            if (sprite.SpriteFrames == null)
+            {
+                var icon = new Sprite2D
+                {
+                    Texture = GD.Load<Texture2D>("res://Itens/Incones/1.png"),
+                    Position = new Vector2(0, -12),
+                    ZIndex = 0,
+                    ZAsRelative = true,
+                    Scale = new Vector2(2, 2),
+                };
+                visuals.AddChild(icon);
+            }
+
+            string title = string.IsNullOrWhiteSpace(shopName) ? $"Loja de {ownerName}" : shopName;
 
             var label = new Label();
-            label.Text = $"[{ownerName}]";
-            label.Position = new Vector2(-40, 8);
+            label.Text = title;
+            label.Position = new Vector2(-96, -84);
+            label.Size = new Vector2(192, 24);
+            label.HorizontalAlignment = HorizontalAlignment.Center;
             label.ZIndex = 0;
             label.ZAsRelative = true;
-            label.AddThemeFontSizeOverride("font_size", 12);
-            label.AddThemeColorOverride("font_color", new Color(0.6f, 1.0f, 0.6f));
-            label.AddThemeConstantOverride("shadow_offset_x", 1);
-            label.AddThemeConstantOverride("shadow_offset_y", 1);
+            label.AddThemeFontSizeOverride("font_size", 16);
+            label.AddThemeColorOverride("font_color", isOpen ? new Color(0.6f, 1.0f, 0.6f) : new Color(1.0f, 0.82f, 0.35f));
+            label.AddThemeConstantOverride("outline_size", 3);
+            label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+            label.AddThemeConstantOverride("shadow_offset_x", 2);
+            label.AddThemeConstantOverride("shadow_offset_y", 2);
             label.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
             visuals.AddChild(label);
 
+            var status = new Label();
+            status.Text = isOpen ? "LOJA ABERTA" : "CONFIGURANDO";
+            status.Position = new Vector2(-80, -62);
+            status.Size = new Vector2(160, 20);
+            status.HorizontalAlignment = HorizontalAlignment.Center;
+            status.ZIndex = 0;
+            status.ZAsRelative = true;
+            status.AddThemeFontSizeOverride("font_size", 12);
+            status.AddThemeColorOverride("font_color", isOpen ? new Color(0.35f, 0.9f, 0.45f) : new Color(0.95f, 0.75f, 0.25f));
+            status.AddThemeConstantOverride("outline_size", 2);
+            status.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+            visuals.AddChild(status);
+
             var prompt = new Label();
-            prompt.Text = "[F]";
+            prompt.Text = "[F] Abrir loja";
             prompt.Name = "LojinhaPrompt";
-            prompt.Position = new Vector2(-14, -55);
+            prompt.Position = new Vector2(-72, -112);
+            prompt.Size = new Vector2(144, 26);
+            prompt.HorizontalAlignment = HorizontalAlignment.Center;
             prompt.ZIndex = 2;
             prompt.ZAsRelative = true;
-            prompt.AddThemeFontSizeOverride("font_size", 20);
-            prompt.AddThemeColorOverride("font_color", new Color(0.6f, 1.0f, 0.3f));
+            prompt.AddThemeFontSizeOverride("font_size", 18);
+            prompt.AddThemeColorOverride("font_color", new Color(0.75f, 1.0f, 0.35f));
+            prompt.AddThemeConstantOverride("outline_size", 3);
+            prompt.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
             prompt.Visible = false;
             visuals.AddChild(prompt);
 
@@ -1432,6 +1509,7 @@ public partial class EntityManager : Node
     public override void _Process(double delta)
     {
         double now = Time.GetTicksMsec() / 1000.0;
+        AtualizarInteracaoLojinha();
 
         foreach (var kvp in _remoteStates)
         {
@@ -1487,6 +1565,59 @@ public partial class EntityManager : Node
         }
 
         UpdateVisibilityCulling(delta);
+    }
+
+    private void AtualizarInteracaoLojinha()
+    {
+        _lojinhaInteracaoAtual = 0;
+
+        if (_lojinhaNodes.Count == 0)
+            return;
+
+        Node2D? player = ObterPlayerLocal();
+        if (player == null)
+            return;
+
+        float melhorDistancia = 95f;
+        ulong melhorLojinha = 0;
+
+        foreach (var kvp in _lojinhaNodes)
+        {
+            var node = kvp.Value;
+            if (!IsInstanceValid(node))
+                continue;
+
+            float distancia = player.GlobalPosition.DistanceTo(node.GlobalPosition);
+            if (distancia <= melhorDistancia)
+            {
+                melhorDistancia = distancia;
+                melhorLojinha = kvp.Key;
+            }
+        }
+
+        _lojinhaInteracaoAtual = melhorLojinha;
+
+        foreach (var kvp in _lojinhaNodes)
+        {
+            var node = kvp.Value;
+            if (!IsInstanceValid(node))
+                continue;
+
+            var prompt = node.FindChild("LojinhaPrompt", true, false) as Label;
+            if (prompt != null)
+                prompt.Visible = kvp.Key == melhorLojinha;
+        }
+    }
+
+    private Node2D? ObterPlayerLocal()
+    {
+        if (_gameNet != null
+            && _gameNet.LocalPlayerId != 0
+            && _networkNodes.TryGetValue(_gameNet.LocalPlayerId, out var networkPlayer)
+            && IsInstanceValid(networkPlayer))
+            return networkPlayer;
+
+        return GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
     }
 
     private void UpdateVisibilityCulling(double delta)

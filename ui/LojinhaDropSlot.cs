@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class LojinhaDropSlot : Control
+public partial class LojinhaDropSlot : Panel
 {
     [Signal] public delegate void OnLojinhaDropEventHandler(Variant data);
 
@@ -11,12 +11,7 @@ public partial class LojinhaDropSlot : Control
 
     public override bool _CanDropData(Vector2 atPosition, Variant data)
     {
-        if (data.Obj is SlotUI slot && slot.SlotInterno?.Item != null)
-        {
-            var tipo = slot.SlotInterno.Item.Tipo;
-            return tipo != TipoEquipamento.Nenhum;
-        }
-        return false;
+        return data.AsGodotObject() is SlotUI slot && slot.SlotInterno?.Item != null;
     }
 
     public override void _DropData(Vector2 atPosition, Variant data)

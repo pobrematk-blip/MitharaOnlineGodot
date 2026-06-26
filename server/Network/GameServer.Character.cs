@@ -438,6 +438,8 @@ partial class GameServer
                 bool neededRoll = !item.Roll.IsRolled && item.Definition is { IsStackable: false };
                 ItemRoller.EnsureRolled(item);
                 if (neededRoll) _db.SaveItem(ch.Id, item);
+                if (item.Slot >= 1000 && item.Slot < 1100)
+                    continue;
                 if (item.Slot >= 100 && item.Slot <= 116)
                     player.Equipment[item.Slot - 100] = item;
                 else
@@ -485,6 +487,14 @@ partial class GameServer
                     peer.Send(existingWriter, DeliveryMethod.ReliableOrdered);
                     session.SpawnedEntities.Add(eid);
                     sentNearby++;
+                }
+
+                foreach (var lojinha in channel.Lojinhas.Values)
+                {
+                    float dx = lojinha.X - player.X;
+                    float dy = lojinha.Y - player.Y;
+                    if (dx * dx + dy * dy <= Channel.AoiRadius * Channel.AoiRadius)
+                        SendLojinhaSpawnToPeer(peer, lojinha);
                 }
 
                 Logger.Info($"HandleEnterWorld({player.Name}): enviou {sentNearby} spawn(s) da AOI");
@@ -733,8 +743,8 @@ internal static class ServerTalentCatalog
         if (tree == null) return false;
 
         foreach (var node in tree.Values)
-            if (node.SkillId == skillId)
-                return unlocked.Contains(node.NodeId);
+            if (node.SkillId == skillId && unlocked.Contains(node.NodeId))
+                return true;
 
         return false;
     }

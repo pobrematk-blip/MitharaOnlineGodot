@@ -51,6 +51,7 @@ public partial class PetColecaoComponent : Node
     public void Limpar()
     {
         _pets.Clear();
+        EmitSignal(SignalName.ColecaoAtualizada);
     }
 
     public void ProcurarERegistrarRecurso(int petId)

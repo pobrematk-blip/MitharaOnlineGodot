@@ -4,11 +4,16 @@ public partial class SkillBarSlotUI : Panel
 {
     private TextureRect _icon;
     private Label _keyLabel;
+    private ColorRect _cooldownOverlay;
+    private Label _cooldownLabel;
     private string _keyName;
     private SkillResource _assignedSkill;
     private ItemResource _assignedItem;
     private int _assignedItemInventorySlot = -1;
     private SkillBarUI _owner;
+    private float _cooldownRemaining;
+    private float _cooldownDuration;
+    private bool _draggingFromThisSlot;
 
     public int Row { get; set; }
     public int Col { get; set; }
@@ -17,6 +22,7 @@ public partial class SkillBarSlotUI : Panel
     public ItemResource AssignedItem => _assignedItem;
     public int AssignedItemInventorySlot => _assignedItemInventorySlot;
     public bool IsItemSlot => _assignedItem != null;
+    public bool IsCoolingDown => _cooldownRemaining > 0f;
 
     public void Initialize(string keyName, SkillBarUI owner)
     {
@@ -56,6 +62,29 @@ public partial class SkillBarSlotUI : Panel
         _keyLabel.MouseFilter = MouseFilterEnum.Ignore;
         _keyLabel.ZIndex = 1;
         AddChild(_keyLabel);
+
+        _cooldownOverlay = new ColorRect
+        {
+            Color = new Color(0f, 0f, 0f, 0.68f),
+            MouseFilter = MouseFilterEnum.Ignore,
+            Visible = false,
+            ZIndex = 2,
+        };
+        _cooldownOverlay.SetAnchorsPreset(LayoutPreset.FullRect);
+        AddChild(_cooldownOverlay);
+
+        _cooldownLabel = new Label
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            Visible = false,
+            ZIndex = 3,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        _cooldownLabel.SetAnchorsPreset(LayoutPreset.FullRect);
+        _cooldownLabel.AddThemeFontSizeOverride("font_size", 13);
+        _cooldownLabel.AddThemeColorOverride("font_color", Colors.White);
+        AddChild(_cooldownLabel);
     }
 
     public void SetSkill(SkillResource skill)
@@ -79,8 +108,21 @@ public partial class SkillBarSlotUI : Panel
         _assignedSkill = null;
         _assignedItem = null;
         _assignedItemInventorySlot = -1;
+        _cooldownRemaining = 0f;
+        AtualizarCooldownVisual();
         AtualizarVisual();
         _owner?.ClearSlot(Row, Col);
+    }
+
+    public void StartCooldown(float duration)
+    {
+        if (duration <= 0f)
+            return;
+
+        _cooldownDuration = duration;
+        _cooldownRemaining = duration;
+        AtualizarCooldownVisual();
+        SetProcess(true);
     }
 
     private void AtualizarVisual()
@@ -123,6 +165,9 @@ public partial class SkillBarSlotUI : Panel
         }
         else if (data.AsGodotObject() is SkillBarSlotUI sourceSlot && _owner != null)
         {
+            if (sourceSlot == this)
+                return;
+
             if (sourceSlot._assignedSkill != null)
                 _owner.AssignSkill(Row, Col, sourceSlot._assignedSkill);
             else if (sourceSlot._assignedItem != null)
@@ -152,6 +197,45 @@ public partial class SkillBarSlotUI : Panel
         preview.Size = new Vector2(40, 40);
         SetDragPreview(preview);
 
+        _draggingFromThisSlot = true;
         return this;
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what != NotificationDragEnd || !_draggingFromThisSlot)
+            return;
+
+        _draggingFromThisSlot = false;
+        if (GetViewport()?.GuiIsDragSuccessful() == true)
+            return;
+
+        Clear();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_cooldownRemaining <= 0f)
+        {
+            SetProcess(false);
+            return;
+        }
+
+        _cooldownRemaining = Mathf.Max(0f, _cooldownRemaining - (float)delta);
+        AtualizarCooldownVisual();
+        if (_cooldownRemaining <= 0f)
+            SetProcess(false);
+    }
+
+    private void AtualizarCooldownVisual()
+    {
+        bool active = _cooldownRemaining > 0f;
+        if (_cooldownOverlay != null)
+            _cooldownOverlay.Visible = active;
+        if (_cooldownLabel != null)
+        {
+            _cooldownLabel.Visible = active;
+            _cooldownLabel.Text = active ? Mathf.CeilToInt(_cooldownRemaining).ToString() : "";
+        }
     }
 }

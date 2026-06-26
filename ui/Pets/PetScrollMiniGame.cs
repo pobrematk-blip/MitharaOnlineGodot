@@ -44,33 +44,51 @@ public partial class PetScrollMiniGame : Control
     public override void _Ready()
     {
         _panel = GetNode<Panel>("Panel");
+        _panel.CustomMinimumSize = new Vector2(360, 230);
+        _panel.Size = new Vector2(360, 230);
+        _panel.AddThemeStyleboxOverride("panel", CriarStyle(
+            new Color(0.006f, 0.008f, 0.014f, 0.90f),
+            new Color(0.18f, 0.62f, 0.92f, 0.95f),
+            8,
+            1));
+
         _titulo = GetNode<Label>("%TituloLabel");
         _instrucao = GetNode<Label>("%InstrucaoLabel");
         _chancesLabel = new Label();
         _chancesLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        _chancesLabel.AddThemeFontSizeOverride("font_size", 14);
+        _chancesLabel.AddThemeFontSizeOverride("font_size", 13);
+        _chancesLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.92f, 0.05f, 1f));
         _statusLabel = GetNode<Label>("%StatusLabel");
         _progressContainer = GetNode<HBoxContainer>("%ProgressContainer");
         _capturarBtn = GetNode<Button>("%CapturarBtn");
         _fecharBtn = GetNode<Button>("%FecharBtn");
 
+        _titulo.AddThemeFontSizeOverride("font_size", 18);
+        _titulo.AddThemeColorOverride("font_color", new Color(1.0f, 0.92f, 0.08f, 1f));
+        _instrucao.AddThemeFontSizeOverride("font_size", 13);
+        _instrucao.AddThemeColorOverride("font_color", new Color(0.90f, 0.94f, 1f, 1f));
+        _statusLabel.AddThemeFontSizeOverride("font_size", 14);
+
         _capturarBtn.Pressed += TentarCaptura;
         _fecharBtn.Pressed += () => Fechar(false);
+        EstilizarBotao(_capturarBtn, new Color(0.10f, 0.40f, 0.62f, 1f), new Color(0.22f, 0.82f, 1f, 1f));
+        EstilizarBotao(_fecharBtn, new Color(0.05f, 0.06f, 0.09f, 0.96f), new Color(0.26f, 0.34f, 0.46f, 1f));
 
-        _progressContainer.AddThemeConstantOverride("separation", 10);
+        _progressContainer.AddThemeConstantOverride("separation", 8);
 
         var vbox = _panel.GetNode("VBox");
+        if (vbox is VBoxContainer vboxContainer)
+            vboxContainer.AddThemeConstantOverride("separation", 8);
 
         _titleBar = new Panel();
-        _titleBar.CustomMinimumSize = new Vector2(0, 28);
+        _titleBar.CustomMinimumSize = new Vector2(0, 30);
         _titleBar.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _titleBar.MouseFilter = MouseFilterEnum.Pass;
-
-        var titleStyle = new StyleBoxFlat();
-        titleStyle.BgColor = new Color(0.15f, 0.15f, 0.2f, 0.9f);
-        titleStyle.CornerRadiusTopLeft = 8;
-        titleStyle.CornerRadiusTopRight = 8;
-        _titleBar.AddThemeStyleboxOverride("panel", titleStyle);
+        _titleBar.AddThemeStyleboxOverride("panel", CriarStyle(
+            new Color(0.01f, 0.014f, 0.024f, 0.96f),
+            new Color(1.0f, 0.86f, 0.08f, 0.90f),
+            7,
+            1));
 
         vbox.RemoveChild(_titulo);
         _titulo.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -86,19 +104,25 @@ public partial class PetScrollMiniGame : Control
         {
             var lbl = new Label();
             lbl.Text = "\u25CB";
-            lbl.AddThemeFontSizeOverride("font_size", 28);
-            lbl.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.6f));
+            lbl.AddThemeFontSizeOverride("font_size", 24);
+            lbl.AddThemeColorOverride("font_color", new Color(0.34f, 0.45f, 0.58f, 1f));
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             _progressContainer.AddChild(lbl);
             _progressIndicators.Add(lbl);
         }
 
-        _chancesLabel.Text = $"Tentativas: {MaxTentativas}/{MaxTentativas}";
+        _chancesLabel.Text = $"Tentativas: {_maxTentativas}/{_maxTentativas}";
         vbox.AddChild(_chancesLabel);
         vbox.MoveChild(_chancesLabel, _instrucao.GetIndex() + 1);
 
-        _barBg = new Control();
-        _barBg.CustomMinimumSize = new Vector2(300, 30);
+        var barPanel = new Panel();
+        barPanel.AddThemeStyleboxOverride("panel", CriarStyle(
+            new Color(0.018f, 0.022f, 0.032f, 1f),
+            new Color(0.20f, 0.62f, 0.92f, 1f),
+            5,
+            1));
+        _barBg = barPanel;
+        _barBg.CustomMinimumSize = new Vector2(280, 18);
         _barBg.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
         _barBg.MouseFilter = MouseFilterEnum.Ignore;
         vbox.AddChild(_barBg);
@@ -106,34 +130,33 @@ public partial class PetScrollMiniGame : Control
 
         _barGreen = new Panel();
         _barGreen.MouseFilter = MouseFilterEnum.Ignore;
-        var greenStyle = new StyleBoxFlat();
-        greenStyle.BgColor = new Color(0.1f, 0.5f, 0.1f, 0.9f);
-        greenStyle.CornerRadiusTopLeft = 6;
-        greenStyle.CornerRadiusTopRight = 6;
-        greenStyle.CornerRadiusBottomRight = 6;
-        greenStyle.CornerRadiusBottomLeft = 6;
-        _barGreen.AddThemeStyleboxOverride("panel", greenStyle);
+        _barGreen.AddThemeStyleboxOverride("panel", CriarStyle(
+            new Color(0.05f, 0.58f, 0.82f, 0.95f),
+            new Color(0.24f, 0.86f, 1.0f, 0.95f),
+            5,
+            0));
         _barBg.AddChild(_barGreen);
 
         _sweetSpot = new Panel();
         _sweetSpot.MouseFilter = MouseFilterEnum.Ignore;
-        var redStyle = new StyleBoxFlat();
-        redStyle.BgColor = new Color(0.9f, 0.1f, 0.1f, 0.7f);
-        redStyle.CornerRadiusTopLeft = 6;
-        redStyle.CornerRadiusTopRight = 6;
-        redStyle.CornerRadiusBottomRight = 6;
-        redStyle.CornerRadiusBottomLeft = 6;
-        _sweetSpot.AddThemeStyleboxOverride("panel", redStyle);
+        _sweetSpot.AddThemeStyleboxOverride("panel", CriarStyle(
+            new Color(1.0f, 0.88f, 0.02f, 0.98f),
+            new Color(1.0f, 1.0f, 0.45f, 1f),
+            5,
+            1));
         _barBg.AddChild(_sweetSpot);
 
         _marker = new Label();
         _marker.Text = "\u25BC";
-        _marker.AddThemeFontSizeOverride("font_size", 20);
-        _marker.AddThemeColorOverride("font_color", new Color(1, 1, 1));
+        _marker.AddThemeFontSizeOverride("font_size", 18);
+        _marker.AddThemeColorOverride("font_color", new Color(1.0f, 0.96f, 0.08f, 1f));
+        _marker.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.8f));
+        _marker.AddThemeConstantOverride("shadow_offset_x", 1);
+        _marker.AddThemeConstantOverride("shadow_offset_y", 1);
         _marker.HorizontalAlignment = HorizontalAlignment.Center;
         _marker.VerticalAlignment = VerticalAlignment.Top;
         _marker.MouseFilter = MouseFilterEnum.Ignore;
-        _marker.Size = new Vector2(20, 30);
+        _marker.Size = new Vector2(18, 24);
         _barBg.AddChild(_marker);
 
         _panel.Visible = false;
@@ -149,7 +172,7 @@ public partial class PetScrollMiniGame : Control
         _podeClicar = true;
 
         _titulo.Text = $"Capture: {petNome}";
-        _instrucao.Text = "Clique quando a seta estiver na faixa vermelha!";
+        _instrucao.Text = "Clique quando a seta estiver na faixa dourada!";
         _statusLabel.Text = "";
         _chancesLabel.Text = $"Tentativas: {_maxTentativas}/{_maxTentativas}";
         AtualizarProgresso();
@@ -194,15 +217,16 @@ public partial class PetScrollMiniGame : Control
         }
 
         _barGreen.Position = Vector2.Zero;
-        _barGreen.Size = new Vector2(_barWidth, 30);
+        const float barHeight = 18f;
+        _barGreen.Size = new Vector2(_barWidth, barHeight);
 
         _sweetSpot.Position = new Vector2(
             (_sweetSpotPos - _sweetSpotWidth / 2) * _barWidth, 0);
         _sweetSpot.Size = new Vector2(
-            _sweetSpotWidth * _barWidth, 30);
+            _sweetSpotWidth * _barWidth, barHeight);
 
         _marker.Position = new Vector2(
-            _markerPos * _barWidth - _marker.Size.X / 2, -18);
+            _markerPos * _barWidth - _marker.Size.X / 2, -16);
 
         if (Input.IsActionJustPressed("ui_accept"))
         {
@@ -293,16 +317,16 @@ public partial class PetScrollMiniGame : Control
             if (i < _acertos)
             {
                 _progressIndicators[i].Text = "\u25CF";
-                _progressIndicators[i].AddThemeColorOverride("font_color", new Color(0, 1, 0));
+                _progressIndicators[i].AddThemeColorOverride("font_color", new Color(1.0f, 0.90f, 0.05f, 1f));
             }
             else
             {
                 _progressIndicators[i].Text = "\u25CB";
-                _progressIndicators[i].AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.6f));
+                _progressIndicators[i].AddThemeColorOverride("font_color", new Color(0.34f, 0.45f, 0.58f, 1f));
             }
         }
 
-        _instrucao.Text = $"Clique quando a seta estiver na faixa vermelha! ({_acertos}/{MaxAcertos})";
+        _instrucao.Text = $"Clique quando a seta estiver na faixa dourada! ({_acertos}/{MaxAcertos})";
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)
@@ -333,5 +357,31 @@ public partial class PetScrollMiniGame : Control
         _fecharBtn.Disabled = false;
         _panel.Visible = false;
         EmitSignal(SignalName.MiniGameConcluido, _petIdReward, _petNameReward, sucesso);
+    }
+
+    private static StyleBoxFlat CriarStyle(Color bg, Color border, int radius, int borderWidth)
+    {
+        var style = new StyleBoxFlat();
+        style.BgColor = bg;
+        style.BorderColor = border;
+        style.BorderWidthTop = borderWidth;
+        style.BorderWidthBottom = borderWidth;
+        style.BorderWidthLeft = borderWidth;
+        style.BorderWidthRight = borderWidth;
+        style.CornerRadiusTopLeft = radius;
+        style.CornerRadiusTopRight = radius;
+        style.CornerRadiusBottomLeft = radius;
+        style.CornerRadiusBottomRight = radius;
+        return style;
+    }
+
+    private static void EstilizarBotao(Button button, Color bg, Color border)
+    {
+        button.AddThemeFontSizeOverride("font_size", 13);
+        button.AddThemeColorOverride("font_color", new Color(0.92f, 0.96f, 1f, 1f));
+        button.AddThemeStyleboxOverride("normal", CriarStyle(bg, border, 5, 1));
+        button.AddThemeStyleboxOverride("hover", CriarStyle(bg.Lightened(0.12f), border.Lightened(0.15f), 5, 1));
+        button.AddThemeStyleboxOverride("pressed", CriarStyle(bg.Darkened(0.08f), border, 5, 1));
+        button.AddThemeStyleboxOverride("disabled", CriarStyle(new Color(0.08f, 0.09f, 0.11f, 0.85f), new Color(0.18f, 0.20f, 0.24f, 0.9f), 5, 1));
     }
 }

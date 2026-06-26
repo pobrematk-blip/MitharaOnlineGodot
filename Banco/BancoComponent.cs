@@ -122,6 +122,41 @@ public partial class BancoComponent : Node
         EmitSignal(SignalName.BancoAtualizado);
     }
 
+    public void AplicarDadosServidor(Godot.Collections.Array<Godot.Collections.Dictionary> items, ItemDatabase itemDb)
+    {
+        if (itemDb == null) return;
+
+        foreach (var slot in Slots)
+        {
+            slot.Item = null;
+            slot.Quantidade = 0;
+            slot.RefinoNivel = 0;
+            slot.DadosInstancia = "";
+        }
+
+        foreach (var entry in items)
+        {
+            int slotIndex = (int)entry["slot"];
+            if (slotIndex < 0 || slotIndex >= Slots.Count) continue;
+
+            int itemId = (int)entry["item_id"];
+            int quantity = (int)entry["quantity"];
+            int refineLevel = (int)entry["refine_level"];
+            string instanceData = (string)entry["instance_data"];
+            var resource = itemDb.GetItem(itemId);
+            if (resource == null)
+            {
+                itemDb.Refresh();
+                resource = itemDb.GetItem(itemId);
+            }
+            if (resource == null) continue;
+
+            Slots[slotIndex] = new SlotInventario(resource, quantity, refineLevel, instanceData);
+        }
+
+        EmitSignal(SignalName.BancoAtualizado);
+    }
+
     public bool AdicionarItem(ItemResource novoItem, int quantidade = 1)
     {
         if (novoItem == null) return false;

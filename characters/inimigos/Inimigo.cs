@@ -237,6 +237,11 @@ public partial class Inimigo : CharacterBody2D
         };
     }
 
+    public void AtualizarPetPadrao()
+    {
+        DefinirPetPadrao();
+    }
+
     private void OnAnimationFinished()
     {
         if (_sprite == null)

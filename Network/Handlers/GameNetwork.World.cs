@@ -145,6 +145,13 @@ partial class GameNetwork
         bool moving = r.GetBool();
         bool sprinting = r.GetBool();
 
+        if (entityId == LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            localPlayer?.ApplyServerPosition(x, y, animated: true);
+            return;
+        }
+
         var em = GetNodeOrNull<EntityManager>("EntityManager");
         em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting);
     }

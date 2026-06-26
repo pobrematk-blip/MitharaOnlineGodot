@@ -60,7 +60,11 @@ public partial class PlayerSkillComponent
 
         string dir = _player.CurrentDirection ?? "down";
         Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
-        gameNet.SendSkillUse(slotIndex, skill.SkillId, _player.GlobalPosition + dirVec * 50f);
+        Vector2 targetPosition = _player.GlobalPosition + dirVec * 50f;
+        if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
+            targetPosition = selectedTargetPosition;
+
+        gameNet.SendSkillUse(slotIndex, skill.SkillId, targetPosition);
         bool localSkillEffectsEnabled = false;
         if (!localSkillEffectsEnabled)
             return;
@@ -272,17 +276,32 @@ public partial class PlayerSkillComponent
             return;
         }
 
+        if (item.ItemID == 100 || item.ItemID == 114)
+        {
+            int maxTent = item.ItemID == 114 ? 5 : 7;
+            TentarCapturarPet(_player, inventorySlot, maxTent);
+            return;
+        }
+
         gameNet.SendUseItem(inventorySlot);
         GD.Print($"[SKILLCOMP] Pedido ao servidor para usar '{item.Nome}' do inventario slot {inventorySlot}.");
     }
 
 
-    private void TentarCapturarPet(Player player, ItemResource item)
+    private void TentarCapturarPet(Player player, int inventorySlot, int maxTent)
     {
-        GD.PrintErr("[SKILLCOMP] Captura local de pet bloqueada. Captura deve ser validada pelo servidor.");
-        bool localPetCaptureEnabled = false;
-        if (!localPetCaptureEnabled)
+        if (player == null)
+        {
+            GD.PrintErr("[SKILLCOMP] Player nao encontrado para capturar pet.");
             return;
+        }
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.PrintErr("[SKILLCOMP] Sem conexao com o servidor para capturar pet.");
+            return;
+        }
 
         var inimigos = GetTree().GetNodesInGroup("Inimigos");
         Inimigo alvo = null;
@@ -336,21 +355,21 @@ public partial class PlayerSkillComponent
         }
         if (hud != null)
             hud.AddChild(miniGame);
+        else
+            GetTree().CurrentScene?.AddChild(miniGame);
 
         miniGame.Connect(PetScrollMiniGame.SignalName.MiniGameConcluido, Callable.From((int capturedPetId, string capturedPetNome, bool sucesso) =>
         {
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected)
+                gameNet.SendPetCapture(capturedPetId, capturedPetNome, inventorySlot, sucesso);
+
             if (sucesso && IsInstanceValid(alvo))
             {
-                var colecao = _player?.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
-                if (colecao != null)
-                    colecao.RegistrarCaptura(capturedPetId, capturedPetNome);
-
-                var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-                if (gameNet != null && gameNet.IsConnected)
-                    gameNet.SendPetCapture(capturedPetId, capturedPetNome);
-
                 alvo.QueueFree();
                 var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+                if (chat == null)
+                    chat = GetNodeOrNull<ChatUI>("/root/Main/HUD/ChatUI");
                 chat?.AddSystemMessage($"Pet '{capturedPetNome}' capturado com sucesso!");
                 GD.Print($"[SKILLCOMP] Pet {capturedPetNome} capturado!");
             }
@@ -359,7 +378,7 @@ public partial class PlayerSkillComponent
                 miniGame.QueueFree();
         }));
 
-        miniGame.IniciarMiniGame(petId, petNome);
+        miniGame.IniciarMiniGame(petId, petNome, maxTent);
     }
 
     private void TentarReviverAliado(Player player)

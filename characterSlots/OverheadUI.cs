@@ -152,6 +152,12 @@ public partial class OverheadUI : Control
 
     public override void _Ready()
     {
+        if (GetParent() is CanvasLayer)
+        {
+            ZIndex = -100;
+            ZAsRelative = false;
+        }
+
         if (!_remoteMode)
             _camera = GetViewport().GetCamera2D();
 

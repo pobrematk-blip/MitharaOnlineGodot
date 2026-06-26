@@ -23,7 +23,14 @@ public partial class PetNode : Node2D
     public int PetID { get; set; }
     public string NomePet { get; set; } = "";
     public string AnimPrefix { get; set; } = "";
-    private string _animPrefixo => string.IsNullOrEmpty(AnimPrefix) ? NomePet : AnimPrefix;
+    private string _animPrefixo
+    {
+        get
+        {
+            string prefix = string.IsNullOrWhiteSpace(AnimPrefix) ? NomePet : AnimPrefix;
+            return prefix.Trim().TrimEnd('_').ToLowerInvariant();
+        }
+    }
     public TipoPet TipoPet { get; set; }
     public bool Ativo { get; set; } = true;
     public bool ColetaAtiva { get; set; } = true;

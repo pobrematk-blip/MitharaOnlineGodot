@@ -96,6 +96,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
     [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana);
+    [Signal] public delegate void OnVipStatusEventHandler(long expiryBinary);
     [Signal] public delegate void OnTalentDataEventHandler(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados);
     [Signal] public delegate void OnSkillBarDataEventHandler(Godot.Collections.Array<int> skillIds);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
@@ -114,11 +115,11 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);
     [Signal] public delegate void OnRefineResultEventHandler(bool success, int newLevel, string message);
     [Signal] public delegate void OnOpenRefineEventHandler();
-    [Signal] public delegate void OnOpenLojinhaEventHandler(ulong lojinhaId, bool isOwner, string ownerName, Godot.Collections.Array<Godot.Collections.Dictionary> items);
-    [Signal] public delegate void OnLojinhaDataEventHandler(ulong lojinhaId, bool isOwner, string ownerName, int goldEarned, Godot.Collections.Array<Godot.Collections.Dictionary> items);
+    [Signal] public delegate void OnOpenLojinhaEventHandler(ulong lojinhaId, bool isOwner, string ownerName, string shopName, bool isOpen, int maxSlots, Godot.Collections.Array<Godot.Collections.Dictionary> items);
+    [Signal] public delegate void OnLojinhaDataEventHandler(ulong lojinhaId, bool isOwner, string ownerName, string shopName, bool isOpen, int maxSlots, int goldEarned, Godot.Collections.Array<Godot.Collections.Dictionary> items);
     [Signal] public delegate void OnLojinhaBuyResultEventHandler(bool success, string message);
     [Signal] public delegate void OnLojinhaListResultEventHandler(Godot.Collections.Array<Godot.Collections.Dictionary> lojinhas);
-    [Signal] public delegate void OnLojinhaSpawnEventHandler(ulong lojinhaId, string ownerName, float x, float y);
+    [Signal] public delegate void OnLojinhaSpawnEventHandler(ulong lojinhaId, string ownerName, string shopName, string ownerClass, string ownerRace, bool isOpen, float x, float y);
     [Signal] public delegate void OnLojinhaDespawnEventHandler(ulong lojinhaId);
     [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
@@ -724,16 +725,19 @@ public partial class GameNetwork : Node
         }
         PendingPetData = list;
         GD.Print($"[GAME] Received pet data: {count} pets");
+        ApplyPendingInventory();
     }
 
-    public void SendPetCapture(int petId, string petName)
+    public void SendPetCapture(int petId, string petName, int scrollSlot = -1, bool sucesso = true)
     {
         _client?.SendPacket(PacketId.C2S_PetCapture, w =>
         {
             w.Put(petId);
             w.Put(petName);
+            w.Put(scrollSlot);
+            w.Put(sucesso);
         });
-        GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId})");
+        GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId}) scrollSlot={scrollSlot} sucesso={sucesso}");
     }
 
     public void SendCollectLocalItem(int itemId, int quantity, Vector2 worldPosition)
@@ -832,6 +836,7 @@ public partial class GameNetwork : Node
         long binary = r.GetLong();
         VipExpiryBinary = binary;
         var expiry = System.DateTime.FromBinary(binary);
+        EmitSignal(SignalName.OnVipStatus, binary);
         GD.Print($"[VIP] Status recebido: expiry={expiry:yyyy-MM-dd HH:mm:ss}, ativo={IsVipActive}");
     }
 

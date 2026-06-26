@@ -1,12 +1,13 @@
 using Godot;
-using System.Collections.Generic;
-using System.Linq;
 
 public partial class LojinhaUI : Control
 {
     private ulong _lojinhaId;
     private bool _isOwner;
-    private string _ownerName;
+    private bool _isOpen;
+    private int _maxSlots;
+    private string _ownerName = "";
+    private string _shopName = "";
     private GameNetwork _net;
 
     private Label _tituloLabel;
@@ -19,11 +20,17 @@ public partial class LojinhaUI : Control
     private Button _fecharLojinhaBtn;
     private Panel _dropZone;
     private Label _feedbackLabel;
+    private LineEdit _nomeLojaEdit;
+    private Button _comprarModoBtn;
+    private Button _venderModoBtn;
+    private Button _abrirLojaBtn;
+    private Button _salvarRascunhoBtn;
+    private Label _statusLabel;
 
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
-
-    private List<LojinhaItemEntry> _items = new();
+    private bool _ready;
+    private Godot.Collections.Array<Godot.Collections.Dictionary> _pendingItems = new();
 
     public override void _Ready()
     {
@@ -40,53 +47,108 @@ public partial class LojinhaUI : Control
 
         _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
 
+        CriarControlesDono();
+
         _fecharBtn.Pressed += () => QueueFree();
         _coletarBtn.Pressed += OnColetar;
         _fecharLojinhaBtn.Pressed += OnFecharLojinha;
 
+        if (_dropZone is LojinhaDropSlot dropSlot)
+            dropSlot.Connect(LojinhaDropSlot.SignalName.OnLojinhaDrop, Callable.From<Variant>(OnLojinhaDrop));
+
         if (_net != null)
         {
-            _net.Connect(GameNetwork.SignalName.OnLojinhaData, Callable.From((ulong id, bool owner, string name, int gold, Godot.Collections.Array<Godot.Collections.Dictionary> items) => OnLojinhaData(id, owner, name, gold, items)));
+            _net.Connect(GameNetwork.SignalName.OnLojinhaData, Callable.From((ulong id, bool owner, string ownerName, string shopName, bool isOpen, int maxSlots, int gold, Godot.Collections.Array<Godot.Collections.Dictionary> items) => OnLojinhaData(id, owner, ownerName, shopName, isOpen, maxSlots, gold, items)));
             _net.Connect(GameNetwork.SignalName.OnLojinhaBuyResult, Callable.From((bool success, string message) => OnBuyResult(success, message)));
-            _net.Connect(GameNetwork.SignalName.OnGoldUpdate, Callable.From((int gold) => { }));
         }
 
         _tituloLabel.GuiInput += OnTituloGuiInput;
-
-        _ownerPanel.Visible = _isOwner;
-        _buyerPanel.Visible = !_isOwner;
+        _ready = true;
+        AplicarEstado();
     }
 
-    public void Setup(ulong lojinhaId, bool isOwner, string ownerName, Godot.Collections.Array<Godot.Collections.Dictionary> items)
+    public void Setup(ulong lojinhaId, bool isOwner, string ownerName, string shopName, bool isOpen, int maxSlots, Godot.Collections.Array<Godot.Collections.Dictionary> items)
     {
         _lojinhaId = lojinhaId;
         _isOwner = isOwner;
         _ownerName = ownerName;
-        _tituloLabel.Text = $"Lojinha de {ownerName}";
-        _goldEarnedLabel.Text = "";
+        _shopName = string.IsNullOrWhiteSpace(shopName) ? $"Loja de {ownerName}" : shopName;
+        _isOpen = isOpen;
+        _maxSlots = maxSlots;
+        _pendingItems = items;
+        AplicarEstado();
+    }
 
-        if (_isOwner && _ownerPanel != null)
+    private void CriarControlesDono()
+    {
+        _statusLabel = new Label
         {
-            _ownerPanel.Visible = true;
-            _buyerPanel.Visible = false;
-        }
-        else if (!_isOwner && _buyerPanel != null)
-        {
-            _buyerPanel.Visible = true;
-            _ownerPanel.Visible = false;
-        }
+            Text = "",
+        };
+        _statusLabel.AddThemeColorOverride("font_color", new Color(0.75f, 0.85f, 1f));
+        _statusLabel.AddThemeFontSizeOverride("font_size", 12);
+        _ownerPanel.AddChild(_statusLabel);
+        _ownerPanel.MoveChild(_statusLabel, 0);
 
-        UpdateItemList(items);
+        _nomeLojaEdit = new LineEdit
+        {
+            PlaceholderText = "Nome da loja",
+            CustomMinimumSize = new Vector2(0, 28),
+        };
+        _ownerPanel.AddChild(_nomeLojaEdit);
+        _ownerPanel.MoveChild(_nomeLojaEdit, 1);
+
+        var modoRow = new HBoxContainer();
+        _comprarModoBtn = new Button { Text = "Comprar", ToggleMode = true };
+        _venderModoBtn = new Button { Text = "Vender", ToggleMode = true, ButtonPressed = true };
+        _comprarModoBtn.Pressed += () => DefinirModoVenda(false);
+        _venderModoBtn.Pressed += () => DefinirModoVenda(true);
+        modoRow.AddChild(_comprarModoBtn);
+        modoRow.AddChild(_venderModoBtn);
+        _ownerPanel.AddChild(modoRow);
+        _ownerPanel.MoveChild(modoRow, 2);
+
+        var abrirRow = new HBoxContainer();
+        _salvarRascunhoBtn = new Button { Text = "Salvar" };
+        _abrirLojaBtn = new Button { Text = "Abrir Loja" };
+        _salvarRascunhoBtn.Pressed += () => EnviarConfig(false);
+        _abrirLojaBtn.Pressed += () => EnviarConfig(true);
+        abrirRow.AddChild(_salvarRascunhoBtn);
+        abrirRow.AddChild(_abrirLojaBtn);
+        _ownerPanel.AddChild(abrirRow);
+        _ownerPanel.MoveChild(abrirRow, 3);
+    }
+
+    private void AplicarEstado()
+    {
+        if (!_ready) return;
+
+        _tituloLabel.Text = _shopName;
+        _nomeLojaEdit.Text = _shopName;
+        _ownerPanel.Visible = _isOwner;
+        _buyerPanel.Visible = !_isOwner;
+        _statusLabel.Text = _isOpen ? $"Aberta | Slots {_pendingItems.Count}/{_maxSlots}" : $"Rascunho | Slots {_pendingItems.Count}/{_maxSlots}";
+        _abrirLojaBtn.Text = _isOpen ? "Atualizar Loja" : "Abrir Loja";
+
+        DefinirModoVenda(_isOwner);
+        UpdateItemList(_pendingItems);
+    }
+
+    private void DefinirModoVenda(bool venda)
+    {
+        if (!_ready || !_isOwner) return;
+        _comprarModoBtn.ButtonPressed = !venda;
+        _venderModoBtn.ButtonPressed = venda;
+        _dropZone.Visible = venda;
+        var hint = _dropZone.GetNodeOrNull<Label>("DropLabel");
+        if (hint != null)
+            hint.Text = venda ? "Solte um item aqui para escolher quantidade e preco" : "Modo compra: confira os itens da sua loja";
     }
 
     private void UpdateItemList(Godot.Collections.Array<Godot.Collections.Dictionary> items)
     {
         foreach (var child in _itemsContainer.GetChildren())
-        {
-            if (child is LojinhaItemRow row)
-                row.QueueFree();
-        }
-        _items.Clear();
+            child.QueueFree();
 
         foreach (var dict in items)
         {
@@ -102,28 +164,95 @@ public partial class LojinhaUI : Control
                 _net
             );
             _itemsContainer.AddChild(row);
-            _items.Add(new LojinhaItemEntry { Slot = (int)dict["slot"], ItemId = (int)dict["item_id"] });
         }
     }
 
-    private void OnLojinhaData(ulong lojinhaId, bool isOwner, string ownerName, int goldEarned, Godot.Collections.Array<Godot.Collections.Dictionary> items)
+    private void OnLojinhaData(ulong lojinhaId, bool isOwner, string ownerName, string shopName, bool isOpen, int maxSlots, int goldEarned, Godot.Collections.Array<Godot.Collections.Dictionary> items)
     {
         if (lojinhaId != _lojinhaId) return;
-        UpdateItemList(items);
-        _goldEarnedLabel.Text = goldEarned > 0 ? $"Gold acumulado: {goldEarned}" : "";
-        _coletarBtn.Disabled = goldEarned <= 0;
+
+        _isOwner = isOwner;
+        _ownerName = ownerName;
+        _shopName = string.IsNullOrWhiteSpace(shopName) ? $"Loja de {ownerName}" : shopName;
+        _isOpen = isOpen;
+        _maxSlots = maxSlots;
+        _pendingItems = items;
+
+        if (_ready)
+        {
+            AplicarEstado();
+            _goldEarnedLabel.Text = goldEarned > 0 ? $"Gold acumulado: {goldEarned}" : "";
+            _coletarBtn.Disabled = goldEarned <= 0;
+        }
+    }
+
+    private void OnLojinhaDrop(Variant data)
+    {
+        if (data.AsGodotObject() is not SlotUI slot || slot.SlotInterno?.Item == null)
+            return;
+
+        int maxQtd = Mathf.Max(1, slot.SlotInterno.Quantidade);
+        string itemName = slot.SlotInterno.Item.Nome ?? $"Item {slot.SlotInterno.Item.ItemID}";
+        PedirQuantidade(slot.SlotIndex, maxQtd, itemName);
+    }
+
+    private void PedirQuantidade(int invSlot, int maxQtd, string itemName)
+    {
+        var dialog = CriarDialogoTexto($"Vender {itemName}", $"Quantidade (max {maxQtd})", "1", out var input);
+        dialog.Confirmed += () =>
+        {
+            int quantidade = 1;
+            if (int.TryParse(input.Text, out var parsed))
+                quantidade = Mathf.Clamp(parsed, 1, maxQtd);
+            PedirPreco(invSlot, quantidade, itemName);
+        };
+        AddChild(dialog);
+        dialog.PopupCentered(new Vector2I(320, 150));
+    }
+
+    private void PedirPreco(int invSlot, int quantidade, string itemName)
+    {
+        var dialog = CriarDialogoTexto($"Preco de {itemName}", "Gold por unidade", "1", out var input);
+        dialog.Confirmed += () =>
+        {
+            int preco = 1;
+            if (int.TryParse(input.Text, out var parsed))
+                preco = Mathf.Max(1, parsed);
+            _net?.SendLojinhaAddItem(_lojinhaId, invSlot, quantidade, preco);
+        };
+        AddChild(dialog);
+        dialog.PopupCentered(new Vector2I(320, 150));
+    }
+
+    private ConfirmationDialog CriarDialogoTexto(string titulo, string label, string valor, out LineEdit input)
+    {
+        var dialog = new ConfirmationDialog
+        {
+            Title = titulo,
+            OkButtonText = "Confirmar",
+            CancelButtonText = "Cancelar",
+        };
+        var box = new VBoxContainer();
+        box.AddChild(new Label { Text = label });
+        input = new LineEdit { Text = valor, SelectAllOnFocus = true };
+        box.AddChild(input);
+        dialog.AddChild(box);
+        return dialog;
+    }
+
+    private void EnviarConfig(bool abrir)
+    {
+        _net?.SendLojinhaConfigure(_lojinhaId, _nomeLojaEdit.Text, abrir);
     }
 
     private void OnColetar()
     {
-        if (_net != null)
-            _net.SendLojinhaCollect(_lojinhaId);
+        _net?.SendLojinhaCollect(_lojinhaId);
     }
 
     private void OnFecharLojinha()
     {
-        if (_net != null)
-            _net.SendLojinhaClose(_lojinhaId);
+        _net?.SendLojinhaClose(_lojinhaId);
         QueueFree();
     }
 
@@ -144,12 +273,6 @@ public partial class LojinhaUI : Control
         {
             Position += mouseMotion.Position - _pontoCliqueOriginal;
         }
-    }
-
-    public class LojinhaItemEntry
-    {
-        public int Slot { get; set; }
-        public int ItemId { get; set; }
     }
 }
 
@@ -183,53 +306,46 @@ public partial class LojinhaItemRow : HBoxContainer
         _itemDB = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
 
         SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        CustomMinimumSize = new Vector2(0, 36);
+        CustomMinimumSize = new Vector2(0, 38);
 
-        _icone = new TextureRect();
-        _icone.CustomMinimumSize = new Vector2(32, 32);
-        _icone.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-        _icone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _icone = new TextureRect
+        {
+            CustomMinimumSize = new Vector2(32, 32),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+        };
         AddChild(_icone);
 
-        _nomeLabel = new Label();
-        _nomeLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _nomeLabel = new Label { SizeFlagsHorizontal = SizeFlags.ExpandFill };
         _nomeLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
         AddChild(_nomeLabel);
 
-        _qtdLabel = new Label();
-        _qtdLabel.CustomMinimumSize = new Vector2(50, 0);
+        _qtdLabel = new Label { CustomMinimumSize = new Vector2(50, 0) };
         AddChild(_qtdLabel);
 
-        _precoLabel = new Label();
-        _precoLabel.CustomMinimumSize = new Vector2(80, 0);
+        _precoLabel = new Label { CustomMinimumSize = new Vector2(90, 0) };
         _precoLabel.AddThemeColorOverride("font_color", new Color(0.9f, 0.85f, 0.3f));
         AddChild(_precoLabel);
 
         if (!_isOwner)
         {
-            _qtdCompra = new LineEdit();
-            _qtdCompra.CustomMinimumSize = new Vector2(40, 0);
-            _qtdCompra.Text = "1";
+            _qtdCompra = new LineEdit
+            {
+                CustomMinimumSize = new Vector2(44, 0),
+                Text = "1",
+            };
             AddChild(_qtdCompra);
         }
 
-        _acaoBtn = new Button();
-        _acaoBtn.CustomMinimumSize = new Vector2(80, 0);
+        _acaoBtn = new Button { CustomMinimumSize = new Vector2(88, 0) };
         AddChild(_acaoBtn);
 
-        if (_itemDB != null)
+        var def = _itemDB?.GetItem(itemId);
+        if (def != null)
         {
-            var def = _itemDB.GetItem(itemId);
-            if (def != null)
-            {
-                _nomeLabel.Text = def.Nome ?? $"Item {itemId}";
-                if (def.Icone != null)
-                    _icone.Texture = def.Icone;
-            }
-            else
-            {
-                _nomeLabel.Text = $"Item {itemId}";
-            }
+            _nomeLabel.Text = def.Nome ?? $"Item {itemId}";
+            if (def.Icone != null)
+                _icone.Texture = def.Icone;
         }
         else
         {
@@ -237,7 +353,7 @@ public partial class LojinhaItemRow : HBoxContainer
         }
 
         _qtdLabel.Text = $"x{quantity}";
-        _precoLabel.Text = $"{price} gold";
+        _precoLabel.Text = $"{price} cada";
 
         if (_isOwner)
         {
