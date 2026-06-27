@@ -101,6 +101,7 @@ public partial class Player : CharacterBody2D
     private float _maxAttackDuration = 0.8f;
     private bool _wasFPressed = false;
     private bool _projetilDisparado = false;
+    private float _promptUpdateTimer;
     private Sprite2D _shadowSprite;
     private ulong? _selectedTargetId;
     private Node2D _targetMarker;
@@ -207,7 +208,7 @@ public partial class Player : CharacterBody2D
     }
 
     // (full implementations later in file)
-    [Export] public float MeleeAttackRange = 48.0f;
+    [Export] public float MeleeAttackRange = 88.0f;
     [Export] public float AttackDotThreshold = 0.5f;
     
     // Define qual classe esse script está controlando no momento
@@ -599,7 +600,9 @@ public partial class Player : CharacterBody2D
         }
 
         MaxSpeed = classe.VelocidadeMovimento > 0 ? classe.VelocidadeMovimento : MaxSpeed;
-        MeleeAttackRange = classe.AlcanceAtaqueMelee > 0 ? classe.AlcanceAtaqueMelee : MeleeAttackRange;
+        MeleeAttackRange = classe.AlcanceAtaqueMelee > 0
+            ? Mathf.Max(88f, classe.AlcanceAtaqueMelee)
+            : MeleeAttackRange;
 
         ConfigurarArvoreTalentos(classe);
 
@@ -719,7 +722,12 @@ public partial class Player : CharacterBody2D
             }
         }
 
-        UpdateNpcPrompts();
+        _promptUpdateTimer -= (float)delta;
+        if (_promptUpdateTimer <= 0f)
+        {
+            _promptUpdateTimer = 0.18f;
+            UpdateNpcPrompts();
+        }
 
         if (Input.IsKeyPressed(Key.F) && !_wasFPressed)
         {
@@ -1582,8 +1590,6 @@ public partial class Player : CharacterBody2D
         var prompt = lootNode.FindChild("LootPrompt", true, false) as Label;
         if (prompt == null)
             prompt = lootNode.FindChild("InteractPrompt", true, false) as Label;
-        if (prompt == null)
-            prompt = lootNode.FindChild("*", true, false) as Label;
 
         if (prompt != null && prompt.Text == "[F]")
             prompt.Visible = visible;

@@ -335,7 +335,7 @@ public partial class SettingsUI : Control
 
     private void OnCameraZoomChanged(double value)
     {
-        float zoom = Mathf.Clamp((float)value, 0.2f, 2f);
+        float zoom = Mathf.Clamp((float)value, 0.38f, 2f);
         _cameraZoomValueLabel.Text = $"{zoom:F2}x";
         if (_player != null)
         {

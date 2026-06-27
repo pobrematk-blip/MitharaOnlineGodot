@@ -1,6 +1,7 @@
 #nullable enable
 using Godot;
 using System.Collections.Generic;
+using System.IO;
 
 public partial class ItemDatabase : Node
 {
@@ -19,11 +20,11 @@ public partial class ItemDatabase : Node
     {
         _itemMap.Clear();
         _cache.Clear();
+        ScanFallback();
 
         if (!DirAccess.DirExistsAbsolute(ItensDir))
         {
             GD.PrintErr("[ItemDatabase] DirAccess falhou (build exportada?); usando fallback.");
-            ScanFallback();
             _scanned = true;
             GD.Print($"[ItemDatabase] Fallback concluido: {_itemMap.Count} itens mapeados.");
             return;
@@ -39,11 +40,8 @@ public partial class ItemDatabase : Node
     {
         foreach (string path in _fallbackPaths)
         {
-            var res = GD.Load<ItemResource>(path);
-            if (res is ItemResource item && item.ItemID > 0 && !_itemMap.ContainsKey(item.ItemID))
-            {
-                _itemMap[item.ItemID] = path;
-            }
+            if (TryGetItemIdFromPath(path, out int itemId) && !_itemMap.ContainsKey(itemId))
+                _itemMap[itemId] = path;
         }
     }
 
@@ -70,10 +68,16 @@ public partial class ItemDatabase : Node
             if (!entryName.EndsWith(".tres") && !entryName.EndsWith(".res"))
                 continue;
 
-            var res = ResourceLoader.Load(fullPath);
-            if (res is ItemResource item && item.ItemID > 0 && !_itemMap.ContainsKey(item.ItemID))
+            if (TryGetItemIdFromPath(fullPath, out int parsedId))
             {
-                _itemMap[item.ItemID] = fullPath;
+                _itemMap.TryAdd(parsedId, fullPath);
+                continue;
+            }
+
+            var res = ResourceLoader.Load(fullPath);
+            if (res is ItemResource item && item.ItemID > 0)
+            {
+                _itemMap.TryAdd(item.ItemID, fullPath);
             }
         }
         dir.ListDirEnd();
@@ -93,7 +97,7 @@ public partial class ItemDatabase : Node
 
         var resource = GD.Load<ItemResource>(path);
         if (resource == null)
-            resource = CriarItemFallback(itemId);
+            resource = CriarItemFallback(itemId, path);
 
         _cache[itemId] = resource;
         return resource;
@@ -110,7 +114,49 @@ public partial class ItemDatabase : Node
         return _itemMap.ContainsKey(itemId);
     }
 
-    private ItemResource CriarItemFallback(int itemId)
+    private static bool TryGetItemIdFromPath(string path, out int itemId)
+    {
+        itemId = 0;
+        string file = Path.GetFileName(path);
+        int dash = file.IndexOf('-');
+        if (dash <= 0) return false;
+        return int.TryParse(file[..dash], out itemId) && itemId > 0;
+    }
+
+    private static string NomeDoArquivo(string? path, int itemId)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return $"Item #{itemId}";
+
+        string file = Path.GetFileNameWithoutExtension(path);
+        int firstDash = file.IndexOf('-');
+        int lastDash = file.LastIndexOf('-');
+        if (firstDash >= 0 && lastDash > firstDash)
+            return file[(firstDash + 1)..lastDash].Trim();
+        return firstDash >= 0 ? file[(firstDash + 1)..].Trim() : file.Trim();
+    }
+
+    private static string IconeEquipamentoFallback(int itemId)
+    {
+        if (itemId >= 300000 && itemId < 301000)
+        {
+            int slot = (itemId - 300000) % 12;
+            return slot switch
+            {
+                0 or 1 => "res://Itens/Incones/Capacete Perdido.png",
+                2 or 3 => "res://Itens/Incones/Peitoral de Monstro 1.png",
+                4 or 5 => "res://Itens/Incones/Calca de montros 1.png",
+                6 or 7 => "res://Itens/Incones/Luva de couro.png",
+                8 or 9 => "res://Itens/Incones/Botas de Montros.png",
+                10 or 11 => "res://Itens/Incones/Cinto de Troll.png",
+                _ => "res://Itens/Incones/bagitem.png",
+            };
+        }
+
+        return "res://Itens/Incones/bagitem.png";
+    }
+
+    private ItemResource CriarItemFallback(int itemId, string? knownPath = null)
     {
         string iconPath = itemId switch
         {
@@ -126,7 +172,7 @@ public partial class ItemDatabase : Node
             111 => "res://Itens/Incones/Porcao de Mana.png",
             113 => "res://Itens/Incones/Pergaminho de Reset.png",
             114 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
-            _ => "res://Itens/Incones/bagitem.png",
+            _ => IconeEquipamentoFallback(itemId),
         };
 
         string nome = itemId switch
@@ -145,7 +191,7 @@ public partial class ItemDatabase : Node
             112 => "Lojinha Grande",
             113 => "Pergaminho de Reset de Talentos",
             114 => "Pergaminho de Captura de Pet",
-            _ => $"Item #{itemId}",
+            _ => NomeDoArquivo(knownPath, itemId),
         };
 
         var fallback = new ItemResource

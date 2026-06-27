@@ -116,6 +116,7 @@ public class SpawnerManager
             GoldMin = 15,
             GoldMax = 40,
             DropsNormalEquipment = true,
+            EliteDropChance = 0.10,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
@@ -259,6 +260,7 @@ public class SpawnerManager
             GoldMin = 45,
             GoldMax = 120,
             DropsNormalEquipment = true,
+            EliteDropChance = 0.08,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
@@ -310,6 +312,7 @@ public class SpawnerManager
             GoldMin = 60,
             GoldMax = 150,
             DropsNormalEquipment = true,
+            EliteDropChance = 0.08,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
@@ -370,10 +373,10 @@ public class SpawnerManager
             Radius = 600f,
             PrefabId = "slime",
             MaxCount = 15,
-            RespawnDelay = 2f,
+            RespawnDelay = 8f,
             ElitePrefabId = "slimeElite",
-            EliteBaseCount = 2,
-            EliteEveryKills = 10,
+            EliteBaseCount = 0,
+            EliteEveryKills = 8,
         });
 
         _spawnPoints.Add(new SpawnPoint
@@ -404,10 +407,10 @@ public class SpawnerManager
                 Radius = point.Radius,
                 PrefabId = point.PrefabId,
                 MaxCount = point.MaxCount,
-                RespawnDelay = point.RespawnDelay,
+                RespawnDelay = Math.Max(8f, point.RespawnDelay),
                 ElitePrefabId = point.ElitePrefabId,
-                EliteBaseCount = point.EliteBaseCount,
-                EliteEveryKills = point.EliteEveryKills,
+                EliteBaseCount = 0,
+                EliteEveryKills = string.IsNullOrWhiteSpace(point.ElitePrefabId) ? 0 : 8,
             });
         }
     }
@@ -429,7 +432,7 @@ public class SpawnerManager
             Destreza = template.Destreza,
             Inteligencia = template.Inteligencia,
             Speed = template.Speed,
-            AttackRange = template.AttackRange,
+            AttackRange = Math.Max(70f, template.AttackRange),
             AggroRange = template.AggroRange,
             AttackCooldown = template.AttackCooldown,
             ExperienceReward = template.ExperienceReward,
@@ -469,7 +472,7 @@ public class SpawnerManager
             Destreza = template.Destreza,
             Inteligencia = template.Inteligencia,
             Speed = template.Speed,
-            AttackRange = template.AttackRange,
+            AttackRange = Math.Max(70f, template.AttackRange),
             AggroRange = template.AggroRange,
             AttackCooldown = template.AttackCooldown,
             ExperienceReward = template.ExperienceReward,

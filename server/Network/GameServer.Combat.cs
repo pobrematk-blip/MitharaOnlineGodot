@@ -930,8 +930,10 @@ partial class GameServer
         }
 
         bool dropsEquipment = template.DropsNormalEquipment || template.DropsEliteEquipment;
-        bool rollElite = !template.DropsEliteEquipment || rng.NextDouble() < template.EliteDropChance;
-        if (dropsEquipment && rollElite)
+        double equipmentDropChance = template.DropsEliteEquipment
+            ? template.EliteDropChance
+            : Math.Clamp(template.EliteDropChance, 0.0, 1.0);
+        if (dropsEquipment && rng.NextDouble() < equipmentDropChance)
         {
             int equipmentLevel = mob.Level < 10 ? 1 : Math.Min(100, (mob.Level / 10) * 10);
             bool eliteItem = template.DropsEliteEquipment;

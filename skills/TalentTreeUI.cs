@@ -456,6 +456,7 @@ public partial class TalentTreeUI : Control
             {
                 NodeData = node,
                 IsUnlocked = unlocked,
+                CanDragSkill = unlocked && (node.HabilidadeAtiva != null || node.NodeType == TalentNodeType.Skill),
                 MouseFilter = MouseFilterEnum.Stop,
             };
             slot.GuiInput += inputEvent => OnTalentNodeGuiInput(inputEvent, id);
@@ -464,6 +465,7 @@ public partial class TalentTreeUI : Control
             if (node.HabilidadeAtiva == null && nodeSkill != null)
                 node.HabilidadeAtiva = nodeSkill;
             bool isSkillNode = nodeSkill != null || node.NodeType == TalentNodeType.Skill;
+            slot.CanDragSkill = unlocked && isSkillNode;
             if (unlocked && isSkillNode)
                 slot.MouseDefaultCursorShape = CursorShape.Move;
             else if (!unlocked)

@@ -1340,7 +1340,13 @@ public class DatabaseManager
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT guild_id, entity_id, rank FROM guild_members WHERE name = @n";
+        cmd.CommandText = @"
+            SELECT gm.guild_id, gm.entity_id, gm.rank
+            FROM guild_members gm
+            INNER JOIN guilds g ON g.id = gm.guild_id
+            WHERE gm.name = @n
+            ORDER BY gm.guild_id DESC
+            LIMIT 1";
         cmd.Parameters.AddWithValue("@n", characterName);
         using var reader = cmd.ExecuteReader();
         if (!reader.Read()) return (-1, 0, 0);

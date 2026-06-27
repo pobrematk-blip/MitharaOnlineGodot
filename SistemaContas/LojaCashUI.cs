@@ -220,7 +220,7 @@ public partial class LojaCashUI : Control
     {
         string path = itemId switch
         {
-            -1 => "res://Itens/Incones/loja de cash.png",
+            -1 => "res://ui/Incone de Menu/Character.png",
             100 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
             102 => "res://Itens/Incones/Pergaminho de Criação de Guild.png",
             103 => "res://Itens/Incones/Vip 1.png",

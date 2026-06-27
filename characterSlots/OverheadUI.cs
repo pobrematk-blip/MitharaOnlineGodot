@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class OverheadUI : Control
 {
@@ -97,6 +98,7 @@ public partial class OverheadUI : Control
     };
 
     private static readonly string[] EmblemFiles = CarregarEmblemas();
+    private static readonly Dictionary<int, Texture2D> EmblemTextureCache = new();
 
     private static string[] CarregarEmblemas()
     {
@@ -165,37 +167,42 @@ public partial class OverheadUI : Control
             _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
 
         _nomeLabel = new Label();
+        _nomeLabel.Position = new Vector2(0, 18);
         _nomeLabel.Size = new Vector2(120, 20);
         _nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
-        _nomeLabel.AddThemeFontSizeOverride("font_size", 13);
+        _nomeLabel.AddThemeFontSizeOverride("font_size", 14);
         _nomeLabel.AddThemeColorOverride("font_color", Colors.White);
+        _nomeLabel.AddThemeConstantOverride("outline_size", 3);
+        _nomeLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
         _nomeLabel.Visible = MostrarNome;
         AddChild(_nomeLabel);
 
         _guildLabel = new Label
         {
-            Position = new Vector2(0, 17),
+            Position = new Vector2(0, 0),
             Size = new Vector2(120, 18),
             HorizontalAlignment = HorizontalAlignment.Center,
             MouseFilter = MouseFilterEnum.Ignore,
         };
-        _guildLabel.AddThemeFontSizeOverride("font_size", 11);
-        _guildLabel.AddThemeColorOverride("font_color", new Color(0.35f, 0.8f, 1f));
+        _guildLabel.AddThemeFontSizeOverride("font_size", 13);
+        _guildLabel.AddThemeColorOverride("font_color", new Color(0.45f, 1.0f, 0.35f));
+        _guildLabel.AddThemeConstantOverride("outline_size", 3);
+        _guildLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
         AddChild(_guildLabel);
 
         _emblemaIcon = new TextureRect();
-        _emblemaIcon.Position = new Vector2(2, 1);
+        _emblemaIcon.Position = new Vector2(2, 17);
         _emblemaIcon.Size = new Vector2(20, 20);
         _emblemaIcon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
         _emblemaIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
         _emblemaIcon.Visible = false;
         AddChild(_emblemaIcon);
 
-        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(20, 35), out _hpBg, out _hpFill);
+        CriarBarra(new Color(0.85f, 0.15f, 0.15f), new Vector2(20, 39), out _hpBg, out _hpFill);
         _hpBg.Visible = MostrarBarraVida;
         AddChild(_hpBg);
 
-        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(20, 42), out _manaBg, out _manaFill);
+        CriarBarra(new Color(0.1f, 0.3f, 0.9f), new Vector2(20, 46), out _manaBg, out _manaFill);
         _manaBg.Visible = MostrarBarraMana;
         AddChild(_manaBg);
 
@@ -228,6 +235,14 @@ public partial class OverheadUI : Control
 
     public void AtualizarDadosRemotos(string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
     {
+        if (_nomePersonagem == nome
+            && _guildName == guildName
+            && _guildTag == guildTag
+            && _guildEmblemIdx == guildEmblem
+            && _xpAtual == xp
+            && _xpMaximo == xpMax)
+            return;
+
         _nomePersonagem = nome;
         _guildName = guildName;
         _guildTag = guildTag;
@@ -258,13 +273,15 @@ public partial class OverheadUI : Control
     {
         string nome = _nomePersonagem;
 
-        if (_mostrarTagGuild && !string.IsNullOrEmpty(_guildTag))
-            nome = $"[{_guildTag}] {nome}";
-
         if (_mostrarEmblemaGuild && _guildEmblemIdx >= 0 && _guildEmblemIdx < EmblemFiles.Length)
         {
             string path = "res://Itens/Emblema de Guild/" + EmblemFiles[_guildEmblemIdx];
-            var tex = ResourceLoader.Load<Texture2D>(path);
+            if (!EmblemTextureCache.TryGetValue(_guildEmblemIdx, out var tex))
+            {
+                tex = ResourceLoader.Load<Texture2D>(path);
+                if (tex != null)
+                    EmblemTextureCache[_guildEmblemIdx] = tex;
+            }
             if (tex != null)
             {
                 _emblemaIcon.Texture = tex;
@@ -279,7 +296,9 @@ public partial class OverheadUI : Control
         _nomeLabel.Text = nome;
         if (_guildLabel != null)
         {
-            _guildLabel.Text = _mostrarTagGuild ? _guildName : "";
+            _guildLabel.Text = _mostrarTagGuild && !string.IsNullOrEmpty(_guildTag)
+                ? $"[{_guildTag}] {_guildName}"
+                : (_mostrarTagGuild ? _guildName : "");
             _guildLabel.Visible = !string.IsNullOrWhiteSpace(_guildLabel.Text);
         }
     }

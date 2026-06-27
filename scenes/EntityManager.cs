@@ -587,7 +587,7 @@ public partial class EntityManager : Node
 
         var sprite = new AnimatedSprite2D();
         sprite.Name = "AnimatedSprite";
-        sprite.Scale = new Vector2(2f, 2f);
+        sprite.Scale = Vector2.One * 2f;
 
         string raceFile = (race ?? "Humano").Trim() switch
         {
@@ -639,7 +639,7 @@ public partial class EntityManager : Node
         var overhead = new OverheadUI
         {
             Name = "OverheadUI_Remoto",
-            Position = new Vector2(-60, -90),
+            Position = new Vector2(-60, -88),
             ZIndex = 10,
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
@@ -733,15 +733,17 @@ public partial class EntityManager : Node
                 : $"[color=yellow]Lv.{level}[/color] {name}";
             var labelNome = new RichTextLabel
             {
+                Name = "MobNameLabel",
                 Text = levelTag,
-                Position = new Vector2(-70, -68),
+                Position = new Vector2(-80, -86),
+                Size = new Vector2(160, 24),
                 ZIndex = 5,
                 BbcodeEnabled = true,
                 FitContent = true,
                 AutowrapMode = TextServer.AutowrapMode.Off,
                 MouseFilter = Control.MouseFilterEnum.Ignore,
             };
-            labelNome.AddThemeFontSizeOverride("normal_font_size", 18);
+            labelNome.AddThemeFontSizeOverride("normal_font_size", 19);
             labelNome.AddThemeColorOverride("default_color", Colors.White);
             inimigo.AddChild(labelNome);
 
@@ -1256,8 +1258,8 @@ public partial class EntityManager : Node
         var root = new Area2D();
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
-        root.ZIndex = 0;
-        root.ZAsRelative = true;
+        root.ZIndex = -1;
+        root.ZAsRelative = false;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
         root.SetMeta("item_id", itemId);
@@ -1289,11 +1291,11 @@ public partial class EntityManager : Node
 			var icon = new Sprite2D
 			{
 				Name = "ItemIcon",
-				Texture = iconTexture,
-				Position = new Vector2(0, -12),
-				ZIndex = 0,
-				ZAsRelative = true,
-			};
+                Texture = iconTexture,
+                Position = new Vector2(0, -12),
+                ZIndex = 1,
+                ZAsRelative = true,
+            };
 
 			float maxSide = Mathf.Max(iconTexture.GetWidth(), iconTexture.GetHeight());
 			if (maxSide > 0f)
@@ -1329,7 +1331,8 @@ public partial class EntityManager : Node
         spawnTween.TweenProperty(root, "scale", Vector2.One, 0.1f);
 
         var labelName = new Label();
-        labelName.Text = itemId == 0 ? $"Gold x{quantity}" : $"{(itemRes?.Nome ?? $"Item #{itemId}")} x{quantity}";
+        string itemName = itemId == 0 ? "Gold" : (itemRes?.Nome ?? NomeLootFallback(itemId));
+        labelName.Text = $"{itemName} x{quantity}";
         labelName.Position = new Vector2(-54, 8);
         labelName.Size = new Vector2(108, 24);
         labelName.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1383,10 +1386,22 @@ public partial class EntityManager : Node
             0 => "res://Itens/Incones/Moeda de Gold.png",
             110 => "res://Itens/Incones/Porcao de Vida.png",
             111 => "res://Itens/Incones/Porcao de Mana.png",
+            >= 300000 and < 301000 => "res://Itens/Incones/Luva de couro.png",
             _ => "res://Itens/Incones/bagitem.png",
         };
 
         return ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
+    }
+
+    private static string NomeLootFallback(int itemId)
+    {
+        return itemId switch
+        {
+            110 => "Pocao de Vida",
+            111 => "Pocao de Mana",
+            >= 300000 and < 301000 => "Equipamento Normal",
+            _ => $"Item {itemId}",
+        };
     }
 
         private void OnLojinhaSpawn(ulong lojinhaId, string ownerName, string shopName, string ownerClass, string ownerRace, bool isOpen, float x, float y)
@@ -1591,6 +1606,7 @@ public partial class EntityManager : Node
             if (node is Inimigo inimigo)
             {
                 inimigo.SetNetworkState(cur.Position, animDir, cur.Moving, cur.AIState);
+                AtualizarCorNomeMob(inimigo, cur.AIState);
             }
             else
             {
@@ -1643,6 +1659,23 @@ public partial class EntityManager : Node
             if (prompt != null)
                 prompt.Visible = kvp.Key == melhorLojinha;
         }
+    }
+
+    private static void AtualizarCorNomeMob(Inimigo inimigo, byte aiState)
+    {
+        if (inimigo.GetNodeOrNull<RichTextLabel>("MobNameLabel") is not { } label)
+            return;
+
+        bool combate = aiState != 0 || !inimigo.IsNetworked;
+        var color = combate || !EhMobPassivoVisual(inimigo.MobType)
+            ? new Color(1.0f, 0.22f, 0.18f)
+            : Colors.White;
+        label.AddThemeColorOverride("default_color", color);
+    }
+
+    private static bool EhMobPassivoVisual(string mobType)
+    {
+        return mobType is "slime" or "slimeElite" or "cogumelo" or "cogumeloElite" or "plantaCarnivora" or "plantaCarnivoraElite";
     }
 
     private Node2D? ObterPlayerLocal()

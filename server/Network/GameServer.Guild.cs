@@ -59,8 +59,11 @@ partial class GameServer
         if (sender is not PlayerEntity player || player.GuildId < 0) return;
 
         var guild = _world.Guilds.GetGuild(player.GuildId);
-        if (guild == null || guild.LeaderEntityId != sender.Id)
-        { SendSystemMessage(peer, "Apenas o líder pode expulsar."); return; }
+        if (guild == null) return;
+
+        int actorRank = guild.GetRank(sender.Id);
+        if (actorRank > 2)
+        { SendSystemMessage(peer, "Apenas lider, capitao ou oficial podem expulsar."); return; }
 
         var target = FindPlayerByName(targetName, out var targetPeer, out _);
         if (target == null || !guild.Members.Contains(target.Id))
@@ -68,6 +71,10 @@ partial class GameServer
 
         if (target.Id == guild.LeaderEntityId)
         { SendSystemMessage(peer, "Você não pode expulsar a si mesmo."); return; }
+
+        int targetRank = guild.GetRank(target.Id);
+        if (actorRank != 0 && targetRank <= actorRank)
+        { SendSystemMessage(peer, "Voce nao pode expulsar alguem de cargo igual ou maior."); return; }
 
         _db.DeleteGuildMember(guild.Id, target.Id);
         BroadcastGuildMemberUpdate(guild, target.Id, target.Name, false);
@@ -143,6 +150,7 @@ partial class GameServer
 
         guild.SetRank(promotion.LeaderId, 1);
         guild.SetRank(sender.Id, 0);
+        guild.LeaderEntityId = sender.Id;
         _db.SaveGuildMember(guild.Id, promotion.LeaderId, oldLeader.Name, 1);
         _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
         BroadcastGuildRankUpdate(guild, promotion.LeaderId, 1);

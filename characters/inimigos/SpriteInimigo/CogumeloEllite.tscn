@@ -650,7 +650,7 @@ collision_mask = 0
 script = ExtResource("1_hcx4b")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-scale = Vector2(4, 4)
+scale = Vector2(3, 3)
 sprite_frames = SubResource("SpriteFrames_ghvf1")
 animation = &"goblin_attack_up"
 

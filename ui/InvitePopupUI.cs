@@ -18,7 +18,8 @@ public partial class InvitePopupUI : Panel
         _instance = this;
         Visible = false;
 
-        CustomMinimumSize = new Vector2(320, 100);
+        CustomMinimumSize = new Vector2(420, 150);
+        Size = CustomMinimumSize;
 
         var style = new StyleBoxFlat();
         style.BgColor = new Color(0.08f, 0.08f, 0.12f, 0.92f);
@@ -42,8 +43,9 @@ public partial class InvitePopupUI : Panel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            CustomMinimumSize = new Vector2(380, 52),
         };
-        _titleLabel.AddThemeFontSizeOverride("font_size", 13);
+        _titleLabel.AddThemeFontSizeOverride("font_size", 14);
         _titleLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.95f, 1, 0.95f));
         vbox.AddChild(_titleLabel);
 
@@ -51,11 +53,11 @@ public partial class InvitePopupUI : Panel
         hbox.AddThemeConstantOverride("separation", 16);
         vbox.AddChild(hbox);
 
-        var acceptBtn = new Button { Text = "Aceitar" };
+        var acceptBtn = new Button { Text = "Aceitar", CustomMinimumSize = new Vector2(120, 34) };
         acceptBtn.Pressed += OnAccept;
         hbox.AddChild(acceptBtn);
 
-        var declineBtn = new Button { Text = "Recusar" };
+        var declineBtn = new Button { Text = "Recusar", CustomMinimumSize = new Vector2(120, 34) };
         declineBtn.Pressed += OnDecline;
         hbox.AddChild(declineBtn);
     }
@@ -74,7 +76,8 @@ public partial class InvitePopupUI : Panel
             _ => $"{senderName} convidou você!",
         };
         var vp = _instance.GetViewportRect();
-        _instance.Position = new Vector2(vp.Size.X / 2 - 160, vp.Size.Y / 2 - 50);
+        _instance.Size = _instance.CustomMinimumSize;
+        _instance.Position = new Vector2(vp.Size.X / 2 - _instance.Size.X / 2, vp.Size.Y / 2 - _instance.Size.Y / 2);
         _instance.Visible = true;
     }
 

@@ -4,6 +4,7 @@ public partial class TalentNodeSlotUI : PanelContainer
 {
     public TalentNodeResource NodeData { get; set; }
     public bool IsUnlocked { get; set; }
+    public bool CanDragSkill { get; set; }
     public Texture2D IconTexture
     {
         get => _iconTexture;
@@ -156,7 +157,7 @@ public partial class TalentNodeSlotUI : PanelContainer
 
     public override Variant _GetDragData(Vector2 position)
     {
-        if (!IsUnlocked)
+        if (!IsUnlocked && !CanDragSkill)
         {
             GD.Print($"[TALENT UI] Drag bloqueado: talento ainda nao liberado ({NodeData?.NodeId ?? "sem-node"}).");
             return default;

@@ -358,10 +358,14 @@ partial class GameServer
 
                 player.GuildId = guildId;
                 player.GuildName = guild.Name;
+                WriteGuildDataPacket(peer, guild);
             }
             else
             {
                 _db.DeleteGuildMemberByName(guildId, name);
+                player.GuildId = -1;
+                player.GuildName = "";
+                SendGuildClear(peer);
             }
         }
         else
