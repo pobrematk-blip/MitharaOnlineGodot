@@ -89,6 +89,9 @@ public enum PacketId : ushort
 
     C2S_MapEditorPlaceTile = 0x01B0,
     C2S_MapEditorRequestTiles = 0x01B1,
+    C2S_MapMarkerPlace = 0x01B2,
+    C2S_MapMarkerRemove = 0x01B3,
+    C2S_MapMarkerRequest = 0x01B4,
 
     C2S_Ping = 0x01FF,
 
@@ -170,6 +173,7 @@ public enum PacketId : ushort
     S2C_SceneChange = 0x02A6,
     S2C_MapEditorTileData = 0x02B0,
     S2C_MapEditorTileUpdate = 0x02B1,
+    S2C_MapMarkerUpdate = 0x02B2,
     S2C_PartyInviteReceived = 0x0243,
     S2C_GuildInviteReceived = 0x0255,
     S2C_Pong = 0x02FF,

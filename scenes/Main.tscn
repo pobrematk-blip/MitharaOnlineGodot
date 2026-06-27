@@ -78655,15 +78655,11 @@ grow_vertical = 0
 
 [node name="PartyHUD" parent="HUD" instance=ExtResource("21_partyhud")]
 layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -202.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 120.0
-grow_horizontal = 2
-grow_vertical = 0
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 126.0
+offset_right = 288.0
+offset_bottom = 346.0
 
 [node name="DialogUI" parent="HUD" instance=ExtResource("22_dialog")]
 
@@ -78677,10 +78673,10 @@ layer = 20
 [node name="MiniMapa" parent="UI" instance=ExtResource("10_minimapa")]
 layout_mode = 3
 anchors_preset = 1
-offset_left = -247.0
-offset_top = -2.0
-offset_right = 1.0
-offset_bottom = 230.0
+offset_left = -300.0
+offset_top = 4.0
+offset_right = 0.0
+offset_bottom = 284.0
 grow_horizontal = 0
 
 [node name="ItemTooltip" type="Panel" parent="UI"]

@@ -17,7 +17,7 @@ public partial class LojaCashUI : Control
     private Texture2D _coinIcon;
 
     private static readonly string LojaDataPath = "res://SistemaContas/LojaCashData.tres";
-    private static readonly string CoinIconPath = "res://Itens/Incones/Loja de Cash.png";
+    private static readonly string CoinIconPath = "res://Itens/Incones/loja de cash.png";
 
     public override void _Ready()
     {
@@ -68,7 +68,11 @@ public partial class LojaCashUI : Control
     private void Centralizar()
     {
         Vector2 tela = GetViewportRect().Size;
-        Position = (tela / 2) - (Size / 2);
+        Vector2 desired = (tela / 2) - (Size / 2) + new Vector2(48f, 0f);
+        Position = new Vector2(
+            Mathf.Clamp(desired.X, 8f, Mathf.Max(8f, tela.X - Size.X - 8f)),
+            Mathf.Clamp(desired.Y, 8f, Mathf.Max(8f, tela.Y - Size.Y - 8f))
+        );
     }
 
     private void OnTituloGuiInput(InputEvent @event)
@@ -120,8 +124,8 @@ public partial class LojaCashUI : Control
             card.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
             var vbox = new VBoxContainer();
-            vbox.CustomMinimumSize = new Vector2(0, 200);
-            vbox.AddThemeConstantOverride("separation", 6);
+            vbox.CustomMinimumSize = new Vector2(0, 160);
+            vbox.AddThemeConstantOverride("separation", 4);
             vbox.ThemeTypeVariation = "VBoxContainer";
             card.AddChild(vbox);
 
@@ -137,6 +141,7 @@ public partial class LojaCashUI : Control
                     itemIcon = item.Icone;
                 }
             }
+            itemIcon ??= CarregarIconeFallback(entry.ItemID);
 
             var nomeLabel = new Label();
             nomeLabel.Text = nome;
@@ -150,12 +155,12 @@ public partial class LojaCashUI : Control
             var iconContainer = new CenterContainer();
             iconContainer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             iconContainer.SizeFlagsVertical = SizeFlags.ExpandFill;
-            iconContainer.CustomMinimumSize = new Vector2(96, 96);
+            iconContainer.CustomMinimumSize = new Vector2(72, 72);
             vbox.AddChild(iconContainer);
 
             var iconRect = new TextureRect();
             iconRect.Texture = itemIcon;
-            iconRect.CustomMinimumSize = new Vector2(80, 80);
+            iconRect.CustomMinimumSize = new Vector2(62, 62);
             iconRect.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
             iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
             iconContainer.AddChild(iconRect);
@@ -167,8 +172,8 @@ public partial class LojaCashUI : Control
 
             var coinIconRect = new TextureRect();
             coinIconRect.Texture = _coinIcon;
-            coinIconRect.CustomMinimumSize = new Vector2(20, 20);
-            coinIconRect.Size = new Vector2(20, 20);
+            coinIconRect.CustomMinimumSize = new Vector2(16, 16);
+            coinIconRect.Size = new Vector2(16, 16);
             coinIconRect.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
             coinIconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
             coinIconRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
@@ -177,14 +182,14 @@ public partial class LojaCashUI : Control
 
             var precoLabel = new Label();
             precoLabel.Text = $"{entry.PrecoDiamantes}";
-            precoLabel.AddThemeFontSizeOverride("font_size", 14);
+            precoLabel.AddThemeFontSizeOverride("font_size", 12);
             precoLabel.AddThemeColorOverride("font_color", new Color(0.91f, 0.77f, 0.28f));
             precoLabel.VerticalAlignment = VerticalAlignment.Center;
             precoContainer.AddChild(precoLabel);
 
             var comprarBtn = new Button();
             comprarBtn.Text = "Comprar";
-            comprarBtn.CustomMinimumSize = new Vector2(0, 28);
+            comprarBtn.CustomMinimumSize = new Vector2(0, 24);
             comprarBtn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             comprarBtn.AddThemeFontSizeOverride("font_size", 11);
             int capturedItemId = entry.ItemID;
@@ -209,6 +214,25 @@ public partial class LojaCashUI : Control
     {
         if (_cash == null) return;
         _diamantesLabel.Text = $"{_cash.Diamantes}";
+    }
+
+    private static Texture2D CarregarIconeFallback(int itemId)
+    {
+        string path = itemId switch
+        {
+            -1 => "res://Itens/Incones/loja de cash.png",
+            100 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
+            102 => "res://Itens/Incones/Pergaminho de Criação de Guild.png",
+            103 => "res://Itens/Incones/Vip 1.png",
+            104 => "res://Itens/Incones/Vip 2.png",
+            105 => "res://Itens/Incones/vip 3.png",
+            108 or 109 or 112 => "res://Itens/Incones/Bau surpresa 1.png",
+            _ => "res://Itens/Incones/bagitem.png",
+        };
+
+        return ResourceLoader.Exists(path)
+            ? ResourceLoader.Load<Texture2D>(path)
+            : ResourceLoader.Load<Texture2D>("res://Itens/Incones/bagitem.png");
     }
 
     private void OnComprarItem(int itemId, int preco)

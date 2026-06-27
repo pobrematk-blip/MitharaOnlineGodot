@@ -220,9 +220,6 @@ partial class GameServer
         foreach (var item in player.Items)
             Logger.Info($"[GUILD] Item: DbId={item.DbId}, ItemId={item.ItemId}, Slot={item.Slot}, Qty={item.Quantity}");
 
-        player.Gold += 20000;
-        Logger.Info($"[GUILD] Gold buff aplicado! gold agora={player.Gold}");
-
         if (player.GuildId >= 0)
         {
             SendSystemMessage(peer, "Você já está em uma guilda.");
@@ -505,8 +502,8 @@ partial class GameServer
             return;
         }
 
-        _db.DeleteGuild(guild.Id);
         _db.DeleteGuildMember(guild.Id, player.Id);
+        _db.DeleteGuild(guild.Id);
         _world.Guilds.RemoveGuild(guild.Id);
         player.GuildId = -1;
         player.GuildName = "";

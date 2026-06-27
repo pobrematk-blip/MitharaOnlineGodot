@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Arco do Patrulheiro.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco de Caçador.png" id="1_t1qom"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 1001
 Nome = "Arco do Vento Verde"
 Descricao = "A madeira flexível canta baixo quando a corda é puxada, como se o vento guiasse a flecha."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_t1qom")
 QuantidadeMaximaPorSlot = 1
 Tipo = 7
 EhDuasMaos = true

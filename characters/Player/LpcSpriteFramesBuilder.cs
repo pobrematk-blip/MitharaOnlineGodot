@@ -74,45 +74,75 @@ public static class LpcSpriteFramesBuilder
 
     public static SpriteFrames ConstruirEquipamento(Texture2D sheetBase, Texture2D sheetAtaque, string prefixoAtaque)
     {
+        bool usarMapaArco = EhSpritesheetArco(sheetBase) || EhSpritesheetArco(sheetAtaque);
+        int[] movimentoRows = usarMapaArco ? new[] { 27, 28, 29, 30 } : null;
+        int[] ataqueRows = usarMapaArco ? new[] { 16, 17, 18, 19 } : null;
+        int movimentoFrameSize = usarMapaArco ? 128 : FrameSize;
+        return ConstruirEquipamento(sheetBase, sheetAtaque, prefixoAtaque, movimentoRows, movimentoFrameSize, ataqueRows, FrameSize);
+    }
+
+    public static SpriteFrames ConstruirEquipamento(
+        Texture2D sheetBase,
+        Texture2D sheetAtaque,
+        string prefixoAtaque,
+        int[] movimentoRows,
+        int movimentoFrameSize,
+        int[] ataqueRows,
+        int ataqueFrameSize)
+    {
         var sheetPadrao = sheetBase ?? sheetAtaque;
         if (sheetPadrao == null) return new SpriteFrames();
 
         prefixoAtaque = string.IsNullOrWhiteSpace(prefixoAtaque) ? "mago" : prefixoAtaque.Trim().ToLowerInvariant();
         string ataquePath = sheetAtaque?.ResourcePath ?? "";
         string basePath = sheetBase?.ResourcePath ?? "";
-        string cacheKey = $"equip:{basePath}:{ataquePath}:{prefixoAtaque}";
+        string cacheKey = $"equip:{basePath}:{ataquePath}:{prefixoAtaque}:{movimentoFrameSize}:{ataqueFrameSize}:{RowsKey(movimentoRows)}:{RowsKey(ataqueRows)}";
         if (_cache.TryGetValue(cacheKey, out var cached))
             return cached;
 
         var frames = new SpriteFrames();
         var (atkRowBase, atkFrameCount, atkSpeed) = MapaAtaque.GetValueOrDefault(prefixoAtaque, (RowSlash, 6, 5f));
-        bool usarMapaArco = EhSpritesheetArco(sheetPadrao) || EhSpritesheetArco(sheetAtaque);
-        int[] movimentoRows = usarMapaArco ? new[] { 54, 55, 57, 61 } : new[] { RowWalk, RowWalk + 1, RowWalk + 2, RowWalk + 3 };
-        int[] ataqueRows = usarMapaArco ? new[] { 16, 17, 18, 19 } : new[] { atkRowBase, atkRowBase + 1, atkRowBase + 2, atkRowBase + 3 };
+        movimentoRows = NormalizarRows(movimentoRows, RowWalk);
+        ataqueRows = NormalizarRows(ataqueRows, atkRowBase);
+        movimentoFrameSize = movimentoFrameSize > 0 ? movimentoFrameSize : FrameSize;
+        ataqueFrameSize = ataqueFrameSize > 0 ? ataqueFrameSize : FrameSize;
 
         for (int d = 0; d < Direcoes.Length; d++)
         {
             string dir = Direcoes[d];
             int row = movimentoRows[d];
-            AdicionarAnimacao(frames, sheetPadrao, $"walk_{dir}", row, 9, true, 10f);
-            AdicionarAnimacao(frames, sheetPadrao, $"run_{dir}", row, 8, true, 12f);
-            AdicionarAnimacao(frames, sheetPadrao, $"idle_{dir}", row, 2, true, 3f);
+            AdicionarAnimacao(frames, sheetPadrao, $"walk_{dir}", row, 9, true, 10f, movimentoFrameSize, movimentoFrameSize);
+            AdicionarAnimacao(frames, sheetPadrao, $"run_{dir}", row, 8, true, 12f, movimentoFrameSize, movimentoFrameSize);
+            AdicionarAnimacao(frames, sheetPadrao, $"idle_{dir}", row, 2, true, 3f, movimentoFrameSize, movimentoFrameSize);
         }
 
         var sheetAtaqueFinal = sheetAtaque ?? sheetPadrao;
         for (int d = 0; d < Direcoes.Length; d++)
         {
             string dir = Direcoes[d];
-            AdicionarAnimacao(frames, sheetAtaqueFinal, $"{prefixoAtaque}_attack_{dir}", ataqueRows[d], atkFrameCount, false, atkSpeed);
+            AdicionarAnimacao(frames, sheetAtaqueFinal, $"{prefixoAtaque}_attack_{dir}", ataqueRows[d], atkFrameCount, false, atkSpeed, ataqueFrameSize, ataqueFrameSize);
         }
 
         for (int d = 0; d < Direcoes.Length; d++)
-            AdicionarAnimacao(frames, sheetPadrao, $"jump_{Direcoes[d]}", movimentoRows[d], 5, false, 10f);
+            AdicionarAnimacao(frames, sheetPadrao, $"jump_{Direcoes[d]}", movimentoRows[d], 5, false, 10f, movimentoFrameSize, movimentoFrameSize);
 
         AdicionarAnimacao(frames, sheetPadrao, "death", RowHurt, 6, false, 5f);
 
         _cache[cacheKey] = frames;
         return frames;
+    }
+
+    private static int[] NormalizarRows(int[] rows, int rowBase)
+    {
+        if (rows != null && rows.Length >= Direcoes.Length)
+            return rows;
+
+        return new[] { rowBase, rowBase + 1, rowBase + 2, rowBase + 3 };
+    }
+
+    private static string RowsKey(int[] rows)
+    {
+        return rows == null ? "default" : string.Join("-", rows);
     }
 
     private static bool EhSpritesheetArco(Texture2D sheet)
@@ -127,12 +157,18 @@ public static class LpcSpriteFramesBuilder
     private static void AdicionarAnimacao(
         SpriteFrames frames, Texture2D sheet, string nome, int row, int frameCount, bool loop, float speed)
     {
+        AdicionarAnimacao(frames, sheet, nome, row, frameCount, loop, speed, FrameSize, FrameSize);
+    }
+
+    private static void AdicionarAnimacao(
+        SpriteFrames frames, Texture2D sheet, string nome, int row, int frameCount, bool loop, float speed, int frameWidth, int frameHeight)
+    {
         if (frames.HasAnimation(nome)) return;
 
         var lista = new List<Texture2D>();
         for (int col = 0; col < frameCount; col++)
         {
-            var tex = CriarAtlas(sheet, col, row);
+            var tex = CriarAtlas(sheet, col, row, frameWidth, frameHeight);
             if (tex != null)
                 lista.Add(tex);
         }
@@ -149,16 +185,21 @@ public static class LpcSpriteFramesBuilder
 
     private static AtlasTexture CriarAtlas(Texture2D sheet, int col, int row)
     {
-        int x = col * FrameSize;
-        int y = row * FrameSize;
+        return CriarAtlas(sheet, col, row, FrameSize, FrameSize);
+    }
+
+    private static AtlasTexture CriarAtlas(Texture2D sheet, int col, int row, int frameWidth, int frameHeight)
+    {
+        int x = col * frameWidth;
+        int y = row * frameHeight;
         Vector2 size = sheet.GetSize();
-        if (x + FrameSize > size.X || y + FrameSize > size.Y)
+        if (x + frameWidth > size.X || y + frameHeight > size.Y)
             return null;
 
         return new AtlasTexture
         {
             Atlas = sheet,
-            Region = new Rect2(x, y, FrameSize, FrameSize)
+            Region = new Rect2(x, y, frameWidth, frameHeight)
         };
     }
 }

@@ -167,6 +167,38 @@ public class Channel
 
     public Dictionary<ulong, Entity> GetAllEntities() => _entities;
 
+    public IEnumerable<KeyValuePair<ulong, NetPeer>> GetAllPlayerPeers()
+    {
+        foreach (var kv in _playerPeers)
+            yield return kv;
+    }
+
+    public record struct MapMarkerData
+    {
+        public int MarkerId;
+        public float WorldX;
+        public float WorldY;
+        public string PlayerName;
+        public int ChannelId;
+    }
+
+    private readonly List<MapMarkerData> _markers = new();
+
+    public void AddMarker(MapMarkerData marker)
+    {
+        _markers.Add(marker);
+    }
+
+    public void RemoveMarker(int markerId)
+    {
+        _markers.RemoveAll(m => m.MarkerId == markerId);
+    }
+
+    public List<MapMarkerData> GetAllMarkers()
+    {
+        return new List<MapMarkerData>(_markers);
+    }
+
     public int CountMonstersByPrefab(string prefabId)
     {
         return _spawnedByPrefab.TryGetValue(prefabId, out var list) ? list.Count : 0;
@@ -265,7 +297,8 @@ public class Channel
     private void UpdatePlayerRegen(float dt, double gameTime)
     {
         const double outOfCombatDelay = 30.0;
-        const float regenPercentPerSecond = 0.01f;
+        const float healthRegenPercentPerSecond = 0.0015f;
+        const float manaRegenPercentPerSecond = 0.004f;
 
         foreach (var kv in _entities)
         {
@@ -275,14 +308,38 @@ public class Channel
                 {
                     if (player.Health < player.MaxHealth)
                     {
-                        int hpRegen = Math.Max(1, (int)(player.MaxHealth * regenPercentPerSecond * dt));
-                        player.Health = Math.Min(player.MaxHealth, player.Health + hpRegen);
+                        player.HealthRegenAccumulator += player.MaxHealth * healthRegenPercentPerSecond * dt;
+                        int hpRegen = (int)player.HealthRegenAccumulator;
+                        if (hpRegen > 0)
+                        {
+                            player.Health = Math.Min(player.MaxHealth, player.Health + hpRegen);
+                            player.HealthRegenAccumulator -= hpRegen;
+                        }
                     }
+                    else
+                    {
+                        player.HealthRegenAccumulator = 0;
+                    }
+
                     if (player.Mana < player.MaxMana)
                     {
-                        int manaRegen = Math.Max(1, (int)(player.MaxMana * regenPercentPerSecond * dt));
-                        player.Mana = Math.Min(player.MaxMana, player.Mana + manaRegen);
+                        player.ManaRegenAccumulator += player.MaxMana * manaRegenPercentPerSecond * dt;
+                        int manaRegen = (int)player.ManaRegenAccumulator;
+                        if (manaRegen > 0)
+                        {
+                            player.Mana = Math.Min(player.MaxMana, player.Mana + manaRegen);
+                            player.ManaRegenAccumulator -= manaRegen;
+                        }
                     }
+                    else
+                    {
+                        player.ManaRegenAccumulator = 0;
+                    }
+                }
+                else
+                {
+                    player.HealthRegenAccumulator = 0;
+                    player.ManaRegenAccumulator = 0;
                 }
             }
         }

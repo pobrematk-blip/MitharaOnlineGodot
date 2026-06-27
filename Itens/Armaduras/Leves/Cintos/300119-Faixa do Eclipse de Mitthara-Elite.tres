@@ -1,34 +1,31 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/x12.png" id="1_187ga"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
-ItemID = 300119
+ItemID = 9999
 Nome = "Faixa do Eclipse de Mitthara"
 Descricao = "Tecida com fios arcanos de Eclipse de Mitthara, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_187ga")
 QuantidadeMaximaPorSlot = 1
 Tipo = 3
 CategoriaPeso = 0
 TipoItem = 1
 NivelRequerido = 90
 Valor = 900
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 21
-HpMin = 18
-HpMax = 24
-Mana = 30
-ManaMin = 26
-ManaMax = 34
 DefesaFisica = 9
 DefesaFisicaMin = 8
 DefesaFisicaMax = 11
 DefesaMagica = 20
 DefesaMagicaMin = 17
 DefesaMagicaMax = 23
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 21
+HpMin = 18
+HpMax = 24
+Mana = 30
+ManaMin = 26
+ManaMax = 34
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

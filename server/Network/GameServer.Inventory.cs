@@ -678,7 +678,7 @@ partial class GameServer
             lojinha.DbId = dbId;
             channel.AddLojinha(lojinha);
 
-            BroadcastLojinhaSpawn(lojinha, channel);
+            SendLojinhaSpawnToPeer(peer, lojinha);
 
             item.Quantity--;
             if (item.Quantity <= 0)

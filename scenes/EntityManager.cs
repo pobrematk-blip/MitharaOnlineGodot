@@ -1236,7 +1236,11 @@ public partial class EntityManager : Node
         if (projetil == null) return;
 
         projetil.GlobalPosition = new Vector2(originX, originY);
-        GetTree().CurrentScene.AddChild(projetil);
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(projetil);
+        else
+            GetTree().CurrentScene.AddChild(projetil);
 
         if (projetil is Projetil proj)
         {
@@ -1270,6 +1274,8 @@ public partial class EntityManager : Node
             itemRes = _gameNet.ItemDB.GetItem(itemId);
             if (itemRes != null)
                 rarityColor = RarityColors.GetValueOrDefault(itemRes.Raridade, rarityColor);
+            else
+                GameNetwork.LogError($"[LOOT] ItemResource nao encontrado para loot itemId={itemId}, qty={quantity}");
         }
 
         var visuals = new Node2D();
@@ -1277,7 +1283,7 @@ public partial class EntityManager : Node
         visuals.ZAsRelative = true;
         root.AddChild(visuals);
 
-		Texture2D? iconTexture = itemRes?.Icone ?? GD.Load<Texture2D>("res://Itens/Incones/Moeda de Gold.png");
+		Texture2D? iconTexture = itemRes?.Icone ?? CarregarIconeLootFallback(itemId);
 		if (iconTexture != null)
 		{
 			var icon = new Sprite2D
@@ -1298,25 +1304,42 @@ public partial class EntityManager : Node
 
 			visuals.AddChild(icon);
 		}
+        else
+        {
+            var fallback = new Label
+            {
+                Name = "ItemIconFallback",
+                Text = "?",
+                Position = new Vector2(-14, -34),
+                Size = new Vector2(28, 28),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                ZIndex = 1,
+                ZAsRelative = true,
+            };
+            fallback.AddThemeFontSizeOverride("font_size", 24);
+            fallback.AddThemeColorOverride("font_color", rarityColor);
+            fallback.AddThemeConstantOverride("outline_size", 2);
+            fallback.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+            visuals.AddChild(fallback);
+        }
 
         var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         spawnTween.TweenProperty(root, "scale", Vector2.One * 1.15f, 0.25f);
         spawnTween.TweenProperty(root, "scale", Vector2.One, 0.1f);
 
-        if (itemRes != null)
-        {
-            var labelName = new Label();
-            labelName.Text = $"{itemRes.Nome} x{quantity}";
-            labelName.Position = new Vector2(-40, 8);
-            labelName.ZIndex = 0;
-            labelName.ZAsRelative = true;
-            labelName.AddThemeFontSizeOverride("font_size", 14);
-            labelName.AddThemeColorOverride("font_color", rarityColor);
-            labelName.AddThemeConstantOverride("shadow_offset_x", 1);
-            labelName.AddThemeConstantOverride("shadow_offset_y", 1);
-            labelName.AddThemeColorOverride("shadow_color", new Color(0, 0, 0, 0.8f));
-            visuals.AddChild(labelName);
-        }
+        var labelName = new Label();
+        labelName.Text = itemId == 0 ? $"Gold x{quantity}" : $"{(itemRes?.Nome ?? $"Item #{itemId}")} x{quantity}";
+        labelName.Position = new Vector2(-54, 8);
+        labelName.Size = new Vector2(108, 24);
+        labelName.HorizontalAlignment = HorizontalAlignment.Center;
+        labelName.ZIndex = 0;
+        labelName.ZAsRelative = true;
+        labelName.AddThemeFontSizeOverride("font_size", 12);
+        labelName.AddThemeColorOverride("font_color", rarityColor);
+        labelName.AddThemeConstantOverride("outline_size", 2);
+        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+        visuals.AddChild(labelName);
 
         var prompt = new Label();
         prompt.Text = "[F]";
@@ -1352,6 +1375,19 @@ public partial class EntityManager : Node
                 AddChild(root);
             _lootNodes[lootId] = root;
         }
+
+    private static Texture2D? CarregarIconeLootFallback(int itemId)
+    {
+        string path = itemId switch
+        {
+            0 => "res://Itens/Incones/Moeda de Gold.png",
+            110 => "res://Itens/Incones/Porcao de Vida.png",
+            111 => "res://Itens/Incones/Porcao de Mana.png",
+            _ => "res://Itens/Incones/bagitem.png",
+        };
+
+        return ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
+    }
 
         private void OnLojinhaSpawn(ulong lojinhaId, string ownerName, string shopName, string ownerClass, string ownerRace, bool isOpen, float x, float y)
         {

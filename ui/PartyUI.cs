@@ -53,6 +53,11 @@ public partial class PartyUI : Control
             net.OnPartyData += OnNetworkPartyData;
             net.OnPartyMemberUpdate += OnNetworkPartyMemberUpdate;
             net.OnPartyLeaderUpdate += OnNetworkPartyLeaderUpdate;
+            net.OnEntityHealthUpdate += OnEntityHealthUpdate;
+            net.OnEntityManaUpdate += OnEntityManaUpdate;
+
+            if (net.HasPendingPartyData)
+                OnNetworkPartyData(net.PendingPartyId, net.PendingPartyMembers);
         }
 
         AtualizarLista();
@@ -149,6 +154,7 @@ public partial class PartyUI : Control
     private void OnNetworkPartyData(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members)
     {
         _partyId = partyId;
+        _leaderId = 0;
         _members.Clear();
         foreach (var m in members)
         {
@@ -162,20 +168,34 @@ public partial class PartyUI : Control
 
     private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
     {
+        var existing = FindMember(entityId);
         if (joined)
         {
-            _members.Add(new Godot.Collections.Dictionary
+            if (existing != null)
             {
-                ["entity_id"] = (long)entityId,
-                ["name"] = name,
-                ["is_leader"] = false,
-                ["health"] = health,
-                ["max_health"] = maxHealth,
-                ["mana"] = mana,
-                ["max_mana"] = maxMana,
-                ["level"] = level,
-                ["class"] = characterClass,
-            });
+                existing["name"] = name;
+                existing["health"] = health;
+                existing["max_health"] = maxHealth;
+                existing["mana"] = mana;
+                existing["max_mana"] = maxMana;
+                existing["level"] = level;
+                existing["class"] = characterClass;
+            }
+            else
+            {
+                _members.Add(new Godot.Collections.Dictionary
+                {
+                    ["entity_id"] = (long)entityId,
+                    ["name"] = name,
+                    ["is_leader"] = false,
+                    ["health"] = health,
+                    ["max_health"] = maxHealth,
+                    ["mana"] = mana,
+                    ["max_mana"] = maxMana,
+                    ["level"] = level,
+                    ["class"] = characterClass,
+                });
+            }
         }
         else
         {
@@ -193,7 +213,36 @@ public partial class PartyUI : Control
     private void OnNetworkPartyLeaderUpdate(ulong newLeaderId)
     {
         _leaderId = newLeaderId;
+        foreach (var m in _members)
+            m["is_leader"] = (ulong)(long)m["entity_id"] == newLeaderId;
         AtualizarLista();
+    }
+
+    private void OnEntityHealthUpdate(ulong entityId, int health, int maxHealth)
+    {
+        var member = FindMember(entityId);
+        if (member == null) return;
+
+        member["health"] = health;
+        member["max_health"] = maxHealth;
+        AtualizarLista();
+        NotificarPartyHUD();
+    }
+
+    private void OnEntityManaUpdate(ulong entityId, int mana, int maxMana)
+    {
+        var member = FindMember(entityId);
+        if (member == null) return;
+
+        member["mana"] = mana;
+        member["max_mana"] = maxMana;
+        AtualizarLista();
+        NotificarPartyHUD();
+    }
+
+    private Godot.Collections.Dictionary FindMember(ulong entityId)
+    {
+        return _members.Find(m => (ulong)(long)m["entity_id"] == entityId);
     }
 
     private void AtualizarLista()
@@ -313,6 +362,16 @@ public partial class PartyUI : Control
         GetTree().Root.SizeChanged -= OnRootSizeChanged;
         if (_toggleButton != null)
             GetTree().Root.SizeChanged -= OnSizeChanged;
+
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+        {
+            net.OnPartyData -= OnNetworkPartyData;
+            net.OnPartyMemberUpdate -= OnNetworkPartyMemberUpdate;
+            net.OnPartyLeaderUpdate -= OnNetworkPartyLeaderUpdate;
+            net.OnEntityHealthUpdate -= OnEntityHealthUpdate;
+            net.OnEntityManaUpdate -= OnEntityManaUpdate;
+        }
     }
 
     public override void _Input(InputEvent @event)

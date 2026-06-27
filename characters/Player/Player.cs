@@ -26,10 +26,75 @@ public partial class Player : CharacterBody2D
     private AnimatedSprite2D _capaceteOverlay;
     private AnimatedSprite2D _luvasOverlay;
     private AnimatedSprite2D _botasOverlay;
-    private const string ArcoVisualBaseArmas = "res://Itens/aparence/Armas/Arco 1.png";
-    private const string ArcoVisualAtaqueArmas = "res://Itens/aparence/Armas/Arco 1 Attack.png";
-    private const string ArcoVisualBaseFallback = "res://Itens/aparence/Armaduras/Arco 1.png";
-    private const string ArcoVisualAtaqueFallback = "res://Itens/aparence/Armaduras/Arco 1 Attack.png";
+    private sealed class WeaponVisualProfile
+    {
+        public readonly string Nome;
+        public readonly string[] PalavrasChave;
+        public readonly string BasePath;
+        public readonly string AttackPath;
+        public readonly int[] MovimentoRows;
+        public readonly int MovimentoFrameSize;
+        public readonly int[] AtaqueRows;
+        public readonly int AtaqueFrameSize;
+
+        public WeaponVisualProfile(string nome, string[] palavrasChave, string basePath, string attackPath,
+            int[] movimentoRows, int movimentoFrameSize, int[] ataqueRows, int ataqueFrameSize)
+        {
+            Nome = nome;
+            PalavrasChave = palavrasChave;
+            BasePath = basePath;
+            AttackPath = attackPath;
+            MovimentoRows = movimentoRows;
+            MovimentoFrameSize = movimentoFrameSize;
+            AtaqueRows = ataqueRows;
+            AtaqueFrameSize = ataqueFrameSize;
+        }
+    }
+
+    private static readonly WeaponVisualProfile[] WeaponVisualProfiles =
+    {
+        new("Arco", new[] { "arco" },
+            "res://Itens/aparence/Armas/Arco 1.png",
+            "res://Itens/aparence/Armas/Arco 1 Attack.png",
+            new[] { 27, 28, 29, 30 }, 128,
+            new[] { 16, 17, 18, 19 }, 64),
+
+        new("Adaga", new[] { "adaga", "lamina", "lâmina" },
+            "res://Itens/aparence/Armas/Adaga walk.png",
+            "res://Itens/aparence/Armas/Adaga Attack.png",
+            new[] { 8, 9, 10, 11 }, 64,
+            new[] { 12, 13, 14, 15 }, 64),
+
+        new("Espada", new[] { "espada" },
+            "res://Itens/aparence/Armas/Espada walk.png",
+            "res://Itens/aparence/Armas/Espada Attack.png",
+            new[] { 8, 9, 10, 11 }, 64,
+            new[] { 28, 29, 30, 31 }, 128),
+
+        new("Machadao", new[] { "machado", "machadao", "machadão" },
+            "res://Itens/aparence/Armas/Machadao walk.png",
+            "res://Itens/aparence/Armas/Machadao Attack.png",
+            new[] { 8, 9, 10, 11 }, 64,
+            new[] { 29, 30, 31, 32 }, 128),
+
+        new("Martelo", new[] { "martelo" },
+            "res://Itens/aparence/Armas/Martelo Walk.png",
+            "res://Itens/aparence/Armas/Martelo Attack.png",
+            new[] { 8, 9, 10, 11 }, 64,
+            new[] { 29, 30, 31, 32 }, 128),
+
+        new("Cristal da Staff", new[] { "cristal" },
+            "res://Itens/aparence/Armas/Cristal da Satff walk.png",
+            "res://Itens/aparence/Armas/Cristal da Staff Attack.png",
+            new[] { 8, 9, 10, 11 }, 64,
+            new[] { 29, 30, 31, 32 }, 128),
+
+        new("Staff", new[] { "staff", "cajado" },
+            "res://Itens/aparence/Armas/Staff walk.png",
+            "res://Itens/aparence/Armas/Staff Attack.png",
+            new[] { 8, 9, 10, 11 }, 64,
+            new[] { 29, 30, 31, 32 }, 128),
+    };
     public string CurrentDirection { get; protected set; } = "down";
     protected bool IsAttacking = false;
     private float _attackTimeoutCounter = 0f;
@@ -52,6 +117,7 @@ public partial class Player : CharacterBody2D
     public bool IsSprinting { get; private set; }
     private float _staminaRegenCooldown = 0f;
     private float _staminaAccumulator = 0f;
+    private bool _staminaExhausted;
 
     public int CurrentHealth { get; private set; }
     public int CurrentMana { get; private set; }
@@ -677,6 +743,7 @@ public partial class Player : CharacterBody2D
         if (Input.IsActionPressed("mover_baixo"))     inputDirection.Y += 1;
         if (Input.IsActionPressed("mover_cima"))      inputDirection.Y -= 1;
 
+        bool hasMoveInput = inputDirection != Vector2.Zero;
         inputDirection = inputDirection.Normalized();
         Vector2 velocity = Velocity;
 
@@ -733,10 +800,17 @@ public partial class Player : CharacterBody2D
         }
         else
         {
-            if (_staminaRegenCooldown > 0f)
+            if (_staminaExhausted && hasMoveInput)
+            {
+                _staminaAccumulator = 0f;
+                _staminaRegenCooldown = 0.15f;
+            }
+            else if (_staminaRegenCooldown > 0f)
                 _staminaRegenCooldown -= (float)delta;
             else
             {
+                if (!hasMoveInput)
+                    _staminaExhausted = false;
                 _staminaAccumulator += 20f * (float)delta;
                 if (_staminaAccumulator >= 1f)
                 {
@@ -749,6 +823,7 @@ public partial class Player : CharacterBody2D
         if (CurrentStamina <= 0 && IsSprinting)
         {
             IsSprinting = false;
+            _staminaExhausted = true;
             _staminaAccumulator = 0f;
         }
         if (CurrentStamina != prevStamina)
@@ -890,40 +965,70 @@ public partial class Player : CharacterBody2D
             }
         }
 
-        if (TentarAplicarVisualArco(overlay, item))
+        if (TentarAplicarVisualArma(overlay, item))
             return;
 
         overlay.Visible = false;
         overlay.SpriteFrames = null;
     }
 
-    private bool TentarAplicarVisualArco(AnimatedSprite2D overlay, ItemResource item)
+    private bool TentarAplicarVisualArma(AnimatedSprite2D overlay, ItemResource item)
     {
         if (overlay == null || item == null)
             return false;
 
-        if (item.Tipo != TipoEquipamento.Arma || !item.Nome.Contains("Arco", StringComparison.OrdinalIgnoreCase))
+        if (item.Tipo != TipoEquipamento.Arma)
             return false;
 
-        Texture2D baseSheet = CarregarTexturaPrimeiroExistente(ArcoVisualBaseArmas, ArcoVisualBaseFallback);
-        Texture2D ataqueSheet = CarregarTexturaPrimeiroExistente(ArcoVisualAtaqueArmas, ArcoVisualAtaqueFallback);
+        var profile = EncontrarPerfilVisualArma(item);
+        if (profile == null)
+            return false;
+
+        Texture2D baseSheet = CarregarTexturaPrimeiroExistente(profile.BasePath);
+        Texture2D ataqueSheet = CarregarTexturaPrimeiroExistente(profile.AttackPath);
         if (baseSheet == null && ataqueSheet == null)
         {
-            GD.PrintErr("[APARENCIA] Nenhuma spritesheet de arco encontrada em Itens/aparence/Armas ou Itens/aparence/Armaduras.");
+            GD.PrintErr($"[APARENCIA] Nenhuma spritesheet encontrada para {profile.Nome}: {profile.BasePath} / {profile.AttackPath}");
             return false;
         }
 
-        var frames = LpcSpriteFramesBuilder.ConstruirEquipamento(baseSheet, ataqueSheet, NomeDaClasse);
+        var frames = LpcSpriteFramesBuilder.ConstruirEquipamento(
+            baseSheet,
+            ataqueSheet,
+            NomeDaClasse,
+            profile.MovimentoRows,
+            profile.MovimentoFrameSize,
+            profile.AtaqueRows,
+            profile.AtaqueFrameSize);
+
         if (frames == null || frames.GetAnimationNames().Length == 0)
             return false;
 
         overlay.SpriteFrames = frames;
-        overlay.ZIndex = 3;
+        overlay.ZIndex = string.Equals(profile.Nome, "Arco", StringComparison.OrdinalIgnoreCase) ? -1 : 3;
         overlay.ZAsRelative = true;
         overlay.Visible = true;
-        GD.Print($"[APARENCIA] Arco aplicado no personagem: base={baseSheet?.ResourcePath ?? "null"} ataque={ataqueSheet?.ResourcePath ?? "null"} animacoes={frames.GetAnimationNames().Length}");
+        GD.Print($"[APARENCIA] {profile.Nome} aplicado no personagem: item={item.Nome} base={baseSheet?.ResourcePath ?? "null"} ataque={ataqueSheet?.ResourcePath ?? "null"} animacoes={frames.GetAnimationNames().Length}");
         SincronizarOverlays();
         return true;
+    }
+
+    private static WeaponVisualProfile EncontrarPerfilVisualArma(ItemResource item)
+    {
+        if (item == null || string.IsNullOrWhiteSpace(item.Nome))
+            return null;
+
+        string nome = item.Nome.ToLowerInvariant();
+        foreach (var profile in WeaponVisualProfiles)
+        {
+            foreach (string palavra in profile.PalavrasChave)
+            {
+                if (!string.IsNullOrWhiteSpace(palavra) && nome.Contains(palavra.ToLowerInvariant()))
+                    return profile;
+            }
+        }
+
+        return null;
     }
 
     private static Texture2D CarregarTexturaPrimeiroExistente(params string[] paths)
@@ -976,7 +1081,7 @@ public partial class Player : CharacterBody2D
         if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
             return true;
 
-        return item.Tipo == TipoEquipamento.Arma && item.Nome.Contains("Arco", StringComparison.OrdinalIgnoreCase);
+        return item.Tipo == TipoEquipamento.Arma && EncontrarPerfilVisualArma(item) != null;
     }
 
     private void UpdateAnimation(Vector2 velocity)
@@ -1426,7 +1531,7 @@ public partial class Player : CharacterBody2D
 
         var lootNodes = GetTree()?.GetNodesInGroup("Loot");
         Node2D? nearest = null;
-        const float pickupRange = 80f;
+        const float pickupRange = 120f;
         float nearestDist = pickupRange;
 
         if (lootNodes != null)

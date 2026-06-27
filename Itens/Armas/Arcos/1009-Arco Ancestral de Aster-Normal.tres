@@ -1,24 +1,24 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Nobre.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco de Guerra.png" id="1_lergu"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 1009
 Nome = "Arco Ancestral de Aster"
 Descricao = "Inspirado em técnicas esquecidas de Aster, guarda a memória dos primeiros mestres arqueiros."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_lergu")
 QuantidadeMaximaPorSlot = 1
 Tipo = 7
 EhDuasMaos = true
 NivelRequerido = 90
 Valor = 900
-ClassesPermitidas = "Arqueiro"
-PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"
-DanoFisico = 90
-DanoFisicoMin = 81
-DanoFisicoMax = 99
 Destreza = 29
 DestrezaMin = 25
 DestrezaMax = 34
+DanoFisico = 90
+DanoFisicoMin = 81
+DanoFisicoMax = 99
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"

@@ -92,6 +92,7 @@ public partial class GameNetwork
             {
                 ["slot"] = r.GetInt(),
                 ["item_id"] = r.GetInt(),
+                ["name"] = r.GetString(),
                 ["quantity"] = r.GetInt(),
                 ["price"] = r.GetInt(),
                 ["roll_data"] = r.GetString(),
@@ -118,6 +119,7 @@ public partial class GameNetwork
             {
                 ["slot"] = r.GetInt(),
                 ["item_id"] = r.GetInt(),
+                ["name"] = r.GetString(),
                 ["quantity"] = r.GetInt(),
                 ["price"] = r.GetInt(),
                 ["roll_data"] = r.GetString(),

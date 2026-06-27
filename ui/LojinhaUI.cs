@@ -156,6 +156,7 @@ public partial class LojinhaUI : Control
             row.Setup(
                 (int)dict["slot"],
                 (int)dict["item_id"],
+                dict.ContainsKey("name") ? (string)dict["name"] : "",
                 (int)dict["quantity"],
                 (int)dict["price"],
                 (string)dict["roll_data"],
@@ -280,6 +281,7 @@ public partial class LojinhaItemRow : HBoxContainer
 {
     private int _slot;
     private int _itemId;
+    private string _serverItemName = "";
     private int _quantity;
     private int _price;
     private bool _isOwner;
@@ -294,16 +296,16 @@ public partial class LojinhaItemRow : HBoxContainer
     private LineEdit _qtdCompra;
     private ItemDatabase _itemDB;
 
-    public void Setup(int slot, int itemId, int quantity, int price, string rollData, bool isOwner, ulong lojinhaId, GameNetwork net)
+    public void Setup(int slot, int itemId, string itemName, int quantity, int price, string rollData, bool isOwner, ulong lojinhaId, GameNetwork net)
     {
         _slot = slot;
         _itemId = itemId;
+        _serverItemName = itemName ?? "";
         _quantity = quantity;
         _price = price;
         _isOwner = isOwner;
         _lojinhaId = lojinhaId;
         _net = net;
-        _itemDB = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
 
         SizeFlagsHorizontal = SizeFlags.ExpandFill;
         CustomMinimumSize = new Vector2(0, 38);
@@ -340,17 +342,8 @@ public partial class LojinhaItemRow : HBoxContainer
         _acaoBtn = new Button { CustomMinimumSize = new Vector2(88, 0) };
         AddChild(_acaoBtn);
 
-        var def = _itemDB?.GetItem(itemId);
-        if (def != null)
-        {
-            _nomeLabel.Text = def.Nome ?? $"Item {itemId}";
-            if (def.Icone != null)
-                _icone.Texture = def.Icone;
-        }
-        else
-        {
-            _nomeLabel.Text = $"Item {itemId}";
-        }
+        _nomeLabel.Text = string.IsNullOrWhiteSpace(_serverItemName) ? $"Item {itemId}" : _serverItemName;
+        CallDeferred(nameof(AtualizarVisualItem));
 
         _qtdLabel.Text = $"x{quantity}";
         _precoLabel.Text = $"{price} cada";
@@ -365,6 +358,19 @@ public partial class LojinhaItemRow : HBoxContainer
             _acaoBtn.Text = "Comprar";
             _acaoBtn.Pressed += OnComprar;
         }
+    }
+
+    private void AtualizarVisualItem()
+    {
+        _itemDB ??= GetNodeOrNull<ItemDatabase>("/root/GameNetwork/ItemDatabase");
+        _itemDB ??= GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
+        var def = _itemDB?.GetItem(_itemId);
+        if (def == null)
+            return;
+
+        _nomeLabel.Text = string.IsNullOrWhiteSpace(def.Nome) ? _nomeLabel.Text : def.Nome;
+        if (def.Icone != null)
+            _icone.Texture = def.Icone;
     }
 
     private void OnRemover()

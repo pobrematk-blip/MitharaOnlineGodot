@@ -364,6 +364,12 @@ partial class GameServer
                 _db.DeleteGuildMemberByName(guildId, name);
             }
         }
+        else
+        {
+            player.GuildId = -1;
+            player.GuildName = "";
+            SendGuildClear(peer);
+        }
 
         var channel = _world.GetChannel(channelId);
 
@@ -493,7 +499,8 @@ partial class GameServer
                 {
                     float dx = lojinha.X - player.X;
                     float dy = lojinha.Y - player.Y;
-                    if (dx * dx + dy * dy <= Channel.AoiRadius * Channel.AoiRadius)
+                    bool podeVerLojinha = lojinha.IsOpen || IsLojinhaOwner(peer, player, lojinha);
+                    if (podeVerLojinha && dx * dx + dy * dy <= Channel.AoiRadius * Channel.AoiRadius)
                         SendLojinhaSpawnToPeer(peer, lojinha);
                 }
 

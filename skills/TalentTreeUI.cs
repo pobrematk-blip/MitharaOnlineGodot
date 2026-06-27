@@ -56,6 +56,7 @@ public partial class TalentTreeUI : Control
 
     public override void _ExitTree()
     {
+        HideAllNodeTooltips();
         if (_toggleButton != null)
             GetTree().Root.SizeChanged -= OnSizeChanged;
     }
@@ -212,6 +213,10 @@ public partial class TalentTreeUI : Control
             PreparePanelLayout();
             UpdateTreeView();
         }
+        else
+        {
+            HideAllNodeTooltips();
+        }
     }
 
     private void PreparePanelLayout()
@@ -263,8 +268,20 @@ public partial class TalentTreeUI : Control
         }
     }
 
-    private void ClosePanel() { if (_bgPanel != null) _bgPanel.Visible = false; }
+    private void ClosePanel()
+    {
+        HideAllNodeTooltips();
+        if (_bgPanel != null) _bgPanel.Visible = false;
+    }
     private void OnCloseButtonPressed() => ClosePanel();
+
+    private void HideAllNodeTooltips()
+    {
+        if (_board == null) return;
+        foreach (var child in _board.GetChildren())
+            if (child is TalentNodeSlotUI slot)
+                slot.ForceHideTooltip();
+    }
 
     private void AdjustZoom(float delta)
     {
@@ -452,7 +469,8 @@ public partial class TalentTreeUI : Control
             else if (!unlocked)
                 slot.MouseDefaultCursorShape = CursorShape.PointingHand;
             var choiceSource = isSkillNode ? ObterEscolhaParaSkill(node, nodes) : null;
-            slot.TooltipText = CriarTooltip(node, unlocked, canUnlock, nodeSkill, choiceSource);
+            slot.CustomTooltipText = CriarTooltip(node, unlocked, canUnlock, nodeSkill, choiceSource);
+            slot.TooltipText = "";
             slot.AnchorLeft = 0;
             slot.AnchorTop = 0;
             slot.AnchorRight = 0;
@@ -486,7 +504,7 @@ public partial class TalentTreeUI : Control
                     Size = Vector2.One * SkillNodeSize,
                     CustomMinimumSize = Vector2.One * SkillNodeSize,
                     MouseFilter = MouseFilterEnum.Ignore,
-                    TooltipText = slot.TooltipText,
+                    TooltipText = "",
                     ZIndex = 20,
                 };
                 Estilo(skillFrame, bg, border, SkillNodeSize);
@@ -502,7 +520,7 @@ public partial class TalentTreeUI : Control
                         ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional,
                         StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
                         MouseFilter = MouseFilterEnum.Ignore,
-                        TooltipText = slot.TooltipText,
+                        TooltipText = "",
                         ZIndex = 21,
                         Position = skillFrame.Position + new Vector2(iconPadding, iconPadding),
                         Size = Vector2.One * (SkillNodeSize - iconPadding * 2f),
@@ -517,7 +535,7 @@ public partial class TalentTreeUI : Control
                     {
                         Color = canUnlock ? new Color(0f, 0f, 0f, 0.34f) : new Color(0f, 0f, 0f, 0.58f),
                         MouseFilter = MouseFilterEnum.Ignore,
-                        TooltipText = slot.TooltipText,
+                        TooltipText = "",
                         ZIndex = 22,
                         Position = skillFrame.Position + new Vector2(iconPadding, iconPadding),
                         Size = Vector2.One * (SkillNodeSize - iconPadding * 2f),

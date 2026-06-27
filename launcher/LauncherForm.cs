@@ -34,10 +34,13 @@ public sealed class LauncherForm : Form
         _http.Timeout = TimeSpan.FromMinutes(30);
 
         Text = "Mithara Online Launcher";
+        Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon;
         ClientSize = new Size(760, 430);
         MinimumSize = new Size(680, 390);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(8, 10, 18);
+        BackgroundImage = LoadEmbeddedImage("MitharaLauncherBackground.png");
+        BackgroundImageLayout = ImageLayout.Stretch;
         ForeColor = Color.White;
         Font = new Font("Segoe UI", 10f);
 
@@ -53,6 +56,7 @@ public sealed class LauncherForm : Form
             Text = "MITHARA ONLINE",
             Font = new Font("Georgia", 30f, FontStyle.Bold),
             ForeColor = Color.FromArgb(220, 178, 74),
+            BackColor = Color.Transparent,
             AutoSize = true,
             Location = new Point(36, 36),
         };
@@ -62,6 +66,7 @@ public sealed class LauncherForm : Form
             Text = "CONFLITO DE RAÇAS",
             Font = new Font("Segoe UI", 12f, FontStyle.Bold),
             ForeColor = Color.FromArgb(156, 132, 205),
+            BackColor = Color.Transparent,
             AutoSize = true,
             Location = new Point(42, 92),
         };
@@ -79,11 +84,13 @@ public sealed class LauncherForm : Form
         _status.Size = new Size(680, 50);
         _status.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         _status.ForeColor = Color.FromArgb(220, 220, 228);
+        _status.BackColor = Color.Transparent;
 
         _version.Text = "Versão local: verificando";
         _version.Location = new Point(40, 218);
         _version.Size = new Size(680, 24);
         _version.ForeColor = Color.FromArgb(145, 148, 165);
+        _version.BackColor = Color.Transparent;
 
         _progress.Location = new Point(40, 260);
         _progress.Size = new Size(680, 24);
@@ -93,9 +100,10 @@ public sealed class LauncherForm : Form
         _retryButton.Text = "Verificar novamente";
         _retryButton.Location = new Point(40, 330);
         _retryButton.Size = new Size(170, 46);
-        _retryButton.BackColor = Color.FromArgb(42, 43, 58);
+        _retryButton.BackColor = Color.FromArgb(24, 25, 35);
         _retryButton.ForeColor = Color.White;
         _retryButton.FlatStyle = FlatStyle.Flat;
+        _retryButton.FlatAppearance.BorderColor = Color.FromArgb(126, 97, 47);
         _retryButton.Enabled = false;
         _retryButton.Click += async (_, _) => await CheckAndUpdateAsync();
 
@@ -103,10 +111,11 @@ public sealed class LauncherForm : Form
         _playButton.Location = new Point(550, 330);
         _playButton.Size = new Size(170, 46);
         _playButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        _playButton.BackColor = Color.FromArgb(122, 82, 24);
+        _playButton.BackColor = Color.FromArgb(156, 100, 26);
         _playButton.ForeColor = Color.White;
         _playButton.Font = new Font("Segoe UI", 12f, FontStyle.Bold);
         _playButton.FlatStyle = FlatStyle.Flat;
+        _playButton.FlatAppearance.BorderColor = Color.FromArgb(226, 181, 82);
         _playButton.Enabled = false;
         _playButton.Click += (_, _) => LaunchGame();
 
@@ -307,6 +316,12 @@ public sealed class LauncherForm : Form
     private static bool IsGameRunning(string executable) => Process
         .GetProcessesByName(Path.GetFileNameWithoutExtension(executable))
         .Length > 0;
+
+    private static Image? LoadEmbeddedImage(string resourceName)
+    {
+        using Stream? stream = typeof(LauncherForm).Assembly.GetManifestResourceStream(resourceName);
+        return stream is null ? null : Image.FromStream(stream);
+    }
 
     private async Task<T?> GetJsonAsync<T>(string url)
     {

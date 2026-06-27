@@ -33,9 +33,12 @@ public partial class PetController : Node
         _hudPanel.CustomMinimumSize = new Vector2(200, 0);
         _hudPanel.Visible = false;
 
-        _hudLayer = GetNodeOrNull<CanvasLayer>("/root/main/HUD");
+        _hudLayer = ObterHudLayer();
         if (_hudLayer != null)
+        {
+            _hudPanel.ZIndex = 210;
             _hudLayer.AddChild(_hudPanel);
+        }
         else
             AddChild(_hudPanel);
 
@@ -108,7 +111,21 @@ public partial class PetController : Node
     {
         if (_hudPanel == null) return;
         Vector2 tela = GetViewport().GetVisibleRect().Size;
-        _hudPanel.Position = new Vector2(tela.X - _hudPanel.Size.X - 80, 120);
+        _hudPanel.Position = new Vector2(Mathf.Max(12f, tela.X - 260f), 330f);
+    }
+
+    private CanvasLayer ObterHudLayer()
+    {
+        string[] paths = { "/root/Main/HUD", "/root/main/HUD" };
+        foreach (var path in paths)
+        {
+            var hud = GetNodeOrNull<CanvasLayer>(path);
+            if (hud != null)
+                return hud;
+        }
+
+        var scene = GetTree()?.CurrentScene;
+        return scene?.FindChild("HUD", true, false) as CanvasLayer;
     }
 
     private void OnTitleBarGuiInput(InputEvent @event)
@@ -200,10 +217,23 @@ public partial class PetController : Node
                 frames = CriarFramesSimples(_petResource, mobType);
             }
             if (frames != null && frames.GetAnimationNames().Length > 0)
+            {
                 sprite.SpriteFrames = frames;
+                sprite.Visible = true;
+                sprite.ZIndex = 1;
+                TocarPrimeiraAnimacao(sprite);
+            }
+            else
+            {
+                CriarVisualFallback(_petNode, _petResource, petNome);
+            }
+        }
+        else
+        {
+            CriarVisualFallback(_petNode, _petResource, petNome);
         }
 
-        _petNode.GlobalPosition = _player.GlobalPosition + new Vector2(
+        Vector2 spawnPos = _player.GlobalPosition + new Vector2(
             (float)GD.RandRange(-60, 60),
             (float)GD.RandRange(-60, 60)
         );
@@ -215,12 +245,67 @@ public partial class PetController : Node
         parent?.AddChild(_petNode);
         if (_petNode.GetParent() == null)
             AddChild(_petNode);
+        _petNode.GlobalPosition = spawnPos;
         _petNode.DefinirModo(PetMode.Seguir);
 
         AtualizarHUD();
         _hudPanel.Visible = true;
 
-        GD.Print($"[PET] {petNome} invocado!");
+        GD.Print($"[PET] {petNome} invocado! id={petId} parent={_petNode.GetParent()?.Name} pos={_petNode.GlobalPosition} frames={(sprite?.SpriteFrames?.GetAnimationNames().Length ?? 0)}");
+    }
+
+    private static void TocarPrimeiraAnimacao(AnimatedSprite2D sprite)
+    {
+        if (sprite?.SpriteFrames == null) return;
+        var names = sprite.SpriteFrames.GetAnimationNames();
+        if (names.Length == 0) return;
+
+        string chosen = "";
+        foreach (var name in names)
+        {
+            string s = name.ToString();
+            if (s.Contains("idle") || s.Contains("Idle"))
+            {
+                chosen = s;
+                break;
+            }
+        }
+        if (string.IsNullOrWhiteSpace(chosen))
+            chosen = names[0];
+        sprite.Play(chosen);
+    }
+
+    private static void CriarVisualFallback(PetNode petNode, PetResource resource, string petNome)
+    {
+        if (petNode == null) return;
+
+        Texture2D tex = resource?.SpriteAtlas ?? resource?.Icone;
+        if (tex != null)
+        {
+            var sprite = new Sprite2D
+            {
+                Name = "PetFallbackSprite",
+                Texture = tex,
+                Centered = true,
+                Scale = new Vector2(0.5f, 0.5f),
+                ZIndex = 2,
+            };
+            petNode.AddChild(sprite);
+        }
+        else
+        {
+            var label = new Label
+            {
+                Name = "PetFallbackLabel",
+                Text = string.IsNullOrWhiteSpace(petNome) ? "Pet" : petNome,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Position = new Vector2(-24, -36),
+                ZIndex = 3,
+            };
+            label.AddThemeFontSizeOverride("font_size", 10);
+            label.AddThemeColorOverride("font_color", Colors.Gold);
+            petNode.AddChild(label);
+        }
     }
 
     private PetResource CarregarPetResource(int petId, string petNome)

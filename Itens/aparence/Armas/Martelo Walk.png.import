@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cx81vvho0se5r"
-path="res://.godot/imported/Flecha.png-7baf27905c72038971f15a41a3accf5d.ctex"
+uid="uid://cf7q8eyijswq0"
+path="res://.godot/imported/Martelo Walk.png-f4b6d972978eef3b2e68fd1658269994.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Itens/aparence/Armaduras/Flecha.png"
-dest_files=["res://.godot/imported/Flecha.png-7baf27905c72038971f15a41a3accf5d.ctex"]
+source_file="res://Itens/aparence/Armas/Martelo Walk.png"
+dest_files=["res://.godot/imported/Martelo Walk.png-f4b6d972978eef3b2e68fd1658269994.ctex"]
 
 [params]
 

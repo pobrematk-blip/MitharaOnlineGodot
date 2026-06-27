@@ -24,6 +24,7 @@ public partial class SkillBarUI : Control
     private HBoxContainer _buffContainer;
     private readonly Dictionary<int, BuffIconUI> _activeBuffIcons = new();
     private VipIconUI _vipIcon;
+    private PartyXpIconUI _partyXpIcon;
 
     private static readonly string[] NumKeys = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
     private static readonly string[] FuncKeys = { "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10" };
@@ -40,7 +41,11 @@ public partial class SkillBarUI : Control
     {
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null)
+        {
             net.OnVipStatus -= OnVipStatus;
+            net.OnPartyData -= OnPartyData;
+            net.OnPartyMemberUpdate -= OnPartyMemberUpdate;
+        }
     }
 
     private void BuildUI()
@@ -240,8 +245,13 @@ public partial class SkillBarUI : Control
 
         net.OnVipStatus -= OnVipStatus;
         net.OnVipStatus += OnVipStatus;
+        net.OnPartyData -= OnPartyData;
+        net.OnPartyData += OnPartyData;
+        net.OnPartyMemberUpdate -= OnPartyMemberUpdate;
+        net.OnPartyMemberUpdate += OnPartyMemberUpdate;
         if (net.VipExpiryBinary != 0)
             OnVipStatus(net.VipExpiryBinary);
+        AtualizarBuffParty(net.PartyXpBonusPercent);
     }
 
     private void OnVipStatus(long expiryBinary)
@@ -273,6 +283,41 @@ public partial class SkillBarUI : Control
             _vipIcon = null;
         };
         _buffContainer.AddChild(_vipIcon);
+    }
+
+    private void OnPartyData(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members)
+    {
+        AtualizarBuffParty(partyId > 0 ? Mathf.Clamp(members.Count * 5, 0, 25) : 0);
+    }
+
+    private void OnPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        AtualizarBuffParty(net?.PartyXpBonusPercent ?? 0);
+    }
+
+    private void AtualizarBuffParty(int percent)
+    {
+        if (percent <= 0)
+        {
+            if (_partyXpIcon != null && IsInstanceValid(_partyXpIcon))
+                _partyXpIcon.QueueFree();
+            _partyXpIcon = null;
+            return;
+        }
+
+        EnsureBuffContainer();
+        if (_buffContainer == null)
+            return;
+
+        if (_partyXpIcon != null && IsInstanceValid(_partyXpIcon))
+        {
+            _partyXpIcon.SetPercent(percent);
+            return;
+        }
+
+        _partyXpIcon = new PartyXpIconUI(percent);
+        _buffContainer.AddChild(_partyXpIcon);
     }
 
     private void UpdateXpBar()
@@ -886,5 +931,62 @@ public partial class VipIconUI : Panel
         if (remaining.TotalHours >= 1)
             return $"{(int)remaining.TotalHours}h {remaining.Minutes}m";
         return $"{remaining.Minutes}m {remaining.Seconds}s";
+    }
+}
+
+public partial class PartyXpIconUI : Panel
+{
+    private int _percent;
+    private Label _label;
+
+    public PartyXpIconUI(int percent)
+    {
+        _percent = Mathf.Clamp(percent, 0, 25);
+        CustomMinimumSize = new Vector2(34, 34);
+        Size = new Vector2(34, 34);
+        MouseFilter = MouseFilterEnum.Ignore;
+    }
+
+    public override void _Ready()
+    {
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(0.025f, 0.06f, 0.045f, 0.88f),
+            BorderColor = new Color(0.35f, 0.95f, 0.6f, 0.95f),
+            BorderWidthBottom = 1,
+            BorderWidthLeft = 1,
+            BorderWidthRight = 1,
+            BorderWidthTop = 1,
+            CornerRadiusBottomLeft = 4,
+            CornerRadiusBottomRight = 4,
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+        });
+
+        _label = new Label
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Text = $"+{_percent}%",
+            ZIndex = 2,
+        };
+        _label.SetAnchorsPreset(LayoutPreset.FullRect);
+        _label.AddThemeFontSizeOverride("font_size", 9);
+        _label.AddThemeColorOverride("font_color", Colors.White);
+        _label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.85f));
+        _label.AddThemeConstantOverride("shadow_offset_x", 1);
+        _label.AddThemeConstantOverride("shadow_offset_y", 1);
+        AddChild(_label);
+
+        TooltipText = $"Bônus de party\n+{_percent}% de experiencia";
+    }
+
+    public void SetPercent(int percent)
+    {
+        _percent = Mathf.Clamp(percent, 0, 25);
+        if (_label != null)
+            _label.Text = $"+{_percent}%";
+        TooltipText = $"Bônus de party\n+{_percent}% de experiencia";
     }
 }

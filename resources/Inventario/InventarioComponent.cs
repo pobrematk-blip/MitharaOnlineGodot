@@ -159,11 +159,6 @@ public partial class InventarioComponent : Node
             if (slot >= 0 && slot < Slots.Count)
             {
                 var resource = itemDB.GetItem(itemId);
-                if (resource == null)
-                {
-                    itemDB.Refresh();
-                    resource = itemDB.GetItem(itemId);
-                }
                 if (resource != null)
                     Slots[slot] = new SlotInventario(resource, qty, refineLevel, instanceData);
                 else

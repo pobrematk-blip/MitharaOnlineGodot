@@ -142,5 +142,5 @@ correr={
 
 [network]
 
-server_host="mitharaonline.duckdns.org"
+server_host="191.250.220.29"
 server_port=7777

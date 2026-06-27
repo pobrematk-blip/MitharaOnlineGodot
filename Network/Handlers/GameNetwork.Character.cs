@@ -68,13 +68,7 @@ partial class GameNetwork
         ClearAllEntities();
         GetNodeOrNull<EntityManager>("EntityManager")?.ClearAll();
 
-        LocalPlayerId = 0;
-        LocalChannelId = 0;
-        PendingPlayerSpawn = Vector2.Zero;
-        PendingInventoryData = null;
-        PendingEquipmentData = null;
-        PendingPetData = null;
-        Gold = 0;
+        ClearCharacterScopedState();
 
         var loading = GetTree()?.Root.GetNodeOrNull("LoadingScreen");
         loading?.QueueFree();
@@ -143,6 +137,7 @@ partial class GameNetwork
     private void HandleEnterWorld(NetDataReader r)
     {
         Log($"HandleEnterWorld: lendo pacote ({r.AvailableBytes} bytes disponiveis)");
+        ClearCharacterScopedState();
         LocalPlayerId = r.GetULong();
         LocalChannelId = r.GetInt();
         float x = r.GetFloat();

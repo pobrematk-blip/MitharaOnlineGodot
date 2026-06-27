@@ -8,8 +8,12 @@
     <AssemblyName>MitharaLauncher</AssemblyName>
     <RootNamespace>Mithara.Launcher</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>assets\mithara_launcher_icon.ico</ApplicationIcon>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <RuntimeFrameworkVersion>8.0.25</RuntimeFrameworkVersion>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\mithara_launcher_background.png" LogicalName="MitharaLauncherBackground.png" />
+  </ItemGroup>
 </Project>

@@ -1,24 +1,24 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Dracônico.png" id="1_0dsk3"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Arco Real.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 1010
 Nome = "Arco do Caçador Lendário"
 Descricao = "Um arco raro entre os comuns, digno de quem transforma cada flecha em sentença."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_0dsk3")
 QuantidadeMaximaPorSlot = 1
 Tipo = 7
 EhDuasMaos = true
 NivelRequerido = 100
 Valor = 1000
-ClassesPermitidas = "Arqueiro"
-PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"
-DanoFisico = 100
-DanoFisicoMin = 90
-DanoFisicoMax = 110
 Destreza = 33
 DestrezaMin = 28
 DestrezaMax = 38
+DanoFisico = 100
+DanoFisicoMin = 90
+DanoFisicoMax = 110
+ClassesPermitidas = "Arqueiro"
+PoolDeAfixos = "ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura"

@@ -87,46 +87,11 @@ partial class GameNetwork
         PendingEquipmentData = equipment;
         ResetPendingInventoryApplyLog();
 
-        GD.Print($"[GAME] Inventário recebido: {invCount} itens, {equipCount} equipados");
+        GD.Print($"[GAME] Inventario recebido: {invCount} itens, {equipCount} equipados");
         EmitSignal(SignalName.OnInventoryData, items, equipment);
+        ApplyPendingInventory();
+        CallDeferred(nameof(ApplyPendingInventory));
 
-        var player = GetTree().CurrentScene?.FindChild("Player", true, false);
-        if (player == null) return;
-
-        var inv = player.FindChild("InventarioComponent", true, false) as InventarioComponent;
-        if (inv != null && ItemDB != null)
-        {
-            inv.AplicarDadosServidor(items, ItemDB);
-        }
-
-        var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
-        if (equip != null && ItemDB != null)
-        {
-            equip.ItensEquipados.Clear();
-            foreach (var entry in equipment)
-            {
-                int slot = (int)entry["slot"];
-                int itemId = (int)entry["item_id"];
-                int qty = (int)entry["quantity"];
-                int refineLevel = (int)entry["refine_level"];
-                string instanceData = (string)entry["instance_data"];
-                var resource = ItemDB.GetItem(itemId);
-                if (resource == null)
-                {
-                    ItemDB.Refresh();
-                    resource = ItemDB.GetItem(itemId);
-                }
-                if (resource != null)
-                {
-                    var tipo = (TipoEquipamento)slot;
-                    equip.ItensEquipados[tipo] = new SlotInventario(resource, qty, refineLevel, instanceData);
-                }
-                else
-                    GameNetwork.LogError($"Item equipado {itemId} não existe no catálogo do cliente.");
-            }
-            equip.RecalcularBonusEquipamentos();
-            equip.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
-        }
     }
 
     private void HandleEquipUpdate(NetDataReader r)

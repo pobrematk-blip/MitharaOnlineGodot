@@ -545,6 +545,16 @@ public partial class GameServer : INetEventListener
                 HandleMapEditorRequestTiles(peer, reader);
                 break;
 
+            case PacketId.C2S_MapMarkerPlace:
+                HandleMapMarkerPlace(peer, reader);
+                break;
+            case PacketId.C2S_MapMarkerRemove:
+                HandleMapMarkerRemove(peer, reader);
+                break;
+            case PacketId.C2S_MapMarkerRequest:
+                HandleMapMarkerRequest(peer, reader);
+                break;
+
             }
         }
         catch (Exception ex)

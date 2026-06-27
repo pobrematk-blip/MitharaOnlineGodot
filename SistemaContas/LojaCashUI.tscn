@@ -27,8 +27,8 @@ layout_mode = 3
 anchors_preset = 0
 offset_left = 0.0
 offset_top = 0.0
-offset_right = 820.0
-offset_bottom = 540.0
+offset_right = 760.0
+offset_bottom = 500.0
 
 [node name="Painel" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -78,9 +78,9 @@ horizontal_scroll_mode = 0
 [node name="Grid" type="GridContainer" parent="Painel/VBox/ItensContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 8
-theme_override_constants/hseparation = 12
-theme_override_constants/vseparation = 12
+columns = 6
+theme_override_constants/hseparation = 8
+theme_override_constants/vseparation = 8
 
 [node name="Feedback" type="Control" parent="Painel/VBox"]
 unique_name_in_owner = true

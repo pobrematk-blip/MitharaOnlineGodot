@@ -15,12 +15,6 @@ public partial class MiniMapa : Control
     private Label _vipLabel;
     private SubViewportContainer _viewportContainer;
 
-    private Control _fullMapOverlay;
-    private SubViewportContainer _fullMapContainer;
-    private SubViewport _fullMapViewport;
-    private Camera2D _fullMapCamera;
-    private bool _fullMapOpen;
-
     private float _updateTimer;
     private FaccaoResource _playerFaction;
 
@@ -141,7 +135,6 @@ public partial class MiniMapa : Control
         {
             if (btn.ButtonIndex == MouseButton.Left)
             {
-                ToggleFullMap();
                 GetViewport().SetInputAsHandled();
             }
             else if (btn.ButtonIndex == MouseButton.WheelUp)
@@ -172,101 +165,7 @@ public partial class MiniMapa : Control
 
     private void ToggleFullMap()
     {
-        if (_fullMapOpen)
-            CloseFullMap();
-        else
-            OpenFullMap();
-    }
-
-    private void OpenFullMap()
-    {
-        if (_fullMapOpen) return;
-        _fullMapOpen = true;
-
-        _fullMapOverlay = new Control();
-        _fullMapOverlay.Name = "FullMapOverlay";
-        _fullMapOverlay.SetAnchorsPreset(LayoutPreset.FullRect);
-        _fullMapOverlay.MouseFilter = MouseFilterEnum.Stop;
-
-        var bg = new ColorRect();
-        bg.Color = new Color(0, 0, 0, 0.85f);
-        bg.SetAnchorsPreset(LayoutPreset.FullRect);
-        _fullMapOverlay.AddChild(bg);
-
-        var title = new Label();
-        title.Text = "MAPA DO MUNDO";
-        title.HorizontalAlignment = HorizontalAlignment.Center;
-        title.SetAnchorsPreset(LayoutPreset.TopWide);
-        title.Position = new Vector2(0, 12);
-        title.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
-        title.AddThemeFontSizeOverride("font_size", 18);
-        _fullMapOverlay.AddChild(title);
-
-        var closeBtn = new Button();
-        closeBtn.Text = "Fechar";
-        closeBtn.Position = new Vector2(12, 10);
-        closeBtn.Pressed += CloseFullMap;
-        _fullMapOverlay.AddChild(closeBtn);
-
-        _fullMapContainer = new SubViewportContainer();
-        _fullMapContainer.Stretch = true;
-        _fullMapContainer.MouseFilter = MouseFilterEnum.Ignore;
-        _fullMapOverlay.AddChild(_fullMapContainer);
-
-        _fullMapViewport = new SubViewport();
-        _fullMapViewport.TransparentBg = true;
-        _fullMapViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Always;
-        _fullMapViewport.World2D = GetWorld2D();
-        _fullMapContainer.AddChild(_fullMapViewport);
-
-        _fullMapCamera = new Camera2D();
-        _fullMapViewport.AddChild(_fullMapCamera);
-
-        AddChild(_fullMapOverlay);
-
-        GetViewport().SizeChanged += OnFullMapViewportResized;
-        Callable.From(UpdateFullMapLayout).CallDeferred();
-    }
-
-    private void UpdateFullMapLayout()
-    {
-        if (_fullMapOverlay == null || _fullMapContainer == null || _fullMapViewport == null) return;
-
-        Vector2 viewportSize = GetViewportRect().Size;
-        float mapSize = Mathf.Min(viewportSize.X, viewportSize.Y) * 0.85f;
-        mapSize = Mathf.Min(mapSize, 700f);
-
-        _fullMapContainer.Size = new Vector2(mapSize, mapSize);
-        _fullMapContainer.Position = new Vector2(
-            (viewportSize.X - mapSize) / 2f,
-            (viewportSize.Y - mapSize) / 2f
-        );
-
-        float zoom = mapSize / (_worldRadius * 4f);
-        _fullMapCamera.Zoom = new Vector2(zoom, zoom);
-
-        if (_player != null)
-            _fullMapCamera.GlobalPosition = _player.GlobalPosition;
-    }
-
-    private void OnFullMapViewportResized()
-    {
-        if (_fullMapOpen)
-            Callable.From(UpdateFullMapLayout).CallDeferred();
-    }
-
-    private void CloseFullMap()
-    {
-        _fullMapOpen = false;
-        GetViewport().SizeChanged -= OnFullMapViewportResized;
-        if (_fullMapOverlay != null)
-        {
-            _fullMapOverlay.QueueFree();
-            _fullMapOverlay = null;
-            _fullMapContainer = null;
-            _fullMapViewport = null;
-            _fullMapCamera = null;
-        }
+        WorldMapUI.Open();
     }
 
     private void FindPlayer()
@@ -281,6 +180,12 @@ public partial class MiniMapa : Control
 
     public override void _Process(double delta)
     {
+        if (Input.IsActionJustPressed("mapa"))
+        {
+            ToggleFullMap();
+            GetViewport()?.SetInputAsHandled();
+        }
+
         if (_player == null)
         {
             FindPlayer();
@@ -289,9 +194,6 @@ public partial class MiniMapa : Control
 
         _minimapCamera.GlobalPosition = _player.GlobalPosition;
 
-        if (_fullMapCamera != null)
-            _fullMapCamera.GlobalPosition = _player.GlobalPosition;
-
         _updateTimer += (float)delta;
         if (_updateTimer >= 0.25f)
         {
@@ -299,15 +201,6 @@ public partial class MiniMapa : Control
             UpdateLabels();
             _dotsOverlay.QueueRedraw();
             AtualizarVipIndicator();
-        }
-    }
-
-    public override void _Input(InputEvent @event)
-    {
-        if (_fullMapOpen && @event.IsActionPressed("ui_cancel"))
-        {
-            CloseFullMap();
-            GetViewport().SetInputAsHandled();
         }
     }
 

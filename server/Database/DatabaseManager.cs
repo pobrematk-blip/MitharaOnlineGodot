@@ -885,10 +885,33 @@ public class DatabaseManager
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "DELETE FROM guilds WHERE id = @i";
-        cmd.Parameters.AddWithValue("@i", guildId);
-        cmd.ExecuteNonQuery();
+        using var tx = conn.BeginTransaction();
+
+        using (var members = conn.CreateCommand())
+        {
+            members.Transaction = tx;
+            members.CommandText = "DELETE FROM guild_members WHERE guild_id = @i";
+            members.Parameters.AddWithValue("@i", guildId);
+            members.ExecuteNonQuery();
+        }
+
+        using (var skills = conn.CreateCommand())
+        {
+            skills.Transaction = tx;
+            skills.CommandText = "DELETE FROM guild_skills WHERE guild_id = @i";
+            skills.Parameters.AddWithValue("@i", guildId);
+            skills.ExecuteNonQuery();
+        }
+
+        using (var guild = conn.CreateCommand())
+        {
+            guild.Transaction = tx;
+            guild.CommandText = "DELETE FROM guilds WHERE id = @i";
+            guild.Parameters.AddWithValue("@i", guildId);
+            guild.ExecuteNonQuery();
+        }
+
+        tx.Commit();
     }
 
     public void SaveGuildSkill(int guildId, string skillId, int level)
@@ -948,38 +971,74 @@ public class DatabaseManager
 
         using var tx = conn.BeginTransaction();
 
+        int delLojinhaItemsRows = 0;
+        using (var delLojinhaItems = conn.CreateCommand())
+        {
+            delLojinhaItems.Transaction = tx;
+            delLojinhaItems.CommandText = """
+                DELETE FROM lojinha_items
+                WHERE lojinha_id IN (SELECT id FROM lojinhas WHERE owner_character_id = @c)
+                """;
+            delLojinhaItems.Parameters.AddWithValue("@c", characterId);
+            delLojinhaItemsRows = delLojinhaItems.ExecuteNonQuery();
+        }
+
+        int delLojinhasRows = 0;
+        using (var delLojinhas = conn.CreateCommand())
+        {
+            delLojinhas.Transaction = tx;
+            delLojinhas.CommandText = "DELETE FROM lojinhas WHERE owner_character_id = @c";
+            delLojinhas.Parameters.AddWithValue("@c", characterId);
+            delLojinhasRows = delLojinhas.ExecuteNonQuery();
+        }
+
+        int delPetsRows = 0;
+        using (var delPets = conn.CreateCommand())
+        {
+            delPets.Transaction = tx;
+            delPets.CommandText = "DELETE FROM character_pets WHERE character_id = @c";
+            delPets.Parameters.AddWithValue("@c", characterId);
+            delPetsRows = delPets.ExecuteNonQuery();
+        }
+
         using var delItems = conn.CreateCommand();
+        delItems.Transaction = tx;
         delItems.CommandText = "DELETE FROM items WHERE character_id = @c";
         delItems.Parameters.AddWithValue("@c", characterId);
-        delItems.ExecuteNonQuery();
+        int delItemsRows = delItems.ExecuteNonQuery();
 
         using var delQuests = conn.CreateCommand();
+        delQuests.Transaction = tx;
         delQuests.CommandText = "DELETE FROM player_quests WHERE character_id = @c";
         delQuests.Parameters.AddWithValue("@c", characterId);
-        delQuests.ExecuteNonQuery();
+        int delQuestsRows = delQuests.ExecuteNonQuery();
 
         using var delTalents = conn.CreateCommand();
+        delTalents.Transaction = tx;
         delTalents.CommandText = "DELETE FROM character_talents WHERE character_id = @c";
         delTalents.Parameters.AddWithValue("@c", characterId);
-        delTalents.ExecuteNonQuery();
+        int delTalentsRows = delTalents.ExecuteNonQuery();
 
         using var delSkillSlots = conn.CreateCommand();
+        delSkillSlots.Transaction = tx;
         delSkillSlots.CommandText = "DELETE FROM character_skill_slots WHERE character_id = @c";
         delSkillSlots.Parameters.AddWithValue("@c", characterId);
-        delSkillSlots.ExecuteNonQuery();
+        int delSkillSlotsRows = delSkillSlots.ExecuteNonQuery();
 
         using var delGuild = conn.CreateCommand();
+        delGuild.Transaction = tx;
         delGuild.CommandText = "DELETE FROM guild_members WHERE name = @n";
         delGuild.Parameters.AddWithValue("@n", characterName);
-        delGuild.ExecuteNonQuery();
+        int delGuildRows = delGuild.ExecuteNonQuery();
 
         using var delChar = conn.CreateCommand();
+        delChar.Transaction = tx;
         delChar.CommandText = "DELETE FROM characters WHERE id = @c";
         delChar.Parameters.AddWithValue("@c", characterId);
-        delChar.ExecuteNonQuery();
+        int delCharRows = delChar.ExecuteNonQuery();
 
         tx.Commit();
-        Logger.Info($"[DB] Personagem {characterId} ({characterName}) deletado (itens+quests+guild+char).");
+        Logger.Info($"[DB] Personagem {characterId} ({characterName}) deletado: char={delCharRows}, itens={delItemsRows}, quests={delQuestsRows}, talentos={delTalentsRows}, skillSlots={delSkillSlotsRows}, pets={delPetsRows}, guild={delGuildRows}, lojinhas={delLojinhasRows}, lojinhaItens={delLojinhaItemsRows}.");
     }
 
     public List<(int questId, string progress, bool completed, bool claimed)> GetPlayerQuests(int characterId)

@@ -44,6 +44,7 @@ public partial class PetScrollMiniGame : Control
     public override void _Ready()
     {
         _panel = GetNode<Panel>("Panel");
+        _panel.SetAnchorsPreset(LayoutPreset.TopLeft);
         _panel.CustomMinimumSize = new Vector2(360, 230);
         _panel.Size = new Vector2(360, 230);
         _panel.AddThemeStyleboxOverride("panel", CriarStyle(
@@ -160,6 +161,8 @@ public partial class PetScrollMiniGame : Control
         _barBg.AddChild(_marker);
 
         _panel.Visible = false;
+        ZIndex = 260;
+        MouseFilter = MouseFilterEnum.Stop;
     }
 
     public void IniciarMiniGame(int petId, string petNome, int maxTentativas = 7)
@@ -179,7 +182,24 @@ public partial class PetScrollMiniGame : Control
 
         GD.Print($"[PET MINIGAME] Iniciando captura de '{petNome}' ({MaxAcertos} acertos em {_maxTentativas} tentativas)");
         _panel.Visible = true;
+        CallDeferred(nameof(PosicionarJanela));
         IniciarRodada();
+    }
+
+    private void PosicionarJanela()
+    {
+        if (_panel == null) return;
+
+        Vector2 tela = GetViewportRect().Size;
+        Vector2 panelSize = _panel.Size;
+        if (panelSize.X <= 0 || panelSize.Y <= 0)
+            panelSize = _panel.CustomMinimumSize;
+
+        _panel.Position = new Vector2(
+            Mathf.Clamp(24f, 8f, Mathf.Max(8f, tela.X - panelSize.X - 8f)),
+            Mathf.Clamp(tela.Y * 0.5f - panelSize.Y * 0.5f, 64f, Mathf.Max(64f, tela.Y - panelSize.Y - 24f))
+        );
+        _panel.MoveToFront();
     }
 
     private void IniciarRodada()

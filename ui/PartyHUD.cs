@@ -9,6 +9,7 @@ public partial class PartyHUD : Control
     private int _partyId;
     private ulong _leaderId;
     private Panel? _activeMenu;
+    private ulong _activeMenuTargetId;
     public bool HiddenByUser { get; set; }
 
     private string NomeJogador
@@ -22,6 +23,10 @@ public partial class PartyHUD : Control
 
     public override void _Ready()
     {
+        MouseFilter = MouseFilterEnum.Pass;
+        AlignBelowPlayerHud();
+        CallDeferred(nameof(AlignBelowPlayerHud));
+
         _container = new VBoxContainer();
         _container.Name = "PartyHUDContainer";
         _container.AddThemeConstantOverride("separation", 2);
@@ -36,9 +41,28 @@ public partial class PartyHUD : Control
             net.OnPartyData += OnNetworkPartyData;
             net.OnPartyMemberUpdate += OnNetworkPartyMemberUpdate;
             net.OnPartyLeaderUpdate += OnNetworkPartyLeaderUpdate;
+            net.OnEntityHealthUpdate += OnEntityHealthUpdate;
+            net.OnEntityManaUpdate += OnEntityManaUpdate;
+
+            if (net.HasPendingPartyData)
+                OnNetworkPartyData(net.PendingPartyId, net.PendingPartyMembers);
         }
 
         Refresh();
+    }
+
+    private void AlignBelowPlayerHud()
+    {
+        var playerHud = GetTree()?.CurrentScene?.FindChild("PlayerHud", true, false) as Control;
+        if (playerHud == null)
+        {
+            Position = new Vector2(8, 188);
+            Size = new Vector2(170, 112);
+            return;
+        }
+
+        Position = playerHud.Position + new Vector2(0, playerHud.Size.Y + 62);
+        Size = new Vector2(Mathf.Max(160f, playerHud.Size.X - 42f), 112);
     }
 
     private void OnNetworkPartyData(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members)
@@ -57,7 +81,7 @@ public partial class PartyHUD : Control
 
     private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
     {
-        var existing = _members.Find(m => (ulong)(long)m["entity_id"] == entityId);
+        var existing = FindMember(entityId);
         if (joined)
         {
             if (existing != null)
@@ -98,6 +122,31 @@ public partial class PartyHUD : Control
         Refresh();
     }
 
+    private void OnEntityHealthUpdate(ulong entityId, int health, int maxHealth)
+    {
+        var member = FindMember(entityId);
+        if (member == null) return;
+
+        member["health"] = health;
+        member["max_health"] = maxHealth;
+        Refresh();
+    }
+
+    private void OnEntityManaUpdate(ulong entityId, int mana, int maxMana)
+    {
+        var member = FindMember(entityId);
+        if (member == null) return;
+
+        member["mana"] = mana;
+        member["max_mana"] = maxMana;
+        Refresh();
+    }
+
+    private Godot.Collections.Dictionary? FindMember(ulong entityId)
+    {
+        return _members.Find(m => (ulong)(long)m["entity_id"] == entityId);
+    }
+
     private void OnNetworkPartyLeaderUpdate(ulong newLeaderId)
     {
         _leaderId = newLeaderId;
@@ -108,24 +157,25 @@ public partial class PartyHUD : Control
 
     public void Refresh()
     {
-        if (_activeMenu != null && IsInstanceValid(_activeMenu))
-            _activeMenu.QueueFree();
-        _activeMenu = null;
-
         foreach (var child in _container.GetChildren())
             child.QueueFree();
 
         if (_members.Count <= 1)
         {
+            FecharMenuContexto();
             Visible = false;
             return;
         }
 
         if (HiddenByUser)
         {
+            FecharMenuContexto();
             Visible = false;
             return;
         }
+
+        if (_activeMenu != null && IsInstanceValid(_activeMenu) && FindMember(_activeMenuTargetId) == null)
+            FecharMenuContexto();
 
         Visible = true;
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -142,7 +192,8 @@ public partial class PartyHUD : Control
             int level = m.ContainsKey("level") ? (int)m["level"] : 1;
 
             var memberPanel = new Panel();
-            memberPanel.CustomMinimumSize = new Vector2(120, 44);
+            memberPanel.CustomMinimumSize = new Vector2(0, 28);
+            memberPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
             var style = new StyleBoxFlat();
             style.BgColor = new Color(0, 0, 0, 0.45f);
@@ -156,6 +207,11 @@ public partial class PartyHUD : Control
             vbox.SizeFlagsVertical = SizeFlags.ExpandFill;
             vbox.AddThemeConstantOverride("separation", 1);
             vbox.MouseFilter = MouseFilterEnum.Ignore;
+            vbox.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+            vbox.OffsetLeft = 4;
+            vbox.OffsetTop = 2;
+            vbox.OffsetRight = -4;
+            vbox.OffsetBottom = -2;
 
             var topRow = new HBoxContainer();
             topRow.MouseFilter = MouseFilterEnum.Ignore;
@@ -166,7 +222,7 @@ public partial class PartyHUD : Control
             {
                 var iconRect = new TextureRect();
                 iconRect.Texture = classIcon;
-                iconRect.CustomMinimumSize = new Vector2(18, 18);
+                iconRect.CustomMinimumSize = new Vector2(12, 12);
                 iconRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
                 iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
                 iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
@@ -174,15 +230,15 @@ public partial class PartyHUD : Control
             }
 
             var nameLabel = new Label();
-            string prefix = isLeader ? "[color=yellow](L)[/color] " : "";
+            string prefix = isLeader ? "(L) " : "";
             nameLabel.Text = $"{prefix}{nome}";
             nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            nameLabel.AddThemeFontSizeOverride("font_size", 10);
+            nameLabel.AddThemeFontSizeOverride("font_size", 8);
             nameLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.95f, 1, 0.85f));
 
             var levelLabel = new Label();
             levelLabel.Text = $"Lv.{level}";
-            levelLabel.AddThemeFontSizeOverride("font_size", 9);
+            levelLabel.AddThemeFontSizeOverride("font_size", 7);
             levelLabel.AddThemeColorOverride("font_color", new Color(0.8f, 0.8f, 0.3f, 0.8f));
 
             topRow.AddChild(nameLabel);
@@ -195,7 +251,8 @@ public partial class PartyHUD : Control
 
             var hpBar = new ProgressBar
             {
-                CustomMinimumSize = new Vector2(0, 7),
+                CustomMinimumSize = new Vector2(0, 5),
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 MaxValue = System.Math.Max(1, maxHp),
                 Value = System.Math.Clamp(hp, 0, System.Math.Max(1, maxHp)),
                 ShowPercentage = false,
@@ -206,7 +263,8 @@ public partial class PartyHUD : Control
 
             var mpBar = new ProgressBar
             {
-                CustomMinimumSize = new Vector2(0, 7),
+                CustomMinimumSize = new Vector2(0, 5),
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
                 MaxValue = System.Math.Max(1, maxMp),
                 Value = System.Math.Clamp(mp, 0, System.Math.Max(1, maxMp)),
                 ShowPercentage = false,
@@ -216,6 +274,7 @@ public partial class PartyHUD : Control
             bars.AddChild(mpBar);
 
             vbox.AddChild(bars);
+            memberPanel.AddChild(vbox);
 
             memberPanel.MouseFilter = MouseFilterEnum.Pass;
             bool isSelf = net != null && eid == net.LocalPlayerId;
@@ -260,8 +319,7 @@ public partial class PartyHUD : Control
 
     private void MostrarMenuContexto(ulong targetId, string targetName, bool isSelf, Vector2 screenPos)
     {
-        if (_activeMenu != null && IsInstanceValid(_activeMenu))
-            _activeMenu.QueueFree();
+        FecharMenuContexto();
 
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net == null) return;
@@ -333,6 +391,15 @@ public partial class PartyHUD : Control
         AddChild(menu);
         menu.MoveToFront();
         _activeMenu = menu;
+        _activeMenuTargetId = targetId;
+    }
+
+    private void FecharMenuContexto()
+    {
+        if (_activeMenu != null && IsInstanceValid(_activeMenu))
+            _activeMenu.QueueFree();
+        _activeMenu = null;
+        _activeMenuTargetId = 0;
     }
 
     private static void AdicionarOpcao(VBoxContainer parent, string text, System.Action action)
@@ -340,5 +407,17 @@ public partial class PartyHUD : Control
         var btn = new Button { Text = text, Flat = true, CustomMinimumSize = new Vector2(0, 26) };
         btn.Pressed += action;
         parent.AddChild(btn);
+    }
+
+    public override void _ExitTree()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null) return;
+
+        net.OnPartyData -= OnNetworkPartyData;
+        net.OnPartyMemberUpdate -= OnNetworkPartyMemberUpdate;
+        net.OnPartyLeaderUpdate -= OnNetworkPartyLeaderUpdate;
+        net.OnEntityHealthUpdate -= OnEntityHealthUpdate;
+        net.OnEntityManaUpdate -= OnEntityManaUpdate;
     }
 }

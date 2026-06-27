@@ -14,6 +14,7 @@ public partial class GameNetwork : Node
     private NetClient? _client;
     private readonly Dictionary<ulong, Node2D> _entities = new();
     private static string? _logPath;
+    private static bool _crashLogHooksRegistered;
 
     private bool _enterWorldPending;
     internal int _pendingStatPoints;
@@ -24,6 +25,7 @@ public partial class GameNetwork : Node
     internal int _pendingLevel;
     internal long _pendingXp;
     private bool _pendingInventoryApplyLogged;
+    private int _pendingInventoryApplyRetries;
 
     public static void Log(string msg)
     {
@@ -124,12 +126,14 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnDuelStartEventHandler(ulong opponentId, string opponentName);
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
     [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
+    [Signal] public delegate void OnMapMarkerUpdateEventHandler(byte action, int markerId, float worldX, float worldY, string playerName);
 
     public new bool IsConnected => _client?.IsConnected ?? false;
     public int ServerPing => _client?.Ping ?? 0;
 
     public override void _Ready()
     {
+        RegistrarCrashLogs();
         _client = new NetClient();
         AddChild(_client);
 
@@ -160,6 +164,27 @@ public partial class GameNetwork : Node
 
         if (AutoLogin)
             CallDeferred(nameof(ConnectToServer));
+    }
+
+    private static void RegistrarCrashLogs()
+    {
+        if (_crashLogHooksRegistered)
+            return;
+
+        _crashLogHooksRegistered = true;
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            Log("[CRASH] UnhandledException capturada.");
+            if (args.ExceptionObject is Exception ex)
+                Log($"[CRASH] {ex}");
+            else
+                Log($"[CRASH] Objeto: {args.ExceptionObject}");
+        };
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            Log($"[CRASH] UnobservedTaskException: {args.Exception}");
+            args.SetObserved();
+        };
     }
 
     public override void _Process(double delta)
@@ -561,6 +586,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_MapEditorTileUpdate:
                 HandleMapEditorTileUpdate(r);
                 break;
+            case PacketId.S2C_MapMarkerUpdate:
+                HandleMapMarkerUpdate(r);
+                break;
         } } catch (System.Exception ex)
         {
             LogError($"Erro processando pacote {id}", ex.ToString());
@@ -592,6 +620,33 @@ public partial class GameNetwork : Node
         return node;
     }
 
+    internal void ClearCharacterScopedState()
+    {
+        LocalPlayerId = 0;
+        LocalChannelId = 0;
+        PendingPlayerSpawn = Vector2.Zero;
+
+        PendingInventoryData = null;
+        PendingEquipmentData = null;
+        PendingPetData = null;
+        Gold = 0;
+
+        PendingTalentPoints = null;
+        PendingTalentNodes = null;
+        PendingSkillBarData = null;
+
+        PendingPartyId = 0;
+        PendingPartyMembers.Clear();
+
+        GuildId = -1;
+        GuildName = "";
+        GuildTag = "";
+        GuildEmblem = -1;
+        IsGuildLeader = false;
+
+        ResetPendingInventoryApplyLog();
+    }
+
     public ItemDatabase? ItemDB { get; private set; }
 
     public void ApplyPendingInventory()
@@ -607,6 +662,7 @@ public partial class GameNetwork : Node
                 Log("ApplyPendingInventory: Player ainda n?o est? pronto; mantendo dados pendentes.");
                 _pendingInventoryApplyLogged = true;
             }
+            RetryPendingInventoryApply();
             return;
         }
 
@@ -622,6 +678,7 @@ public partial class GameNetwork : Node
             else
             {
                 Log("ApplyPendingInventory: InventarioComponent ou ItemDB n?o encontrado; mantendo invent?rio pendente.");
+                RetryPendingInventoryApply();
             }
         }
 
@@ -639,11 +696,6 @@ public partial class GameNetwork : Node
                     int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
                     string instanceData = entry.ContainsKey("instance_data") ? (string)entry["instance_data"] : "";
                     var resource = ItemDB.GetItem(itemId);
-                    if (resource == null)
-                    {
-                        ItemDB.Refresh();
-                        resource = ItemDB.GetItem(itemId);
-                    }
                     if (resource != null)
                     {
                         var tipo = (TipoEquipamento)slotVal;
@@ -660,6 +712,7 @@ public partial class GameNetwork : Node
             else
             {
                 Log("ApplyPendingInventory: EquipamentoComponent ou ItemDB n?o encontrado; mantendo equipamento pendente.");
+                RetryPendingInventoryApply();
             }
         }
 
@@ -681,6 +734,7 @@ public partial class GameNetwork : Node
             else
             {
                 Log("ApplyPendingInventory: PetColecaoComponent n?o encontrado; mantendo pets pendentes.");
+                RetryPendingInventoryApply();
             }
         }
     }
@@ -688,6 +742,15 @@ public partial class GameNetwork : Node
     internal void ResetPendingInventoryApplyLog()
     {
         _pendingInventoryApplyLogged = false;
+        _pendingInventoryApplyRetries = 0;
+    }
+
+    private void RetryPendingInventoryApply()
+    {
+        if (_pendingInventoryApplyRetries++ >= 60)
+            return;
+
+        CallDeferred(nameof(ApplyPendingInventory));
     }
 
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingInventoryData { get; private set; }

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bsgfeba7npgh8"
-path="res://.godot/imported/Arco 1 Attack.png-e9f70b09d60ff3cebfb18df0f92134d1.ctex"
+uid="uid://16wxy8jm3k2b"
+path="res://.godot/imported/mithara_launcher_background.png-e0fc46cb5b80552553e012291dd7084a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Itens/aparence/Armaduras/Arco 1 Attack.png"
-dest_files=["res://.godot/imported/Arco 1 Attack.png-e9f70b09d60ff3cebfb18df0f92134d1.ctex"]
+source_file="res://launcher/assets/mithara_launcher_background.png"
+dest_files=["res://.godot/imported/mithara_launcher_background.png-e0fc46cb5b80552553e012291dd7084a.ctex"]
 
 [params]
 

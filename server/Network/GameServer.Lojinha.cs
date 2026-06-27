@@ -45,8 +45,10 @@ partial class GameServer
         writer.Put(lojinha.Items.Count);
         foreach (var item in lojinha.Items)
         {
+            var def = ItemDefinitions.Get(item.ItemId);
             writer.Put(item.Slot);
             writer.Put(item.ItemId);
+            writer.Put(def?.Name ?? $"Item {item.ItemId}");
             writer.Put(item.Quantity);
             writer.Put(item.PricePerUnit);
             writer.Put(item.RollData);
@@ -387,8 +389,10 @@ partial class GameServer
         writer.Put(lojinha.Items.Count);
         foreach (var item in lojinha.Items)
         {
+            var def = ItemDefinitions.Get(item.ItemId);
             writer.Put(item.Slot);
             writer.Put(item.ItemId);
+            writer.Put(def?.Name ?? $"Item {item.ItemId}");
             writer.Put(item.Quantity);
             writer.Put(item.PricePerUnit);
             writer.Put(item.RollData);
@@ -435,12 +439,23 @@ partial class GameServer
         _db.UpdateLojinhaConfig(lojinha.DbId, lojinha.ShopName, lojinha.IsOpen);
 
         SendLojinhaData(peer, lojinha, true);
-        BroadcastLojinhaSpawn(lojinha, channel);
+        if (abrir)
+        {
+            BroadcastLojinhaSpawn(lojinha, channel);
+        }
+        else
+        {
+            BroadcastLojinhaDespawn(lojinha, channel, except: peer);
+            SendLojinhaSpawnToPeer(peer, lojinha);
+        }
         SendSystemMessage(peer, abrir ? "Lojinha aberta para outros jogadores." : "Lojinha salva como rascunho.");
     }
 
     private void BroadcastLojinhaSpawn(LojinhaEntity lojinha, Channel channel)
     {
+        if (!lojinha.IsOpen)
+            return;
+
         var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
         WriteLojinhaSpawnPacket(w, lojinha);
         foreach (var eid in channel.GetEntitiesInAoi(lojinha.X, lojinha.Y))
@@ -449,6 +464,20 @@ partial class GameServer
             p?.Send(w, DeliveryMethod.ReliableOrdered);
             w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
             WriteLojinhaSpawnPacket(w, lojinha);
+        }
+    }
+
+    private void BroadcastLojinhaDespawn(LojinhaEntity lojinha, Channel channel, NetPeer? except = null)
+    {
+        var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
+        w.Put(lojinha.Id);
+        foreach (var eid in channel.GetEntitiesInAoi(lojinha.X, lojinha.Y))
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p == null || p == except) continue;
+            p.Send(w, DeliveryMethod.ReliableOrdered);
+            w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
+            w.Put(lojinha.Id);
         }
     }
 

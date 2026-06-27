@@ -136,7 +136,11 @@ partial class GameServer
 
         float dx = healer.X - target.X;
         float dy = healer.Y - target.Y;
-        if (MathF.Sqrt(dx * dx + dy * dy) > 80f) return;
+        if (MathF.Sqrt(dx * dx + dy * dy) > 120f)
+        {
+            SendSystemMessage(peer, "Chegue mais perto para pegar este item.");
+            return;
+        }
 
         var scroll = healer.Items.FirstOrDefault(i => i.ItemId == 101 && i.Quantity > 0);
         if (scroll == null)
@@ -777,6 +781,9 @@ partial class GameServer
         int xpReward = mob.ExperienceReward;
         if (IsPlayerVip(killer))
             xpReward *= 2;
+        int partyBonusPercent = GetPartyXpBonusPercent(killer);
+        if (partyBonusPercent > 0)
+            xpReward = Math.Max(1, (int)Math.Round(xpReward * (1.0 + partyBonusPercent / 100.0)));
 
         var writerDied = PacketSerializer.WritePacket(PacketId.S2C_EntityDied);
         writerDied.Put(mobId);
@@ -878,6 +885,18 @@ partial class GameServer
                 $"{killer.Name} derrotou o Boss Slime! Ele nascerá novamente em 1 hora.");
         }
 
+    }
+
+    private int GetPartyXpBonusPercent(PlayerEntity player)
+    {
+        if (player.PartyId < 0)
+            return 0;
+
+        var party = _world.Parties.GetParty(player.PartyId);
+        if (party == null)
+            return 0;
+
+        return Math.Clamp(party.Members.Count * 5, 0, 25);
     }
 
     private void SpawnMonsterLoot(Channel channel, MonsterEntity mob, PlayerEntity killer, HashSet<ulong> aoi)
@@ -1005,7 +1024,7 @@ partial class GameServer
 
             if (!itemAdded)
             {
-                SendSystemMessage(peer, "Invent?rio cheio!");
+                SendSystemMessage(peer, "Inventario cheio!");
                 SendInventoryData(peer, player);
                 return;
             }

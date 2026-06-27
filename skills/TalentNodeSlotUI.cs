@@ -25,6 +25,7 @@ public partial class TalentNodeSlotUI : PanelContainer
         }
     }
     public float IconPadding { get; set; } = 5f;
+    public string CustomTooltipText { get; set; } = "";
 
     private Texture2D _iconTexture;
     private string _fallbackText = "?";
@@ -73,6 +74,11 @@ public partial class TalentNodeSlotUI : PanelContainer
         EsconderTooltipCustom();
     }
 
+    public void ForceHideTooltip()
+    {
+        EsconderTooltipCustom();
+    }
+
     private void AtualizarIconeVisual()
     {
         if (!IsInsideTree())
@@ -102,7 +108,7 @@ public partial class TalentNodeSlotUI : PanelContainer
             }
 
             _iconView.Texture = _iconTexture;
-            _iconView.TooltipText = TooltipText;
+            _iconView.TooltipText = "";
             AtualizarRetanguloIcone();
             QueueRedraw();
             return;
@@ -135,7 +141,7 @@ public partial class TalentNodeSlotUI : PanelContainer
         }
 
         _fallbackLabel.Text = _fallbackText;
-        _fallbackLabel.TooltipText = TooltipText;
+        _fallbackLabel.TooltipText = "";
         _fallbackLabel.AddThemeFontSizeOverride("font_size", NodeData?.NodeType == TalentNodeType.Skill ? 22 : 13);
         _fallbackLabel.AddThemeColorOverride("font_color", new Color(0.88f, 0.9f, 0.94f));
         AtualizarRetanguloIcone();
@@ -175,7 +181,7 @@ public partial class TalentNodeSlotUI : PanelContainer
 
     private void MostrarTooltipCustom()
     {
-        if (string.IsNullOrWhiteSpace(TooltipText) || _hoverTooltip != null)
+        if (string.IsNullOrWhiteSpace(CustomTooltipText) || _hoverTooltip != null)
             return;
 
         _hoverTooltip = new PanelContainer
@@ -203,7 +209,7 @@ public partial class TalentNodeSlotUI : PanelContainer
 
         var label = new Label
         {
-            Text = TooltipText,
+            Text = CustomTooltipText,
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
             CustomMinimumSize = new Vector2(320, 0),
             MouseFilter = MouseFilterEnum.Ignore,

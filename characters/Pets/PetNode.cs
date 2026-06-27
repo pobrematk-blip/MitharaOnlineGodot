@@ -395,6 +395,16 @@ public partial class PetNode : Node2D
         }
 
         if (_sprite?.SpriteFrames?.HasAnimation(baseAnim) == true)
+        {
             _sprite.Play(baseAnim);
+            return;
+        }
+
+        if (_sprite?.SpriteFrames != null)
+        {
+            var names = _sprite.SpriteFrames.GetAnimationNames();
+            if (names.Length > 0 && string.IsNullOrEmpty(_sprite.Animation.ToString()))
+                _sprite.Play(names[0]);
+        }
     }
 }

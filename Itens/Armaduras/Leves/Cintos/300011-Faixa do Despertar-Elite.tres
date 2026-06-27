@@ -1,34 +1,30 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/x2.png" id="1_f57c5"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
-ItemID = 300011
+ItemID = 9999
 Nome = "Faixa do Despertar"
 Descricao = "Tecida com fios arcanos de aldeias iniciais, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_f57c5")
 QuantidadeMaximaPorSlot = 1
 Tipo = 3
 CategoriaPeso = 0
 TipoItem = 1
-NivelRequerido = 1
 Valor = 10
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 1
-HpMin = 1
-HpMax = 1
-Mana = 2
-ManaMin = 2
-ManaMax = 2
 DefesaFisica = 1
 DefesaFisicaMin = 1
 DefesaFisicaMax = 1
 DefesaMagica = 1
 DefesaMagicaMin = 1
 DefesaMagicaMax = 1
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 1
+HpMin = 1
+HpMax = 1
+Mana = 2
+ManaMin = 2
+ManaMax = 2
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

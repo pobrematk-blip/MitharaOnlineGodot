@@ -1,34 +1,31 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://Itens/Incones/x1.png" id="1_aiqu7"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto de Troll.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300023
 Nome = "Faixa de Bruma Baixa"
 Descricao = "Tecida com fios arcanos de Bruma Baixa, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_aiqu7")
 QuantidadeMaximaPorSlot = 1
 Tipo = 3
 CategoriaPeso = 0
 TipoItem = 1
 NivelRequerido = 10
 Valor = 100
-ClassesPermitidas = "Mago,Prist"
-PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"
-Hp = 3
-HpMin = 3
-HpMax = 4
-Mana = 4
-ManaMin = 4
-ManaMax = 5
 DefesaFisica = 1
 DefesaFisicaMin = 1
 DefesaFisicaMax = 2
 DefesaMagica = 3
 DefesaMagicaMin = 3
 DefesaMagicaMax = 4
-Evasao = 0
-EvasaoMin = 0
-EvasaoMax = 0
+Hp = 3
+HpMin = 3
+HpMax = 4
+Mana = 4
+ManaMin = 4
+ManaMax = 5
+ClassesPermitidas = "Mago,Prist"
+PoolDeAfixos = "Inteligencia,Mana,DefesaMagica,RegeneracaoMana,ReducaoCooldown,Tenacidade,RouboMana"

@@ -78,6 +78,7 @@ public partial class SettingsUI : Control
         _mostrarTagCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarTagCheck");
         _mostrarEmblemaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarEmblemaCheck");
         _mostrarPartyHUDCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarPartyHUDCheck");
+        PrepararAbaUIScroll();
 
         PopulateResolutions();
         SelecionarResolucaoAtual();
@@ -116,6 +117,53 @@ public partial class SettingsUI : Control
         GetTree().Root.SizeChanged += OnRootSizeChanged;
 
         CriarBotaoToggle();
+    }
+
+    private void PrepararAbaUIScroll()
+    {
+        var uiTab = _tabContainer.GetNodeOrNull<VBoxContainer>("UI");
+        if (uiTab == null || uiTab.GetNodeOrNull<ScrollContainer>("UIScrollRuntime") != null)
+            return;
+
+        var children = new List<Node>();
+        foreach (var child in uiTab.GetChildren())
+            children.Add(child);
+
+        var scroll = new ScrollContainer
+        {
+            Name = "UIScrollRuntime",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.ExpandFill,
+        };
+        var inner = new VBoxContainer
+        {
+            Name = "UIRuntimeList",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        inner.AddThemeConstantOverride("separation", 8);
+
+        uiTab.AddChild(scroll);
+        scroll.AddChild(inner);
+
+        foreach (var child in children)
+        {
+            uiTab.RemoveChild(child);
+            inner.AddChild(child);
+            if (child is Control control)
+            {
+                control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                if (control is CheckBox cb)
+                {
+                    cb.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    cb.ClipText = true;
+                }
+                else if (control is Label label)
+                {
+                    label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                    label.ClipText = true;
+                }
+            }
+        }
     }
 
     private void CriarBotaoToggle()
@@ -371,15 +419,19 @@ public partial class SettingsUI : Control
             var hbox = new HBoxContainer();
             hbox.AddThemeConstantOverride("separation", 8);
             hbox.CustomMinimumSize = new Vector2(0, 32);
+            hbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
             var label = new Label();
             label.Text = NomeAmigavel(nomeStr);
             label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            label.ClipText = true;
             label.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.85f));
-            label.CustomMinimumSize = new Vector2(140, 0);
+            label.CustomMinimumSize = new Vector2(110, 0);
 
             var keyBtn = new Button();
-            keyBtn.CustomMinimumSize = new Vector2(120, 28);
+            keyBtn.CustomMinimumSize = new Vector2(96, 28);
+            keyBtn.ClipText = true;
             keyBtn.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
             string acao = nomeStr;
             keyBtn.Pressed += () => IniciarRebinding(acao, keyBtn);

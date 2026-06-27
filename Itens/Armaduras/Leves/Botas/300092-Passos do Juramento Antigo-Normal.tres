@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
-[ext_resource type="Texture2D" path="res://Itens/Incones/Botas de Montros.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/b20.png" id="1_nf6tx"]
 
 [resource]
 script = ExtResource("1_item")
 ItemID = 300092
 Nome = "Passos do Juramento Antigo"
 Descricao = "Tecida com fios arcanos de Juramento Antigo, esta peça protege contra energia mágica sem prender os movimentos do conjurador."
-Icone = ExtResource("2_icon")
+Icone = ExtResource("1_nf6tx")
 QuantidadeMaximaPorSlot = 1
 Tipo = 6
 CategoriaPeso = 0
