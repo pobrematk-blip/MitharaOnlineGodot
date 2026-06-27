@@ -69,14 +69,14 @@ partial class GameServer
         if (target == null || !guild.Members.Contains(target.Id))
         { SendSystemMessage(peer, "Jogador não encontrado na guilda."); return; }
 
-        if (target.Id == guild.LeaderEntityId)
+        if (guild.IsLeader(target.Id))
         { SendSystemMessage(peer, "Você não pode expulsar a si mesmo."); return; }
 
         int targetRank = guild.GetRank(target.Id);
         if (actorRank != 0 && targetRank <= actorRank)
         { SendSystemMessage(peer, "Voce nao pode expulsar alguem de cargo igual ou maior."); return; }
 
-        _db.DeleteGuildMember(guild.Id, target.Id);
+        _db.DeleteGuildMemberByName(guild.Id, target.Name);
         BroadcastGuildMemberUpdate(guild, target.Id, target.Name, false);
         _world.Guilds.RemoveMember(target.Id);
         target.GuildId = -1;
@@ -96,7 +96,7 @@ partial class GameServer
         if (sender is not PlayerEntity player || player.GuildId < 0) return;
 
         var guild = _world.Guilds.GetGuild(player.GuildId);
-        if (guild == null || guild.LeaderEntityId != sender.Id)
+        if (guild == null || !guild.IsLeader(sender.Id))
         { SendSystemMessage(peer, "Apenas o líder pode promover."); return; }
 
         var target = FindPlayerByName(targetName, out var targetPeer, out _);
@@ -184,7 +184,7 @@ partial class GameServer
         if (sender is not PlayerEntity player || player.GuildId < 0) return;
 
         var guild = _world.Guilds.GetGuild(player.GuildId);
-        if (guild == null || guild.LeaderEntityId != sender.Id)
+        if (guild == null || !guild.IsLeader(sender.Id))
         { SendSystemMessage(peer, "Apenas o líder pode rebaixar."); return; }
 
         var target = FindPlayerByName(targetName, out var targetPeer, out _);
@@ -208,7 +208,7 @@ partial class GameServer
         if (sender is not PlayerEntity player || player.GuildId < 0) return;
 
         var guild = _world.Guilds.GetGuild(player.GuildId);
-        if (guild == null || guild.LeaderEntityId != sender.Id)
+        if (guild == null || !guild.IsLeader(sender.Id))
         { SendSystemMessage(peer, "Apenas o líder pode comprar skills."); return; }
 
         if (!guild.TryBuySkill(skillId))
@@ -303,7 +303,7 @@ partial class GameServer
         }
 
         var guild = _world.Guilds.GetGuild(player.GuildId);
-        if (guild == null || guild.LeaderEntityId != sender.Id)
+        if (guild == null || !guild.IsLeader(sender.Id))
         {
             SendSystemMessage(peer, "Apenas o líder da guilda pode convidar.");
             return;
@@ -370,7 +370,7 @@ partial class GameServer
 
         if (guild != null)
         {
-            _db.DeleteGuildMember(guild.Id, sender.Id);
+            _db.DeleteGuildMemberByName(guild.Id, sender.Name);
             var remaining = _world.Guilds.GetGuild(guild.Id);
             if (remaining == null)
                 _db.DeleteGuild(guild.Id);
@@ -496,7 +496,7 @@ partial class GameServer
             return;
         }
 
-        if (guild.LeaderEntityId != player.Id)
+        if (!guild.IsLeader(player.Id))
         {
             SendSystemMessage(peer, "Apenas o líder pode dissolver a guilda.");
             SendNpcDialog(peer, "Apenas o líder pode dissolver a guilda.", new List<(string, string, string)>());
@@ -510,7 +510,7 @@ partial class GameServer
             return;
         }
 
-        _db.DeleteGuildMember(guild.Id, player.Id);
+        _db.DeleteGuildMemberByName(guild.Id, player.Name);
         _db.DeleteGuild(guild.Id);
         _world.Guilds.RemoveGuild(guild.Id);
         player.GuildId = -1;

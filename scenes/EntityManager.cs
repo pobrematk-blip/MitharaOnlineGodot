@@ -729,14 +729,14 @@ public partial class EntityManager : Node
             inimigo.NetworkTargetPos = new Vector2(x, y);
 
             string levelTag = isBoss
-                ? $"[color=yellow]Lv.{level}[/color] [color=red]BOSS[/color] {name}"
-                : $"[color=yellow]Lv.{level}[/color] {name}";
+                ? $"[center][color=red]Boss[/color]\n[color=yellow]Lv.{level}[/color] {name}[/center]"
+                : $"[center][color=yellow]Lv.{level}[/color] {name}[/center]";
             var labelNome = new RichTextLabel
             {
                 Name = "MobNameLabel",
                 Text = levelTag,
-                Position = new Vector2(-80, -86),
-                Size = new Vector2(160, 24),
+                Position = new Vector2(-85, isBoss ? -116 : -92),
+                Size = new Vector2(170, isBoss ? 52 : 28),
                 ZIndex = 5,
                 BbcodeEnabled = true,
                 FitContent = true,
@@ -1290,10 +1290,10 @@ public partial class EntityManager : Node
 		{
 			var icon = new Sprite2D
 			{
-				Name = "ItemIcon",
+                Name = "ItemIcon",
                 Texture = iconTexture,
                 Position = new Vector2(0, -12),
-                ZIndex = 1,
+                ZIndex = 0,
                 ZAsRelative = true,
             };
 
@@ -1316,7 +1316,7 @@ public partial class EntityManager : Node
                 Size = new Vector2(28, 28),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                ZIndex = 1,
+                ZIndex = 0,
                 ZAsRelative = true,
             };
             fallback.AddThemeFontSizeOverride("font_size", 24);
@@ -1666,8 +1666,8 @@ public partial class EntityManager : Node
         if (inimigo.GetNodeOrNull<RichTextLabel>("MobNameLabel") is not { } label)
             return;
 
-        bool combate = aiState != 0 || !inimigo.IsNetworked;
-        var color = combate || !EhMobPassivoVisual(inimigo.MobType)
+        bool perseguindoOuAtacando = aiState == 2 || aiState == 3;
+        var color = inimigo.IsBoss || perseguindoOuAtacando
             ? new Color(1.0f, 0.22f, 0.18f)
             : Colors.White;
         label.AddThemeColorOverride("default_color", color);

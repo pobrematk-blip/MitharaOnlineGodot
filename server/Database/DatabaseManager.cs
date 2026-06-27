@@ -847,16 +847,35 @@ public class DatabaseManager
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            INSERT INTO guild_members (guild_id, entity_id, name, rank)
-            VALUES (@g, @e, @n, @r)
-            ON CONFLICT (guild_id, entity_id) DO UPDATE SET name=@n, rank=@r";
-        cmd.Parameters.AddWithValue("@g", guildId);
-        cmd.Parameters.AddWithValue("@e", (long)entityId);
-        cmd.Parameters.AddWithValue("@n", name);
-        cmd.Parameters.AddWithValue("@r", rank);
-        cmd.ExecuteNonQuery();
+        using var tx = conn.BeginTransaction();
+
+        using (var cleanup = conn.CreateCommand())
+        {
+            cleanup.Transaction = tx;
+            cleanup.CommandText = @"
+                DELETE FROM guild_members
+                WHERE name = @n AND (guild_id <> @g OR entity_id <> @e)";
+            cleanup.Parameters.AddWithValue("@n", name);
+            cleanup.Parameters.AddWithValue("@g", guildId);
+            cleanup.Parameters.AddWithValue("@e", (long)entityId);
+            cleanup.ExecuteNonQuery();
+        }
+
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.Transaction = tx;
+            cmd.CommandText = @"
+                INSERT INTO guild_members (guild_id, entity_id, name, rank)
+                VALUES (@g, @e, @n, @r)
+                ON CONFLICT (guild_id, entity_id) DO UPDATE SET name=@n, rank=@r";
+            cmd.Parameters.AddWithValue("@g", guildId);
+            cmd.Parameters.AddWithValue("@e", (long)entityId);
+            cmd.Parameters.AddWithValue("@n", name);
+            cmd.Parameters.AddWithValue("@r", rank);
+            cmd.ExecuteNonQuery();
+        }
+
+        tx.Commit();
     }
 
     public void DeleteGuildMember(int guildId, ulong entityId)
@@ -947,7 +966,10 @@ public class DatabaseManager
         greader.Close();
 
         using var mcmd = conn.CreateCommand();
-        mcmd.CommandText = "SELECT guild_id, entity_id, name, rank FROM guild_members";
+        mcmd.CommandText = @"
+            SELECT gm.guild_id, gm.entity_id, gm.name, gm.rank
+            FROM guild_members gm
+            INNER JOIN guilds g ON g.id = gm.guild_id";
         using var mreader = mcmd.ExecuteReader();
         while (mreader.Read())
         {

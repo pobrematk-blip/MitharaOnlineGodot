@@ -348,6 +348,8 @@ partial class GameServer
                     _world.Guilds.ReplaceMemberEntityId(guildId, oldEntityId, entityId);
 
                 _world.Guilds.SetMemberRank(guildId, entityId, rank);
+                if (rank == 0)
+                    guild.LeaderEntityId = entityId;
 
                 // Persist current entity ID in database
                 if (oldEntityId != entityId)
@@ -615,7 +617,7 @@ partial class GameServer
                 return;
             }
 
-            if (!ServerTalentCatalog.IsSkillUnlocked(player.CharacterClass, player.UnlockedTalents, skillId))
+            if (!ServerTalentCatalog.IsSkillUnlockedForPlayer(player.CharacterClass, player.UnlockedTalents, skillId))
             {
                 SendSystemMessage(peer, "Desbloqueie esta skill na árvore de talentos antes de colocar na barra.");
                 SendSkillBarData(peer, player);
@@ -662,7 +664,7 @@ partial class GameServer
             var skill = ServerSkillCatalog.Get(skillId);
             if (skill == null
                 || !ServerSkillCatalog.ClassMatches(player.CharacterClass, skill.ClasseRestrita)
-                || !ServerTalentCatalog.IsSkillUnlocked(player.CharacterClass, player.UnlockedTalents, skillId))
+                || !ServerTalentCatalog.IsSkillUnlockedForPlayer(player.CharacterClass, player.UnlockedTalents, skillId))
             {
                 player.SkillBarSlots[i] = 0;
             }
@@ -756,6 +758,23 @@ internal static class ServerTalentCatalog
         foreach (var node in tree.Values)
             if (node.SkillId == skillId && unlocked.Contains(node.NodeId))
                 return true;
+
+        return false;
+    }
+
+    public static bool IsSkillUnlockedForPlayer(string className, HashSet<string> unlocked, int skillId)
+    {
+        if (IsSkillUnlocked(className, unlocked, skillId))
+            return true;
+
+        foreach (var tree in Trees.Value.Values)
+        {
+            foreach (var node in tree.Values)
+            {
+                if (node.SkillId == skillId && unlocked.Contains(node.NodeId))
+                    return true;
+            }
+        }
 
         return false;
     }

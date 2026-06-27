@@ -393,18 +393,30 @@ public partial class Player : CharacterBody2D
             Name = "TargetMarker",
             ZIndex = 20,
         };
-        var arrow = new Polygon2D
+        var leftArrow = new Polygon2D
         {
             Polygon = new Vector2[]
             {
-                new Vector2(0f, 18f),
-                new Vector2(-12f, -6f),
-                new Vector2(12f, -6f),
+                new Vector2(16f, 0f),
+                new Vector2(-8f, -12f),
+                new Vector2(-8f, 12f),
             },
             Color = new Color(1f, 0.18f, 0.12f, 0.95f),
-            Position = new Vector2(0f, -55f),
+            Position = new Vector2(-46f, -18f),
         };
-        _targetMarker.AddChild(arrow);
+        var rightArrow = new Polygon2D
+        {
+            Polygon = new Vector2[]
+            {
+                new Vector2(-16f, 0f),
+                new Vector2(8f, -12f),
+                new Vector2(8f, 12f),
+            },
+            Color = new Color(1f, 0.18f, 0.12f, 0.95f),
+            Position = new Vector2(46f, -18f),
+        };
+        _targetMarker.AddChild(leftArrow);
+        _targetMarker.AddChild(rightArrow);
         targetNode.AddChild(_targetMarker);
 
         Vector2 dirToTarget = (targetNode.GlobalPosition - GlobalPosition).Normalized();

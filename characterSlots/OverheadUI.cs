@@ -305,7 +305,15 @@ public partial class OverheadUI : Control
 
     public override void _Process(double delta)
     {
-        if (_remoteMode) return;
+        if (_remoteMode)
+        {
+            if (_camera == null)
+                _camera = GetViewport().GetCamera2D();
+
+            if (_camera != null && _camera.Zoom.X > 0.001f && _camera.Zoom.Y > 0.001f)
+                Scale = new Vector2(0.85f / _camera.Zoom.X, 0.85f / _camera.Zoom.Y);
+            return;
+        }
         if (_player == null) return;
 
         if (_camera == null)

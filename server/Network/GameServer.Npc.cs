@@ -80,11 +80,10 @@ partial class GameServer
             {
                 dialogText = $"Bem-vindo de volta, {guild.Name}! Como posso ajudar?";
                 options.Clear();
-                options.Add(("Gerenciar Guilda", "guild_manage", ""));
+                if (guild.LeaderEntityId == player.Id || guild.GetRank(player.Id) == 0)
+                    options.Add(("Desfazer Guilda", "guild_disband", ""));
                 options.Add(("Entrar na base da guilda", "guild_enter_base", ""));
                 options.Add(("Entrar na GvG", "guild_enter_gvg", ""));
-                if (guild.LeaderEntityId == player.Id)
-                    options.Add(("Dissolver a guilda", "guild_disband", ""));
                 options.Add(("Sair", "close", ""));
             }
         }

@@ -1009,6 +1009,12 @@ partial class GameServer
         var loot = channel.GetLoot(lootId);
         if (loot == null || loot.PickedUp) return;
 
+        if (!CanPickupLoot(player, loot))
+        {
+            SendSystemMessage(peer, "Este item pertence a outro jogador ou party.");
+            return;
+        }
+
         float dx = player.X - loot.X;
         float dy = player.Y - loot.Y;
         if (MathF.Sqrt(dx * dx + dy * dy) > 80f) return;
@@ -1068,6 +1074,19 @@ partial class GameServer
                 wDespawn.Put(lootId);
             }
         }
+    }
+
+    private bool CanPickupLoot(PlayerEntity player, LootEntity loot)
+    {
+        if (loot.OwnerId == player.Id)
+            return true;
+
+        var playerPartyId = _world.Parties.GetPlayerPartyId(player.Id);
+        if (!playerPartyId.HasValue)
+            return false;
+
+        var ownerPartyId = _world.Parties.GetPlayerPartyId(loot.OwnerId);
+        return ownerPartyId.HasValue && ownerPartyId.Value == playerPartyId.Value;
     }
 
     private void SpawnTestPotion(NetPeer peer, Channel channel, Entity sender)

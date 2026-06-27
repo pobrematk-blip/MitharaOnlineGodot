@@ -32,10 +32,17 @@ public class Guild
     public int GetRank(ulong entityId) =>
         MemberRanks.TryGetValue(entityId, out var r) ? r : 4; // Novato
 
+    public bool IsLeader(ulong entityId) =>
+        LeaderEntityId == entityId || GetRank(entityId) == 0;
+
     public void SetRank(ulong entityId, int rank)
     {
         if (Members.Contains(entityId))
+        {
             MemberRanks[entityId] = rank;
+            if (rank == 0)
+                LeaderEntityId = entityId;
+        }
     }
 
     public void AddXp(int amount)
@@ -158,6 +165,8 @@ public class GuildManager
             {
                 guild.Members.Add(entityId);
                 guild.SetRank(entityId, rank);
+                if (rank == 0)
+                    guild.LeaderEntityId = entityId;
                 _playerGuild[entityId] = guildId;
             }
         }
