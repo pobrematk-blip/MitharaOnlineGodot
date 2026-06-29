@@ -99,6 +99,14 @@ partial class GameNetwork
         EmitSignal(SignalName.OnCharacterList, list);
     }
 
+    private void HandleCreateCharacterResult(NetDataReader r)
+    {
+        bool success = r.GetBool();
+        string message = r.GetString();
+        Log($"[GAME] Criacao de personagem: {(success ? "OK" : "falhou")} - {message}");
+        EmitSignal(SignalName.OnCreateCharacterResult, success, message);
+    }
+
     private void HandleCharacterDeleted(NetDataReader r)
     {
         int count = r.GetInt();

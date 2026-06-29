@@ -17,11 +17,7 @@ public partial class PlayerContextMenu : Panel
         Size = CustomMinimumSize;
         MouseFilter = MouseFilterEnum.Stop;
 
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0.08f, 0.08f, 0.12f, 0.92f);
-        style.SetCornerRadiusAll(6);
-        style.BorderColor = new Color(0.3f, 0.3f, 0.45f, 0.8f);
-        style.SetBorderWidthAll(1);
+        var style = MitharaUiTheme.Panel(0.95f);
         style.ShadowColor = new Color(0, 0, 0, 0.45f);
         style.ShadowSize = 5;
         AddThemeStyleboxOverride("panel", style);
@@ -46,7 +42,7 @@ public partial class PlayerContextMenu : Panel
             CustomMinimumSize = new Vector2(0, 24),
         };
         _targetLabel.AddThemeFontSizeOverride("font_size", 11);
-        _targetLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.85f, 0.35f));
+        _targetLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
         vbox.AddChild(_targetLabel);
 
         AddOption(vbox, "Convidar para Grupo");

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=117 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=120 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -29,7 +29,8 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/006 - Chuva de Shurikens.tres" id="sk_25"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/007 - Troca de Lugar.tres" id="sk_26"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/008 - Dança das Lâminas.tres" id="sk_27"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/009 - Tempestade Ninja.tres" id="sk_28"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Ninja/009 - Tempestade Ninja.tres" id="sk_28"]
+
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/41.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/47.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/33.png" id="icon_sk_11"]
@@ -58,6 +59,7 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/24.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/28.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/37.png" id="icon_sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Todas/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "lad_base"
@@ -745,10 +747,34 @@ Requisitos = PackedStringArray("lad_ninja_escolha_externa_3")
 CustoPontos = 1
 NivelMinimo = 70
 
+[sub_resource type="Resource" id="shared_1"]
+script = ExtResource("2_node")
+NodeId = "ladshared1"
+Nome = "Segundo F?lego"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+NodeType = 1
+Posicao = Vector2(835, 1045)
+Requisitos = PackedStringArray("lad_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_2"]
+script = ExtResource("2_node")
+NodeId = "ladshared2"
+Nome = "Passo Sombrio"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("sk_1")
+NodeType = 1
+Posicao = Vector2(1065, 1085)
+Requisitos = PackedStringArray("lad_base")
+CustoPontos = 1
+NivelMinimo = 1
+
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Ladino"
-Nodes = Array[Resource]([SubResource("base"), SubResource("assassino_rota"), SubResource("assassino_ci1"), SubResource("assassino_ci2"), SubResource("assassino_ci3"), SubResource("assassino_s1"), SubResource("assassino_s2"), SubResource("assassino_s3"), SubResource("assassino_ul"), SubResource("assassino_ur"), SubResource("assassino_s4"), SubResource("assassino_s5"), SubResource("assassino_s6"), SubResource("assassino_s7"), SubResource("assassino_ce1"), SubResource("assassino_ce2"), SubResource("assassino_ce3"), SubResource("assassino_s8"), SubResource("assassino_s9"), SubResource("assassino_s10"), SubResource("gatuno_rota"), SubResource("gatuno_ci1"), SubResource("gatuno_ci2"), SubResource("gatuno_ci3"), SubResource("gatuno_s1"), SubResource("gatuno_s2"), SubResource("gatuno_s3"), SubResource("gatuno_ul"), SubResource("gatuno_ur"), SubResource("gatuno_s4"), SubResource("gatuno_s5"), SubResource("gatuno_s6"), SubResource("gatuno_s7"), SubResource("gatuno_ce1"), SubResource("gatuno_ce2"), SubResource("gatuno_ce3"), SubResource("gatuno_s8"), SubResource("gatuno_s9"), SubResource("gatuno_s10"), SubResource("ninja_rota"), SubResource("ninja_ci1"), SubResource("ninja_ci2"), SubResource("ninja_ci3"), SubResource("ninja_s1"), SubResource("ninja_s2"), SubResource("ninja_s3"), SubResource("ninja_ul"), SubResource("ninja_ur"), SubResource("ninja_s4"), SubResource("ninja_s5"), SubResource("ninja_s6"), SubResource("ninja_s7"), SubResource("ninja_ce1"), SubResource("ninja_ce2"), SubResource("ninja_ce3"), SubResource("ninja_s8"), SubResource("ninja_s9"), SubResource("ninja_s10")])
+Nodes = Array[Resource]([SubResource("base"), SubResource("assassino_rota"), SubResource("assassino_ci1"), SubResource("assassino_ci2"), SubResource("assassino_ci3"), SubResource("assassino_s1"), SubResource("assassino_s2"), SubResource("assassino_s3"), SubResource("assassino_ul"), SubResource("assassino_ur"), SubResource("assassino_s4"), SubResource("assassino_s5"), SubResource("assassino_s6"), SubResource("assassino_s7"), SubResource("assassino_ce1"), SubResource("assassino_ce2"), SubResource("assassino_ce3"), SubResource("assassino_s8"), SubResource("assassino_s9"), SubResource("assassino_s10"), SubResource("gatuno_rota"), SubResource("gatuno_ci1"), SubResource("gatuno_ci2"), SubResource("gatuno_ci3"), SubResource("gatuno_s1"), SubResource("gatuno_s2"), SubResource("gatuno_s3"), SubResource("gatuno_ul"), SubResource("gatuno_ur"), SubResource("gatuno_s4"), SubResource("gatuno_s5"), SubResource("gatuno_s6"), SubResource("gatuno_s7"), SubResource("gatuno_ce1"), SubResource("gatuno_ce2"), SubResource("gatuno_ce3"), SubResource("gatuno_s8"), SubResource("gatuno_s9"), SubResource("gatuno_s10"), SubResource("ninja_rota"), SubResource("ninja_ci1"), SubResource("ninja_ci2"), SubResource("ninja_ci3"), SubResource("ninja_s1"), SubResource("ninja_s2"), SubResource("ninja_s3"), SubResource("ninja_ul"), SubResource("ninja_ur"), SubResource("ninja_s4"), SubResource("ninja_s5"), SubResource("ninja_s6"), SubResource("ninja_s7"), SubResource("ninja_ce1"), SubResource("ninja_ce2"), SubResource("ninja_ce3"), SubResource("ninja_s8"), SubResource("ninja_s9"), SubResource("ninja_s10"), SubResource("shared_1"), SubResource("shared_2")])
 RootNodeIds = PackedStringArray("lad_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

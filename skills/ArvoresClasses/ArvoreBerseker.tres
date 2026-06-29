@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=125 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,8 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/006 - Tremor de Guerra.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/007 - Espírito Indomável.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/008 - Colosso.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/009 - Titã Ancestral.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/009 - Titã Ancestral.tres" id="sk_30"]
+
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/33.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/26.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/17.png" id="icon_sk_11"]
@@ -62,6 +63,7 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/36.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/34.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/43.png" id="icon_sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "ber_base"
@@ -122,7 +124,7 @@ Descricao = "O Berserker reúne suas últimas forças, controlando a respiraçã
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
-Posicao = Vector2(815, 716.2)
+Posicao = Vector2(815, 676.2)
 Requisitos = PackedStringArray("ber_barbaro_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -574,7 +576,7 @@ Descricao = "A dor desperta a resistência natural do Berserker. Seus músculos 
 HabilidadeAtiva = ExtResource("sk_21")
 Icone = ExtResource("icon_sk_21")
 NodeType = 1
-Posicao = Vector2(815, 1183.8)
+Posicao = Vector2(815, 1143.8)
 Requisitos = PackedStringArray("ber_tita_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 5
@@ -749,10 +751,46 @@ Requisitos = PackedStringArray("ber_tita_escolha_externa_3")
 CustoPontos = 1
 NivelMinimo = 70
 
+[sub_resource type="Resource" id="shared_1"]
+script = ExtResource("2_node")
+NodeId = "bershared1"
+Nome = "Segundo F?lego"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+NodeType = 1
+Posicao = Vector2(800, 945)
+Requisitos = PackedStringArray("ber_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_2"]
+script = ExtResource("2_node")
+NodeId = "bershared2"
+Nome = "Investida Brutal"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(950, 1100)
+Requisitos = PackedStringArray("ber_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_3"]
+script = ExtResource("2_node")
+NodeId = "bershared3"
+Nome = "Sangue de Ferro"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(1100, 945)
+Requisitos = PackedStringArray("ber_base")
+CustoPontos = 1
+NivelMinimo = 1
+
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Berserker"
-Nodes = Array[Resource]([SubResource("base"), SubResource("barbaro_rota"), SubResource("barbaro_ci1"), SubResource("barbaro_ci2"), SubResource("barbaro_ci3"), SubResource("barbaro_s1"), SubResource("barbaro_s2"), SubResource("barbaro_s3"), SubResource("barbaro_ul"), SubResource("barbaro_ur"), SubResource("barbaro_s4"), SubResource("barbaro_s5"), SubResource("barbaro_s6"), SubResource("barbaro_s7"), SubResource("barbaro_ce1"), SubResource("barbaro_ce2"), SubResource("barbaro_ce3"), SubResource("barbaro_s8"), SubResource("barbaro_s9"), SubResource("barbaro_s10"), SubResource("slayer_rota"), SubResource("slayer_ci1"), SubResource("slayer_ci2"), SubResource("slayer_ci3"), SubResource("slayer_s1"), SubResource("slayer_s2"), SubResource("slayer_s3"), SubResource("slayer_ul"), SubResource("slayer_ur"), SubResource("slayer_s4"), SubResource("slayer_s5"), SubResource("slayer_s6"), SubResource("slayer_s7"), SubResource("slayer_ce1"), SubResource("slayer_ce2"), SubResource("slayer_ce3"), SubResource("slayer_s8"), SubResource("slayer_s9"), SubResource("slayer_s10"), SubResource("tita_rota"), SubResource("tita_ci1"), SubResource("tita_ci2"), SubResource("tita_ci3"), SubResource("tita_s1"), SubResource("tita_s2"), SubResource("tita_s3"), SubResource("tita_ul"), SubResource("tita_ur"), SubResource("tita_s4"), SubResource("tita_s5"), SubResource("tita_s6"), SubResource("tita_s7"), SubResource("tita_ce1"), SubResource("tita_ce2"), SubResource("tita_ce3"), SubResource("tita_s8"), SubResource("tita_s9"), SubResource("tita_s10")])
+Nodes = Array[Resource]([SubResource("base"), SubResource("barbaro_rota"), SubResource("barbaro_ci1"), SubResource("barbaro_ci2"), SubResource("barbaro_ci3"), SubResource("barbaro_s1"), SubResource("barbaro_s2"), SubResource("barbaro_s3"), SubResource("barbaro_ul"), SubResource("barbaro_ur"), SubResource("barbaro_s4"), SubResource("barbaro_s5"), SubResource("barbaro_s6"), SubResource("barbaro_s7"), SubResource("barbaro_ce1"), SubResource("barbaro_ce2"), SubResource("barbaro_ce3"), SubResource("barbaro_s8"), SubResource("barbaro_s9"), SubResource("barbaro_s10"), SubResource("slayer_rota"), SubResource("slayer_ci1"), SubResource("slayer_ci2"), SubResource("slayer_ci3"), SubResource("slayer_s1"), SubResource("slayer_s2"), SubResource("slayer_s3"), SubResource("slayer_ul"), SubResource("slayer_ur"), SubResource("slayer_s4"), SubResource("slayer_s5"), SubResource("slayer_s6"), SubResource("slayer_s7"), SubResource("slayer_ce1"), SubResource("slayer_ce2"), SubResource("slayer_ce3"), SubResource("slayer_s8"), SubResource("slayer_s9"), SubResource("slayer_s10"), SubResource("tita_rota"), SubResource("tita_ci1"), SubResource("tita_ci2"), SubResource("tita_ci3"), SubResource("tita_s1"), SubResource("tita_s2"), SubResource("tita_s3"), SubResource("tita_ul"), SubResource("tita_ur"), SubResource("tita_s4"), SubResource("tita_s5"), SubResource("tita_s6"), SubResource("tita_s7"), SubResource("tita_ce1"), SubResource("tita_ce2"), SubResource("tita_ce3"), SubResource("tita_s8"), SubResource("tita_s9"), SubResource("tita_s10"), SubResource("shared_1"), SubResource("shared_2"), SubResource("shared_3")])
 RootNodeIds = PackedStringArray("ber_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

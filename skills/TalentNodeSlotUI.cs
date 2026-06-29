@@ -5,6 +5,7 @@ public partial class TalentNodeSlotUI : PanelContainer
     public TalentNodeResource NodeData { get; set; }
     public bool IsUnlocked { get; set; }
     public bool CanDragSkill { get; set; }
+    public SkillResource DragSkill { get; set; }
     public Texture2D IconTexture
     {
         get => _iconTexture;
@@ -157,27 +158,34 @@ public partial class TalentNodeSlotUI : PanelContainer
 
     public override Variant _GetDragData(Vector2 position)
     {
-        if (!IsUnlocked && !CanDragSkill)
+        if (!IsUnlocked || !CanDragSkill)
         {
             GD.Print($"[TALENT UI] Drag bloqueado: talento ainda nao liberado ({NodeData?.NodeId ?? "sem-node"}).");
             return default;
         }
 
-        if (NodeData == null || NodeData.HabilidadeAtiva == null)
+        var skill = DragSkill ?? NodeData?.HabilidadeAtiva;
+        if (skill == null)
         {
             GD.Print($"[TALENT UI] Drag bloqueado: talento sem skill ativa ({NodeData?.NodeId ?? "sem-node"}).");
             return default;
         }
 
         var preview = new TextureRect();
-        preview.Texture = NodeData.HabilidadeAtiva.Icone;
+        preview.Texture = skill.Icone;
         preview.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
         preview.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         preview.CustomMinimumSize = new Vector2(40, 40);
         preview.Size = new Vector2(40, 40);
         SetDragPreview(preview);
-        GD.Print($"[TALENT UI] Arrastando skill: {NodeData.HabilidadeAtiva.Nome} (ID {NodeData.HabilidadeAtiva.SkillId})");
-        return NodeData.HabilidadeAtiva;
+        GD.Print($"[TALENT UI] Arrastando skill: {skill.Nome} (ID {skill.SkillId})");
+        return new Godot.Collections.Dictionary
+        {
+            ["kind"] = "skill",
+            ["skill_id"] = skill.SkillId,
+            ["skill_path"] = skill.ResourcePath ?? string.Empty,
+            ["skill_name"] = skill.Nome ?? string.Empty,
+        };
     }
 
     private void MostrarTooltipCustom()

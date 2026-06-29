@@ -19,6 +19,10 @@ public static class LpcSpriteFramesBuilder
     private const int RowRun = 38;
 
     private static readonly string[] Direcoes = { "up", "left", "down", "right" };
+    private static readonly int[] WalkStartCols = { 1, 0, 1, 0 };
+    private static readonly int[] WalkFrameCounts = { 8, 9, 8, 9 };
+    private static readonly int[] RunStartCols = { 1, 0, 1, 0 };
+    private static readonly int[] RunFrameCounts = { 8, 9, 8, 9 };
 
     private static readonly Dictionary<string, (int row, int frames, float speed)> MapaAtaque = new()
     {
@@ -47,8 +51,8 @@ public static class LpcSpriteFramesBuilder
         {
             string dir = Direcoes[d];
             int walkRow = RowWalk + d;
-            AdicionarAnimacao(frames, sheet, $"walk_{dir}", walkRow, 9, true, 10f);
-            AdicionarAnimacao(frames, sheet, $"run_{dir}", RowRun + d, 8, true, 12f);
+            AdicionarAnimacao(frames, sheet, $"walk_{dir}", walkRow, WalkFrameCounts[d], true, 10f, FrameSize, FrameSize, WalkStartCols[d]);
+            AdicionarAnimacao(frames, sheet, $"run_{dir}", RowRun + d, RunFrameCounts[d], true, 12f, FrameSize, FrameSize, RunStartCols[d]);
             AdicionarAnimacao(frames, sheet, $"idle_{dir}", RowIdle + d, 2, true, 3f);
         }
 
@@ -88,7 +92,8 @@ public static class LpcSpriteFramesBuilder
         int[] movimentoRows,
         int movimentoFrameSize,
         int[] ataqueRows,
-        int ataqueFrameSize)
+        int ataqueFrameSize,
+        int ataqueFrameCountOverride = 0)
     {
         var sheetPadrao = sheetBase ?? sheetAtaque;
         if (sheetPadrao == null) return new SpriteFrames();
@@ -96,13 +101,17 @@ public static class LpcSpriteFramesBuilder
         prefixoAtaque = string.IsNullOrWhiteSpace(prefixoAtaque) ? "mago" : prefixoAtaque.Trim().ToLowerInvariant();
         string ataquePath = sheetAtaque?.ResourcePath ?? "";
         string basePath = sheetBase?.ResourcePath ?? "";
-        string cacheKey = $"equip:{basePath}:{ataquePath}:{prefixoAtaque}:{movimentoFrameSize}:{ataqueFrameSize}:{RowsKey(movimentoRows)}:{RowsKey(ataqueRows)}";
+        string cacheKey = $"equip:{basePath}:{ataquePath}:{prefixoAtaque}:{movimentoFrameSize}:{ataqueFrameSize}:{ataqueFrameCountOverride}:{RowsKey(movimentoRows)}:{RowsKey(ataqueRows)}";
         if (_cache.TryGetValue(cacheKey, out var cached))
             return cached;
 
         var frames = new SpriteFrames();
         var (atkRowBase, atkFrameCount, atkSpeed) = MapaAtaque.GetValueOrDefault(prefixoAtaque, (RowSlash, 6, 5f));
+        if (ataqueFrameCountOverride > 0)
+            atkFrameCount = ataqueFrameCountOverride;
         movimentoRows = NormalizarRows(movimentoRows, RowWalk);
+        int[] idleRows = NormalizarRows(null, RowIdle);
+        int[] corridaRows = NormalizarRows(null, RowRun);
         ataqueRows = NormalizarRows(ataqueRows, atkRowBase);
         movimentoFrameSize = movimentoFrameSize > 0 ? movimentoFrameSize : FrameSize;
         ataqueFrameSize = ataqueFrameSize > 0 ? ataqueFrameSize : FrameSize;
@@ -111,9 +120,9 @@ public static class LpcSpriteFramesBuilder
         {
             string dir = Direcoes[d];
             int row = movimentoRows[d];
-            AdicionarAnimacao(frames, sheetPadrao, $"walk_{dir}", row, 9, true, 10f, movimentoFrameSize, movimentoFrameSize);
-            AdicionarAnimacao(frames, sheetPadrao, $"run_{dir}", row, 8, true, 12f, movimentoFrameSize, movimentoFrameSize);
-            AdicionarAnimacao(frames, sheetPadrao, $"idle_{dir}", row, 2, true, 3f, movimentoFrameSize, movimentoFrameSize);
+            AdicionarAnimacao(frames, sheetPadrao, $"walk_{dir}", row, WalkFrameCounts[d], true, 10f, movimentoFrameSize, movimentoFrameSize, WalkStartCols[d]);
+            AdicionarAnimacao(frames, sheetPadrao, $"run_{dir}", corridaRows[d], RunFrameCounts[d], true, 12f, movimentoFrameSize, movimentoFrameSize, RunStartCols[d]);
+            AdicionarAnimacao(frames, sheetPadrao, $"idle_{dir}", idleRows[d], 2, true, 3f, movimentoFrameSize, movimentoFrameSize);
         }
 
         var sheetAtaqueFinal = sheetAtaque ?? sheetPadrao;
@@ -161,13 +170,14 @@ public static class LpcSpriteFramesBuilder
     }
 
     private static void AdicionarAnimacao(
-        SpriteFrames frames, Texture2D sheet, string nome, int row, int frameCount, bool loop, float speed, int frameWidth, int frameHeight)
+        SpriteFrames frames, Texture2D sheet, string nome, int row, int frameCount, bool loop, float speed, int frameWidth, int frameHeight, int startCol = 0)
     {
         if (frames.HasAnimation(nome)) return;
 
         var lista = new List<Texture2D>();
-        for (int col = 0; col < frameCount; col++)
+        for (int i = 0; i < frameCount; i++)
         {
+            int col = startCol + i;
             var tex = CriarAtlas(sheet, col, row, frameWidth, frameHeight);
             if (tex != null)
                 lista.Add(tex);

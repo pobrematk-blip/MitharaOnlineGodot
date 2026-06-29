@@ -89,6 +89,8 @@ partial class GameServer
             Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {MaxPlayerSpeed})");
         }
 
+        ResolveMapCollision(session.CurrentMap, entity.X, entity.Y, ref targetX, ref targetY);
+
         entity.Moving = moving;
         entity.Sprinting = moving && sprinting;
         entity.DirX = dirX;
@@ -138,6 +140,44 @@ partial class GameServer
 
         if (session.SelectedCharacter != null)
             _db.SaveCharacterPosition(session.SelectedCharacter.Id, entity.X, entity.Y, session.CurrentMap);
+    }
+
+    private void ResolveMapCollision(string sceneName, float currentX, float currentY, ref float targetX, ref float targetY)
+    {
+        if (!IsBlockedTile(sceneName, targetX, targetY))
+            return;
+
+        bool canMoveX = !IsBlockedTile(sceneName, targetX, currentY);
+        bool canMoveY = !IsBlockedTile(sceneName, currentX, targetY);
+
+        if (canMoveX && !canMoveY)
+        {
+            targetY = currentY;
+            return;
+        }
+
+        if (!canMoveX && canMoveY)
+        {
+            targetX = currentX;
+            return;
+        }
+
+        targetX = currentX;
+        targetY = currentY;
+    }
+
+    private bool IsBlockedTile(string sceneName, float x, float y)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+            sceneName = "main";
+
+        sceneName = sceneName.ToLowerInvariant();
+        if (!_tileData.TryGetValue(sceneName, out var tiles))
+            return false;
+
+        int tileX = (int)MathF.Floor(x / 32f);
+        int tileY = (int)MathF.Floor(y / 32f);
+        return tiles.TryGetValue((tileX, tileY), out byte type) && type == 0;
     }
 
     private bool CheckTeleportTile(NetPeer peer, PlayerSession session, Channel channel, Entity entity, float x, float y)

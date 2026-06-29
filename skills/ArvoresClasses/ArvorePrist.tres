@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=127 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,8 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/006 - Queima da Alma.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/007 - Sentença Final.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/008 - Fanatismo.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/009 - Apocalipse Sagrado.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Inquisidor/009 - Apocalipse Sagrado.tres" id="sk_30"]
+
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/37.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/36.png" id="icon_sk_11"]
@@ -62,6 +63,9 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/6.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/44.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/48.png" id="icon_sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Todas/002 - Passo Divino.tres" id="shared_sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Clérigo/Todas/003 - Bênção Divina.tres" id="shared_sk_3"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "pri_base"
@@ -122,7 +126,7 @@ Descricao = "O aventureiro reúne suas forças interiores, respirando fundo e re
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
-Posicao = Vector2(815, 716.2)
+Posicao = Vector2(815, 676.2)
 Requisitos = PackedStringArray("pri_sacerdote_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -749,10 +753,46 @@ Requisitos = PackedStringArray("pri_inquisidor_escolha_externa_3")
 CustoPontos = 1
 NivelMinimo = 70
 
+[sub_resource type="Resource" id="shared_1"]
+script = ExtResource("2_node")
+NodeId = "prishared1"
+Nome = "Segundo F?lego"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+NodeType = 1
+Posicao = Vector2(800, 945)
+Requisitos = PackedStringArray("pri_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_2"]
+script = ExtResource("2_node")
+NodeId = "prishared2"
+Nome = "Passo Divino"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_2")
+NodeType = 1
+Posicao = Vector2(950, 1100)
+Requisitos = PackedStringArray("pri_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_3"]
+script = ExtResource("2_node")
+NodeId = "prishared3"
+Nome = "B?n??o Divina"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_3")
+NodeType = 1
+Posicao = Vector2(1100, 985)
+Requisitos = PackedStringArray("pri_base")
+CustoPontos = 1
+NivelMinimo = 1
+
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Clérigo"
-Nodes = Array[Resource]([SubResource("base"), SubResource("sacerdote_rota"), SubResource("sacerdote_ci1"), SubResource("sacerdote_ci2"), SubResource("sacerdote_ci3"), SubResource("sacerdote_s1"), SubResource("sacerdote_s2"), SubResource("sacerdote_s3"), SubResource("sacerdote_ul"), SubResource("sacerdote_ur"), SubResource("sacerdote_s4"), SubResource("sacerdote_s5"), SubResource("sacerdote_s6"), SubResource("sacerdote_s7"), SubResource("sacerdote_ce1"), SubResource("sacerdote_ce2"), SubResource("sacerdote_ce3"), SubResource("sacerdote_s8"), SubResource("sacerdote_s9"), SubResource("sacerdote_s10"), SubResource("paladino_rota"), SubResource("paladino_ci1"), SubResource("paladino_ci2"), SubResource("paladino_ci3"), SubResource("paladino_s1"), SubResource("paladino_s2"), SubResource("paladino_s3"), SubResource("paladino_ul"), SubResource("paladino_ur"), SubResource("paladino_s4"), SubResource("paladino_s5"), SubResource("paladino_s6"), SubResource("paladino_s7"), SubResource("paladino_ce1"), SubResource("paladino_ce2"), SubResource("paladino_ce3"), SubResource("paladino_s8"), SubResource("paladino_s9"), SubResource("paladino_s10"), SubResource("inquisidor_rota"), SubResource("inquisidor_ci1"), SubResource("inquisidor_ci2"), SubResource("inquisidor_ci3"), SubResource("inquisidor_s1"), SubResource("inquisidor_s2"), SubResource("inquisidor_s3"), SubResource("inquisidor_ul"), SubResource("inquisidor_ur"), SubResource("inquisidor_s4"), SubResource("inquisidor_s5"), SubResource("inquisidor_s6"), SubResource("inquisidor_s7"), SubResource("inquisidor_ce1"), SubResource("inquisidor_ce2"), SubResource("inquisidor_ce3"), SubResource("inquisidor_s8"), SubResource("inquisidor_s9"), SubResource("inquisidor_s10")])
+Nodes = Array[Resource]([SubResource("base"), SubResource("sacerdote_rota"), SubResource("sacerdote_ci1"), SubResource("sacerdote_ci2"), SubResource("sacerdote_ci3"), SubResource("sacerdote_s1"), SubResource("sacerdote_s2"), SubResource("sacerdote_s3"), SubResource("sacerdote_ul"), SubResource("sacerdote_ur"), SubResource("sacerdote_s4"), SubResource("sacerdote_s5"), SubResource("sacerdote_s6"), SubResource("sacerdote_s7"), SubResource("sacerdote_ce1"), SubResource("sacerdote_ce2"), SubResource("sacerdote_ce3"), SubResource("sacerdote_s8"), SubResource("sacerdote_s9"), SubResource("sacerdote_s10"), SubResource("paladino_rota"), SubResource("paladino_ci1"), SubResource("paladino_ci2"), SubResource("paladino_ci3"), SubResource("paladino_s1"), SubResource("paladino_s2"), SubResource("paladino_s3"), SubResource("paladino_ul"), SubResource("paladino_ur"), SubResource("paladino_s4"), SubResource("paladino_s5"), SubResource("paladino_s6"), SubResource("paladino_s7"), SubResource("paladino_ce1"), SubResource("paladino_ce2"), SubResource("paladino_ce3"), SubResource("paladino_s8"), SubResource("paladino_s9"), SubResource("paladino_s10"), SubResource("inquisidor_rota"), SubResource("inquisidor_ci1"), SubResource("inquisidor_ci2"), SubResource("inquisidor_ci3"), SubResource("inquisidor_s1"), SubResource("inquisidor_s2"), SubResource("inquisidor_s3"), SubResource("inquisidor_ul"), SubResource("inquisidor_ur"), SubResource("inquisidor_s4"), SubResource("inquisidor_s5"), SubResource("inquisidor_s6"), SubResource("inquisidor_s7"), SubResource("inquisidor_ce1"), SubResource("inquisidor_ce2"), SubResource("inquisidor_ce3"), SubResource("inquisidor_s8"), SubResource("inquisidor_s9"), SubResource("inquisidor_s10"), SubResource("shared_1"), SubResource("shared_2"), SubResource("shared_3")])
 RootNodeIds = PackedStringArray("pri_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

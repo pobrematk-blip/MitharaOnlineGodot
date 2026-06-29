@@ -34,6 +34,7 @@ partial class GameServer
     private void HandleRegister(NetPeer peer, NetDataReader reader)
     {
         string username = reader.GetString();
+        string email = reader.GetString();
         string password = reader.GetString();
         string securityQuestion = reader.GetString();
         string securityAnswer = reader.GetString();
@@ -51,23 +52,31 @@ partial class GameServer
         if (username.Length < 3 || password.Length < 3)
         {
             writer.Put(false);
-            writer.Put("Usuário e senha devem ter pelo menos 3 caracteres.");
+            writer.Put("Usuario e senha devem ter pelo menos 3 caracteres.");
             peer.Send(writer, DeliveryMethod.ReliableOrdered);
             return;
         }
 
-        int? accountId = _db.CreateAccount(username, password, securityQuestion, securityAnswer);
+        if (!email.Contains('@') || email.Length < 6)
+        {
+            writer.Put(false);
+            writer.Put("E-mail invalido.");
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+            return;
+        }
+
+        int? accountId = _db.CreateAccount(username, email, password, securityQuestion, securityAnswer);
         if (accountId == null)
         {
             writer.Put(false);
-            writer.Put("Usuário já existe.");
+            writer.Put("Usuario ou e-mail ja existe.");
         }
         else
         {
             _loginAttempts.Remove(peer.Address.ToString());
             writer.Put(true);
             writer.Put("Conta criada com sucesso!");
-            Logger.Info($"Conta registrada: {username} (id={accountId})");
+            Logger.Info($"Conta registrada: {username} / {email} (id={accountId})");
         }
 
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
@@ -75,20 +84,24 @@ partial class GameServer
 
     private void HandleGetSecurityQuestion(NetPeer peer, NetDataReader reader)
     {
-        string username = reader.GetString();
-
-        var question = _db.GetSecurityQuestion(username);
+        string email = reader.GetString();
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_SecurityQuestion);
-        if (question == null)
+        if (!email.Contains('@') || email.Length < 6)
         {
             writer.Put(false);
-            writer.Put("Usuário não encontrado ou sem pergunta secreta.");
+            writer.Put("Digite um e-mail valido.");
+        }
+        else if (!_db.AccountEmailExists(email))
+        {
+            writer.Put(false);
+            writer.Put("E-mail nao encontrado.");
         }
         else
         {
             writer.Put(true);
-            writer.Put(question);
+            writer.Put("E-mail encontrado. O envio de instrucoes por e-mail depende de SMTP configurado no servidor.");
+            Logger.Info($"Recuperacao solicitada para e-mail: {email}");
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -119,7 +132,7 @@ partial class GameServer
         else
         {
             writer.Put(false);
-            writer.Put("Resposta secreta inválida.");
+            writer.Put("Resposta secreta invalida.");
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -144,7 +157,7 @@ partial class GameServer
         if (accountId == null)
         {
             writer.Put(false);
-            writer.Put("Usuário ou senha inválidos.");
+            writer.Put("Usuario ou senha invalidos.");
             peer.Send(writer, DeliveryMethod.ReliableOrdered);
             return;
         }
@@ -157,14 +170,13 @@ partial class GameServer
                 _sessions.TryGetValue(existingPeer, out var activeSession) &&
                 activeSession.AccountId == accountId.Value)
             {
-                Logger.Info($"Login recusado: conta {accountId.Value} já está conectada em outro cliente.");
+                Logger.Info($"Login recusado: conta {accountId.Value} ja esta conectada em outro cliente.");
                 writer.Put(false);
-                writer.Put("Esta conta já está logada.");
+                writer.Put("Esta conta ja esta logada.");
                 peer.Send(writer, DeliveryMethod.ReliableOrdered);
                 return;
             }
 
-            // A conexão registrada já caiu; libera apenas a referência obsoleta.
             _activeAccounts.Remove(accountId.Value);
         }
 

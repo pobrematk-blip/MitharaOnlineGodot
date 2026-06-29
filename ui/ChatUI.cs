@@ -65,23 +65,12 @@ public partial class ChatUI : Control
     private void BuildUI()
     {
         _mainContainer = new PanelContainer();
-        _mainContainer.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0, 0, 0, 0.5f),
-            BorderColor = new Color(0.3f, 0.3f, 0.4f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 1,
-            BorderWidthRight = 1,
-            BorderWidthTop = 1,
-            CornerRadiusBottomLeft = 4,
-            CornerRadiusBottomRight = 4,
-            CornerRadiusTopLeft = 4,
-            CornerRadiusTopRight = 4,
-            ContentMarginBottom = 0,
-            ContentMarginLeft = 0,
-            ContentMarginRight = 0,
-            ContentMarginTop = 0,
-        });
+        var panelStyle = MitharaUiTheme.Panel(0.88f);
+        panelStyle.ContentMarginBottom = 0;
+        panelStyle.ContentMarginLeft = 0;
+        panelStyle.ContentMarginRight = 0;
+        panelStyle.ContentMarginTop = 0;
+        _mainContainer.AddThemeStyleboxOverride("panel", panelStyle);
         _mainContainer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         AddChild(_mainContainer);
 
@@ -103,12 +92,7 @@ public partial class ChatUI : Control
         _resizeHandle = new Panel();
         _resizeHandle.CustomMinimumSize = new Vector2(0, 6);
         _resizeHandle.MouseDefaultCursorShape = CursorShape.Vsize;
-        _resizeHandle.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0.25f, 0.25f, 0.35f, 0.6f),
-            BorderColor = new Color(0.4f, 0.4f, 0.5f),
-            BorderWidthBottom = 1,
-        });
+        _resizeHandle.AddThemeStyleboxOverride("panel", MitharaUiTheme.TitleBar());
         _resizeHandle.GuiInput += OnResizeHandleInput;
         parent.AddChild(_resizeHandle);
     }
@@ -118,19 +102,7 @@ public partial class ChatUI : Control
         _titleBar = new Panel();
         _titleBar.CustomMinimumSize = new Vector2(0, 22);
         _titleBar.MouseDefaultCursorShape = CursorShape.Arrow;
-        _titleBar.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0.2f, 0.2f, 0.28f, 0.8f),
-            BorderColor = new Color(0.4f, 0.4f, 0.5f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 0,
-            BorderWidthRight = 0,
-            BorderWidthTop = 0,
-            CornerRadiusBottomLeft = 0,
-            CornerRadiusBottomRight = 0,
-            CornerRadiusTopLeft = 4,
-            CornerRadiusTopRight = 4,
-        });
+        _titleBar.AddThemeStyleboxOverride("panel", MitharaUiTheme.TitleBar());
         _titleBar.GuiInput += OnTitleBarGuiInput;
         parent.AddChild(_titleBar);
 
@@ -147,7 +119,7 @@ public partial class ChatUI : Control
         label.SizeFlagsHorizontal = SizeFlags.Expand;
         label.SizeFlagsVertical = SizeFlags.Fill;
         label.AddThemeFontSizeOverride("font_size", 11);
-        label.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
+        label.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         hbox.AddChild(label);
 
         _lockButton = new Button();
@@ -204,7 +176,7 @@ public partial class ChatUI : Control
         var langLabel = new Label();
         langLabel.Text = "Traduzir para:";
         langLabel.AddThemeFontSizeOverride("font_size", 9);
-        langLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.5f));
+        langLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
         _langBar.AddChild(langLabel);
 
         _langSelector = new OptionButton();
@@ -225,8 +197,8 @@ public partial class ChatUI : Control
         _messageLog.ScrollActive = true;
         _messageLog.AddThemeFontSizeOverride("normal_font_size", 10);
         _messageLog.AddThemeFontSizeOverride("bold_font_size", 10);
-        _messageLog.AddThemeColorOverride("default_color", new Color(0.9f, 0.9f, 0.95f, 1.0f));
-        _messageLog.AddThemeColorOverride("background_color", new Color(0, 0.3f, 0, 0.6f));
+        _messageLog.AddThemeColorOverride("default_color", MitharaUiTheme.Text);
+        _messageLog.AddThemeColorOverride("background_color", MitharaUiTheme.InnerBg);
         _messageLog.Show();
         _messageLog.Visible = true;
         parent.AddChild(_messageLog);
@@ -252,21 +224,9 @@ public partial class ChatUI : Control
         _chatInput.KeepEditingOnTextSubmit = false;
         _chatInput.PlaceholderText = "Digite sua mensagem...";
         _chatInput.AddThemeFontSizeOverride("font_size", 15);
-        _chatInput.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
-        _chatInput.AddThemeColorOverride("placeholder_color", new Color(0.6f, 0.6f, 0.7f, 0.5f));
-        _chatInput.AddThemeStyleboxOverride("normal", new StyleBoxFlat
-        {
-            BgColor = new Color(0.15f, 0.15f, 0.2f, 0.5f),
-            BorderColor = new Color(0.3f, 0.3f, 0.4f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 1,
-            BorderWidthRight = 1,
-            BorderWidthTop = 1,
-            CornerRadiusBottomLeft = 4,
-            CornerRadiusBottomRight = 4,
-            CornerRadiusTopLeft = 4,
-            CornerRadiusTopRight = 4,
-        });
+        _chatInput.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
+        _chatInput.AddThemeColorOverride("placeholder_color", MitharaUiTheme.TextMuted);
+        _chatInput.AddThemeStyleboxOverride("normal", MitharaUiTheme.Inner(0.78f));
         _chatInput.TextSubmitted += OnTextSubmitted;
         _inputBar.AddChild(_chatInput);
 
@@ -274,7 +234,7 @@ public partial class ChatUI : Control
         sendBtn.Text = "Enviar";
         sendBtn.CustomMinimumSize = new Vector2(50, 0);
         sendBtn.AddThemeFontSizeOverride("font_size", 9);
-        sendBtn.AddThemeColorOverride("font_color", new Color(0.8f, 0.8f, 1.0f, 0.9f));
+        sendBtn.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         sendBtn.Pressed += () => OnTextSubmitted(_chatInput.Text);
         _inputBar.AddChild(sendBtn);
 
@@ -544,7 +504,7 @@ public partial class ChatUI : Control
         {
             var style = new StyleBoxFlat
             {
-                BgColor = i == idx ? new Color(0.3f, 0.3f, 0.4f, 0.5f) : new Color(0, 0, 0, 0),
+                BgColor = i == idx ? MitharaUiTheme.InnerBg : new Color(0, 0, 0, 0),
                 BorderWidthBottom = i == idx ? 1 : 0,
                 BorderColor = ChannelColors[i],
             };

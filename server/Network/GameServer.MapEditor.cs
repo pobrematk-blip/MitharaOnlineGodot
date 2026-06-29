@@ -1,6 +1,7 @@
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Packets;
+using Mithara.Server.World.Pathfinding;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -67,6 +68,37 @@ public partial class GameServer
 
             Logger.Info($"[TILE DATA] Carregado: {sceneName} ({tiles.Count} tiles, {teleports.Count} teleportes)");
         }
+
+        ApplyTileBlocksToPathGrids();
+    }
+
+    private void ApplyTileBlocksToPathGrids()
+    {
+        if (!_tileData.TryGetValue("main", out var mainTiles))
+            return;
+
+        var applied = new HashSet<PathfindingGrid>();
+        int blockedCount = 0;
+
+        foreach (var channel in _world.GetAllChannels())
+        {
+            if (channel.PathGrid == null || !applied.Add(channel.PathGrid))
+                continue;
+
+            foreach (var kvp in mainTiles)
+            {
+                if (kvp.Value != 0)
+                    continue;
+
+                float worldX = kvp.Key.X * 32f + 16f;
+                float worldY = kvp.Key.Y * 32f + 16f;
+                var (gx, gy) = channel.PathGrid.WorldToGrid(worldX, worldY);
+                channel.PathGrid.SetBlocked(gx, gy, true);
+                blockedCount++;
+            }
+        }
+
+        Logger.Info($"[TILE DATA] {blockedCount} tile(s) bloqueados aplicados ao pathfinding dos mobs.");
     }
 
     private void HandleMapEditorPlaceTile(NetPeer peer, NetDataReader reader)

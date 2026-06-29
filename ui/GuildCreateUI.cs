@@ -128,17 +128,8 @@ public partial class GuildCreateUI : Control
         {
             int idx = i;
             var container = new PanelContainer();
-            var style = new StyleBoxFlat();
-            style.BgColor = new Color(0.12f, 0.13f, 0.18f, 0.95f);
-            style.BorderWidthLeft = 2;
-            style.BorderWidthTop = 2;
-            style.BorderWidthRight = 2;
-            style.BorderWidthBottom = 2;
-            style.BorderColor = new Color(0.3f, 0.35f, 0.5f, 1);
-            style.CornerRadiusTopLeft = 6;
-            style.CornerRadiusTopRight = 6;
-            style.CornerRadiusBottomLeft = 6;
-            style.CornerRadiusBottomRight = 6;
+            var style = MitharaUiTheme.Slot();
+            style.SetBorderWidthAll(2);
             container.AddThemeStyleboxOverride("panel", style);
             container.CustomMinimumSize = new Vector2(48, 48);
 
@@ -180,7 +171,7 @@ public partial class GuildCreateUI : Control
             if (parent == null) continue;
             var style = parent.GetThemeStylebox("panel").Duplicate() as StyleBoxFlat;
             if (style == null) continue;
-            style.BorderColor = i == idx ? new Color(0.8f, 0.9f, 1f, 1) : new Color(0.3f, 0.35f, 0.5f, 1);
+            style.BorderColor = i == idx ? MitharaUiTheme.Accent : MitharaUiTheme.BorderMuted;
             style.BorderWidthLeft = i == idx ? 3 : 2;
             style.BorderWidthTop = i == idx ? 3 : 2;
             style.BorderWidthRight = i == idx ? 3 : 2;

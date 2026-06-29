@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=125 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,8 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/006 - Fortalecer Invocação.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/007 - Sacrifício Arcano.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/008 - Exército Arcano.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/009 - Senhor das Invocações.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Summoner/009 - Senhor das Invocações.tres" id="sk_30"]
+
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/21.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/39.png" id="icon_sk_11"]
@@ -62,6 +63,7 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/15.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/22.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/34.png" id="icon_sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "mag_base"
@@ -122,7 +124,7 @@ Descricao = "Recupera HP e Mana."
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
-Posicao = Vector2(815, 716.2)
+Posicao = Vector2(815, 676.2)
 Requisitos = PackedStringArray("mag_elementalista_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -749,10 +751,46 @@ Requisitos = PackedStringArray("mag_summoner_escolha_externa_3")
 CustoPontos = 1
 NivelMinimo = 70
 
+[sub_resource type="Resource" id="shared_1"]
+script = ExtResource("2_node")
+NodeId = "magshared1"
+Nome = "Segundo F?lego"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+NodeType = 1
+Posicao = Vector2(800, 945)
+Requisitos = PackedStringArray("mag_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_2"]
+script = ExtResource("2_node")
+NodeId = "magshared2"
+Nome = "Teleporte Arcano"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("sk_11")
+NodeType = 1
+Posicao = Vector2(950, 1100)
+Requisitos = PackedStringArray("mag_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_3"]
+script = ExtResource("2_node")
+NodeId = "magshared3"
+Nome = "Escudo Arcano"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("sk_21")
+NodeType = 1
+Posicao = Vector2(1100, 985)
+Requisitos = PackedStringArray("mag_base")
+CustoPontos = 1
+NivelMinimo = 1
+
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Mago"
-Nodes = Array[Resource]([SubResource("base"), SubResource("elementalista_rota"), SubResource("elementalista_ci1"), SubResource("elementalista_ci2"), SubResource("elementalista_ci3"), SubResource("elementalista_s1"), SubResource("elementalista_s2"), SubResource("elementalista_s3"), SubResource("elementalista_ul"), SubResource("elementalista_ur"), SubResource("elementalista_s4"), SubResource("elementalista_s5"), SubResource("elementalista_s6"), SubResource("elementalista_s7"), SubResource("elementalista_ce1"), SubResource("elementalista_ce2"), SubResource("elementalista_ce3"), SubResource("elementalista_s8"), SubResource("elementalista_s9"), SubResource("elementalista_s10"), SubResource("mago_negro_rota"), SubResource("mago_negro_ci1"), SubResource("mago_negro_ci2"), SubResource("mago_negro_ci3"), SubResource("mago_negro_s1"), SubResource("mago_negro_s2"), SubResource("mago_negro_s3"), SubResource("mago_negro_ul"), SubResource("mago_negro_ur"), SubResource("mago_negro_s4"), SubResource("mago_negro_s5"), SubResource("mago_negro_s6"), SubResource("mago_negro_s7"), SubResource("mago_negro_ce1"), SubResource("mago_negro_ce2"), SubResource("mago_negro_ce3"), SubResource("mago_negro_s8"), SubResource("mago_negro_s9"), SubResource("mago_negro_s10"), SubResource("summoner_rota"), SubResource("summoner_ci1"), SubResource("summoner_ci2"), SubResource("summoner_ci3"), SubResource("summoner_s1"), SubResource("summoner_s2"), SubResource("summoner_s3"), SubResource("summoner_ul"), SubResource("summoner_ur"), SubResource("summoner_s4"), SubResource("summoner_s5"), SubResource("summoner_s6"), SubResource("summoner_s7"), SubResource("summoner_ce1"), SubResource("summoner_ce2"), SubResource("summoner_ce3"), SubResource("summoner_s8"), SubResource("summoner_s9"), SubResource("summoner_s10")])
+Nodes = Array[Resource]([SubResource("base"), SubResource("elementalista_rota"), SubResource("elementalista_ci1"), SubResource("elementalista_ci2"), SubResource("elementalista_ci3"), SubResource("elementalista_s1"), SubResource("elementalista_s2"), SubResource("elementalista_s3"), SubResource("elementalista_ul"), SubResource("elementalista_ur"), SubResource("elementalista_s4"), SubResource("elementalista_s5"), SubResource("elementalista_s6"), SubResource("elementalista_s7"), SubResource("elementalista_ce1"), SubResource("elementalista_ce2"), SubResource("elementalista_ce3"), SubResource("elementalista_s8"), SubResource("elementalista_s9"), SubResource("elementalista_s10"), SubResource("mago_negro_rota"), SubResource("mago_negro_ci1"), SubResource("mago_negro_ci2"), SubResource("mago_negro_ci3"), SubResource("mago_negro_s1"), SubResource("mago_negro_s2"), SubResource("mago_negro_s3"), SubResource("mago_negro_ul"), SubResource("mago_negro_ur"), SubResource("mago_negro_s4"), SubResource("mago_negro_s5"), SubResource("mago_negro_s6"), SubResource("mago_negro_s7"), SubResource("mago_negro_ce1"), SubResource("mago_negro_ce2"), SubResource("mago_negro_ce3"), SubResource("mago_negro_s8"), SubResource("mago_negro_s9"), SubResource("mago_negro_s10"), SubResource("summoner_rota"), SubResource("summoner_ci1"), SubResource("summoner_ci2"), SubResource("summoner_ci3"), SubResource("summoner_s1"), SubResource("summoner_s2"), SubResource("summoner_s3"), SubResource("summoner_ul"), SubResource("summoner_ur"), SubResource("summoner_s4"), SubResource("summoner_s5"), SubResource("summoner_s6"), SubResource("summoner_s7"), SubResource("summoner_ce1"), SubResource("summoner_ce2"), SubResource("summoner_ce3"), SubResource("summoner_s8"), SubResource("summoner_s9"), SubResource("summoner_s10"), SubResource("shared_1"), SubResource("shared_2"), SubResource("shared_3")])
 RootNodeIds = PackedStringArray("mag_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

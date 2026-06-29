@@ -14,11 +14,12 @@ partial class GameNetwork
         });
     }
 
-    public void SendRegister(string username, string password, string securityQuestion = "", string securityAnswer = "")
+    public void SendRegister(string username, string email, string password, string securityQuestion = "", string securityAnswer = "")
     {
         _client?.SendPacket(PacketId.C2S_Register, w =>
         {
             w.Put(username);
+            w.Put(email);
             w.Put(password);
             w.Put(securityQuestion);
             w.Put(securityAnswer);

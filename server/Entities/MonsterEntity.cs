@@ -13,6 +13,7 @@ public enum MonsterAIState : byte
 public class MonsterEntity : Entity
 {
     public MonsterAIState AIState { get; set; } = MonsterAIState.Idle;
+    public Dictionary<string, double> ActiveServerBuffs { get; } = new();
     public bool IsBoss { get; set; }
     public int ExperienceReward { get; set; }
     public string PrefabId { get; set; } = "";

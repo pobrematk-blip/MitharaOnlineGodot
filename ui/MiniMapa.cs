@@ -31,7 +31,8 @@ public partial class MiniMapa : Control
     private const float NpcDotRadius = 4f;
     private const float PlayerDotRadius = 4f;
 
-    private const float Padding = 10f;
+    private const float Padding = 3f;
+    private const float EdgeMargin = 3f;
     private const float MinSize = 150f;
 
     public override void _Ready()
@@ -64,8 +65,10 @@ public partial class MiniMapa : Control
         _cashBtn.GuiInput += OnCashBtnGuiInput;
 
         Resized += OnRootResized;
+        GetTree().Root.SizeChanged += ManterNaBordaDireita;
 
         AtualizarLayout();
+        ManterNaBordaDireita();
         FindPlayer();
     }
 
@@ -76,25 +79,28 @@ public partial class MiniMapa : Control
 
     private void AtualizarLayout()
     {
-        float mapSize = Mathf.Max(MinSize, Size.X - 20f);
+        float mapSize = Mathf.Max(MinSize, Size.X - Padding);
         float mapHeight = Mathf.Max(MinSize, Size.Y - 80f);
         float size = Mathf.Min(mapSize, mapHeight);
+        Vector2 mapPosition = new(
+            Mathf.Max(0f, Size.X - size - EdgeMargin),
+            Padding
+        );
 
         _viewportContainer.Size = new Vector2(size, size);
-        _viewportContainer.Position = new Vector2(Padding, Padding);
+        _viewportContainer.Position = mapPosition;
 
         _borderOverlay.Size = new Vector2(size, size);
-        _borderOverlay.Position = new Vector2(Padding, Padding);
+        _borderOverlay.Position = mapPosition;
 
         _dotsOverlay.Size = new Vector2(size, size);
-        _dotsOverlay.Position = new Vector2(Padding, Padding);
+        _dotsOverlay.Position = mapPosition;
 
         var playerDot = GetNodeOrNull<ColorRect>("PlayerDot");
         if (playerDot != null)
         {
             float dotSize = 6f;
-            float center = size / 2f + Padding - dotSize / 2f;
-            playerDot.Position = new Vector2(center, center);
+            playerDot.Position = mapPosition + new Vector2(size / 2f - dotSize / 2f, size / 2f - dotSize / 2f);
             playerDot.Size = new Vector2(dotSize, dotSize);
         }
 
@@ -103,7 +109,27 @@ public partial class MiniMapa : Control
             Mathf.Max(MinSize, Size.Y) - 16f
         );
 
+        if (_cashBtn != null)
+        {
+            Vector2 cashSize = _cashBtn.Size;
+            if (cashSize.X <= 0 || cashSize.Y <= 0)
+                cashSize = _cashBtn.CustomMinimumSize;
+
+            _cashBtn.Size = cashSize;
+            _cashBtn.Position = new Vector2(
+                Mathf.Max(0f, Size.X - cashSize.X - EdgeMargin),
+                Mathf.Max(Padding + size + 8f, Size.Y - cashSize.Y - EdgeMargin)
+            );
+        }
+
         AtualizarZoomCamera();
+    }
+
+    private void ManterNaBordaDireita()
+    {
+        SetAnchorsPreset(LayoutPreset.TopRight, false);
+        OffsetRight = -EdgeMargin;
+        OffsetLeft = OffsetRight - Mathf.Max(Size.X, MinSize + 20f);
     }
 
     private void OnResizeHandleInput(InputEvent @event)
@@ -125,6 +151,7 @@ public partial class MiniMapa : Control
                 Mathf.Max(MinSize + 20f, _resizeStartSize.X + delta.X),
                 Mathf.Max(MinSize + 80f, _resizeStartSize.Y + delta.Y)
             );
+            ManterNaBordaDireita();
             GetViewport().SetInputAsHandled();
         }
     }
@@ -305,8 +332,9 @@ public partial class MiniMapa : Control
         float radius = Mathf.Min(size.X, size.Y) / 2f - 2f;
         Vector2 center = size / 2f;
 
-        _borderOverlay.DrawCircle(center, radius + 2, new Color(0, 0, 0, 0.4f));
-        _borderOverlay.DrawArc(center, radius, 0, Mathf.Tau, 64, new Color(1, 1, 1, 0.8f), 2f);
+        _borderOverlay.DrawCircle(center, radius + 3f, MitharaUiTheme.PanelBg);
+        _borderOverlay.DrawArc(center, radius + 1f, 0, Mathf.Tau, 96, MitharaUiTheme.Border, 3f);
+        _borderOverlay.DrawArc(center, radius - 3f, 0, Mathf.Tau, 96, new Color(MitharaUiTheme.Accent.R, MitharaUiTheme.Accent.G, MitharaUiTheme.Accent.B, 0.45f), 1f);
     }
 
     private void OnDotsDraw()
@@ -362,5 +390,10 @@ public partial class MiniMapa : Control
                 _dotsOverlay.DrawCircle(pos, PlayerDotRadius, dotColor);
             }
         }
+    }
+
+    public override void _ExitTree()
+    {
+        GetTree().Root.SizeChanged -= ManterNaBordaDireita;
     }
 }

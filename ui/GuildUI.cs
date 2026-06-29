@@ -604,9 +604,7 @@ public partial class GuildUI : Control
             var panel = new Panel();
             panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             panel.CustomMinimumSize = new Vector2(0, 48);
-            var bgStyle = new StyleBoxFlat();
-            bgStyle.BgColor = new Color(0.1f, 0.1f, 0.15f, 0.8f);
-            bgStyle.SetCornerRadiusAll(4);
+            var bgStyle = MitharaUiTheme.Inner(0.82f);
             bgStyle.ContentMarginLeft = 8;
             bgStyle.ContentMarginTop = 6;
             bgStyle.ContentMarginRight = 8;
@@ -624,12 +622,12 @@ public partial class GuildUI : Control
             var nomeLabel = new Label();
             nomeLabel.Text = def.Nome;
             nomeLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            nomeLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
+            nomeLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
             nomeLabel.AddThemeFontSizeOverride("font_size", 12);
 
             var levelLabel = new Label();
             levelLabel.Text = maxed ? "MAX" : $"Lv.{nivel}/{def.MaxLevel}";
-            levelLabel.AddThemeColorOverride("font_color", maxed ? new Color(0.2f, 1, 0.2f, 0.9f) : new Color(0.6f, 0.6f, 1, 0.8f));
+            levelLabel.AddThemeColorOverride("font_color", maxed ? new Color(0.2f, 1, 0.2f, 0.9f) : MitharaUiTheme.Accent);
             levelLabel.AddThemeFontSizeOverride("font_size", 10);
             levelLabel.CustomMinimumSize = new Vector2(50, 0);
 
@@ -638,7 +636,7 @@ public partial class GuildUI : Control
 
             var descLabel = new Label();
             descLabel.Text = string.Format(def.DescFormat, valorTotal);
-            descLabel.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.9f, 0.7f));
+            descLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
             descLabel.AddThemeFontSizeOverride("font_size", 9);
 
             vbox.AddChild(topHbox);
@@ -656,7 +654,8 @@ public partial class GuildUI : Control
                 bar.ShowPercentage = false;
                 bar.SizeFlagsHorizontal = SizeFlags.ExpandFill;
                 bar.CustomMinimumSize = new Vector2(0, 10);
-                bar.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = new Color(0.2f, 0.6f, 0.9f, 1) });
+                bar.AddThemeStyleboxOverride("background", MitharaUiTheme.BarBackground(new Color(0.02f, 0.025f, 0.04f, 0.92f)));
+                bar.AddThemeStyleboxOverride("fill", MitharaUiTheme.Fill(new Color(0.2f, 0.6f, 0.9f, 1), 2));
 
                 barHbox.AddChild(bar);
 

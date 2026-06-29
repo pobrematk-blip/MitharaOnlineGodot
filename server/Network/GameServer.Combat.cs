@@ -14,7 +14,7 @@ partial class GameServer
     private static long XpForNextLevel(int level)
     {
         if (level < 1) level = 1;
-        return 80L + level * 15L + level * level * 2L;
+        return 600L + level * 260L + level * level * 90L;
     }
 
     private bool HandleMonsterAIAttack(Channel channel, MonsterEntity mob, Entity target, double gameTime)
@@ -616,7 +616,15 @@ partial class GameServer
     private int CalculateSkillDamage(PlayerEntity caster, Entity target, ServerSkillDefinition skill, out bool isCrit)
     {
         int baseDamage = caster.CalculateAttackDamage();
-        float multiplier = skill.DamageMultiplier <= 0 ? 1f : skill.DamageMultiplier;
+        float minMultiplier = skill.DamageMultiplierMin > 0 ? skill.DamageMultiplierMin : skill.DamageMultiplier;
+        float maxMultiplier = skill.DamageMultiplierMax > 0 ? skill.DamageMultiplierMax : minMultiplier;
+        if (maxMultiplier < minMultiplier)
+            (minMultiplier, maxMultiplier) = (maxMultiplier, minMultiplier);
+        float multiplier = maxMultiplier > minMultiplier
+            ? minMultiplier + (float)Random.Shared.NextDouble() * (maxMultiplier - minMultiplier)
+            : minMultiplier;
+        if (multiplier <= 0f)
+            multiplier = 1f;
         int rawDamage = Math.Max(1, (int)(baseDamage * multiplier) + skill.FlatPower);
         int targetDefense = target switch
         {
@@ -633,7 +641,7 @@ partial class GameServer
 
     private void ApplySkillDebuff(Entity target, ServerSkillDefinition skill)
     {
-        if (target is not PlayerEntity playerTarget || skill.Duracao <= 0) return;
+        if (skill.Duracao <= 0) return;
         string debuff = skill.EffectType switch
         {
             8 => "stun",
@@ -642,12 +650,19 @@ partial class GameServer
             13 => "root",
             15 => "burn",
             16 => "freeze",
+            19 => "sleep",
+            20 => "prison",
             24 => "poison",
             25 => "curse",
             _ => "",
         };
-        if (debuff.Length > 0)
+        if (debuff.Length == 0)
+            return;
+
+        if (target is PlayerEntity playerTarget)
             playerTarget.ActiveServerBuffs[debuff] = _gameTime + skill.Duracao;
+        else if (target is MonsterEntity mobTarget)
+            mobTarget.ActiveServerBuffs[debuff] = _gameTime + skill.Duracao;
     }
 
     private void BroadcastCombatResult(Channel channel, ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth, float x, float y)
@@ -1121,24 +1136,30 @@ partial class GameServer
 
 internal sealed class ServerSkillDefinition
 {
-    public int SkillId { get; init; }
-    public string Nome { get; init; } = "";
-    public int Valor { get; init; }
-    public int CustoMana { get; init; }
-    public string ClasseRestrita { get; init; } = "";
-    public float Cooldown { get; init; }
-    public float Duracao { get; init; }
-    public int TargetType { get; init; }
-    public int EffectType { get; init; }
-    public int NivelRequerido { get; init; } = 1;
-    public string Tipo { get; init; } = "";
-    public string DanoEscala { get; init; } = "";
-    public string BuffDebuff { get; init; } = "";
-    public string EfeitoPrincipal { get; init; } = "";
-    public bool IsArea { get; init; }
-    public int MaxTargets { get; init; } = 1;
-    public float DamageMultiplier { get; init; } = 1f;
-    public int FlatPower { get; init; }
+    public int SkillId { get; set; }
+    public string Nome { get; set; } = "";
+    public int Valor { get; set; }
+    public int CustoMana { get; set; }
+    public string ClasseRestrita { get; set; } = "";
+    public float Cooldown { get; set; }
+    public float Duracao { get; set; }
+    public int TargetType { get; set; }
+    public int EffectType { get; set; }
+    public int NivelRequerido { get; set; } = 1;
+    public string Escopo { get; set; } = "";
+    public string Tipo { get; set; } = "";
+    public string DanoEscala { get; set; } = "";
+    public string BuffDebuff { get; set; } = "";
+    public string EfeitoPrincipal { get; set; } = "";
+    public string DuracaoTexto { get; set; } = "";
+    public string Progressao { get; set; } = "";
+    public string Observacoes { get; set; } = "";
+    public bool IsArea { get; set; }
+    public int MaxTargets { get; set; } = 1;
+    public float DamageMultiplier { get; set; } = 1f;
+    public float DamageMultiplierMin { get; set; } = 1f;
+    public float DamageMultiplierMax { get; set; } = 1f;
+    public int FlatPower { get; set; }
 }
 
 internal sealed class PendingProjectileHit
@@ -1213,12 +1234,13 @@ internal static class ServerSkillCatalog
                 int skillId = GetInt(text, "SkillId");
                 if (skillId <= 0) continue;
 
+                string escopo = DecodeTresText(GetString(text, "Escopo"));
                 string tipo = DecodeTresText(GetString(text, "Tipo"));
                 string efeito = DecodeTresText(GetString(text, "EfeitoPrincipal"));
                 string danoEscala = DecodeTresText(GetString(text, "DanoEscala"));
                 int valor = GetInt(text, "Valor");
-                float multiplier = GetDamageMultiplier(danoEscala, valor);
-                bool isArea = IsAreaSkill(tipo, efeito);
+                var multiplierRange = GetDamageMultiplierRange(danoEscala, valor);
+                bool isArea = IsAreaSkill(escopo, tipo, efeito);
 
                 result[skillId] = new ServerSkillDefinition
                 {
@@ -1232,14 +1254,20 @@ internal static class ServerSkillCatalog
                     TargetType = GetInt(text, "TargetType"),
                     EffectType = GetInt(text, "EffectType"),
                     NivelRequerido = Math.Max(1, GetInt(text, "NivelRequerido")),
+                    Escopo = escopo,
                     Tipo = tipo,
                     EfeitoPrincipal = efeito,
                     DanoEscala = danoEscala,
                     BuffDebuff = DecodeTresText(GetString(text, "BuffDebuff")),
+                    DuracaoTexto = DecodeTresText(GetString(text, "DuracaoTexto")),
+                    Progressao = DecodeTresText(GetString(text, "Progressao")),
+                    Observacoes = DecodeTresText(GetString(text, "Observacoes")),
                     IsArea = isArea,
                     MaxTargets = isArea ? 6 : Math.Max(1, CountFromText(efeito)),
-                    DamageMultiplier = multiplier,
-                    FlatPower = valor > 0 && multiplier < 0.01f ? valor : 0,
+                    DamageMultiplier = (multiplierRange.Min + multiplierRange.Max) * 0.5f,
+                    DamageMultiplierMin = multiplierRange.Min,
+                    DamageMultiplierMax = multiplierRange.Max,
+                    FlatPower = valor > 0 && multiplierRange.Max < 0.01f ? valor : 0,
                 };
             }
             catch (Exception ex)
@@ -1248,6 +1276,7 @@ internal static class ServerSkillCatalog
             }
         }
 
+        ApplyFallbacks(result);
         Logger.Info($"SkillCatalog: {result.Count} skills carregadas de {skillsDir}.");
         return result;
     }
@@ -1311,6 +1340,80 @@ internal static class ServerSkillCatalog
         }
     }
 
+    private static void ApplyFallbacks(Dictionary<int, ServerSkillDefinition> skills)
+    {
+        foreach (var group in skills.Values
+            .Where(s => !string.IsNullOrWhiteSpace(s.Nome))
+            .GroupBy(s => NormalizeName(s.Nome)))
+        {
+            var template = group
+                .OrderByDescending(ScoreCompleteness)
+                .FirstOrDefault();
+            if (template == null)
+                continue;
+
+            foreach (var skill in group)
+                FillMissingFields(skill, template);
+        }
+    }
+
+    private static int ScoreCompleteness(ServerSkillDefinition skill)
+    {
+        int score = 0;
+        if (skill.Cooldown > 0) score += 10;
+        if (skill.CustoMana > 0) score += 10;
+        if (skill.Valor != 0) score += 8;
+        if (skill.Duracao > 0) score += 6;
+        if (!string.IsNullOrWhiteSpace(skill.DanoEscala)) score += 6;
+        if (!string.IsNullOrWhiteSpace(skill.EfeitoPrincipal)) score += 5;
+        if (!string.IsNullOrWhiteSpace(skill.BuffDebuff)) score += 4;
+        return score;
+    }
+
+    private static void FillMissingFields(ServerSkillDefinition skill, ServerSkillDefinition template)
+    {
+        if (ReferenceEquals(skill, template))
+            return;
+
+        if (skill.Cooldown <= 0f && template.Cooldown > 0f) skill.Cooldown = template.Cooldown;
+        if (skill.CustoMana <= 0 && template.CustoMana > 0) skill.CustoMana = template.CustoMana;
+        if (skill.Valor == 0 && template.Valor != 0) skill.Valor = template.Valor;
+        if (skill.Duracao <= 0f && template.Duracao > 0f) skill.Duracao = template.Duracao;
+        if (string.IsNullOrWhiteSpace(skill.Escopo) && !string.IsNullOrWhiteSpace(template.Escopo)) skill.Escopo = template.Escopo;
+        if (string.IsNullOrWhiteSpace(skill.Tipo) && !string.IsNullOrWhiteSpace(template.Tipo)) skill.Tipo = template.Tipo;
+        if (string.IsNullOrWhiteSpace(skill.EfeitoPrincipal) && !string.IsNullOrWhiteSpace(template.EfeitoPrincipal)) skill.EfeitoPrincipal = template.EfeitoPrincipal;
+        if (string.IsNullOrWhiteSpace(skill.DanoEscala) && !string.IsNullOrWhiteSpace(template.DanoEscala)) skill.DanoEscala = template.DanoEscala;
+        if (string.IsNullOrWhiteSpace(skill.BuffDebuff) && !string.IsNullOrWhiteSpace(template.BuffDebuff)) skill.BuffDebuff = template.BuffDebuff;
+        if (string.IsNullOrWhiteSpace(skill.DuracaoTexto) && !string.IsNullOrWhiteSpace(template.DuracaoTexto)) skill.DuracaoTexto = template.DuracaoTexto;
+        if (string.IsNullOrWhiteSpace(skill.Progressao) && !string.IsNullOrWhiteSpace(template.Progressao)) skill.Progressao = template.Progressao;
+        if (string.IsNullOrWhiteSpace(skill.Observacoes) && !string.IsNullOrWhiteSpace(template.Observacoes)) skill.Observacoes = template.Observacoes;
+        if (skill.DamageMultiplierMin <= 0f && template.DamageMultiplierMin > 0f) skill.DamageMultiplierMin = template.DamageMultiplierMin;
+        if (skill.DamageMultiplierMax <= 0f && template.DamageMultiplierMax > 0f) skill.DamageMultiplierMax = template.DamageMultiplierMax;
+        if (skill.DamageMultiplier <= 0f && template.DamageMultiplier > 0f) skill.DamageMultiplier = template.DamageMultiplier;
+
+        skill.IsArea = skill.IsArea || IsAreaSkill(skill.Escopo, skill.Tipo, skill.EfeitoPrincipal);
+        skill.MaxTargets = skill.IsArea ? Math.Max(skill.MaxTargets, 6) : Math.Max(1, skill.MaxTargets);
+    }
+
+    private static string NormalizeName(string value)
+    {
+        string formD = (value ?? "").Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(formD.Length);
+        foreach (char c in formD)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return sb.ToString().Normalize(NormalizationForm.FormC).Replace(" ", "");
+    }
+
+    private static bool IsAreaSkill(string escopo, string tipo, string efeito)
+    {
+        string text = $"{escopo} {tipo} {efeito}".ToLowerInvariant();
+        return text.Contains("Ã¡rea") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
+    }
+
     private static bool IsAreaSkill(string tipo, string efeito)
     {
         string text = $"{tipo} {efeito}".ToLowerInvariant();
@@ -1321,6 +1424,23 @@ internal static class ServerSkillCatalog
     {
         var match = Regex.Match(text, @"\b(?<n>[2-9])\b");
         return match.Success ? int.Parse(match.Groups["n"].Value, CultureInfo.InvariantCulture) : 1;
+    }
+
+    private static (float Min, float Max) GetDamageMultiplierRange(string danoEscala, int valor)
+    {
+        var matches = Regex.Matches(danoEscala.Replace(',', '.'), @"(?<n>\d+(?:\.\d+)?)\s*%");
+        if (matches.Count > 0)
+        {
+            var values = matches
+                .Select(m => float.TryParse(m.Groups["n"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float pct) ? pct / 100f : 0f)
+                .Where(v => v > 0f)
+                .ToArray();
+            if (values.Length > 0)
+                return (MathF.Max(0.05f, values.Min()), MathF.Max(0.05f, values.Max()));
+        }
+
+        float fallback = valor > 0 ? MathF.Max(0.05f, valor / 100f) : 1f;
+        return (fallback, fallback);
     }
 
     private static float GetDamageMultiplier(string danoEscala, int valor)

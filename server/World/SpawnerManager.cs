@@ -57,6 +57,9 @@ public class SpawnPoint
 
 public class SpawnerManager
 {
+    public const int EliteKillTargetMin = 3;
+    public const int EliteKillTargetMax = 5;
+
     private readonly Dictionary<string, MonsterTemplate> _templates = new();
     private readonly List<SpawnPoint> _spawnPoints = new();
 
@@ -116,7 +119,7 @@ public class SpawnerManager
             GoldMin = 15,
             GoldMax = 40,
             DropsNormalEquipment = true,
-            EliteDropChance = 0.10,
+            EliteDropChance = 0.80,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
@@ -207,8 +210,8 @@ public class SpawnerManager
             GoldMin = 100,
             GoldMax = 500,
             GoldDropChance = 0.20,
-            DropsEliteEquipment = true,
-            EliteDropChance = 0.01,
+            DropsEliteEquipment = false,
+            EliteDropChance = 0.0,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PoeiraEstelar, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.30 },
@@ -259,8 +262,8 @@ public class SpawnerManager
             ExperienceReward = 90,
             GoldMin = 45,
             GoldMax = 120,
-            DropsNormalEquipment = true,
-            EliteDropChance = 0.08,
+            DropsNormalEquipment = false,
+            EliteDropChance = 0.0,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
@@ -311,8 +314,8 @@ public class SpawnerManager
             ExperienceReward = 110,
             GoldMin = 60,
             GoldMax = 150,
-            DropsNormalEquipment = true,
-            EliteDropChance = 0.08,
+            DropsNormalEquipment = false,
+            EliteDropChance = 0.0,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
@@ -338,7 +341,8 @@ public class SpawnerManager
             Passive = false,
             GoldMin = 50,
             GoldMax = 200,
-            DropsEliteEquipment = true,
+            DropsEliteEquipment = false,
+            EliteDropChance = 0.0,
             LootTable = new List<LootEntry>
             {
                 new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
@@ -376,7 +380,7 @@ public class SpawnerManager
             RespawnDelay = 8f,
             ElitePrefabId = "slimeElite",
             EliteBaseCount = 0,
-            EliteEveryKills = 8,
+            EliteEveryKills = RollEliteKillTarget(),
         });
 
         _spawnPoints.Add(new SpawnPoint
@@ -410,9 +414,14 @@ public class SpawnerManager
                 RespawnDelay = Math.Max(8f, point.RespawnDelay),
                 ElitePrefabId = point.ElitePrefabId,
                 EliteBaseCount = 0,
-                EliteEveryKills = string.IsNullOrWhiteSpace(point.ElitePrefabId) ? 0 : 8,
+                EliteEveryKills = string.IsNullOrWhiteSpace(point.ElitePrefabId) ? 0 : RollEliteKillTarget(),
             });
         }
+    }
+
+    public static int RollEliteKillTarget()
+    {
+        return Random.Shared.Next(EliteKillTargetMin, EliteKillTargetMax + 1);
     }
 
     public MonsterEntity? CriarMonstroEm(MonsterTemplate template, float x, float y)

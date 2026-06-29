@@ -14,11 +14,9 @@ partial class GameServer
         string tag = reader.GetString();
         int emblem = reader.GetInt();
         if (!TryGetPlayer(peer, out var sender, out _) || sender == null) return;
-        bool success = HandleGuildCreate(peer, sender, name, tag, emblem);
+        bool success = HandleGuildCreate(peer, sender, name, tag, emblem, out string message);
         int guildId = success && sender.GuildId >= 0 ? sender.GuildId : -1;
-        SendGuildCreateResult(peer, guildId, success, success
-            ? $"Guilda '{name}' criada com sucesso!"
-            : "Não foi possível criar a guilda.");
+        SendGuildCreateResult(peer, guildId, success, message);
     }
 
     private void HandleGuildInvitePacket(NetPeer peer, NetDataReader reader)
@@ -222,7 +220,16 @@ partial class GameServer
 
     private bool HandleGuildCreate(NetPeer peer, Entity sender, string guildName, string tag = "", int emblem = -1)
     {
+        return HandleGuildCreate(peer, sender, guildName, tag, emblem, out _);
+    }
+
+    private bool HandleGuildCreate(NetPeer peer, Entity sender, string guildName, string tag, int emblem, out string message)
+    {
+        message = "Nao foi possivel criar a guilda.";
         if (sender is not PlayerEntity player) return false;
+
+        guildName = guildName.Trim();
+        tag = tag.Trim();
 
         Logger.Info($"[GUILD] HandleGuildCreate: player={sender.Name}, guildName={guildName}, tag={tag}, emblem={emblem}, gold={player.Gold}, itemsCount={player.Items.Count}");
         foreach (var item in player.Items)
@@ -237,6 +244,13 @@ partial class GameServer
         if (guildName.Length < 2 || guildName.Length > 30)
         {
             SendSystemMessage(peer, "O nome da guilda deve ter entre 2 e 30 caracteres.");
+            return false;
+        }
+
+        if (_db.GuildNameExists(guildName))
+        {
+            message = "Ja existe uma guilda com este nome.";
+            SendSystemMessage(peer, message);
             return false;
         }
 
@@ -255,6 +269,14 @@ partial class GameServer
         if (guild == null)
         {
             SendSystemMessage(peer, "Já existe uma guilda com este nome.");
+            return false;
+        }
+
+        if (!_db.SaveGuild(guild.Id, guild.Name, guild.Level, guild.Xp, guild.SkillPoints))
+        {
+            _world.Guilds.RemoveGuild(guild.Id);
+            message = "Ja existe uma guilda com este nome.";
+            SendSystemMessage(peer, message);
             return false;
         }
 
@@ -286,9 +308,9 @@ partial class GameServer
 
         player.GuildId = guild.Id;
         player.GuildName = guild.Name;
-        _db.SaveGuild(guild.Id, guild.Name, guild.Level, guild.Xp, guild.SkillPoints);
         _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
         BroadcastGuildData(sender);
+        message = $"Guilda '{guildName}' criada com sucesso!";
         SendSystemMessage(peer, $"Guilda '{guildName}' criada com sucesso!");
         Logger.Info($"[GUILD] Guild '{guildName}' criada com sucesso por {sender.Name}!");
         return true;

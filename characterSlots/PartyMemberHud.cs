@@ -23,12 +23,7 @@ public partial class PartyMemberHud : Control
 
         var bg = new Panel();
         bg.SetAnchorsPreset(LayoutPreset.FullRect);
-        var bgStyle = new StyleBoxFlat();
-        bgStyle.BgColor = new Color(0.05f, 0.05f, 0.1f, 0.75f);
-        bgStyle.SetCornerRadiusAll(6);
-        bgStyle.BorderColor = new Color(0.25f, 0.25f, 0.4f, 0.7f);
-        bgStyle.SetBorderWidthAll(1);
-        bg.AddThemeStyleboxOverride("panel", bgStyle);
+        bg.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.82f));
 
         _container = new VBoxContainer();
         _container.Name = "PartyMemberContainer";
@@ -128,11 +123,8 @@ public partial class PartyMemberHud : Control
             var card = new Panel();
             card.CustomMinimumSize = new Vector2(244, 44);
 
-            var cardStyle = new StyleBoxFlat();
-            cardStyle.BgColor = new Color(0, 0, 0, 0.3f);
-            cardStyle.SetCornerRadiusAll(4);
-            cardStyle.BorderColor = isLeader ? new Color(0.9f, 0.7f, 0.1f, 0.4f) : new Color(0.2f, 0.2f, 0.3f, 0.3f);
-            cardStyle.SetBorderWidthAll(1);
+            var cardStyle = MitharaUiTheme.Inner(0.72f);
+            cardStyle.BorderColor = isLeader ? MitharaUiTheme.Accent : MitharaUiTheme.BorderMuted;
             card.AddThemeStyleboxOverride("panel", cardStyle);
 
             var hbox = new HBoxContainer();
@@ -165,7 +157,7 @@ public partial class PartyMemberHud : Control
             string prefix = isLeader ? "[color=yellow](L)[/color] " : "";
             nameLevelLabel.Text = $"{prefix}{nome} | Nv. {level}";
             nameLevelLabel.AddThemeFontSizeOverride("font_size", 9);
-            nameLevelLabel.AddThemeColorOverride("font_color", new Color(0.9f, 0.85f, 1, 0.9f));
+            nameLevelLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
             vbox.AddChild(nameLevelLabel);
 
             var bars = new VBoxContainer();
@@ -180,7 +172,7 @@ public partial class PartyMemberHud : Control
             var hpBarBg = new ColorRect();
             hpBarBg.CustomMinimumSize = new Vector2(0, 7);
             hpBarBg.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            hpBarBg.Color = new Color(0.15f, 0.05f, 0.05f, 0.6f);
+            hpBarBg.Color = new Color(0.13f, 0.035f, 0.045f, 0.75f);
 
             var hpBar = new ColorRect();
             hpBar.CustomMinimumSize = new Vector2(0, 7);
@@ -197,7 +189,7 @@ public partial class PartyMemberHud : Control
             var hpLabel = new Label();
             hpLabel.Text = $"{hp}/{maxHp}";
             hpLabel.AddThemeFontSizeOverride("font_size", 7);
-            hpLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
+            hpLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
             hpLabel.CustomMinimumSize = new Vector2(52, 0);
 
             hpRow.AddChild(hpContainer);
@@ -212,7 +204,7 @@ public partial class PartyMemberHud : Control
             var mpBarBg = new ColorRect();
             mpBarBg.CustomMinimumSize = new Vector2(0, 7);
             mpBarBg.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            mpBarBg.Color = new Color(0.05f, 0.05f, 0.2f, 0.6f);
+            mpBarBg.Color = new Color(0.035f, 0.04f, 0.13f, 0.75f);
 
             var mpBar = new ColorRect();
             mpBar.CustomMinimumSize = new Vector2(0, 7);
@@ -229,7 +221,7 @@ public partial class PartyMemberHud : Control
             var mpLabel = new Label();
             mpLabel.Text = $"{mp}/{maxMp}";
             mpLabel.AddThemeFontSizeOverride("font_size", 7);
-            mpLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
+            mpLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
             mpLabel.CustomMinimumSize = new Vector2(52, 0);
 
             mpRow.AddChild(mpContainer);

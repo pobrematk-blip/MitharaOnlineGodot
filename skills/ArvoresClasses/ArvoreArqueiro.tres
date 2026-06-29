@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=119 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=123 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -30,7 +30,8 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/006 - Marca do Executor.tres" id="sk_26"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/007 - Impacto Repulsor.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/008 - Olho da Águia.tres" id="sk_28"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
+
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/48.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/23.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/18.png" id="icon_sk_11"]
@@ -60,6 +61,8 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/25.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/35.png" id="icon_sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Todas/002 - Salto para Trás.tres" id="shared_sk_2"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "arq_base"
@@ -120,7 +123,7 @@ Descricao = "Recupera HP e Mana."
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
-Posicao = Vector2(815, 716.2)
+Posicao = Vector2(815, 676.2)
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -747,10 +750,34 @@ Requisitos = PackedStringArray("arq_sniper_escolha_externa_3")
 CustoPontos = 1
 NivelMinimo = 70
 
+[sub_resource type="Resource" id="shared_1"]
+script = ExtResource("2_node")
+NodeId = "arqshared1"
+Nome = "Segundo F?lego"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+NodeType = 1
+Posicao = Vector2(835, 1045)
+Requisitos = PackedStringArray("arq_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_2"]
+script = ExtResource("2_node")
+NodeId = "arqshared2"
+Nome = "Salto para Tr?s"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_2")
+NodeType = 1
+Posicao = Vector2(1065, 1085)
+Requisitos = PackedStringArray("arq_base")
+CustoPontos = 1
+NivelMinimo = 1
+
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Arqueiro"
-Nodes = Array[Resource]([SubResource("base"), SubResource("cacador_rota"), SubResource("cacador_ci1"), SubResource("cacador_ci2"), SubResource("cacador_ci3"), SubResource("cacador_s1"), SubResource("cacador_s2"), SubResource("cacador_s3"), SubResource("cacador_ul"), SubResource("cacador_ur"), SubResource("cacador_s4"), SubResource("cacador_s5"), SubResource("cacador_s6"), SubResource("cacador_s7"), SubResource("cacador_ce1"), SubResource("cacador_ce2"), SubResource("cacador_ce3"), SubResource("cacador_s8"), SubResource("cacador_s9"), SubResource("cacador_s10"), SubResource("ranger_rota"), SubResource("ranger_ci1"), SubResource("ranger_ci2"), SubResource("ranger_ci3"), SubResource("ranger_s1"), SubResource("ranger_s2"), SubResource("ranger_s3"), SubResource("ranger_ul"), SubResource("ranger_ur"), SubResource("ranger_s4"), SubResource("ranger_s5"), SubResource("ranger_s6"), SubResource("ranger_s7"), SubResource("ranger_ce1"), SubResource("ranger_ce2"), SubResource("ranger_ce3"), SubResource("ranger_s8"), SubResource("ranger_s9"), SubResource("ranger_s10"), SubResource("sniper_rota"), SubResource("sniper_ci1"), SubResource("sniper_ci2"), SubResource("sniper_ci3"), SubResource("sniper_s1"), SubResource("sniper_s2"), SubResource("sniper_s3"), SubResource("sniper_ul"), SubResource("sniper_ur"), SubResource("sniper_s4"), SubResource("sniper_s5"), SubResource("sniper_s6"), SubResource("sniper_s7"), SubResource("sniper_ce1"), SubResource("sniper_ce2"), SubResource("sniper_ce3"), SubResource("sniper_s8"), SubResource("sniper_s9"), SubResource("sniper_s10")])
+Nodes = Array[Resource]([SubResource("base"), SubResource("cacador_rota"), SubResource("cacador_ci1"), SubResource("cacador_ci2"), SubResource("cacador_ci3"), SubResource("cacador_s1"), SubResource("cacador_s2"), SubResource("cacador_s3"), SubResource("cacador_ul"), SubResource("cacador_ur"), SubResource("cacador_s4"), SubResource("cacador_s5"), SubResource("cacador_s6"), SubResource("cacador_s7"), SubResource("cacador_ce1"), SubResource("cacador_ce2"), SubResource("cacador_ce3"), SubResource("cacador_s8"), SubResource("cacador_s9"), SubResource("cacador_s10"), SubResource("ranger_rota"), SubResource("ranger_ci1"), SubResource("ranger_ci2"), SubResource("ranger_ci3"), SubResource("ranger_s1"), SubResource("ranger_s2"), SubResource("ranger_s3"), SubResource("ranger_ul"), SubResource("ranger_ur"), SubResource("ranger_s4"), SubResource("ranger_s5"), SubResource("ranger_s6"), SubResource("ranger_s7"), SubResource("ranger_ce1"), SubResource("ranger_ce2"), SubResource("ranger_ce3"), SubResource("ranger_s8"), SubResource("ranger_s9"), SubResource("ranger_s10"), SubResource("sniper_rota"), SubResource("sniper_ci1"), SubResource("sniper_ci2"), SubResource("sniper_ci3"), SubResource("sniper_s1"), SubResource("sniper_s2"), SubResource("sniper_s3"), SubResource("sniper_ul"), SubResource("sniper_ur"), SubResource("sniper_s4"), SubResource("sniper_s5"), SubResource("sniper_s6"), SubResource("sniper_s7"), SubResource("sniper_ce1"), SubResource("sniper_ce2"), SubResource("sniper_ce3"), SubResource("sniper_s8"), SubResource("sniper_s9"), SubResource("sniper_s10"), SubResource("shared_1"), SubResource("shared_2")])
 RootNodeIds = PackedStringArray("arq_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

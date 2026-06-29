@@ -68,6 +68,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnRegisterResultEventHandler(bool success, string message);
     [Signal] public delegate void OnSecurityQuestionEventHandler(bool found, string questionOrError);
     [Signal] public delegate void OnRecoverResultEventHandler(bool success, string message);
+    [Signal] public delegate void OnCreateCharacterResultEventHandler(bool success, string message);
     [Signal] public delegate void OnCharacterListEventHandler(Godot.Collections.Array<Godot.Collections.Dictionary> characters);
     [Signal] public delegate void OnEnterWorldEventHandler();
     [Signal] public delegate void OnEntitySpawnedEventHandler(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3);
@@ -374,6 +375,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_CharacterList:
                 HandleCharacterList(r);
                 break;
+            case PacketId.S2C_CreateCharacterResult:
+                HandleCreateCharacterResult(r);
+                break;
             case PacketId.S2C_EnterWorld:
                 HandleEnterWorld(r);
                 break;
@@ -599,7 +603,9 @@ public partial class GameNetwork : Node
     {
         if (_entities.TryGetValue(entityId, out var node) && IsInstanceValid(node))
         {
-            node.QueueFree();
+            bool dying = node.HasMeta("dying") && node.GetMeta("dying").AsBool();
+            if (!dying)
+                node.QueueFree();
         }
         _entities.Remove(entityId);
     }

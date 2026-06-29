@@ -10,6 +10,7 @@ public partial class TelaLogin : CanvasLayer
     private CheckBox _lembrarCheck = null!;
 
     private LineEdit _regUsername = null!;
+    private LineEdit _regEmail = null!;
     private LineEdit _regPassword = null!;
     private LineEdit _regConfirm = null!;
     private Button _registerBtn = null!;
@@ -18,365 +19,627 @@ public partial class TelaLogin : CanvasLayer
     private Label _connectionDetailLabel = null!;
     private Panel _connectionDot = null!;
 
-    private LineEdit _recUsername = null!;
+    private LineEdit _recEmail = null!;
     private Label _recPerguntaLabel = null!;
     private LineEdit _recResposta = null!;
     private LineEdit _recNewPass = null!;
     private Button _recEnviarBtn = null!;
     private Label _recStatus = null!;
 
-    private Panel _loginPanel = null!;
-    private Panel _registerPanel = null!;
-    private Panel _recoverPanel = null!;
-    private CenterContainer _centerLogin = null!;
-    private CenterContainer _centerRegister = null!;
-    private CenterContainer _centerRecover = null!;
+    private Control _uiRoot = null!;
+    private Control _loginView = null!;
+    private Control _registerView = null!;
+    private Control _recoverView = null!;
+    private Control _statusRoot = null!;
+    private Texture2D _atlas = null!;
+    private Texture2D _accountAtlas = null!;
 
     private const string CredentialsPath = "user://login_data.cfg";
+    private static readonly Vector2 AtlasSize = new(1378, 1142);
+    private static readonly Color Gold = new(1.0f, 0.75f, 0.30f);
+    private static readonly Color PanelDark = new(0.025f, 0.022f, 0.018f, 0.93f);
+    private static readonly Color FieldDark = new(0.015f, 0.014f, 0.012f, 0.96f);
+    private static readonly Color GreenButton = new(0.10f, 0.28f, 0.04f, 0.98f);
+    private static readonly Color BlueButton = new(0.04f, 0.12f, 0.22f, 0.98f);
 
     public override void _Ready()
     {
-        var root = new Panel();
-        root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        var root = new Control();
+        root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
 
         var bgImg = new TextureRect
         {
             Texture = ResourceLoader.Load<Texture2D>("res://Network/Tela de Login.png"),
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.Scale,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        bgImg.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        bgImg.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         root.AddChild(bgImg);
 
         var overlay = new ColorRect
         {
-            Color = new Color(0, 0, 0, 0.5f),
+            Color = new Color(0, 0, 0, 0.26f),
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        overlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         root.AddChild(overlay);
 
-        _loginPanel = CriarLoginPanel();
-        _registerPanel = CriarRegisterPanel();
-        _recoverPanel = CriarRecoverPanel();
-
-        _centerLogin = new CenterContainer();
-        _centerLogin.SetAnchorsPreset(Control.LayoutPreset.Center);
-        _centerLogin.Position = new Vector2(-92, 81); // Moved additional 1.5cm left from previous position
-        _centerLogin.AddChild(_loginPanel);
-        root.AddChild(_centerLogin);
-
-        _centerRegister = new CenterContainer();
-        _centerRegister.SetAnchorsPreset(Control.LayoutPreset.Center);
-        _centerRegister.Position = new Vector2(-92, 81); // Moved additional 1.5cm left from previous position
-        _registerPanel.CustomMinimumSize = new Vector2(360, 0);
-        _centerRegister.AddChild(_registerPanel);
-        root.AddChild(_centerRegister);
-
-        _centerRecover = new CenterContainer();
-        _centerRecover.SetAnchorsPreset(Control.LayoutPreset.Center);
-        _centerRecover.Position = new Vector2(-92, 81); // Moved additional 1.5cm left from previous position
-        var recoverVBox = new VBoxContainer();
-        recoverVBox.SetAnchorsPreset(Control.LayoutPreset.Center);
-        var spacerRec = new Control();
-        spacerRec.SizeFlagsVertical = Control.SizeFlags.Expand;
-        spacerRec.CustomMinimumSize = new Vector2(0, 200);
-        recoverVBox.AddChild(spacerRec);
-        
-        var hboxRec = new HBoxContainer();
-        var hspacerRecLeft = new Control();
-        hspacerRecLeft.SizeFlagsHorizontal = Control.SizeFlags.Expand;
-        hspacerRecLeft.CustomMinimumSize = new Vector2(120, 0);
-        hboxRec.AddChild(hspacerRecLeft);
-        hboxRec.AddChild(_recoverPanel);
-        var hspacerRecRight = new Control();
-        hspacerRecRight.SizeFlagsHorizontal = Control.SizeFlags.Expand;
-        hboxRec.AddChild(hspacerRecRight);
-        
-        recoverVBox.AddChild(hboxRec);
-        _centerRecover.AddChild(recoverVBox);
-        root.AddChild(_centerRecover);
-
-        var connectionPanel = new Panel();
-        connectionPanel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-        connectionPanel.Size = new Vector2(220, 50);  // Reasonable size
-        connectionPanel.Position = new Vector2(-20, -20);  // Standard position
-        connectionPanel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        _atlas = ResourceLoader.Load<Texture2D>("res://Network/LoginUI/LoginAtlas.png");
+        _accountAtlas = ResourceLoader.Load<Texture2D>("res://Network/LoginUI/AccountAtlas.png");
+        _uiRoot = new Control
         {
-            BgColor = new Color(0, 0, 0, 0.6f),  // Semi-transparent dark
-            CornerRadiusTopLeft = 8,
-            CornerRadiusTopRight = 8,
-            CornerRadiusBottomLeft = 8,
-            CornerRadiusBottomRight = 8,
-        });
-
-        var connectionVBox = new VBoxContainer();
-        connectionVBox.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-        connectionVBox.SizeFlagsVertical = Control.SizeFlags.Fill;
-        connectionVBox.CustomMinimumSize = new Vector2(220, 50);
-
-        var statusRow = new HBoxContainer();
-        statusRow.SizeFlagsHorizontal = Control.SizeFlags.Fill;
-        statusRow.SizeFlagsVertical = Control.SizeFlags.Fill;
-
-        _connectionDot = new Panel();
-        _connectionDot.CustomMinimumSize = new Vector2(14, 14);  // Good size dot
-        _connectionDot.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = Colors.Red,
-            CornerRadiusTopLeft = 7,
-            CornerRadiusTopRight = 7,
-            CornerRadiusBottomLeft = 7,
-            CornerRadiusBottomRight = 7,
-        });
-        statusRow.AddChild(_connectionDot);
-        
-        // Add spacer to push status label to the right
-        statusRow.AddChild(new Control { SizeFlagsHorizontal = Control.SizeFlags.Expand });
-
-        _connectionStatusLabel = new Label
-        {
-            Text = "Offline",
-            HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Center,
+            Size = AtlasSize,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        _connectionStatusLabel.AddThemeColorOverride("font_color", Colors.White);  // White text
-        statusRow.AddChild(_connectionStatusLabel);
+        root.AddChild(_uiRoot);
 
-        connectionVBox.AddChild(statusRow);
-
-        _connectionDetailLabel = new Label
+        _statusRoot = new Control
         {
-            Text = "Desconectado do servidor",
-            HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Center,
+            Size = new Vector2(340, 330),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        _connectionDetailLabel.AddThemeColorOverride("font_color", Colors.White);  // White text
-        _connectionDetailLabel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        connectionVBox.AddChild(_connectionDetailLabel);
+        root.AddChild(_statusRoot);
 
-        connectionPanel.AddChild(connectionVBox);
-        root.AddChild(connectionPanel);
+        CriarStatusServidor();
+        CriarElementosFixos();
+        _loginView = CriarLoginView();
+        _registerView = CriarRegisterView();
+        _recoverView = CriarRecoverView();
 
-        _centerRegister.Visible = false;
-        _centerRecover.Visible = false;
+        _uiRoot.AddChild(_loginView);
+        _uiRoot.AddChild(_registerView);
+        _uiRoot.AddChild(_recoverView);
+
+        _registerView.Visible = false;
+        _recoverView.Visible = false;
 
         AddChild(root);
+        AjustarLayoutResponsivo();
+        GetTree().Root.SizeChanged += AjustarLayoutResponsivo;
 
         CarregarCredenciaisSalvas();
         ConectarSinais();
     }
 
-    private Panel CriarPanelBase()
+    private void CriarElementosFixos()
     {
-        var panel = new Panel();
-        panel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0, 0, 0, 0.6f),
-            CornerRadiusTopLeft = 8,
-            CornerRadiusTopRight = 8,
-            CornerRadiusBottomLeft = 8,
-            CornerRadiusBottomRight = 8,
-        });
-        return panel;
+        AddAtlas(_uiRoot, new Rect2(430, 0, 522, 365), new Vector2(428, 0));
+
+        AddAtlas(_uiRoot, new Rect2(46, 1050, 222, 76), new Vector2(46, 1050));
+        var opcoes = AddInvisibleButton(_uiRoot, new Rect2(46, 1050, 222, 76));
+        opcoes.Pressed += AbrirOpcoes;
+
+        AddAtlas(_uiRoot, new Rect2(1048, 1054, 280, 72), new Vector2(1048, 1054));
+        var sair = AddInvisibleButton(_uiRoot, new Rect2(1048, 1054, 280, 72));
+        sair.Pressed += () => GetTree().Quit();
+
+        AddAtlas(_uiRoot, new Rect2(410, 1064, 530, 76), new Vector2(424, 1064));
     }
 
-    private Panel CriarLoginPanel()
+    private void CriarStatusServidor()
     {
-        var panel = CriarPanelBase();
-        panel.CustomMinimumSize = new Vector2(320, 0);
-        panel.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-        panel.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
-        var vbox = new VBoxContainer();
+        AddAtlas(_statusRoot, new Rect2(30, 28, 340, 330), Vector2.Zero);
+        _connectionDot = new Panel
+        {
+            Position = new Vector2(32, 76),
+            Size = new Vector2(18, 18),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        _connectionDot.AddThemeStyleboxOverride("panel", CriarDotStyle(Colors.Red));
+        _statusRoot.AddChild(_connectionDot);
 
-        vbox.AddChild(new Label { Text = "Usuário:" });
-        _username = new LineEdit { PlaceholderText = "Digite seu usuário" };
-        vbox.AddChild(_username);
+        _connectionStatusLabel = new Label
+        {
+            Text = "Offline",
+            Position = new Vector2(60, 66),
+            Size = new Vector2(260, 30),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        PrepararLabel(_connectionStatusLabel, 18, Colors.White);
+        _statusRoot.AddChild(_connectionStatusLabel);
 
-        vbox.AddChild(new Label { Text = "Senha:" });
-        _password = new LineEdit { PlaceholderText = "Digite sua senha", Secret = true };
-        vbox.AddChild(_password);
+        _connectionDetailLabel = new Label
+        {
+            Text = "Desconectado do servidor",
+            Position = new Vector2(34, 110),
+            Size = new Vector2(260, 70),
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        };
+        PrepararLabel(_connectionDetailLabel, 15, new Color(0.88f, 0.84f, 0.74f));
+        _statusRoot.AddChild(_connectionDetailLabel);
+    }
 
-        _lembrarCheck = new CheckBox { Text = "Lembrar senha", ButtonPressed = true };
-        vbox.AddChild(_lembrarCheck);
+    private Control CriarLoginView()
+    {
+        var view = new Control
+        {
+            Size = AtlasSize,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
 
-        vbox.AddChild(new Control { Size = new Vector2(0, 10) });
+        AddAtlas(view, new Rect2(715, 350, 620, 670), new Vector2(379, 350));
 
-        _loginBtn = new Button { Text = "Entrar" };
+        _username = CriarCampo(new Rect2(502, 548, 405, 38));
+        _username.PlaceholderText = "Digite seu usuario";
+        view.AddChild(_username);
+
+        _password = CriarCampo(new Rect2(502, 658, 405, 38), true);
+        _password.PlaceholderText = "Digite sua senha";
+        view.AddChild(_password);
+
+        _lembrarCheck = new CheckBox
+        {
+            Text = "",
+            Position = new Vector2(446, 731),
+            Size = new Vector2(34, 34),
+            ButtonPressed = true,
+        };
+        view.AddChild(_lembrarCheck);
+
+        var recuperar = new Button
+        {
+            Text = "",
+            Position = new Vector2(749, 731),
+            Size = new Vector2(188, 34),
+            Flat = true,
+            FocusMode = Control.FocusModeEnum.None,
+        };
+        recuperar.Pressed += MostrarRecover;
+        view.AddChild(recuperar);
+
+        _loginBtn = AddInvisibleButton(view, new Rect2(449, 792, 482, 70));
         _loginBtn.Pressed += OnLoginPressed;
-        vbox.AddChild(_loginBtn);
 
-        _status = new Label
-        {
-            Text = "",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-        };
-        vbox.AddChild(_status);
+        var criarConta = AddInvisibleButton(view, new Rect2(449, 925, 482, 70));
+        criarConta.Pressed += MostrarRegister;
 
-        var botoesExtras = new HBoxContainer();
-        var btnCriarConta = new Button { Text = "Criar Conta", Flat = true };
-        btnCriarConta.Pressed += MostrarRegister;
-        botoesExtras.AddChild(btnCriarConta);
+        _status = CriarStatusLabel(new Rect2(434, 1005, 520, 34));
+        view.AddChild(_status);
 
-        var btnEsqueci = new Button { Text = "Esqueci a senha", Flat = true };
-        btnEsqueci.Pressed += MostrarRecover;
-        botoesExtras.AddChild(btnEsqueci);
-
-        vbox.AddChild(botoesExtras);
-
-        panel.AddChild(vbox);
-        return panel;
+        return view;
     }
 
-    private Panel CriarRegisterPanel()
+    private Control CriarRegisterView()
     {
-        var panel = CriarPanelBase();
-        panel.CustomMinimumSize = new Vector2(360, 0);
-        panel.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-        panel.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
-        var vbox = new VBoxContainer();
-
-        var title = new Label
+        var view = new Control
         {
-            Text = "Criar Nova Conta",
-            HorizontalAlignment = HorizontalAlignment.Center,
+            Size = AtlasSize,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        vbox.AddChild(title);
+        Vector2 panelPos = new(377, 344);
+        Vector2 offset = panelPos - new Vector2(20, 318);
+        AddAccountAtlas(view, new Rect2(20, 318, 623, 552), panelPos);
 
-        vbox.AddChild(new Control { Size = new Vector2(0, 10) });
+        var fechar = AddInvisibleButton(view, new Rect2(new Vector2(581, 342) + offset, new Vector2(33, 36)));
+        fechar.Pressed += MostrarLogin;
 
-        vbox.AddChild(new Label { Text = "Usuário:" });
-        _regUsername = new LineEdit { PlaceholderText = "Mínimo 3 caracteres" };
-        vbox.AddChild(_regUsername);
+        _regUsername = CriarCampo(new Rect2(new Vector2(164, 411) + offset, new Vector2(369, 35)));
+        view.AddChild(_regUsername);
 
-        vbox.AddChild(new Label { Text = "Senha:" });
-        _regPassword = new LineEdit { PlaceholderText = "Mínimo 3 caracteres", Secret = true };
-        vbox.AddChild(_regPassword);
+        _regEmail = CriarCampo(new Rect2(new Vector2(164, 482) + offset, new Vector2(369, 36)));
+        view.AddChild(_regEmail);
 
-        vbox.AddChild(new Label { Text = "Confirmar Senha:" });
-        _regConfirm = new LineEdit { PlaceholderText = "Digite a senha novamente", Secret = true };
-        vbox.AddChild(_regConfirm);
+        _regPassword = CriarCampo(new Rect2(new Vector2(164, 550) + offset, new Vector2(369, 36)), true);
+        view.AddChild(_regPassword);
 
-        vbox.AddChild(new Control { Size = new Vector2(0, 20) });
+        _regConfirm = CriarCampo(new Rect2(new Vector2(164, 619) + offset, new Vector2(369, 36)), true);
+        view.AddChild(_regConfirm);
 
-        var buttons = new HBoxContainer();
-        buttons.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-
-        _registerBtn = new Button { Text = "Criar Conta" };
+        _registerBtn = AddInvisibleButton(view, new Rect2(new Vector2(148, 700) + offset, new Vector2(362, 52)));
         _registerBtn.Pressed += OnRegisterPressed;
-        buttons.AddChild(_registerBtn);
-        buttons.AddChild(new Control { CustomMinimumSize = new Vector2(10, 0) });
 
-        var btnVoltar = new Button { Text = "Voltar", Flat = true };
-        btnVoltar.Pressed += MostrarLogin;
-        buttons.AddChild(btnVoltar);
+        var voltar = AddInvisibleButton(view, new Rect2(new Vector2(148, 792) + offset, new Vector2(362, 49)));
+        voltar.Pressed += MostrarLogin;
 
-        vbox.AddChild(buttons);
+        _regStatus = CriarStatusLabel(new Rect2(new Vector2(125, 845) + offset, new Vector2(420, 36)));
+        view.AddChild(_regStatus);
 
-        _regStatus = new Label
-        {
-            Text = "",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-        };
-        vbox.AddChild(_regStatus);
-
-        panel.AddChild(vbox);
-        return panel;
+        return view;
     }
 
-    private Panel CriarRecoverPanel()
+    private Control CriarRecoverView()
     {
-        var panel = CriarPanelBase();
-        panel.CustomMinimumSize = new Vector2(320, 0);
-        panel.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-        panel.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
-        var vbox = new VBoxContainer();
-
-        var title = new Label
+        var view = new Control
         {
-            Text = "Recuperar Senha",
-            HorizontalAlignment = HorizontalAlignment.Center,
+            Size = AtlasSize,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        vbox.AddChild(title);
+        Vector2 panelPos = new(419, 344);
+        Vector2 offset = panelPos - new Vector2(689, 317);
+        AddAccountAtlas(view, new Rect2(689, 317, 539, 554), panelPos);
 
-        vbox.AddChild(new Control { Size = new Vector2(0, 10) });
+        var fechar = AddInvisibleButton(view, new Rect2(new Vector2(1162, 342) + offset, new Vector2(34, 36)));
+        fechar.Pressed += MostrarLogin;
 
-        vbox.AddChild(new Label { Text = "Usuário:" });
-        _recUsername = new LineEdit { PlaceholderText = "Digite seu usuário" };
-        vbox.AddChild(_recUsername);
+        _recEmail = CriarCampo(new Rect2(new Vector2(791, 547) + offset, new Vector2(374, 39)));
+        view.AddChild(_recEmail);
 
-        var btnBuscar = new Button { Text = "Buscar Pergunta" };
-        btnBuscar.Pressed += OnBuscarPergunta;
-        vbox.AddChild(btnBuscar);
+        var buscar = AddInvisibleButton(view, new Rect2(new Vector2(784, 627) + offset, new Vector2(350, 51)));
+        buscar.Pressed += OnBuscarPergunta;
 
-        _recPerguntaLabel = new Label
+        _recPerguntaLabel = CriarStatusLabel(new Rect2(new Vector2(795, 468) + offset, new Vector2(360, 48)));
+        _recPerguntaLabel.AddThemeColorOverride("font_color", Gold);
+        view.AddChild(_recPerguntaLabel);
+
+        _recResposta = CriarCampo(new Rect2(new Vector2(791, 547) + offset, new Vector2(374, 39)));
+        _recResposta.Visible = false;
+        view.AddChild(_recResposta);
+
+        _recNewPass = CriarCampo(new Rect2(new Vector2(791, 547) + offset, new Vector2(374, 39)), true);
+        _recNewPass.Visible = false;
+        view.AddChild(_recNewPass);
+
+        _recEnviarBtn = buscar;
+
+        var voltar = AddInvisibleButton(view, new Rect2(new Vector2(784, 738) + offset, new Vector2(350, 50)));
+        voltar.Pressed += MostrarLogin;
+
+        _recStatus = CriarStatusLabel(new Rect2(new Vector2(780, 795) + offset, new Vector2(370, 44)));
+        view.AddChild(_recStatus);
+
+        return view;
+    }
+
+    private void CriarJanelaBase(Control view, Rect2 rect)
+    {
+        var panel = new Panel
+        {
+            Position = rect.Position,
+            Size = rect.Size,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        panel.AddThemeStyleboxOverride("panel", CriarPanelStyle());
+        view.AddChild(panel);
+    }
+
+    private void CriarRotulo(Control view, string text, Vector2 pos)
+    {
+        var label = new Label
+        {
+            Text = text,
+            Position = pos,
+            Size = new Vector2(220, 24),
+        };
+        PrepararLabel(label, 16, Gold);
+        view.AddChild(label);
+    }
+
+    private void CriarCampoVisual(Control view, Rect2 rect, string iconText)
+    {
+        var panel = new Panel
+        {
+            Position = rect.Position,
+            Size = rect.Size,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        panel.AddThemeStyleboxOverride("panel", CriarFieldStyle());
+        view.AddChild(panel);
+
+        var icon = new Label
+        {
+            Text = iconText,
+            Position = rect.Position + new Vector2(12, 9),
+            Size = new Vector2(32, 32),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        PrepararLabel(icon, 20, Gold);
+        view.AddChild(icon);
+    }
+
+    private Control CriarSeparadorOu(Rect2 rect)
+    {
+        var row = new HBoxContainer
+        {
+            Position = rect.Position,
+            Size = rect.Size,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        row.AddThemeConstantOverride("separation", 12);
+
+        var left = new ColorRect { Color = new Color(0.68f, 0.45f, 0.16f, 0.75f), CustomMinimumSize = new Vector2(180, 1) };
+        var text = new Label { Text = "OU", HorizontalAlignment = HorizontalAlignment.Center, CustomMinimumSize = new Vector2(48, 24) };
+        var right = new ColorRect { Color = new Color(0.68f, 0.45f, 0.16f, 0.75f), CustomMinimumSize = new Vector2(180, 1) };
+        left.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        right.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        PrepararLabel(text, 20, new Color(0.92f, 0.86f, 0.72f));
+
+        row.AddChild(left);
+        row.AddChild(text);
+        row.AddChild(right);
+        return row;
+    }
+
+    private TextureRect AddAtlas(Control parent, Rect2 region, Vector2 position)
+    {
+        var atlasTexture = new AtlasTexture
+        {
+            Atlas = _atlas,
+            Region = region,
+        };
+        var rect = new TextureRect
+        {
+            Texture = atlasTexture,
+            Position = position,
+            Size = region.Size,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        parent.AddChild(rect);
+        return rect;
+    }
+
+    private TextureRect AddAccountAtlas(Control parent, Rect2 region, Vector2 position)
+    {
+        var atlasTexture = new AtlasTexture
+        {
+            Atlas = _accountAtlas,
+            Region = region,
+        };
+        var rect = new TextureRect
+        {
+            Texture = atlasTexture,
+            Position = position,
+            Size = region.Size,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        parent.AddChild(rect);
+        return rect;
+    }
+
+    private void CriarRodapeDireitos()
+    {
+        var footer = new Panel
+        {
+            Position = new Vector2(415, 1063),
+            Size = new Vector2(520, 68),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        footer.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(0.035f, 0.030f, 0.024f, 0.94f),
+            BorderColor = new Color(0.72f, 0.50f, 0.20f),
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            CornerRadiusTopLeft = 3,
+            CornerRadiusTopRight = 3,
+            CornerRadiusBottomLeft = 3,
+            CornerRadiusBottomRight = 3,
+        });
+        _uiRoot.AddChild(footer);
+
+        var label = new Label
+        {
+            Text = "© 2024 MITHARA ONLINE: CONFLITO DE RAÇAS\nTODOS OS DIREITOS RESERVADOS",
+            Position = new Vector2(12, 7),
+            Size = new Vector2(496, 54),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        PrepararLabel(label, 17, new Color(0.95f, 0.84f, 0.58f));
+        footer.AddChild(label);
+    }
+
+    private Button AddInvisibleButton(Control parent, Rect2 rect)
+    {
+        var button = new Button
         {
             Text = "",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            Position = rect.Position,
+            Size = rect.Size,
+            Flat = true,
+            FocusMode = Control.FocusModeEnum.None,
         };
-        vbox.AddChild(_recPerguntaLabel);
+        var empty = new StyleBoxEmpty();
+        button.AddThemeStyleboxOverride("normal", empty);
+        button.AddThemeStyleboxOverride("hover", empty);
+        button.AddThemeStyleboxOverride("pressed", empty);
+        button.AddThemeStyleboxOverride("focus", empty);
+        parent.AddChild(button);
+        return button;
+    }
 
-        vbox.AddChild(new Label { Text = "Resposta:" });
-        _recResposta = new LineEdit { PlaceholderText = "Digite sua resposta secreta" };
-        vbox.AddChild(_recResposta);
+    private Button CriarBotaoTexto(string texto, Color color, Rect2 rect, int fontSize)
+    {
+        var button = new Button
+        {
+            Text = texto,
+            Position = rect.Position,
+            Size = rect.Size,
+            FocusMode = Control.FocusModeEnum.None,
+        };
+        button.AddThemeStyleboxOverride("normal", CriarButtonStyle(color, Gold));
+        button.AddThemeStyleboxOverride("hover", CriarButtonStyle(color.Lightened(0.10f), Gold));
+        button.AddThemeStyleboxOverride("pressed", CriarButtonStyle(color.Darkened(0.15f), Gold));
+        button.AddThemeColorOverride("font_color", Gold);
+        button.AddThemeColorOverride("font_outline_color", Colors.Black);
+        button.AddThemeConstantOverride("outline_size", 2);
+        button.AddThemeFontSizeOverride("font_size", fontSize);
+        return button;
+    }
 
-        vbox.AddChild(new Label { Text = "Nova Senha:" });
-        _recNewPass = new LineEdit { PlaceholderText = "Mínimo 3 caracteres", Secret = true };
-        vbox.AddChild(_recNewPass);
+    private LineEdit CriarCampo(Rect2 rect, bool secret = false)
+    {
+        rect.Position += new Vector2(2, 0);
+        rect.Size -= new Vector2(2, 0);
 
-        vbox.AddChild(new Control { Size = new Vector2(0, 20) });
+        var campo = new LineEdit
+        {
+            Position = rect.Position,
+            Size = rect.Size,
+            Secret = secret,
+            PlaceholderText = "",
+            FocusMode = Control.FocusModeEnum.Click,
+        };
+        var empty = new StyleBoxEmpty();
+        campo.AddThemeStyleboxOverride("normal", empty);
+        campo.AddThemeStyleboxOverride("focus", empty);
+        campo.AddThemeStyleboxOverride("read_only", empty);
+        campo.AddThemeColorOverride("font_color", Colors.White);
+        campo.AddThemeColorOverride("font_placeholder_color", new Color(0.80f, 0.78f, 0.72f, 0.62f));
+        campo.AddThemeColorOverride("caret_color", Gold);
+        campo.AddThemeFontSizeOverride("font_size", 18);
+        return campo;
+    }
 
-        var buttons = new HBoxContainer();
-        buttons.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-
-        _recEnviarBtn = new Button { Text = "Redefinir Senha" };
-        _recEnviarBtn.Pressed += OnRecoverPressed;
-        buttons.AddChild(_recEnviarBtn);
-        buttons.AddChild(new Control { CustomMinimumSize = new Vector2(10, 0) });
-
-        var btnVoltar = new Button { Text = "Voltar", Flat = true };
-        btnVoltar.Pressed += MostrarLogin;
-        buttons.AddChild(btnVoltar);
-
-        vbox.AddChild(buttons);
-
-        _recStatus = new Label
+    private Label CriarStatusLabel(Rect2 rect)
+    {
+        var label = new Label
         {
             Text = "",
+            Position = rect.Position,
+            Size = rect.Size,
             HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         };
-        vbox.AddChild(_recStatus);
+        PrepararLabel(label, 15, new Color(0.92f, 0.86f, 0.72f));
+        return label;
+    }
 
-        panel.AddChild(vbox);
-        return panel;
+    private static void PrepararLabel(Label label, int fontSize, Color color)
+    {
+        label.AddThemeColorOverride("font_color", color);
+        label.AddThemeColorOverride("font_outline_color", Colors.Black);
+        label.AddThemeConstantOverride("outline_size", 2);
+        label.AddThemeFontSizeOverride("font_size", fontSize);
+    }
+
+    private static StyleBoxFlat CriarPanelStyle()
+    {
+        return new StyleBoxFlat
+        {
+            BgColor = PanelDark,
+            BorderColor = Gold,
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            CornerRadiusTopLeft = 3,
+            CornerRadiusTopRight = 3,
+            CornerRadiusBottomLeft = 3,
+            CornerRadiusBottomRight = 3,
+        };
+    }
+
+    private static StyleBoxFlat CriarFieldStyle()
+    {
+        return new StyleBoxFlat
+        {
+            BgColor = FieldDark,
+            BorderColor = new Color(0.52f, 0.33f, 0.12f),
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            CornerRadiusTopLeft = 3,
+            CornerRadiusTopRight = 3,
+            CornerRadiusBottomLeft = 3,
+            CornerRadiusBottomRight = 3,
+        };
+    }
+
+    private static StyleBoxFlat CriarButtonStyle(Color bg, Color border)
+    {
+        return new StyleBoxFlat
+        {
+            BgColor = bg,
+            BorderColor = border,
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            CornerRadiusTopLeft = 2,
+            CornerRadiusTopRight = 2,
+            CornerRadiusBottomLeft = 2,
+            CornerRadiusBottomRight = 2,
+        };
+    }
+
+    private static StyleBoxFlat CriarDotStyle(Color color)
+    {
+        return new StyleBoxFlat
+        {
+            BgColor = color,
+            CornerRadiusTopLeft = 9,
+            CornerRadiusTopRight = 9,
+            CornerRadiusBottomLeft = 9,
+            CornerRadiusBottomRight = 9,
+        };
+    }
+
+    private void AjustarLayoutResponsivo()
+    {
+        Vector2 viewport = GetViewport().GetVisibleRect().Size;
+        float scale = Mathf.Min(viewport.X / AtlasSize.X, viewport.Y / AtlasSize.Y);
+        scale = Mathf.Min(scale, 1.15f);
+        _uiRoot.Scale = new Vector2(scale, scale);
+        _uiRoot.Position = (viewport - AtlasSize * scale) * 0.5f;
+
+        _statusRoot.Scale = new Vector2(scale, scale);
+        _statusRoot.Position = new Vector2(2, 2);
     }
 
     private void MostrarLogin()
     {
-        _centerLogin.Visible = true;
-        _centerRegister.Visible = false;
-        _centerRecover.Visible = false;
+        _loginView.Visible = true;
+        _registerView.Visible = false;
+        _recoverView.Visible = false;
     }
 
     private void MostrarRegister()
     {
-        _centerLogin.Visible = false;
-        _centerRegister.Visible = true;
-        _centerRecover.Visible = false;
+        _loginView.Visible = false;
+        _registerView.Visible = true;
+        _recoverView.Visible = false;
     }
 
     private void MostrarRecover()
     {
-        _centerLogin.Visible = false;
-        _centerRegister.Visible = false;
-        _centerRecover.Visible = true;
+        _loginView.Visible = false;
+        _registerView.Visible = false;
+        _recoverView.Visible = true;
         _recPerguntaLabel.Text = "";
         _recStatus.Text = "";
+    }
+
+    private void AbrirOpcoes()
+    {
+        var root = GetTree().Root;
+        var settings = GetNodeOrNull<SettingsUI>("LoginSettingsUI")
+            ?? root.GetNodeOrNull<SettingsUI>("LoginSettingsUI");
+        if (settings == null)
+        {
+            var scene = ResourceLoader.Load<PackedScene>("res://ui/SettingsUI.tscn");
+            settings = scene.Instantiate<SettingsUI>();
+            settings.Name = "LoginSettingsUI";
+            AddChild(settings);
+        }
+        else if (settings.GetParent() != this)
+        {
+            settings.GetParent()?.RemoveChild(settings);
+            AddChild(settings);
+        }
+
+        void AbrirSettings()
+        {
+            settings.GetNodeOrNull<Control>("SettingsToggleButton")?.Hide();
+            settings.MoveToFront();
+            settings.AbrirFechar(true);
+        }
+
+        if (settings.IsNodeReady())
+            AbrirSettings();
+        else
+            settings.Ready += AbrirSettings;
     }
 
     private void CarregarCredenciaisSalvas()
@@ -385,8 +648,9 @@ public partial class TelaLogin : CanvasLayer
         if (cfg.Load(CredentialsPath) == Error.Ok)
         {
             _username.Text = cfg.GetValue("login", "username", "").AsString();
-            _password.Text = cfg.GetValue("login", "password", "").AsString();
-            _lembrarCheck.ButtonPressed = cfg.GetValue("login", "lembrar", false).AsBool();
+            _password.Text = "";
+            _lembrarCheck.ButtonPressed = cfg.GetValue("login", "lembrar_usuario", false).AsBool()
+                || cfg.GetValue("login", "lembrar", false).AsBool();
         }
     }
 
@@ -396,14 +660,16 @@ public partial class TelaLogin : CanvasLayer
         if (_lembrarCheck.ButtonPressed)
         {
             cfg.SetValue("login", "username", _username.Text);
-            cfg.SetValue("login", "password", _password.Text);
-            cfg.SetValue("login", "lembrar", true);
+            cfg.SetValue("login", "password", "");
+            cfg.SetValue("login", "lembrar", false);
+            cfg.SetValue("login", "lembrar_usuario", true);
         }
         else
         {
             cfg.SetValue("login", "username", "");
             cfg.SetValue("login", "password", "");
             cfg.SetValue("login", "lembrar", false);
+            cfg.SetValue("login", "lembrar_usuario", false);
         }
         cfg.Save(CredentialsPath);
     }
@@ -424,13 +690,12 @@ public partial class TelaLogin : CanvasLayer
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net == null)
         {
-            _status!.Text = "GameNetwork não encontrado!";
+            _status.Text = "GameNetwork nao encontrado!";
             AtualizarStatusConexao(false);
             return;
         }
 
         ResetarLoginState(net);
-
         AtualizarStatusConexao(net.IsConnected);
 
         net.OnConnected += OnConnectedHandler;
@@ -459,54 +724,38 @@ public partial class TelaLogin : CanvasLayer
         {
             _connectionStatusLabel.Text = "Online";
             _connectionDetailLabel.Text = "Conectado ao servidor";
-            _connectionDot.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-            {
-                BgColor = Colors.LimeGreen,
-                CornerRadiusTopLeft = 8,
-                CornerRadiusTopRight = 8,
-                CornerRadiusBottomLeft = 8,
-                CornerRadiusBottomRight = 8,
-            });
+            _connectionDot.AddThemeStyleboxOverride("panel", CriarDotStyle(Colors.LimeGreen));
         }
         else
         {
             _connectionStatusLabel.Text = "Offline";
             _connectionDetailLabel.Text = "Desconectado do servidor";
-            _connectionDot.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-            {
-                BgColor = Colors.Red,
-                CornerRadiusTopLeft = 8,
-                CornerRadiusTopRight = 8,
-                CornerRadiusBottomLeft = 8,
-                CornerRadiusBottomRight = 8,
-            });
+            _connectionDot.AddThemeStyleboxOverride("panel", CriarDotStyle(Colors.Red));
         }
     }
 
     private void OnLoginPressed()
     {
-        _loginBtn!.Disabled = true;
-        _status!.Text = "Enviando login...";
+        _loginBtn.Disabled = true;
+        _status.Text = "Enviando login...";
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)
         {
             net.SendLogin(_username.Text.Trim(), _password.Text);
-            
-            // Timeout de 10 segundos para re-habilitar o botão se não receber resposta
             var timer = GetTree().CreateTimer(10.0f);
             timer.Timeout += () =>
             {
                 if (_loginBtn != null && _loginBtn.Disabled)
                 {
                     _loginBtn.Disabled = false;
-                    _status.Text = "Timeout: Tente novamente.";
+                    _status.Text = "Timeout: tente novamente.";
                 }
             };
         }
         else
         {
-            _status.Text = "Não conectado ao servidor.";
+            _status.Text = "Nao conectado ao servidor.";
             _loginBtn.Disabled = false;
         }
     }
@@ -514,60 +763,64 @@ public partial class TelaLogin : CanvasLayer
     private void OnRegisterPressed()
     {
         string user = _regUsername.Text.Trim();
+        string email = _regEmail.Text.Trim();
         string pass = _regPassword.Text;
         string confirm = _regConfirm.Text;
 
         if (user.Length < 3)
         {
-            _regStatus!.Text = "Usuário deve ter pelo menos 3 caracteres.";
+            _regStatus.Text = "Usuario deve ter pelo menos 3 caracteres.";
             return;
         }
         if (pass.Length < 3)
         {
-            _regStatus!.Text = "Senha deve ter pelo menos 3 caracteres.";
+            _regStatus.Text = "Senha deve ter pelo menos 3 caracteres.";
+            return;
+        }
+        if (!email.Contains('@') || email.Length < 6)
+        {
+            _regStatus.Text = "Digite um e-mail valido.";
             return;
         }
         if (pass != confirm)
         {
-            _regStatus!.Text = "Senhas não conferem.";
+            _regStatus.Text = "Senhas nao conferem.";
             return;
         }
 
-        _registerBtn!.Disabled = true;
-        _regStatus!.Text = "Criando conta...";
+        _registerBtn.Disabled = true;
+        _regStatus.Text = "Criando conta...";
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)
         {
-            net.SendRegister(user, pass);
-            
-            // Timeout de 10 segundos para re-habilitar o botão
+            net.SendRegister(user, email, pass);
             var timer = GetTree().CreateTimer(10.0f);
             timer.Timeout += () =>
             {
                 if (_registerBtn != null && _registerBtn.Disabled)
                 {
                     _registerBtn.Disabled = false;
-                    _regStatus.Text = "Timeout: Tente novamente.";
+                    _regStatus.Text = "Timeout: tente novamente.";
                 }
             };
         }
         else
         {
-            _regStatus.Text = "Não conectado ao servidor.";
+            _regStatus.Text = "Nao conectado ao servidor.";
             _registerBtn.Disabled = false;
         }
     }
 
     private void OnBuscarPergunta()
     {
-        _recStatus!.Text = "Buscando...";
+        _recStatus.Text = "Enviando solicitaÃ§Ã£o...";
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)
-            net.SendGetSecurityQuestion(_recUsername.Text.Trim());
+            net.SendGetSecurityQuestion(_recEmail.Text.Trim());
         else
-            _recStatus.Text = "Não conectado ao servidor.";
+            _recStatus.Text = "Nao conectado ao servidor.";
     }
 
     private void OnRecoverPressed()
@@ -577,33 +830,33 @@ public partial class TelaLogin : CanvasLayer
 
         if (string.IsNullOrEmpty(answer))
         {
-            _recStatus!.Text = "Digite a resposta secreta.";
+            _recStatus.Text = "Digite a resposta secreta.";
             return;
         }
         if (newPass.Length < 3)
         {
-            _recStatus!.Text = "Nova senha deve ter pelo menos 3 caracteres.";
+            _recStatus.Text = "Nova senha deve ter pelo menos 3 caracteres.";
             return;
         }
 
-        _recEnviarBtn!.Disabled = true;
-        _recStatus!.Text = "Redefinindo senha...";
+        _recEnviarBtn.Disabled = true;
+        _recStatus.Text = "Redefinindo senha...";
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)
-            net.SendRecoverPassword(_recUsername.Text.Trim(), answer, newPass);
+            net.SendRecoverPassword(_recEmail.Text.Trim(), answer, newPass);
         else
         {
-            _recStatus.Text = "Não conectado ao servidor.";
+            _recStatus.Text = "Nao conectado ao servidor.";
             _recEnviarBtn.Disabled = false;
         }
     }
 
     private void OnConnectedHandler()
     {
-        _status!.Text = "Conectado ao servidor.";
-        _regStatus!.Text = "Conectado ao servidor.";
-        _recStatus!.Text = "Conectado ao servidor.";
+        _status.Text = "Conectado ao servidor.";
+        _regStatus.Text = "Conectado ao servidor.";
+        _recStatus.Text = "Conectado ao servidor.";
         AtualizarStatusConexao(true);
     }
 
@@ -611,14 +864,14 @@ public partial class TelaLogin : CanvasLayer
     {
         if (success)
         {
-            _status!.Text = "Login OK!";
+            _status.Text = "Login OK!";
             SalvarCredenciais();
             OnLoginSuccess();
         }
         else
         {
-            _status!.Text = $"Erro: {message}";
-            _loginBtn!.Disabled = false;
+            _status.Text = $"Erro: {message}";
+            _loginBtn.Disabled = false;
         }
     }
 
@@ -626,15 +879,15 @@ public partial class TelaLogin : CanvasLayer
     {
         if (success)
         {
-            _regStatus!.Text = "Conta criada! Faça login.";
+            _regStatus.Text = "Conta criada! Faca login.";
             _regStatus.AddThemeColorOverride("font_color", Colors.Green);
-            _registerBtn!.Disabled = false;
+            _registerBtn.Disabled = false;
         }
         else
         {
-            _regStatus!.Text = $"Erro: {message}";
+            _regStatus.Text = $"Erro: {message}";
             _regStatus.AddThemeColorOverride("font_color", Colors.Red);
-            _registerBtn!.Disabled = false;
+            _registerBtn.Disabled = false;
         }
     }
 
@@ -642,14 +895,14 @@ public partial class TelaLogin : CanvasLayer
     {
         if (found)
         {
-            _recPerguntaLabel!.Text = questionOrError;
-            _recPerguntaLabel.AddThemeColorOverride("font_color", Colors.White);
-            _recStatus!.Text = "";
+            _recPerguntaLabel.Text = questionOrError;
+            _recPerguntaLabel.AddThemeColorOverride("font_color", Gold);
+            _recStatus.Text = "";
         }
         else
         {
-            _recPerguntaLabel!.Text = "";
-            _recStatus!.Text = $"Erro: {questionOrError}";
+            _recPerguntaLabel.Text = "";
+            _recStatus.Text = $"Erro: {questionOrError}";
             _recStatus.AddThemeColorOverride("font_color", Colors.Red);
         }
     }
@@ -658,29 +911,31 @@ public partial class TelaLogin : CanvasLayer
     {
         if (success)
         {
-            _recStatus!.Text = message;
+            _recStatus.Text = message;
             _recStatus.AddThemeColorOverride("font_color", Colors.Green);
-            _recEnviarBtn!.Disabled = false;
+            _recEnviarBtn.Disabled = false;
         }
         else
         {
-            _recStatus!.Text = $"Erro: {message}";
+            _recStatus.Text = $"Erro: {message}";
             _recStatus.AddThemeColorOverride("font_color", Colors.Red);
-            _recEnviarBtn!.Disabled = false;
+            _recEnviarBtn.Disabled = false;
         }
     }
 
     private void OnDisconnectedHandler()
     {
-        _status!.Text = "Desconectado do servidor.";
-        _loginBtn!.Disabled = false;
-        _regStatus!.Text = "Desconectado do servidor.";
-        _registerBtn!.Disabled = false;
+        _status.Text = "Desconectado do servidor.";
+        _loginBtn.Disabled = false;
+        _regStatus.Text = "Desconectado do servidor.";
+        _registerBtn.Disabled = false;
         AtualizarStatusConexao(false);
     }
 
     public override void _ExitTree()
     {
+        GetTree().Root.SizeChanged -= AjustarLayoutResponsivo;
+
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null)
         {

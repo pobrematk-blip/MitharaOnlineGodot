@@ -45,12 +45,7 @@ public partial class TradeUI : Control
         _window = new Panel();
         _window.CustomMinimumSize = TradeWindowSize;
         _window.Size = TradeWindowSize;
-        var winStyle = new StyleBoxFlat();
-        winStyle.BgColor = new Color(0.08f, 0.08f, 0.12f, 0.95f);
-        winStyle.SetCornerRadiusAll(8);
-        winStyle.BorderColor = new Color(0.3f, 0.3f, 0.45f, 0.8f);
-        winStyle.SetBorderWidthAll(1);
-        _window.AddThemeStyleboxOverride("panel", winStyle);
+        _window.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
         var winMargin = new MarginContainer();
         winMargin.AddThemeConstantOverride("margin_left", 8);
@@ -67,7 +62,7 @@ public partial class TradeUI : Control
         var titleBar = new HBoxContainer();
         _titleLabel = new Label();
         _titleLabel.AddThemeFontSizeOverride("font_size", 13);
-        _titleLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.85f, 1, 0.95f));
+        _titleLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         _titleLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         titleBar.AddChild(_titleLabel);
 
@@ -104,12 +99,7 @@ public partial class TradeUI : Control
         _itemPopup = new Panel();
         _itemPopup.CustomMinimumSize = new Vector2(240, 180);
         _itemPopup.Visible = false;
-        var popupStyle = new StyleBoxFlat();
-        popupStyle.BgColor = new Color(0.08f, 0.08f, 0.12f, 0.95f);
-        popupStyle.SetCornerRadiusAll(6);
-        popupStyle.BorderColor = new Color(0.3f, 0.3f, 0.45f, 0.8f);
-        popupStyle.SetBorderWidthAll(1);
-        _itemPopup.AddThemeStyleboxOverride("panel", popupStyle);
+        _itemPopup.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
         var popupVbox = new VBoxContainer();
         popupVbox.AddThemeConstantOverride("separation", 4);
@@ -117,7 +107,7 @@ public partial class TradeUI : Control
 
         var popupTitle = new Label { Text = "Selecione um item do inventário" };
         popupTitle.AddThemeFontSizeOverride("font_size", 11);
-        popupTitle.AddThemeColorOverride("font_color", new Color(0.9f, 0.85f, 1, 0.9f));
+        popupTitle.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         popupVbox.AddChild(popupTitle);
 
         var popupScroll = new ScrollContainer();
@@ -142,6 +132,8 @@ public partial class TradeUI : Control
             _net.OnTradePartnerConfirm += OnTradePartnerConfirm;
             _net.OnTradeEnd += OnTradeEnd;
             _net.OnInventoryData += OnInventoryData;
+            if (_net.PendingInventoryData != null)
+                _cachedInventory = _net.PendingInventoryData;
         }
 
         Visible = false;
@@ -154,10 +146,7 @@ public partial class TradeUI : Control
         panel.SizeFlagsVertical = SizeFlags.ExpandFill;
         panel.CustomMinimumSize = new Vector2(174, 0);
 
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0, 0, 0, 0.25f);
-        style.SetCornerRadiusAll(4);
-        panel.AddThemeStyleboxOverride("panel", style);
+        panel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.68f));
 
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 4);
@@ -165,7 +154,7 @@ public partial class TradeUI : Control
 
         var header = new Label();
         header.AddThemeFontSizeOverride("font_size", 10);
-        header.AddThemeColorOverride("font_color", new Color(0.85f, 0.85f, 1, 0.85f));
+        header.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         vbox.AddChild(header);
 
         var grid = new GridContainer();
@@ -181,12 +170,7 @@ public partial class TradeUI : Control
             int slotIdx = i;
             var slotPanel = new Panel();
             slotPanel.CustomMinimumSize = TradeSlotSize;
-            var slotStyle = new StyleBoxFlat();
-            slotStyle.BgColor = new Color(0, 0, 0, 0.35f);
-            slotStyle.SetCornerRadiusAll(4);
-            slotStyle.BorderColor = new Color(0.2f, 0.2f, 0.3f, 0.4f);
-            slotStyle.SetBorderWidthAll(1);
-            slotPanel.AddThemeStyleboxOverride("panel", slotStyle);
+            slotPanel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
 
             var slotLabel = new Label();
             slotLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -194,7 +178,7 @@ public partial class TradeUI : Control
             slotLabel.AddThemeFontSizeOverride("font_size", 7);
             slotLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             slotLabel.ClipText = true;
-            slotLabel.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f, 0.6f));
+            slotLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
             slotLabel.SetAnchorsPreset(LayoutPreset.FullRect);
             slotPanel.AddChild(slotLabel);
 
@@ -240,6 +224,7 @@ public partial class TradeUI : Control
         _partnerOffers.Clear();
         _myConfirmed = false;
         _partnerConfirmed = false;
+        _net?.SendInventoryRequest();
 
         _titleLabel.Text = $"Troca com {partnerName}";
 
@@ -258,6 +243,8 @@ public partial class TradeUI : Control
 
         CentralizarJanela();
         Visible = true;
+        MoveToFront();
+        _window.MoveToFront();
     }
 
     private void OnTradeOfferUpdate(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers)
@@ -350,6 +337,8 @@ public partial class TradeUI : Control
 
     private void MostrarSelecaoItem()
     {
+        _net?.SendInventoryRequest();
+
         foreach (var child in _itemPopupList.GetChildren())
             child.QueueFree();
 
@@ -387,6 +376,7 @@ public partial class TradeUI : Control
         _itemPopup.Position = new Vector2(
             (GetViewportRect().Size.X - 240) / 2,
             (GetViewportRect().Size.Y - 180) / 2);
+        _itemPopup.MoveToFront();
     }
 
     private void ConfirmTrade()
@@ -409,12 +399,7 @@ public partial class TradeUI : Control
 
     private void AtualizarEstiloSlot(Panel slot, bool occupied)
     {
-        var style = new StyleBoxFlat();
-        style.BgColor = occupied ? new Color(0.1f, 0.15f, 0.25f, 0.5f) : new Color(0, 0, 0, 0.35f);
-        style.SetCornerRadiusAll(4);
-        style.BorderColor = occupied ? new Color(0.3f, 0.5f, 0.8f, 0.6f) : new Color(0.2f, 0.2f, 0.3f, 0.4f);
-        style.SetBorderWidthAll(1);
-        slot.AddThemeStyleboxOverride("panel", style);
+        slot.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot(occupied));
     }
 
     private void CentralizarJanela()

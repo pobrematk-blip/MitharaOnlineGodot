@@ -47,33 +47,29 @@ public partial class PetScrollMiniGame : Control
         _panel.SetAnchorsPreset(LayoutPreset.TopLeft);
         _panel.CustomMinimumSize = new Vector2(360, 230);
         _panel.Size = new Vector2(360, 230);
-        _panel.AddThemeStyleboxOverride("panel", CriarStyle(
-            new Color(0.006f, 0.008f, 0.014f, 0.90f),
-            new Color(0.18f, 0.62f, 0.92f, 0.95f),
-            8,
-            1));
+        _panel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
         _titulo = GetNode<Label>("%TituloLabel");
         _instrucao = GetNode<Label>("%InstrucaoLabel");
         _chancesLabel = new Label();
         _chancesLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _chancesLabel.AddThemeFontSizeOverride("font_size", 13);
-        _chancesLabel.AddThemeColorOverride("font_color", new Color(1.0f, 0.92f, 0.05f, 1f));
+        _chancesLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
         _statusLabel = GetNode<Label>("%StatusLabel");
         _progressContainer = GetNode<HBoxContainer>("%ProgressContainer");
         _capturarBtn = GetNode<Button>("%CapturarBtn");
         _fecharBtn = GetNode<Button>("%FecharBtn");
 
         _titulo.AddThemeFontSizeOverride("font_size", 18);
-        _titulo.AddThemeColorOverride("font_color", new Color(1.0f, 0.92f, 0.08f, 1f));
+        _titulo.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
         _instrucao.AddThemeFontSizeOverride("font_size", 13);
-        _instrucao.AddThemeColorOverride("font_color", new Color(0.90f, 0.94f, 1f, 1f));
+        _instrucao.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         _statusLabel.AddThemeFontSizeOverride("font_size", 14);
 
         _capturarBtn.Pressed += TentarCaptura;
         _fecharBtn.Pressed += () => Fechar(false);
-        EstilizarBotao(_capturarBtn, new Color(0.10f, 0.40f, 0.62f, 1f), new Color(0.22f, 0.82f, 1f, 1f));
-        EstilizarBotao(_fecharBtn, new Color(0.05f, 0.06f, 0.09f, 0.96f), new Color(0.26f, 0.34f, 0.46f, 1f));
+        EstilizarBotao(_capturarBtn, new Color(0.08f, 0.28f, 0.035f, 0.94f), new Color(0.38f, 0.58f, 0.18f, 0.95f));
+        EstilizarBotao(_fecharBtn, MitharaUiTheme.TitleBg, MitharaUiTheme.Border);
 
         _progressContainer.AddThemeConstantOverride("separation", 8);
 
@@ -85,11 +81,7 @@ public partial class PetScrollMiniGame : Control
         _titleBar.CustomMinimumSize = new Vector2(0, 30);
         _titleBar.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _titleBar.MouseFilter = MouseFilterEnum.Pass;
-        _titleBar.AddThemeStyleboxOverride("panel", CriarStyle(
-            new Color(0.01f, 0.014f, 0.024f, 0.96f),
-            new Color(1.0f, 0.86f, 0.08f, 0.90f),
-            7,
-            1));
+        _titleBar.AddThemeStyleboxOverride("panel", MitharaUiTheme.TitleBar());
 
         vbox.RemoveChild(_titulo);
         _titulo.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -106,7 +98,7 @@ public partial class PetScrollMiniGame : Control
             var lbl = new Label();
             lbl.Text = "\u25CB";
             lbl.AddThemeFontSizeOverride("font_size", 24);
-            lbl.AddThemeColorOverride("font_color", new Color(0.34f, 0.45f, 0.58f, 1f));
+            lbl.AddThemeColorOverride("font_color", MitharaUiTheme.Border);
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             _progressContainer.AddChild(lbl);
             _progressIndicators.Add(lbl);
@@ -117,11 +109,7 @@ public partial class PetScrollMiniGame : Control
         vbox.MoveChild(_chancesLabel, _instrucao.GetIndex() + 1);
 
         var barPanel = new Panel();
-        barPanel.AddThemeStyleboxOverride("panel", CriarStyle(
-            new Color(0.018f, 0.022f, 0.032f, 1f),
-            new Color(0.20f, 0.62f, 0.92f, 1f),
-            5,
-            1));
+        barPanel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.95f, 5));
         _barBg = barPanel;
         _barBg.CustomMinimumSize = new Vector2(280, 18);
         _barBg.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
@@ -132,8 +120,8 @@ public partial class PetScrollMiniGame : Control
         _barGreen = new Panel();
         _barGreen.MouseFilter = MouseFilterEnum.Ignore;
         _barGreen.AddThemeStyleboxOverride("panel", CriarStyle(
-            new Color(0.05f, 0.58f, 0.82f, 0.95f),
-            new Color(0.24f, 0.86f, 1.0f, 0.95f),
+            new Color(0.07f, 0.24f, 0.08f, 0.92f),
+            new Color(0.07f, 0.24f, 0.08f, 0.92f),
             5,
             0));
         _barBg.AddChild(_barGreen);
@@ -141,8 +129,8 @@ public partial class PetScrollMiniGame : Control
         _sweetSpot = new Panel();
         _sweetSpot.MouseFilter = MouseFilterEnum.Ignore;
         _sweetSpot.AddThemeStyleboxOverride("panel", CriarStyle(
-            new Color(1.0f, 0.88f, 0.02f, 0.98f),
-            new Color(1.0f, 1.0f, 0.45f, 1f),
+            new Color(0.72f, 0.54f, 0.16f, 0.95f),
+            MitharaUiTheme.Accent,
             5,
             1));
         _barBg.AddChild(_sweetSpot);
@@ -150,7 +138,7 @@ public partial class PetScrollMiniGame : Control
         _marker = new Label();
         _marker.Text = "\u25BC";
         _marker.AddThemeFontSizeOverride("font_size", 18);
-        _marker.AddThemeColorOverride("font_color", new Color(1.0f, 0.96f, 0.08f, 1f));
+        _marker.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
         _marker.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.8f));
         _marker.AddThemeConstantOverride("shadow_offset_x", 1);
         _marker.AddThemeConstantOverride("shadow_offset_y", 1);
@@ -337,12 +325,12 @@ public partial class PetScrollMiniGame : Control
             if (i < _acertos)
             {
                 _progressIndicators[i].Text = "\u25CF";
-                _progressIndicators[i].AddThemeColorOverride("font_color", new Color(1.0f, 0.90f, 0.05f, 1f));
+                _progressIndicators[i].AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
             }
             else
             {
                 _progressIndicators[i].Text = "\u25CB";
-                _progressIndicators[i].AddThemeColorOverride("font_color", new Color(0.34f, 0.45f, 0.58f, 1f));
+                _progressIndicators[i].AddThemeColorOverride("font_color", MitharaUiTheme.Border);
             }
         }
 
@@ -398,10 +386,10 @@ public partial class PetScrollMiniGame : Control
     private static void EstilizarBotao(Button button, Color bg, Color border)
     {
         button.AddThemeFontSizeOverride("font_size", 13);
-        button.AddThemeColorOverride("font_color", new Color(0.92f, 0.96f, 1f, 1f));
+        button.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         button.AddThemeStyleboxOverride("normal", CriarStyle(bg, border, 5, 1));
         button.AddThemeStyleboxOverride("hover", CriarStyle(bg.Lightened(0.12f), border.Lightened(0.15f), 5, 1));
         button.AddThemeStyleboxOverride("pressed", CriarStyle(bg.Darkened(0.08f), border, 5, 1));
-        button.AddThemeStyleboxOverride("disabled", CriarStyle(new Color(0.08f, 0.09f, 0.11f, 0.85f), new Color(0.18f, 0.20f, 0.24f, 0.9f), 5, 1));
+        button.AddThemeStyleboxOverride("disabled", CriarStyle(new Color(0.08f, 0.09f, 0.11f, 0.85f), MitharaUiTheme.BorderMuted, 5, 1));
     }
 }

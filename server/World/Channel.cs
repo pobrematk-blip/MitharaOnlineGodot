@@ -458,6 +458,48 @@ public class Channel
         _grid.MoveEntity(mob.Id, oldX, oldY, newX, newY);
     }
 
+    private static void PruneExpiredMonsterBuffs(MonsterEntity mob, double gameTime)
+    {
+        if (mob.ActiveServerBuffs.Count == 0)
+            return;
+
+        foreach (var key in mob.ActiveServerBuffs
+            .Where(kv => kv.Value <= gameTime)
+            .Select(kv => kv.Key)
+            .ToList())
+        {
+            mob.ActiveServerBuffs.Remove(key);
+        }
+    }
+
+    private static float GetEffectiveMobSpeed(MonsterEntity mob, double gameTime)
+    {
+        if (HasMovementBlock(mob, gameTime))
+            return 0f;
+        if (HasActiveBuff(mob, "slow", gameTime))
+            return mob.Speed * 0.5f;
+        return mob.Speed;
+    }
+
+    private static bool HasHardDisable(MonsterEntity mob, double gameTime)
+    {
+        return HasActiveBuff(mob, "stun", gameTime)
+            || HasActiveBuff(mob, "freeze", gameTime)
+            || HasActiveBuff(mob, "sleep", gameTime)
+            || HasActiveBuff(mob, "prison", gameTime);
+    }
+
+    private static bool HasMovementBlock(MonsterEntity mob, double gameTime)
+    {
+        return HasHardDisable(mob, gameTime)
+            || HasActiveBuff(mob, "root", gameTime);
+    }
+
+    private static bool HasActiveBuff(MonsterEntity mob, string key, double gameTime)
+    {
+        return mob.ActiveServerBuffs.TryGetValue(key, out double until) && until > gameTime;
+    }
+
     private void UpdateMonsterAI(float dt, double gameTime)
     {
         foreach (var kv in _entities.ToList())
@@ -472,6 +514,8 @@ public class Channel
             mob.AIState = MonsterAIState.Idle;
             bool usePathfinding = PathGrid != null;
             var pathFollower = usePathfinding ? GetOrCreatePathFollower(mob.Id) : null;
+            PruneExpiredMonsterBuffs(mob, gameTime);
+            float mobSpeed = GetEffectiveMobSpeed(mob, gameTime);
 
             if (mob.TargetEntityId.HasValue)
             {
@@ -493,7 +537,7 @@ public class Channel
                     mob.Moving = false;
                     pathFollower?.Stop();
                     SetMonsterDirection(mob, dx, dy);
-                    if (gameTime - mob.LastAttackTime >= mob.AttackCooldown)
+                    if (!HasHardDisable(mob, gameTime) && gameTime - mob.LastAttackTime >= mob.AttackCooldown)
                     {
                         mob.LastAttackTime = gameTime;
                         bool targetDied = OnMonsterAttack?.Invoke(this, mob, target, gameTime) ?? false;
@@ -524,7 +568,7 @@ public class Channel
                         float oldX = mob.X;
                         float oldY = mob.Y;
 
-                        var (newX, newY, dirX, dirY, moving) = pathFollower.MoveToward(mob.X, mob.Y, mob.Speed, dt);
+                        var (newX, newY, dirX, dirY, moving) = pathFollower.MoveToward(mob.X, mob.Y, mobSpeed, dt);
 
                         if (moving)
                         {
@@ -545,7 +589,7 @@ public class Channel
                             mob.AIState = MonsterAIState.Chase;
                             float fallbackOldX = mob.X;
                             float fallbackOldY = mob.Y;
-                            float moveDist = mob.Speed * dt;
+                            float moveDist = mobSpeed * dt;
                             float ratio = Math.Min(moveDist / dist, 1f);
                             float newFx = mob.X + dx * ratio;
                             float newFy = mob.Y + dy * ratio;
@@ -569,7 +613,7 @@ public class Channel
                         float oldX = mob.X;
                         float oldY = mob.Y;
                         mob.AIState = MonsterAIState.Chase;
-                        float moveDist = mob.Speed * dt;
+                        float moveDist = mobSpeed * dt;
                         float ratio = Math.Min(moveDist / dist, 1f);
                         float newFx = mob.X + dx * ratio;
                         float newFy = mob.Y + dy * ratio;
@@ -646,7 +690,7 @@ public class Channel
                             float oldX = mob.X;
                             float oldY = mob.Y;
 
-                            var (newX, newY, dirX, dirY, moving) = pathFollower.MoveToward(mob.X, mob.Y, mob.Speed * 0.5f, dt);
+                            var (newX, newY, dirX, dirY, moving) = pathFollower.MoveToward(mob.X, mob.Y, mobSpeed * 0.5f, dt);
 
                             if (moving)
                             {
@@ -669,7 +713,7 @@ public class Channel
                                 mob.AIState = MonsterAIState.Patrol;
                                 float fallbackOldX = mob.X;
                                 float fallbackOldY = mob.Y;
-                                float moveDist = mob.Speed * dt * 0.5f;
+                                float moveDist = mobSpeed * dt * 0.5f;
                                 float ratio = Math.Min(moveDist / dist, 1f);
                                 float newFx = mob.X + dx * ratio;
                                 float newFy = mob.Y + dy * ratio;
@@ -696,7 +740,7 @@ public class Channel
                             float oldX = mob.X;
                             float oldY = mob.Y;
                             mob.AIState = MonsterAIState.Patrol;
-                            float moveDist = mob.Speed * dt * 0.5f;
+                            float moveDist = mobSpeed * dt * 0.5f;
                             float ratio = Math.Min(moveDist / dist, 1f);
                             float newFx = mob.X + dx * ratio;
                             float newFy = mob.Y + dy * ratio;
@@ -886,7 +930,7 @@ public class Channel
             if (monster == null)
                 return false;
 
-            if (!IsInNoMobZone(monster.X, monster.Y) && !IsSpawnTooClose(point, monster.X, monster.Y))
+            if (IsValidMonsterSpawn(point, monster.X, monster.Y))
             {
                 AddEntity(monster);
                 return true;
@@ -894,6 +938,17 @@ public class Channel
         }
 
         return false;
+    }
+
+    private bool IsValidMonsterSpawn(SpawnPoint point, float x, float y)
+    {
+        if (IsInNoMobZone(x, y))
+            return false;
+
+        if (PathGrid != null && !PathGrid.IsWalkableWorld(x, y))
+            return false;
+
+        return !IsSpawnTooClose(point, x, y);
     }
 
     public void ScheduleRespawn(SpawnPoint point, string prefabId, double gameTime)
@@ -921,8 +976,12 @@ public class Channel
         if (spawnPoint.KillsSinceElite < spawnPoint.EliteEveryKills)
             return;
 
-        spawnPoint.KillsSinceElite = 0;
-        TrySpawnMonster(spawnPoint, spawnPoint.ElitePrefabId, true);
+        if (TrySpawnMonster(spawnPoint, spawnPoint.ElitePrefabId, true))
+        {
+            spawnPoint.KillsSinceElite = 0;
+            spawnPoint.EliteEveryKills = SpawnerManager.RollEliteKillTarget();
+            Logger.Info($"Elite: proximo {spawnPoint.ElitePrefabId} em {spawnPoint.EliteEveryKills} morte(s) de {spawnPoint.PrefabId}.");
+        }
     }
 
     private static (float x, float y) GetRandomSpawnPosition(SpawnPoint point)

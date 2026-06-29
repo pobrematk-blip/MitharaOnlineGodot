@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Mithara.Server.Database;
 using Mithara.Server.Entities;
 using Mithara.Server.Packets;
 using Mithara.Server.Quests;
@@ -117,37 +118,71 @@ partial class GameServer
 
     private void HandleCreateCharacter(NetPeer peer, NetDataReader reader)
     {
-        string name = reader.GetString();
+        string name = reader.GetString().Trim();
         string className = reader.GetString();
         string race = reader.GetString();
 
         if (!_sessions.TryGetValue(peer, out var session)) return;
 
-        int charId = _db.CreateCharacter(session.AccountId, name, className, race);
+        if (string.IsNullOrWhiteSpace(name) || name.Length < 3 || name.Length > 20)
+        {
+            SendCreateCharacterResult(peer, false, "O nome do personagem deve ter entre 3 e 20 caracteres.");
+            return;
+        }
 
-        GiveStartingItems(charId, className);
+        if (!Regex.IsMatch(name, @"^[\p{L}\p{N}_ ]+$"))
+        {
+            SendCreateCharacterResult(peer, false, "Use apenas letras, números, espaço ou _ no nome do personagem.");
+            return;
+        }
+
+        if (_db.CharacterNameExists(name))
+        {
+            SendCreateCharacterResult(peer, false, "Já existe um personagem com este nome.");
+            return;
+        }
+
+        int? charId = _db.CreateCharacter(session.AccountId, name, className, race);
+        if (charId == null)
+        {
+            SendCreateCharacterResult(peer, false, "Já existe um personagem com este nome.");
+            return;
+        }
+
+        GiveStartingItems(charId.Value, className);
 
         var chars = _db.GetCharacters(session.AccountId);
 
-        var created = chars.FirstOrDefault(c => c.Id == charId);
+        var created = chars.FirstOrDefault(c => c.Id == charId.Value);
         if (created != null)
             session.SelectedCharacter = created;
 
-        var writer = PacketSerializer.WritePacket(PacketId.S2C_LoginResult);
-        writer.Put(true);
-        writer.Put(session.AccountId);
+        SendCreateCharacterResult(peer, true, "Personagem criado com sucesso.");
+        SendCharacterList(peer, chars);
+
+        Logger.Info($"Personagem criado: {name} (id={charId.Value})");
+    }
+
+    private void SendCreateCharacterResult(NetPeer peer, bool success, string message)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CreateCharacterResult);
+        writer.Put(success);
+        writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void SendCharacterList(NetPeer peer, List<CharacterRow> chars)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CharacterList);
         writer.Put(chars.Count);
         foreach (var ch in chars)
         {
             writer.Put(ch.SlotIndex);
             writer.Put(ch.Name);
-            writer.Put(ch.Class);
-            writer.Put(ch.Race);
             writer.Put(ch.Level);
+            writer.Put(ch.Class);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
-
-        Logger.Info($"Personagem criado: {name} (id={charId})");
     }
 
     private void HandleSelectCharacter(NetPeer peer, NetDataReader reader)
@@ -336,6 +371,8 @@ partial class GameServer
         session.ChannelId = channelId;
         session.IsTransitioning = false;
 
+        Guild? restoredGuild = null;
+
         // Restore guild membership
         var (guildId, oldEntityId, rank) = _db.GetCharacterGuildData(name);
         if (guildId >= 0)
@@ -360,7 +397,7 @@ partial class GameServer
 
                 player.GuildId = guildId;
                 player.GuildName = guild.Name;
-                WriteGuildDataPacket(peer, guild);
+                restoredGuild = guild;
             }
             else
             {
@@ -398,6 +435,9 @@ partial class GameServer
         writer.Put(player.Defense);
         writer.Put(player.StatPoints);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+
+        if (restoredGuild != null)
+            WriteGuildDataPacket(peer, restoredGuild);
 
         if (!useInline && ch != null)
         {
@@ -503,10 +543,8 @@ partial class GameServer
 
                 foreach (var lojinha in channel.Lojinhas.Values)
                 {
-                    float dx = lojinha.X - player.X;
-                    float dy = lojinha.Y - player.Y;
                     bool podeVerLojinha = lojinha.IsOpen || IsLojinhaOwner(peer, player, lojinha);
-                    if (podeVerLojinha && dx * dx + dy * dy <= Channel.AoiRadius * Channel.AoiRadius)
+                    if (podeVerLojinha)
                         SendLojinhaSpawnToPeer(peer, lojinha);
                 }
 
@@ -837,8 +875,11 @@ internal static class ServerTalentCatalog
                 };
             }
 
-            if (tree.Count > 0)
+            if (tree.Count > 0
+                && (!result.TryGetValue(className, out var currentTree) || tree.Count > currentTree.Count))
+            {
                 result[className] = tree;
+            }
         }
 
         Logger.Info($"TalentCatalog: {result.Count} árvore(s) carregada(s).");

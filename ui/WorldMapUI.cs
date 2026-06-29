@@ -98,8 +98,11 @@ public partial class WorldMapUI : Control
             return;
         }
 
-        var main = wm.GetTree().CurrentScene;
-        var hud = main?.GetNodeOrNull<CanvasLayer>("UI");
+        if (Engine.GetMainLoop() is not SceneTree tree)
+            return;
+
+        var main = tree.CurrentScene;
+        var hud = main?.GetNodeOrNull<CanvasLayer>("HUD");
         if (hud != null)
         {
             hud.AddChild(wm);

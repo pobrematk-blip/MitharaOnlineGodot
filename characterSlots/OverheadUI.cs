@@ -84,6 +84,10 @@ public partial class OverheadUI : Control
 
     private const float BarraLargura = 80f;
     private const float BarraAltura = 6f;
+    private const float LarguraLayout = 120f;
+    private const float AlturaLayout = 54f;
+    private const float LocalTopOffset = -87f;
+    private const float RemoteBottomOffset = -64f;
     private const int RaioCanto = 3;
 
     private static readonly string[] FALLBACK_EMBLEMS = {
@@ -154,16 +158,18 @@ public partial class OverheadUI : Control
 
     public override void _Ready()
     {
+        Size = new Vector2(LarguraLayout, AlturaLayout);
+
         if (GetParent() is CanvasLayer)
         {
             ZIndex = -100;
             ZAsRelative = false;
         }
 
-        if (!_remoteMode)
-            _camera = GetViewport().GetCamera2D();
-
-        if (!_remoteMode)
+        _camera = GetViewport().GetCamera2D();
+        if (_remoteMode)
+            _player = GetParent() as Player;
+        else
             _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
 
         _nomeLabel = new Label();
@@ -191,8 +197,8 @@ public partial class OverheadUI : Control
         AddChild(_guildLabel);
 
         _emblemaIcon = new TextureRect();
-        _emblemaIcon.Position = new Vector2(2, 17);
-        _emblemaIcon.Size = new Vector2(20, 20);
+        _emblemaIcon.Position = new Vector2(18, -1);
+        _emblemaIcon.Size = new Vector2(18, 18);
         _emblemaIcon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
         _emblemaIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
         _emblemaIcon.Visible = false;
@@ -296,10 +302,16 @@ public partial class OverheadUI : Control
         _nomeLabel.Text = nome;
         if (_guildLabel != null)
         {
+            bool mostrarEmblema = _emblemaIcon != null && _emblemaIcon.Visible;
+            _guildLabel.Position = mostrarEmblema ? new Vector2(38, 0) : new Vector2(0, 0);
+            _guildLabel.Size = mostrarEmblema ? new Vector2(82, 18) : new Vector2(120, 18);
+            _guildLabel.HorizontalAlignment = mostrarEmblema ? HorizontalAlignment.Left : HorizontalAlignment.Center;
             _guildLabel.Text = _mostrarTagGuild && !string.IsNullOrEmpty(_guildTag)
                 ? $"[{_guildTag}] {_guildName}"
                 : (_mostrarTagGuild ? _guildName : "");
             _guildLabel.Visible = !string.IsNullOrWhiteSpace(_guildLabel.Text);
+            if (_emblemaIcon != null)
+                _emblemaIcon.Visible = mostrarEmblema && _guildLabel.Visible;
         }
     }
 
@@ -307,11 +319,7 @@ public partial class OverheadUI : Control
     {
         if (_remoteMode)
         {
-            if (_camera == null)
-                _camera = GetViewport().GetCamera2D();
-
-            if (_camera != null && _camera.Zoom.X > 0.001f && _camera.Zoom.Y > 0.001f)
-                Scale = new Vector2(0.85f / _camera.Zoom.X, 0.85f / _camera.Zoom.Y);
+            AtualizarPosicaoRemota();
             return;
         }
         if (_player == null) return;
@@ -322,7 +330,23 @@ public partial class OverheadUI : Control
         if (_camera == null) return;
 
         Vector2 screenPos = (_player.GlobalPosition - _camera.GlobalPosition) * _camera.Zoom + GetViewportRect().Size / 2;
-        Position = screenPos + new Vector2(-60, -75);
+        Position = screenPos + new Vector2(-60, LocalTopOffset);
+    }
+
+    private void AtualizarPosicaoRemota()
+    {
+        if (_camera == null)
+            _camera = GetViewport().GetCamera2D();
+
+        float scale = 1f;
+        if (_camera != null && _camera.Zoom.X > 0.001f)
+            scale = 0.85f / _camera.Zoom.X;
+
+        Scale = new Vector2(scale, scale);
+        Position = new Vector2(
+            -(LarguraLayout * 0.5f) * scale,
+            RemoteBottomOffset - AlturaLayout * scale
+        );
     }
 
     private void Atualizar()

@@ -195,11 +195,8 @@ public partial class PartyHUD : Control
             memberPanel.CustomMinimumSize = new Vector2(0, 28);
             memberPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
-            var style = new StyleBoxFlat();
-            style.BgColor = new Color(0, 0, 0, 0.45f);
-            style.SetCornerRadiusAll(4);
-            style.BorderColor = isLeader ? new Color(0.9f, 0.7f, 0.1f, 0.6f) : new Color(0.2f, 0.2f, 0.3f, 0.5f);
-            style.SetBorderWidthAll(1);
+            var style = MitharaUiTheme.Inner(0.82f);
+            style.BorderColor = isLeader ? MitharaUiTheme.Accent : MitharaUiTheme.BorderMuted;
             memberPanel.AddThemeStyleboxOverride("panel", style);
 
             var vbox = new VBoxContainer();
@@ -234,12 +231,12 @@ public partial class PartyHUD : Control
             nameLabel.Text = $"{prefix}{nome}";
             nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             nameLabel.AddThemeFontSizeOverride("font_size", 8);
-            nameLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.95f, 1, 0.85f));
+            nameLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
 
             var levelLabel = new Label();
             levelLabel.Text = $"Lv.{level}";
             levelLabel.AddThemeFontSizeOverride("font_size", 7);
-            levelLabel.AddThemeColorOverride("font_color", new Color(0.8f, 0.8f, 0.3f, 0.8f));
+            levelLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
 
             topRow.AddChild(nameLabel);
             topRow.AddChild(levelLabel);
@@ -257,8 +254,8 @@ public partial class PartyHUD : Control
                 Value = System.Math.Clamp(hp, 0, System.Math.Max(1, maxHp)),
                 ShowPercentage = false,
             };
-            hpBar.AddThemeStyleboxOverride("background", CriarBarra(new Color(0.15f, 0.04f, 0.04f, 0.85f)));
-            hpBar.AddThemeStyleboxOverride("fill", CriarBarra(new Color(0.9f, 0.12f, 0.12f, 0.95f)));
+            hpBar.AddThemeStyleboxOverride("background", MitharaUiTheme.BarBackground(new Color(0.13f, 0.035f, 0.045f, 0.86f)));
+            hpBar.AddThemeStyleboxOverride("fill", MitharaUiTheme.Fill(new Color(0.9f, 0.12f, 0.12f, 0.95f), 2));
             bars.AddChild(hpBar);
 
             var mpBar = new ProgressBar
@@ -269,8 +266,8 @@ public partial class PartyHUD : Control
                 Value = System.Math.Clamp(mp, 0, System.Math.Max(1, maxMp)),
                 ShowPercentage = false,
             };
-            mpBar.AddThemeStyleboxOverride("background", CriarBarra(new Color(0.04f, 0.04f, 0.15f, 0.85f)));
-            mpBar.AddThemeStyleboxOverride("fill", CriarBarra(new Color(0.2f, 0.4f, 1f, 0.95f)));
+            mpBar.AddThemeStyleboxOverride("background", MitharaUiTheme.BarBackground(new Color(0.035f, 0.04f, 0.13f, 0.86f)));
+            mpBar.AddThemeStyleboxOverride("fill", MitharaUiTheme.Fill(new Color(0.2f, 0.4f, 1f, 0.95f), 2));
             bars.AddChild(mpBar);
 
             vbox.AddChild(bars);
@@ -329,12 +326,7 @@ public partial class PartyHUD : Control
         menu.Size = menu.CustomMinimumSize;
         menu.MouseFilter = MouseFilterEnum.Stop;
 
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0, 0, 0, 0.75f);
-        style.SetCornerRadiusAll(4);
-        style.BorderColor = new Color(0.3f, 0.3f, 0.45f, 0.8f);
-        style.SetBorderWidthAll(1);
-        menu.AddThemeStyleboxOverride("panel", style);
+        menu.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
         var margin = new MarginContainer();
         margin.SetAnchorsPreset(LayoutPreset.FullRect);

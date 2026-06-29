@@ -373,6 +373,10 @@ public partial class CharacterUI : Control
 
     private bool PetEstaAtivo(int petId)
     {
+        var controller = _player?.FindChild("PetController", true, false) as PetController;
+        if (controller != null)
+            return controller.PetAtivoEh(petId);
+
         if (_equipamento == null) return false;
         var slot = _equipamento.ObterSlot(TipoEquipamento.Pet);
         return slot != null && slot.Item != null && (slot.Item.ItemID - 200) == petId;
@@ -382,11 +386,12 @@ public partial class CharacterUI : Control
     {
         MostrarDetalhesPet(petId);
 
-        if (_equipamento == null) return;
+        var controller = _player?.FindChild("PetController", true, false) as PetController;
 
         if (PetEstaAtivo(petId))
         {
-            var slot = _equipamento.ObterSlot(TipoEquipamento.Pet);
+            controller?.RemoverPetAtivo();
+            var slot = _equipamento?.ObterSlot(TipoEquipamento.Pet);
             if (slot != null)
             {
                 slot.Item = null;
@@ -397,8 +402,11 @@ public partial class CharacterUI : Control
             return;
         }
 
-        var slotAtual = _equipamento.ObterSlot(TipoEquipamento.Pet);
-        if (slotAtual == null)
+        SlotInventario slotAtual = null;
+        if (_equipamento != null)
+            slotAtual = _equipamento.ObterSlot(TipoEquipamento.Pet);
+
+        if (slotAtual == null && _equipamento != null)
         {
             slotAtual = new SlotInventario();
             _equipamento.ItensEquipados[TipoEquipamento.Pet] = slotAtual;
@@ -433,15 +441,21 @@ public partial class CharacterUI : Control
             QuantidadeMaximaPorSlot = 1,
         };
 
-        if (slotAtual != null)
+        if (slotAtual != null && _equipamento != null)
         {
             slotAtual.Item = itemPet;
             slotAtual.Quantidade = 1;
             _equipamento.RecalcularBonusEquipamentos();
             _equipamento.EmitSignal(EquipamentoComponent.SignalName.EquipamentoAtualizado);
-            var controller = _player?.FindChild("PetController", true, false) as PetController;
-            controller?.CallDeferred("OnEquipamentoAtualizado");
         }
+
+        if (controller == null)
+        {
+            GD.PrintErr("[CHARACTER] PetController nao encontrado no Player; nao foi possivel invocar o pet.");
+            return;
+        }
+
+        controller.InvocarPet(entry.PetID, entry.Nome);
 
         GD.Print($"[CHARACTER] Pet '{entry.Nome}' spawnado!");
     }

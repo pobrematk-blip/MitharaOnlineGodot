@@ -14,7 +14,7 @@ public static class MobSpriteFramesBuilder
             Idle = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 2, Speed = 3f,
                 IdleDownFallback = true },
             Attack = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 6, Speed = 5f },
-            Prefix = "goblin_",
+            Death = new AnimRowConfig { Rows = [20], StartCol = 0, FrameCount = 6, Speed = 5f },
         },
         ["lobo"] = new MobSpriteConfig
         {
@@ -23,7 +23,7 @@ public static class MobSpriteFramesBuilder
             Idle = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 2, Speed = 3f,
                 IdleDownFallback = true },
             Attack = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 6, Speed = 5f },
-            Prefix = "lobo_",
+            Death = new AnimRowConfig { Rows = [20], StartCol = 0, FrameCount = 6, Speed = 5f },
         },
         ["porco"] = new MobSpriteConfig
         {
@@ -32,7 +32,7 @@ public static class MobSpriteFramesBuilder
             Idle = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 2, Speed = 3f,
                 IdleDownFallback = true },
             Attack = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 6, Speed = 5f },
-            Prefix = "porco_",
+            Death = new AnimRowConfig { Rows = [20], StartCol = 0, FrameCount = 6, Speed = 5f },
         },
         ["minotauro"] = new MobSpriteConfig
         {
@@ -41,7 +41,7 @@ public static class MobSpriteFramesBuilder
             Idle = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 2, Speed = 3f,
                 IdleDownFallback = true },
             Attack = new AnimRowConfig { Rows = [14, 13, 15, 12], StartCol = 0, FrameCount = 6, Speed = 5f },
-            Prefix = "minotauro_",
+            Death = new AnimRowConfig { Rows = [20], StartCol = 0, FrameCount = 6, Speed = 5f },
         },
     };
 
@@ -78,11 +78,6 @@ public static class MobSpriteFramesBuilder
         return frames;
     }
 
-    public static string ObterPrefixo(string mobType)
-    {
-        return Configs.TryGetValue(mobType, out var config) ? config.Prefix : "goblin_";
-    }
-
     private static SpriteFrames Build(MobSpriteConfig cfg, Texture2D sheet)
     {
         var frames = new SpriteFrames();
@@ -92,7 +87,7 @@ public static class MobSpriteFramesBuilder
         {
             string dir = Direcoes[d];
             int row = cfg.Walk.Rows[d];
-            string walkName = $"{cfg.Prefix}walk_{dir}";
+            string walkName = $"walk_{dir}";
             AdicionarAnimacao(frames, sheet, size, walkName, row, cfg.Walk.StartCol, cfg.Walk.FrameCount, true, cfg.Walk.Speed);
         }
 
@@ -101,11 +96,11 @@ public static class MobSpriteFramesBuilder
             string dir = Direcoes[d];
             int row = cfg.Idle.Rows[d];
 
-            string idleName = $"{cfg.Prefix}idle_{dir}";
+            string idleName = $"idle_{dir}";
 
             if (cfg.Idle.IdleDownFallback && dir == "down")
             {
-                string walkAnim = $"{cfg.Prefix}walk_down";
+                string walkAnim = "walk_down";
                 if (frames.HasAnimation(walkAnim))
                 {
                     var fref = frames.GetFrameTexture(walkAnim, 0);
@@ -135,8 +130,14 @@ public static class MobSpriteFramesBuilder
         {
             string dir = Direcoes[d];
             int row = cfg.Attack.Rows[d];
-            string atkName = $"{cfg.Prefix}attack_{dir}";
+            string atkName = $"attack_{dir}";
             AdicionarAnimacao(frames, sheet, size, atkName, row, cfg.Attack.StartCol, cfg.Attack.FrameCount, false, cfg.Attack.Speed);
+        }
+
+        if (cfg.Death.Rows is { Length: > 0 })
+        {
+            string deathName = "dead";
+            AdicionarAnimacao(frames, sheet, size, deathName, cfg.Death.Rows[0], cfg.Death.StartCol, cfg.Death.FrameCount, false, cfg.Death.Speed);
         }
 
         return frames;
@@ -191,7 +192,7 @@ public static class MobSpriteFramesBuilder
         public AnimRowConfig Walk;
         public AnimRowConfig Idle;
         public AnimRowConfig Attack;
-        public string Prefix;
+        public AnimRowConfig Death;
     }
 
     private struct AnimRowConfig

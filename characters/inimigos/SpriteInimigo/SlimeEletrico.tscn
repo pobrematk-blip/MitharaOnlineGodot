@@ -464,7 +464,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_lbd7n")
 }],
 "loop": false,
-"name": &"goblin_attack_down",
+"name": &"attack_down",
 "speed": 5.0
 }, {
 "frames": [{
@@ -499,7 +499,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_628v8")
 }],
 "loop": false,
-"name": &"goblin_attack_left",
+"name": &"attack_left",
 "speed": 5.0
 }, {
 "frames": [{
@@ -534,7 +534,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_v6i8o")
 }],
 "loop": false,
-"name": &"goblin_attack_right",
+"name": &"attack_right",
 "speed": 5.0
 }, {
 "frames": [{
@@ -569,7 +569,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_c74jc")
 }],
 "loop": false,
-"name": &"goblin_attack_up",
+"name": &"attack_up",
 "speed": 5.0
 }, {
 "frames": [{
@@ -604,7 +604,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_uu800")
 }],
 "loop": true,
-"name": &"goblin_dead",
+"name": &"dead",
 "speed": 5.0
 }, {
 "frames": [{
@@ -627,7 +627,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_3dhel")
 }],
 "loop": true,
-"name": &"goblin_idle_down",
+"name": &"idle_down",
 "speed": 5.0
 }, {
 "frames": [{
@@ -650,7 +650,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_d0fu6")
 }],
 "loop": true,
-"name": &"goblin_idle_left",
+"name": &"idle_left",
 "speed": 5.0
 }, {
 "frames": [{
@@ -673,7 +673,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_qxonr")
 }],
 "loop": true,
-"name": &"goblin_idle_right",
+"name": &"idle_right",
 "speed": 5.0
 }, {
 "frames": [{
@@ -696,7 +696,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_5xp7t")
 }],
 "loop": true,
-"name": &"goblin_idle_up",
+"name": &"idle_up",
 "speed": 5.0
 }, {
 "frames": [{
@@ -725,7 +725,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_s7wdg")
 }],
 "loop": true,
-"name": &"goblin_walk_down",
+"name": &"walk_down",
 "speed": 5.0
 }, {
 "frames": [{
@@ -754,7 +754,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_6s2d3")
 }],
 "loop": true,
-"name": &"goblin_walk_left",
+"name": &"walk_left",
 "speed": 5.0
 }, {
 "frames": [{
@@ -783,7 +783,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_hmbli")
 }],
 "loop": true,
-"name": &"goblin_walk_right",
+"name": &"walk_right",
 "speed": 5.0
 }, {
 "frames": [{
@@ -812,7 +812,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_6j542")
 }],
 "loop": true,
-"name": &"goblin_walk_up",
+"name": &"walk_up",
 "speed": 5.0
 }]
 
@@ -827,7 +827,7 @@ script = ExtResource("1_bebgx")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_ghvf1")
-animation = &"goblin_attack_down"
+animation = &"attack_down"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 2)

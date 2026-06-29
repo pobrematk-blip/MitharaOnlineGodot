@@ -2,6 +2,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Entities;
 using Mithara.Server.Packets;
+using System.Text.Json;
 
 namespace Mithara.Server.Network;
 
@@ -246,40 +247,44 @@ partial class GameServer
             { EndTradeSession(trade, false); return; }
         }
 
+        if (!TemEspacoParaReceber(playerA, trade.PlayerBOffers, trade.PlayerAOffers))
+        {
+            SendSystemMessage(peerA, "Inventario sem espaco para receber os itens da troca.");
+            SendSystemMessage(peerB, $"{playerA.Name} nao tem espaco no inventario.");
+            EndTradeSession(trade, false);
+            return;
+        }
+
+        if (!TemEspacoParaReceber(playerB, trade.PlayerAOffers, trade.PlayerBOffers))
+        {
+            SendSystemMessage(peerB, "Inventario sem espaco para receber os itens da troca.");
+            SendSystemMessage(peerA, $"{playerB.Name} nao tem espaco no inventario.");
+            EndTradeSession(trade, false);
+            return;
+        }
+
         foreach (var offer in trade.PlayerAOffers)
         {
             var src = playerA.Items.FirstOrDefault(i => i.Slot == offer.InventorySlot && i.ItemId == offer.ItemId);
             if (src == null) continue;
+            var recebido = ClonarItemParaTroca(src, offer.Quantity);
             src.Quantity -= offer.Quantity;
             if (src.Quantity <= 0) { playerA.Items.Remove(src); _db.DeleteItem(charIdA, src.DbId); }
             else _db.SaveItem(charIdA, src);
 
-            bool stackable = IsStackable(src.ItemId);
-            var dest = playerB.Items.FirstOrDefault(i => i.ItemId == offer.ItemId && stackable);
-            if (dest != null && stackable) { dest.Quantity += offer.Quantity; _db.SaveItem(charIdB, dest); }
-            else
-            {
-                var ni = new ItemInstance { Slot = playerB.FindEmptyInventorySlot(), ItemId = offer.ItemId, Quantity = offer.Quantity };
-                playerB.Items.Add(ni); _db.SaveItem(charIdB, ni);
-            }
+            AdicionarItemRecebido(playerB, charIdB, recebido);
         }
 
         foreach (var offer in trade.PlayerBOffers)
         {
             var src = playerB.Items.FirstOrDefault(i => i.Slot == offer.InventorySlot && i.ItemId == offer.ItemId);
             if (src == null) continue;
+            var recebido = ClonarItemParaTroca(src, offer.Quantity);
             src.Quantity -= offer.Quantity;
             if (src.Quantity <= 0) { playerB.Items.Remove(src); _db.DeleteItem(charIdB, src.DbId); }
             else _db.SaveItem(charIdB, src);
 
-            bool stackable = IsStackable(src.ItemId);
-            var dest = playerA.Items.FirstOrDefault(i => i.ItemId == offer.ItemId && stackable);
-            if (dest != null && stackable) { dest.Quantity += offer.Quantity; _db.SaveItem(charIdA, dest); }
-            else
-            {
-                var ni = new ItemInstance { Slot = playerA.FindEmptyInventorySlot(), ItemId = offer.ItemId, Quantity = offer.Quantity };
-                playerA.Items.Add(ni); _db.SaveItem(charIdA, ni);
-            }
+            AdicionarItemRecebido(playerA, charIdA, recebido);
         }
 
         SendInventoryData(peerA, playerA);
@@ -340,5 +345,88 @@ partial class GameServer
     {
         var def = ItemDefinitions.Get(itemId);
         return def != null && def.Type == ItemType.Consumable;
+    }
+
+    private bool TemEspacoParaReceber(PlayerEntity destino, List<TradeOfferItem> incoming, List<TradeOfferItem> outgoing)
+    {
+        var slotsOcupados = destino.Items
+            .Where(item => !outgoing.Any(offer =>
+                offer.InventorySlot == item.Slot &&
+                offer.ItemId == item.ItemId &&
+                item.Quantity <= offer.Quantity))
+            .Select(item => item.Slot)
+            .ToHashSet();
+
+        int slotsLivres = InventorySlotCount - slotsOcupados.Count;
+        int slotsNecessarios = 0;
+
+        foreach (var offer in incoming)
+        {
+            var def = ItemDefinitions.Get(offer.ItemId);
+            if (def == null)
+                return false;
+
+            bool stackable = IsStackable(offer.ItemId);
+            if (!stackable)
+            {
+                slotsNecessarios += Math.Max(1, offer.Quantity);
+                continue;
+            }
+
+            int maxStack = Math.Max(1, def.MaxStack);
+            int capacidadeExistente = destino.Items
+                .Where(item => item.ItemId == offer.ItemId && slotsOcupados.Contains(item.Slot))
+                .Sum(item => Math.Max(0, maxStack - item.Quantity));
+            int restante = Math.Max(0, offer.Quantity - capacidadeExistente);
+            slotsNecessarios += (int)Math.Ceiling(restante / (double)maxStack);
+        }
+
+        return slotsLivres >= slotsNecessarios;
+    }
+
+    private void AdicionarItemRecebido(PlayerEntity destino, int characterId, ItemInstance item)
+    {
+        bool stackable = IsStackable(item.ItemId);
+        if (stackable)
+        {
+            var def = ItemDefinitions.Get(item.ItemId);
+            int maxStack = Math.Max(1, def?.MaxStack ?? item.Quantity);
+            var dest = destino.Items.FirstOrDefault(i => i.ItemId == item.ItemId && i.Quantity < maxStack);
+            if (dest != null)
+            {
+                int add = Math.Min(item.Quantity, maxStack - dest.Quantity);
+                dest.Quantity += add;
+                item.Quantity -= add;
+                _db.SaveItem(characterId, dest);
+            }
+        }
+
+        while (item.Quantity > 0)
+        {
+            int qtd = stackable ? Math.Min(item.Quantity, Math.Max(1, ItemDefinitions.Get(item.ItemId)?.MaxStack ?? item.Quantity)) : item.Quantity;
+            int slot = destino.FindEmptyInventorySlot();
+            if (slot < 0)
+                throw new InvalidOperationException("Inventario sem espaco apos validacao de trade.");
+
+            var novo = ClonarItemParaTroca(item, qtd);
+            novo.Slot = slot;
+            destino.Items.Add(novo);
+            _db.SaveItem(characterId, novo);
+            item.Quantity -= qtd;
+
+            if (!stackable)
+                break;
+        }
+    }
+
+    private static ItemInstance ClonarItemParaTroca(ItemInstance origem, int quantidade)
+    {
+        return new ItemInstance
+        {
+            ItemId = origem.ItemId,
+            Quantity = quantidade,
+            RefineLevel = origem.RefineLevel,
+            Roll = JsonSerializer.Deserialize<ItemRoll>(JsonSerializer.Serialize(origem.Roll)) ?? new ItemRoll(),
+        };
     }
 }

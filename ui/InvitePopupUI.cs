@@ -21,12 +21,7 @@ public partial class InvitePopupUI : Panel
         CustomMinimumSize = new Vector2(420, 150);
         Size = CustomMinimumSize;
 
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0.08f, 0.08f, 0.12f, 0.92f);
-        style.SetCornerRadiusAll(8);
-        style.BorderColor = new Color(0.3f, 0.3f, 0.45f, 0.8f);
-        style.SetBorderWidthAll(1);
-        AddThemeStyleboxOverride("panel", style);
+        AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
         var margin = new MarginContainer();
         margin.AddThemeConstantOverride("margin_left", 12);
@@ -46,7 +41,7 @@ public partial class InvitePopupUI : Panel
             CustomMinimumSize = new Vector2(380, 52),
         };
         _titleLabel.AddThemeFontSizeOverride("font_size", 14);
-        _titleLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.95f, 1, 0.95f));
+        _titleLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         vbox.AddChild(_titleLabel);
 
         var hbox = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };

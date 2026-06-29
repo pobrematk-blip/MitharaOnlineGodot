@@ -465,6 +465,7 @@ public partial class TalentTreeUI : Control
             if (node.HabilidadeAtiva == null && nodeSkill != null)
                 node.HabilidadeAtiva = nodeSkill;
             bool isSkillNode = nodeSkill != null || node.NodeType == TalentNodeType.Skill;
+            slot.DragSkill = nodeSkill;
             slot.CanDragSkill = unlocked && isSkillNode;
             if (unlocked && isSkillNode)
                 slot.MouseDefaultCursorShape = CursorShape.Move;
@@ -1302,39 +1303,7 @@ public partial class TalentTreeUI : Control
         if (skill != null)
         {
             linhas.Add("");
-            linhas.Add($"Skill: {skill.Nome}");
-            if (skill.SkillId > 0)
-                linhas.Add($"ID: {skill.SkillId}");
-            if (!string.IsNullOrWhiteSpace(skill.Descricao))
-                linhas.Add(skill.Descricao);
-            if (skill.Valor != 0)
-                linhas.Add($"Dano/valor: {skill.Valor}");
-            if (!string.IsNullOrWhiteSpace(skill.DanoEscala))
-                linhas.Add($"Escala de dano: {skill.DanoEscala}");
-            if (!string.IsNullOrWhiteSpace(skill.EfeitoPrincipal))
-                linhas.Add($"Efeito: {skill.EfeitoPrincipal}");
-            if (!string.IsNullOrWhiteSpace(skill.Tipo))
-                linhas.Add($"Tipo: {skill.Tipo}");
-            if (!string.IsNullOrWhiteSpace(skill.Escopo))
-                linhas.Add($"Escopo: {skill.Escopo}");
-            if (!string.IsNullOrWhiteSpace(skill.BuffDebuff))
-                linhas.Add($"Buff/Debuff: {skill.BuffDebuff}");
-            if (skill.CustoMana > 0)
-                linhas.Add($"Mana: {skill.CustoMana}");
-            if (skill.Cooldown > 0)
-                linhas.Add($"Cooldown: {skill.Cooldown:0.#}s");
-            if (skill.Duracao > 0)
-                linhas.Add($"Duracao: {skill.Duracao:0.#}s");
-            else if (!string.IsNullOrWhiteSpace(skill.DuracaoTexto))
-                linhas.Add($"Duracao: {skill.DuracaoTexto}");
-            if (skill.NivelRequerido > 1)
-                linhas.Add($"Nivel da skill: {skill.NivelRequerido}");
-            if (!string.IsNullOrWhiteSpace(skill.ClasseRestrita))
-                linhas.Add($"Classe: {skill.ClasseRestrita}");
-            if (!string.IsNullOrWhiteSpace(skill.Progressao))
-                linhas.Add($"Progressao: {skill.Progressao}");
-            if (!string.IsNullOrWhiteSpace(skill.Observacoes))
-                linhas.Add($"Obs: {skill.Observacoes}");
+            linhas.Add(skill.ObterDescricaoCompleta());
         }
 
         return string.Join("\n", linhas.Where(l => !string.IsNullOrWhiteSpace(l)));

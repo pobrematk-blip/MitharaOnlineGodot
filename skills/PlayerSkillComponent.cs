@@ -1,5 +1,8 @@
 using Godot;
+using System.Globalization;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 public partial class PlayerSkillComponent : Node
 {
@@ -66,6 +69,7 @@ public partial class PlayerSkillComponent : Node
     {
         _skillCatalog.Clear();
         CarregarCatalogoDeSkillsEm("res://skills/habilidades");
+        AplicarFallbacksDoCatalogo();
         GD.Print($"[SKILLCOMP] Catálogo local de skills carregado: {_skillCatalog.Count}");
     }
 
@@ -98,5 +102,67 @@ public partial class PlayerSkillComponent : Node
             if (skill != null && skill.SkillId > 0)
                 _skillCatalog[skill.SkillId] = skill;
         }
+    }
+
+    private void AplicarFallbacksDoCatalogo()
+    {
+        foreach (var grupo in _skillCatalog.Values
+            .Where(s => s != null && !string.IsNullOrWhiteSpace(s.Nome))
+            .GroupBy(s => NormalizarNome(s.Nome)))
+        {
+            var modelo = grupo
+                .OrderByDescending(PontuarSkillPreenchida)
+                .FirstOrDefault();
+            if (modelo == null)
+                continue;
+
+            foreach (var skill in grupo)
+                PreencherCamposFaltantes(skill, modelo);
+        }
+    }
+
+    private static int PontuarSkillPreenchida(SkillResource skill)
+    {
+        int score = 0;
+        if (skill.Cooldown > 0) score += 10;
+        if (skill.CustoMana > 0) score += 10;
+        if (skill.Valor != 0) score += 8;
+        if (skill.Duracao > 0) score += 6;
+        if (!string.IsNullOrWhiteSpace(skill.DanoEscala)) score += 6;
+        if (!string.IsNullOrWhiteSpace(skill.EfeitoPrincipal)) score += 5;
+        if (!string.IsNullOrWhiteSpace(skill.BuffDebuff)) score += 4;
+        if (!string.IsNullOrWhiteSpace(skill.Descricao)) score += 3;
+        return score;
+    }
+
+    private static void PreencherCamposFaltantes(SkillResource skill, SkillResource modelo)
+    {
+        if (skill == null || modelo == null || ReferenceEquals(skill, modelo))
+            return;
+
+        if (skill.Cooldown <= 0f && modelo.Cooldown > 0f) skill.Cooldown = modelo.Cooldown;
+        if (skill.CustoMana <= 0 && modelo.CustoMana > 0) skill.CustoMana = modelo.CustoMana;
+        if (skill.Valor == 0 && modelo.Valor != 0) skill.Valor = modelo.Valor;
+        if (skill.Duracao <= 0f && modelo.Duracao > 0f) skill.Duracao = modelo.Duracao;
+        if (string.IsNullOrWhiteSpace(skill.Descricao) && !string.IsNullOrWhiteSpace(modelo.Descricao)) skill.Descricao = modelo.Descricao;
+        if (string.IsNullOrWhiteSpace(skill.DanoEscala) && !string.IsNullOrWhiteSpace(modelo.DanoEscala)) skill.DanoEscala = modelo.DanoEscala;
+        if (string.IsNullOrWhiteSpace(skill.EfeitoPrincipal) && !string.IsNullOrWhiteSpace(modelo.EfeitoPrincipal)) skill.EfeitoPrincipal = modelo.EfeitoPrincipal;
+        if (string.IsNullOrWhiteSpace(skill.BuffDebuff) && !string.IsNullOrWhiteSpace(modelo.BuffDebuff)) skill.BuffDebuff = modelo.BuffDebuff;
+        if (string.IsNullOrWhiteSpace(skill.DuracaoTexto) && !string.IsNullOrWhiteSpace(modelo.DuracaoTexto)) skill.DuracaoTexto = modelo.DuracaoTexto;
+        if (string.IsNullOrWhiteSpace(skill.Progressao) && !string.IsNullOrWhiteSpace(modelo.Progressao)) skill.Progressao = modelo.Progressao;
+        if (string.IsNullOrWhiteSpace(skill.Observacoes) && !string.IsNullOrWhiteSpace(modelo.Observacoes)) skill.Observacoes = modelo.Observacoes;
+    }
+
+    private static string NormalizarNome(string value)
+    {
+        string formD = (value ?? "").Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(formD.Length);
+        foreach (char c in formD)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return sb.ToString().Normalize(NormalizationForm.FormC).Replace(" ", "");
     }
 }

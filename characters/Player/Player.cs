@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public partial class Player : CharacterBody2D
 {
     private const float NpcInteractionRange = 180f;
+    private const float IdleTransitionDelay = 5f;
     [Signal] public delegate void StatusAtualizadoEventHandler();
 
     [Export] public float MaxSpeed = 185.0f;
@@ -21,80 +22,133 @@ public partial class Player : CharacterBody2D
     protected AnimatedSprite2D AnimatedSprite;
     private AnimatedSprite2D _cabeloOverlay;
     private AnimatedSprite2D _barbaOverlay;
-    private AnimatedSprite2D _armaOverlay;
     private AnimatedSprite2D _armaduraOverlay;
     private AnimatedSprite2D _capaceteOverlay;
     private AnimatedSprite2D _luvasOverlay;
     private AnimatedSprite2D _botasOverlay;
-    private sealed class WeaponVisualProfile
+    private SpriteFrames _spriteFramesBasePersonagem;
+    private string _nomeRacaAtual = "";
+    private string _spriteCorpoAtual = "";
+
+    private sealed class HumanFullSpriteProfile
     {
         public readonly string Nome;
         public readonly string[] PalavrasChave;
-        public readonly string BasePath;
-        public readonly string AttackPath;
+        public readonly string[] SufixosArquivo;
         public readonly int[] MovimentoRows;
         public readonly int MovimentoFrameSize;
         public readonly int[] AtaqueRows;
         public readonly int AtaqueFrameSize;
+        public readonly int AtaqueFrameCount;
 
-        public WeaponVisualProfile(string nome, string[] palavrasChave, string basePath, string attackPath,
-            int[] movimentoRows, int movimentoFrameSize, int[] ataqueRows, int ataqueFrameSize)
+        public HumanFullSpriteProfile(string nome, string[] palavrasChave, string[] sufixosArquivo,
+            int[] movimentoRows = null, int movimentoFrameSize = LpcSpriteFramesBuilder.FrameSize,
+            int[] ataqueRows = null, int ataqueFrameSize = LpcSpriteFramesBuilder.FrameSize,
+            int ataqueFrameCount = 0)
         {
             Nome = nome;
             PalavrasChave = palavrasChave;
-            BasePath = basePath;
-            AttackPath = attackPath;
+            SufixosArquivo = sufixosArquivo;
             MovimentoRows = movimentoRows;
             MovimentoFrameSize = movimentoFrameSize;
             AtaqueRows = ataqueRows;
             AtaqueFrameSize = ataqueFrameSize;
+            AtaqueFrameCount = ataqueFrameCount;
         }
     }
 
-    private static readonly WeaponVisualProfile[] WeaponVisualProfiles =
+    private static readonly HumanFullSpriteProfile HumanUnarmedProfile = new(
+        "Desarmado",
+        Array.Empty<string>(),
+        new[] { "{race} Desarmado", "{race} desarmado", "{race} com Desarmado", "{raceNoSpace}" });
+
+    private static readonly HumanFullSpriteProfile[] HumanFullSpriteProfiles =
     {
         new("Arco", new[] { "arco" },
-            "res://Itens/aparence/Armas/Arco 1.png",
-            "res://Itens/aparence/Armas/Arco 1 Attack.png",
+            new[] { "{race} com Arco" },
             new[] { 27, 28, 29, 30 }, 128,
             new[] { 16, 17, 18, 19 }, 64),
 
         new("Adaga", new[] { "adaga", "lamina", "lâmina" },
-            "res://Itens/aparence/Armas/Adaga walk.png",
-            "res://Itens/aparence/Armas/Adaga Attack.png",
-            new[] { 8, 9, 10, 11 }, 64,
-            new[] { 12, 13, 14, 15 }, 64),
+            new[] { "{race} com Adaga", "{race} de Adaga" },
+            new[] { 8, 9, 10, 11 }, 128,
+            new[] { 35, 36, 37, 38 }, 128,
+            13),
 
-        new("Espada", new[] { "espada" },
-            "res://Itens/aparence/Armas/Espada walk.png",
-            "res://Itens/aparence/Armas/Espada Attack.png",
-            new[] { 8, 9, 10, 11 }, 64,
+        new("Espada e Escudo", new[] { "espada", "escudo" },
+            new[] { "{race} com Espada e Escudo", "{race} com Espada e  Escudo", "{race} com Espada e escudo", "{race} de Espada e Escudo" },
+            new[] { 8, 9, 10, 11 }, 128,
             new[] { 28, 29, 30, 31 }, 128),
 
-        new("Machadao", new[] { "machado", "machadao", "machadão" },
-            "res://Itens/aparence/Armas/Machadao walk.png",
-            "res://Itens/aparence/Armas/Machadao Attack.png",
-            new[] { 8, 9, 10, 11 }, 64,
+        new("Machado Duas Maos", new[] { "machado duas", "machado de duas", "machadao", "machadão" },
+            new[] { "{race} com Machado de Duas Maos", "{race} com Machado de Guerra", "{race} com Machado de guerra", "{race} com Machao de Guerra", "{race} com Machao de guerra", "{race} com Machado", "{race} de Machado", "Machado de Duas mao" },
+            new[] { 8, 9, 10, 11 }, 128,
+            new[] { 29, 30, 31, 32 }, 128),
+
+        new("Machado de Coleta", new[] { "machado de coleta", "machado coleta" },
+            new[] { "{race} com Machado de Coleta" }),
+
+        new("Maca e Escudo", new[] { "maca", "maça", "mangual" },
+            new[] { "{race} com Maca e Escudo", "{race} com Mangual e escudo" },
+            new[] { 8, 9, 10, 11 }, 128,
             new[] { 29, 30, 31, 32 }, 128),
 
         new("Martelo", new[] { "martelo" },
-            "res://Itens/aparence/Armas/Martelo Walk.png",
-            "res://Itens/aparence/Armas/Martelo Attack.png",
-            new[] { 8, 9, 10, 11 }, 64,
+            new[] { "{race} com Martelo", "{race} de Martelo" }),
+
+        new("Cajado", new[] { "cajado", "staff" },
+            new[] { "{race} com Cajado", "{race} de Cajado" },
+            new[] { 8, 9, 10, 11 }, 128,
             new[] { 29, 30, 31, 32 }, 128),
 
-        new("Cristal da Staff", new[] { "cristal" },
-            "res://Itens/aparence/Armas/Cristal da Satff walk.png",
-            "res://Itens/aparence/Armas/Cristal da Staff Attack.png",
-            new[] { 8, 9, 10, 11 }, 64,
-            new[] { 29, 30, 31, 32 }, 128),
+        new("Picareta", new[] { "picareta" },
+            new[] { "{race} com Picareta", "{race} de Picareta" }),
 
-        new("Staff", new[] { "staff", "cajado" },
-            "res://Itens/aparence/Armas/Staff walk.png",
-            "res://Itens/aparence/Armas/Staff Attack.png",
-            new[] { 8, 9, 10, 11 }, 64,
-            new[] { 29, 30, 31, 32 }, 128),
+        new("Regador", new[] { "regador" },
+            new[] { "{race} com Regador", "{race} de Regador" }),
+
+        new("Vara de Pesca", new[] { "vara de pesca", "pesca" },
+            new[] { "{race} com Vara de Pesca" },
+            new[] { 8, 9, 10, 11 }, 128,
+            new[] { 12, 13, 14, 15 }, 128),
     };
+
+    public static SpriteFrames CriarSpriteFramesParaRacaClasse(string nomeRaca, string nomeClasse, out string spritesheetPath, out string perfilVisual)
+    {
+        spritesheetPath = "";
+        perfilVisual = "";
+
+        var profile = EncontrarPerfilSpritePorClasse(nomeClasse) ?? HumanUnarmedProfile;
+        Texture2D sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile, nomeRaca));
+        if (sheet == null && profile != HumanUnarmedProfile)
+        {
+            profile = HumanUnarmedProfile;
+            sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile, nomeRaca));
+        }
+
+        if (sheet == null)
+            return null;
+
+        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
+        SpriteFrames frames = profile == HumanUnarmedProfile
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : LpcSpriteFramesBuilder.ConstruirEquipamento(
+                sheet,
+                sheet,
+                prefixoAtaque,
+                profile.MovimentoRows,
+                profile.MovimentoFrameSize,
+                profile.AtaqueRows,
+                profile.AtaqueFrameSize,
+                profile.AtaqueFrameCount);
+
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            return null;
+
+        spritesheetPath = sheet.ResourcePath;
+        perfilVisual = profile.Nome;
+        return frames;
+    }
     public string CurrentDirection { get; protected set; } = "down";
     protected bool IsAttacking = false;
     private float _attackTimeoutCounter = 0f;
@@ -112,6 +166,8 @@ public partial class Player : CharacterBody2D
     private Vector2 _lastSentPosition;
     private bool _wasMoving;
     private bool _isLyingDown;
+    private float _idleTransitionTimer;
+    private bool _holdingBeforeIdle;
 
     [Export] public int MaxStamina = 100;
     public int CurrentStamina { get; private set; }
@@ -227,7 +283,6 @@ public partial class Player : CharacterBody2D
             AnimatedSprite.AnimationFinished += OnAnimationFinished;
             _cabeloOverlay = GetNodeOrNull<AnimatedSprite2D>("CabeloOverlay");
             _barbaOverlay = GetNodeOrNull<AnimatedSprite2D>("BarbaOverlay");
-            _armaOverlay = GetNodeOrNull<AnimatedSprite2D>("ArmaOverlay");
             _armaduraOverlay = GetNodeOrNull<AnimatedSprite2D>("ArmaduraOverlay");
             _capaceteOverlay = GetNodeOrNull<AnimatedSprite2D>("CapaceteOverlay");
             _luvasOverlay = GetNodeOrNull<AnimatedSprite2D>("LuvasOverlay");
@@ -591,14 +646,18 @@ public partial class Player : CharacterBody2D
         if (classe == null) return;
 
         AplicarClasse(classe);
+        _nomeRacaAtual = escolhido.Raca?.NomeRaca ?? classe.Raca?.NomeRaca ?? "";
 
         if (AnimatedSprite != null)
         {
-            var frames = classe.ObterSpriteFramesCompletos();
+            var frames = CriarSpriteFramesParaRacaClasse(_nomeRacaAtual, classe.NomeClasse, out string sheetPath, out string perfilVisual)
+                ?? classe.ObterSpriteFramesCompletos();
             if (frames != null && frames.GetAnimationNames().Length > 0)
             {
                 AnimatedSprite.SpriteFrames = frames;
-                GD.Print($"[PLAYER] Sprites aplicados: {escolhido.Raca?.NomeRaca} / {classe.NomeClasse}");
+                _spriteFramesBasePersonagem = frames;
+                _spriteCorpoAtual = string.IsNullOrWhiteSpace(perfilVisual) ? "base" : perfilVisual;
+                GD.Print($"[PLAYER] Sprites aplicados: {escolhido.Raca?.NomeRaca} / {classe.NomeClasse} / {perfilVisual} ({sheetPath})");
             }
             else
             {
@@ -904,7 +963,6 @@ public partial class Player : CharacterBody2D
 
         SincronizarOverlay(_cabeloOverlay, anim, frame, speed);
         SincronizarOverlay(_barbaOverlay, anim, frame, speed);
-        SincronizarOverlay(_armaOverlay, anim, frame, speed);
         SincronizarOverlay(_armaduraOverlay, anim, frame, speed);
         SincronizarOverlay(_capaceteOverlay, anim, frame, speed);
         SincronizarOverlay(_luvasOverlay, anim, frame, speed);
@@ -975,7 +1033,7 @@ public partial class Player : CharacterBody2D
 
         if (item.SpritesheetEquipamento != null)
         {
-            var frames = LpcSpriteFramesBuilder.Construir(item.SpritesheetEquipamento, NomeDaClasse);
+            var frames = LpcSpriteFramesBuilder.Construir(item.SpritesheetEquipamento, ObterPrefixoAtaqueAtual());
             if (frames != null && frames.GetAnimationNames().Length > 0)
             {
                 overlay.SpriteFrames = frames;
@@ -985,70 +1043,8 @@ public partial class Player : CharacterBody2D
             }
         }
 
-        if (TentarAplicarVisualArma(overlay, item))
-            return;
-
         overlay.Visible = false;
         overlay.SpriteFrames = null;
-    }
-
-    private bool TentarAplicarVisualArma(AnimatedSprite2D overlay, ItemResource item)
-    {
-        if (overlay == null || item == null)
-            return false;
-
-        if (item.Tipo != TipoEquipamento.Arma)
-            return false;
-
-        var profile = EncontrarPerfilVisualArma(item);
-        if (profile == null)
-            return false;
-
-        Texture2D baseSheet = CarregarTexturaPrimeiroExistente(profile.BasePath);
-        Texture2D ataqueSheet = CarregarTexturaPrimeiroExistente(profile.AttackPath);
-        if (baseSheet == null && ataqueSheet == null)
-        {
-            GD.PrintErr($"[APARENCIA] Nenhuma spritesheet encontrada para {profile.Nome}: {profile.BasePath} / {profile.AttackPath}");
-            return false;
-        }
-
-        var frames = LpcSpriteFramesBuilder.ConstruirEquipamento(
-            baseSheet,
-            ataqueSheet,
-            NomeDaClasse,
-            profile.MovimentoRows,
-            profile.MovimentoFrameSize,
-            profile.AtaqueRows,
-            profile.AtaqueFrameSize);
-
-        if (frames == null || frames.GetAnimationNames().Length == 0)
-            return false;
-
-        overlay.SpriteFrames = frames;
-        overlay.ZIndex = string.Equals(profile.Nome, "Arco", StringComparison.OrdinalIgnoreCase) ? -1 : 3;
-        overlay.ZAsRelative = true;
-        overlay.Visible = true;
-        GD.Print($"[APARENCIA] {profile.Nome} aplicado no personagem: item={item.Nome} base={baseSheet?.ResourcePath ?? "null"} ataque={ataqueSheet?.ResourcePath ?? "null"} animacoes={frames.GetAnimationNames().Length}");
-        SincronizarOverlays();
-        return true;
-    }
-
-    private static WeaponVisualProfile EncontrarPerfilVisualArma(ItemResource item)
-    {
-        if (item == null || string.IsNullOrWhiteSpace(item.Nome))
-            return null;
-
-        string nome = item.Nome.ToLowerInvariant();
-        foreach (var profile in WeaponVisualProfiles)
-        {
-            foreach (string palavra in profile.PalavrasChave)
-            {
-                if (!string.IsNullOrWhiteSpace(palavra) && nome.Contains(palavra.ToLowerInvariant()))
-                    return profile;
-            }
-        }
-
-        return null;
     }
 
     private static Texture2D CarregarTexturaPrimeiroExistente(params string[] paths)
@@ -1077,11 +1073,230 @@ public partial class Player : CharacterBody2D
         var equipamento = FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (equipamento == null) return;
 
-        AtualizarOverlaySlot(equipamento, TipoEquipamento.Arma, _armaOverlay);
+        AtualizarSpriteCorpoPorEquipamento(equipamento);
+
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Peitoral, _armaduraOverlay);
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Capacete, _capaceteOverlay);
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Luvas, _luvasOverlay);
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Botas, _botasOverlay);
+    }
+
+    private bool AtualizarSpriteCorpoPorEquipamento(EquipamentoComponent equipamento)
+    {
+        if (AnimatedSprite == null)
+            return false;
+
+        var arma = equipamento.ObterSlot(TipoEquipamento.Arma)?.Item;
+        var escudo = equipamento.ObterSlot(TipoEquipamento.Escudo)?.Item;
+        var profile = EncontrarPerfilSpriteHumano(arma, escudo)
+            ?? EncontrarPerfilSpritePorClasse(NomeDaClasse)
+            ?? HumanUnarmedProfile;
+
+        if (AplicarSpriteCorpoHumano(profile))
+            return true;
+
+        RestaurarSpriteBasePersonagem();
+        return false;
+    }
+
+    private bool AplicarSpriteCorpoHumano(HumanFullSpriteProfile profile)
+    {
+        if (profile == null || AnimatedSprite == null)
+            return false;
+
+        if (_spriteCorpoAtual == profile.Nome)
+            return true;
+
+        Texture2D sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile));
+        if (sheet == null)
+        {
+            GD.PrintErr($"[APARENCIA] Spritesheet nao encontrado para raca '{_nomeRacaAtual}' perfil '{profile.Nome}'.");
+            return false;
+        }
+
+        string prefixoAtaque = ObterPrefixoAtaqueAtual();
+        SpriteFrames frames = profile == HumanUnarmedProfile
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : LpcSpriteFramesBuilder.ConstruirEquipamento(
+                sheet,
+                sheet,
+                prefixoAtaque,
+                profile.MovimentoRows,
+                profile.MovimentoFrameSize,
+                profile.AtaqueRows,
+                profile.AtaqueFrameSize,
+                profile.AtaqueFrameCount);
+
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            return false;
+
+        if (profile != HumanUnarmedProfile && _spriteFramesBasePersonagem != null)
+            CopiarAnimacoesBaseParaSpriteArmado(frames, _spriteFramesBasePersonagem);
+
+        string animAtual = AnimatedSprite.Animation.ToString();
+        int frameAtual = AnimatedSprite.Frame;
+        float speedAtual = AnimatedSprite.SpeedScale;
+
+        AnimatedSprite.SpriteFrames = frames;
+        _spriteCorpoAtual = profile.Nome;
+
+        if (!string.IsNullOrWhiteSpace(animAtual) && frames.HasAnimation(animAtual))
+        {
+            AnimatedSprite.Play(animAtual);
+            int frameCount = frames.GetFrameCount(animAtual);
+            if (frameCount > 0)
+                AnimatedSprite.Frame = Mathf.Clamp(frameAtual, 0, frameCount - 1);
+            AnimatedSprite.SpeedScale = speedAtual;
+        }
+        else
+        {
+            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+            string idle = $"idle_{cardinal}";
+            if (frames.HasAnimation(idle))
+                AnimatedSprite.Play(idle);
+        }
+
+        SincronizarOverlays();
+        GD.Print($"[APARENCIA] Corpo humano aplicado: {profile.Nome} ({sheet.ResourcePath})");
+        return true;
+    }
+
+    private string[] ResolverCaminhosSpriteRaca(HumanFullSpriteProfile profile)
+    {
+        return ResolverCaminhosSpriteRaca(profile, _nomeRacaAtual);
+    }
+
+    private static string[] ResolverCaminhosSpriteRaca(HumanFullSpriteProfile profile, string nomeRaca)
+    {
+        string race = string.IsNullOrWhiteSpace(nomeRaca) ? "Humano" : nomeRaca.Trim();
+        string raceNoSpace = race.Replace(" ", "");
+        var paths = new List<string>();
+
+        foreach (string suffix in profile.SufixosArquivo)
+        {
+            string file = suffix
+                .Replace("{race}", race)
+                .Replace("{raceNoSpace}", raceNoSpace);
+
+            if (!file.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                file += ".png";
+
+            paths.Add($"{LpcSpriteFramesBuilder.PastaSpritesRaca}{file}");
+        }
+
+        return paths.ToArray();
+    }
+
+    private static void CopiarAnimacoesBaseParaSpriteArmado(SpriteFrames destino, SpriteFrames origem)
+    {
+        if (destino == null || origem == null)
+            return;
+
+        string[] direcoes = { "up", "left", "down", "right" };
+        foreach (string dir in direcoes)
+            CopiarAnimacao(destino, origem, $"idle_{dir}");
+
+        CopiarAnimacao(destino, origem, "death");
+    }
+
+    private static void CopiarAnimacao(SpriteFrames destino, SpriteFrames origem, string anim)
+    {
+        if (!origem.HasAnimation(anim))
+            return;
+
+        if (destino.HasAnimation(anim))
+            destino.RemoveAnimation(anim);
+
+        destino.AddAnimation(anim);
+        destino.SetAnimationLoop(anim, origem.GetAnimationLoop(anim));
+        destino.SetAnimationSpeed(anim, origem.GetAnimationSpeed(anim));
+
+        int frameCount = origem.GetFrameCount(anim);
+        for (int i = 0; i < frameCount; i++)
+        {
+            var frame = origem.GetFrameTexture(anim, i);
+            float duration = origem.GetFrameDuration(anim, i);
+            destino.AddFrame(anim, frame, duration);
+        }
+    }
+
+    private void RestaurarSpriteBasePersonagem()
+    {
+        if (AnimatedSprite == null || _spriteFramesBasePersonagem == null)
+            return;
+
+        if (_spriteCorpoAtual == "base")
+            return;
+
+        string animAtual = AnimatedSprite.Animation.ToString();
+        int frameAtual = AnimatedSprite.Frame;
+        float speedAtual = AnimatedSprite.SpeedScale;
+
+        AnimatedSprite.SpriteFrames = _spriteFramesBasePersonagem;
+        _spriteCorpoAtual = "base";
+
+        if (!string.IsNullOrWhiteSpace(animAtual) && _spriteFramesBasePersonagem.HasAnimation(animAtual))
+        {
+            AnimatedSprite.Play(animAtual);
+            int frameCount = _spriteFramesBasePersonagem.GetFrameCount(animAtual);
+            if (frameCount > 0)
+                AnimatedSprite.Frame = Mathf.Clamp(frameAtual, 0, frameCount - 1);
+            AnimatedSprite.SpeedScale = speedAtual;
+        }
+
+        SincronizarOverlays();
+    }
+
+    private static HumanFullSpriteProfile EncontrarPerfilSpriteHumano(params ItemResource[] itens)
+    {
+        foreach (var item in itens)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.Nome))
+                continue;
+
+            string nome = item.Nome.ToLowerInvariant();
+            foreach (var profile in HumanFullSpriteProfiles)
+            {
+                foreach (string palavra in profile.PalavrasChave)
+                {
+                    if (!string.IsNullOrWhiteSpace(palavra) && nome.Contains(palavra.ToLowerInvariant()))
+                        return profile;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static HumanFullSpriteProfile EncontrarPerfilSpritePorClasse(string nomeClasse)
+    {
+        string classe = (nomeClasse ?? "").Trim().ToLowerInvariant();
+        return classe switch
+        {
+            "arqueiro" => EncontrarPerfilSpritePorNome("Arco"),
+            "ladino" or "assassino" or "assasino" => EncontrarPerfilSpritePorNome("Adaga"),
+            "berseker" or "berserker" => EncontrarPerfilSpritePorNome("Machado Duas Maos"),
+            "guardiao" or "guradiao" or "guardião" => EncontrarPerfilSpritePorNome("Espada e Escudo"),
+            "mago" => EncontrarPerfilSpritePorNome("Cajado"),
+            "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote" => EncontrarPerfilSpritePorNome("Maca e Escudo"),
+            _ => null
+        };
+    }
+
+    private static HumanFullSpriteProfile EncontrarPerfilSpritePorNome(string nome)
+    {
+        foreach (var profile in HumanFullSpriteProfiles)
+        {
+            if (string.Equals(profile.Nome, nome, StringComparison.OrdinalIgnoreCase))
+                return profile;
+        }
+
+        return null;
+    }
+
+    private string ObterPrefixoAtaqueAtual()
+    {
+        return ClasseRegistry.ObterPrefixoAtaqueRecomendado(NomeDaClasse);
     }
 
     private void AtualizarOverlaySlot(EquipamentoComponent equipamento, TipoEquipamento tipo, AnimatedSprite2D overlay)
@@ -1098,10 +1313,8 @@ public partial class Player : CharacterBody2D
         if (item == null)
             return false;
 
-        if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
-            return true;
-
-        return item.Tipo == TipoEquipamento.Arma && EncontrarPerfilVisualArma(item) != null;
+        return item.Tipo != TipoEquipamento.Arma &&
+            (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null);
     }
 
     private void UpdateAnimation(Vector2 velocity)
@@ -1115,12 +1328,16 @@ public partial class Player : CharacterBody2D
 
         if (velocity.Length() > 10.0f)
         {
+            _idleTransitionTimer = 0f;
+            _holdingBeforeIdle = false;
             CurrentDirection = DirectionUtil.VectorToDirectionString(velocity);
             string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
 
             if (IsSprinting)
             {
-                AnimatedSprite.Play($"run_{cardinal}");
+                string runAnim = $"run_{cardinal}";
+                string walkAnim = $"walk_{cardinal}";
+                AnimatedSprite.Play(AnimatedSprite.SpriteFrames?.HasAnimation(runAnim) == true ? runAnim : walkAnim);
                 AnimatedSprite.SpeedScale = (velocity.Length() / (MaxSpeed * 1.8f)) * 1.5f;
             }
             else
@@ -1131,6 +1348,22 @@ public partial class Player : CharacterBody2D
         }
         else
         {
+            if (!currentAnim.StartsWith("idle_", StringComparison.Ordinal))
+            {
+                _idleTransitionTimer += (float)GetPhysicsProcessDeltaTime();
+                if (_idleTransitionTimer < IdleTransitionDelay)
+                {
+                    if (!_holdingBeforeIdle && AnimatedSprite.IsPlaying())
+                    {
+                        AnimatedSprite.Stop();
+                        SincronizarOverlays();
+                        _holdingBeforeIdle = true;
+                    }
+                    return;
+                }
+            }
+
+            _holdingBeforeIdle = false;
             string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
             AnimatedSprite.Play($"idle_{cardinal}");
             AnimatedSprite.SpeedScale = 1.0f; 
@@ -1149,13 +1382,14 @@ public partial class Player : CharacterBody2D
                 CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget);
         }
 
-        string animacaoDeAtaque = $"{NomeDaClasse}_attack_{CurrentDirection}";
+        string prefixoAtaque = ObterPrefixoAtaqueAtual();
+        string animacaoDeAtaque = $"{prefixoAtaque}_attack_{CurrentDirection}";
 
         // Fallback para animação cardinal se a 8-dir não existir
         if (AnimatedSprite.SpriteFrames != null && !AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
         {
             string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
-            animacaoDeAtaque = $"{NomeDaClasse}_attack_{cardinal}";
+            animacaoDeAtaque = $"{prefixoAtaque}_attack_{cardinal}";
         }
 
         if (AnimatedSprite.SpriteFrames != null && AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
@@ -1217,8 +1451,7 @@ public partial class Player : CharacterBody2D
             CurrentDirection = DirectionUtil.VectorToDirectionString(direcaoDoVetor);
         }
 
-        // Posiciona o projétil na posição do arco (ou do player, como fallback)
-        Vector2 origem = _armaOverlay?.GlobalPosition ?? GlobalPosition;
+        Vector2 origem = AnimatedSprite?.GlobalPosition ?? GlobalPosition;
         novoProjetil.GlobalPosition = origem + direcaoDoVetor * 50;
         GetParent().AddChild(novoProjetil);
 
@@ -1394,9 +1627,14 @@ public partial class Player : CharacterBody2D
 
     private void Morrer()
     {
+        if (_isLyingDown)
+            return;
+
         GD.Print("[PLAYER] O Player foi derrotado!");
         IsAttacking = false;
         _isLyingDown = true;
+        _idleTransitionTimer = 0f;
+        _holdingBeforeIdle = false;
         AddToGroup("PlayersDowned");
         Velocity = Vector2.Zero;
         SetPhysicsProcess(false);
@@ -1408,6 +1646,7 @@ public partial class Player : CharacterBody2D
             {
                 AnimatedSprite.SpriteFrames.SetAnimationLoop("death", false);
                 AnimatedSprite.Play("death");
+                AnimatedSprite.AnimationFinished -= AoTerminarMorte;
                 AnimatedSprite.AnimationFinished += AoTerminarMorte;
                 SincronizarOverlays();
             }
@@ -1417,7 +1656,7 @@ public partial class Player : CharacterBody2D
             }
         }
 
-        var respawnUI = GetNodeOrNull<RespawnUI>("/root/main/HUD/RespawnUI");
+        var respawnUI = ObterRespawnUI();
         if (respawnUI != null)
             respawnUI.ShowDeathScreen();
     }
@@ -1428,25 +1667,38 @@ public partial class Player : CharacterBody2D
         string anim = AnimatedSprite.Animation.ToString();
         if (string.Equals(anim, "death", StringComparison.Ordinal))
         {
+            int frameCount = AnimatedSprite.SpriteFrames?.GetFrameCount("death") ?? 0;
+            if (frameCount > 0)
+                AnimatedSprite.Frame = frameCount - 1;
             AnimatedSprite.Stop();
             AnimatedSprite.AnimationFinished -= AoTerminarMorte;
+            SincronizarOverlays();
         }
     }
 
     public void Reviver(float x, float y, int health, int maxHealth)
     {
         _isLyingDown = false;
+        _idleTransitionTimer = 0f;
+        _holdingBeforeIdle = false;
         RemoveFromGroup("PlayersDowned");
         GlobalPosition = new Vector2(x, y);
         SetHealthFromServer(health, maxHealth);
         SetPhysicsProcess(true);
         SetProcess(true);
 
-        var respawnUI = GetNodeOrNull<RespawnUI>("/root/main/HUD/RespawnUI");
+        var respawnUI = ObterRespawnUI();
         if (respawnUI != null)
             respawnUI.HideDeathScreen();
 
         GD.Print("[PLAYER] Reviveu!");
+    }
+
+    private RespawnUI ObterRespawnUI()
+    {
+        return GetNodeOrNull<RespawnUI>("/root/main/HUD/RespawnUI")
+            ?? GetNodeOrNull<RespawnUI>("/root/Main/HUD/RespawnUI")
+            ?? GetTree()?.CurrentScene?.FindChild("RespawnUI", true, false) as RespawnUI;
     }
 
     private bool TryReviveDownedPlayer()

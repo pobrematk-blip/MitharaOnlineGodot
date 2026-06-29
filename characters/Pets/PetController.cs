@@ -21,6 +21,35 @@ public partial class PetController : Node
 
     public bool TemPetAtivo => _petNode != null && IsInstanceValid(_petNode) && _petNode.Ativo;
 
+    public bool PetAtivoEh(int petId)
+    {
+        return TemPetAtivo && _petNode.PetID == petId;
+    }
+
+    public void InvocarPet(int petId, string petNome)
+    {
+        if (petId <= 0)
+        {
+            GD.PrintErr($"[PET] ID invalido para invocar pet: {petId}");
+            return;
+        }
+
+        if (PetAtivoEh(petId))
+        {
+            if (_hudPanel != null)
+                _hudPanel.Visible = true;
+            return;
+        }
+
+        DespawnPet();
+        SpawnPet(petId, petNome);
+    }
+
+    public void RemoverPetAtivo()
+    {
+        DespawnPet();
+    }
+
     public override void _Ready()
     {
         _player = GetParent<Player>();

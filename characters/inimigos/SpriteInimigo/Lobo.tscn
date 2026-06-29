@@ -17,7 +17,6 @@ Velocidade = 120.0
 DistanciaAtaque = 50.0
 TempoEntreAtaques = 1.0
 ExperienciaDropada = 25
-AnimPrefix = "lobo_"
 MobType = "lobo"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

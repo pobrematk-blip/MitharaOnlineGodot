@@ -10,7 +10,6 @@ collision_layer = 4
 collision_mask = 0
 script = ExtResource("1_script")
 MobType = "minotauro"
-AnimPrefix = "minotauro_"
 NomeDoInimigo = "Minotauro"
 VidaMaxima = 150
 Velocidade = 80.0

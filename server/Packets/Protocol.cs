@@ -111,6 +111,7 @@ public enum PacketId : ushort
     S2C_CharacterDeleted = 0x020D,
     S2C_LeaveWorld = 0x020E,
     S2C_PlayerAction = 0x020F,
+    S2C_CreateCharacterResult = 0x0210,
     S2C_CombatResult = 0x0220,
     S2C_EntityDamage = 0x0221,
     S2C_EntityDied = 0x0222,

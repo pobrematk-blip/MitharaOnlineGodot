@@ -5,12 +5,16 @@ public partial class BossHPBar : Panel
     private Label _nameLabel;
     private ProgressBar _hpBar;
     private Label _hpLabel;
-    private float _detectRange = 700f;
+    private VBoxContainer _contentBox;
+    private float _detectRange = 1400f;
+    private const float BarHeight = 74f;
 
     public override void _Ready()
     {
         MouseFilter = Control.MouseFilterEnum.Ignore;
-        CustomMinimumSize = new Vector2(432, 64);
+        ZIndex = 3500;
+        ZAsRelative = false;
+        CustomMinimumSize = new Vector2(520, BarHeight);
 
         var style = new StyleBoxFlat
         {
@@ -22,13 +26,13 @@ public partial class BossHPBar : Panel
         };
         AddThemeStyleboxOverride("panel", style);
 
-        var vbox = new VBoxContainer
+        _contentBox = new VBoxContainer
         {
             Position = new Vector2(16, 10),
-            Size = new Vector2(400, 44),
+            Size = new Vector2(488, 54),
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        AddChild(vbox);
+        AddChild(_contentBox);
 
         _nameLabel = new Label
         {
@@ -39,11 +43,11 @@ public partial class BossHPBar : Panel
         _nameLabel.AddThemeColorOverride("font_color", new Color(1, 0.9f, 0.1f));
         _nameLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.9f));
         _nameLabel.AddThemeConstantOverride("outline_size", 3);
-        vbox.AddChild(_nameLabel);
+        _contentBox.AddChild(_nameLabel);
 
         _hpBar = new ProgressBar
         {
-            CustomMinimumSize = new Vector2(400, 22),
+            CustomMinimumSize = new Vector2(488, 24),
             MaxValue = 1,
             Value = 1,
             ShowPercentage = false,
@@ -67,7 +71,7 @@ public partial class BossHPBar : Panel
         };
         _hpBar.AddThemeStyleboxOverride("fill", fillStyle);
         _hpBar.AddThemeStyleboxOverride("background", bgBarStyle);
-        vbox.AddChild(_hpBar);
+        _contentBox.AddChild(_hpBar);
 
         _hpLabel = new Label
         {
@@ -78,7 +82,7 @@ public partial class BossHPBar : Panel
         _hpLabel.AddThemeColorOverride("font_color", Colors.White);
         _hpLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
         _hpLabel.AddThemeConstantOverride("outline_size", 2);
-        vbox.AddChild(_hpLabel);
+        _contentBox.AddChild(_hpLabel);
 
         Hide();
     }
@@ -86,15 +90,21 @@ public partial class BossHPBar : Panel
     public override void _Process(double delta)
     {
         var vp = GetViewportRect();
-        Position = new Vector2((vp.Size.X - 432) / 2, 10);
-        Size = new Vector2(432, 64);
+        float width = Mathf.Clamp(vp.Size.X * 0.56f, 520f, 760f);
+        Position = new Vector2((vp.Size.X - width) * 0.5f, 12);
+        Size = new Vector2(width, BarHeight);
+
+        if (_contentBox != null)
+            _contentBox.Size = new Vector2(Mathf.Max(1f, width - 32f), 54);
+        if (_hpBar != null)
+            _hpBar.CustomMinimumSize = new Vector2(Mathf.Max(1f, width - 32f), 24);
 
         FindNearestBoss();
     }
 
     private void FindNearestBoss()
     {
-        var player = GetTree().GetFirstNodeInGroup("Player") as Node2D;
+        var player = ObterPlayerLocal();
         if (player == null || !player.IsInsideTree())
         {
             Hide();
@@ -126,6 +136,19 @@ public partial class BossHPBar : Panel
         {
             Hide();
         }
+    }
+
+    private Node2D ObterPlayerLocal()
+    {
+        var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+        if (player != null && player.IsInsideTree())
+            return player;
+
+        player = GetTree().GetFirstNodeInGroup("Player") as Node2D;
+        if (player != null && player.IsInsideTree())
+            return player;
+
+        return GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
     }
 
     private void UpdateBar(Inimigo boss)

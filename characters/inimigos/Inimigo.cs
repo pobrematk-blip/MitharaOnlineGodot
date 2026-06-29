@@ -12,7 +12,7 @@ public partial class Inimigo : CharacterBody2D
     [Export] public int ExperienciaDropada = 20;
     [Export] public Godot.Collections.Array<DropEntry> DropTable = new();
     [Export] public int PetID = 0;
-    [Export] public string AnimPrefix = "goblin_";
+    [Export] public string AnimPrefix = "";
     [Export] public string MobType = "goblin";
     public int Level { get; set; }
 
@@ -32,6 +32,7 @@ public partial class Inimigo : CharacterBody2D
     private bool _avisouSemNetworkId;
     private bool _avisouDanoLocalBloqueado;
     private float _serverSpeed;
+    private bool _mortoVisual;
 
     public int VidaAtual => _vidaAtual;
     public int VidaMax => VidaMaxima;
@@ -80,6 +81,12 @@ public partial class Inimigo : CharacterBody2D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (_mortoVisual)
+        {
+            Velocity = Vector2.Zero;
+            return;
+        }
+
         Velocity = Vector2.Zero;
 
         if (!IsNetworked)
@@ -126,6 +133,9 @@ public partial class Inimigo : CharacterBody2D
 
     public void SetNetworkState(Vector2 posicao, Vector2 direcao, bool moving, byte aiState = 0)
     {
+        if (_mortoVisual)
+            return;
+
         NetworkTargetPos = posicao;
         _networkMoving = moving;
         _networkAIState = aiState;
@@ -140,10 +150,16 @@ public partial class Inimigo : CharacterBody2D
         _vidaAtual = Mathf.Clamp(health, 0, VidaMaxima);
         _vidaInicializada = true;
         QueueRedraw();
+
+        if (_vidaAtual <= 0)
+            TocarMorteVisual();
     }
 
     public void AtualizarAnimacaoDeRede(Vector2 direcao, bool moving)
     {
+        if (_mortoVisual)
+            return;
+
         if (_sprite == null || _sprite.SpriteFrames == null)
             return;
 
@@ -160,10 +176,45 @@ public partial class Inimigo : CharacterBody2D
 
     public void TriggerAttackAnimation(Vector2 direction)
     {
+        if (_mortoVisual)
+            return;
+
         if (direction.LengthSquared() > 0.001f)
             AtualizarDirecaoEstavel(direction, true);
 
         TocarAnimacao($"attack_{CardinalDirection(_facingDirection)}", true);
+    }
+
+    public void TocarMorteVisual()
+    {
+        if (_mortoVisual)
+            return;
+
+        _mortoVisual = true;
+        _networkMoving = false;
+        Velocity = Vector2.Zero;
+        SetPhysicsProcess(false);
+        SetMeta("dying", true);
+        QueueRedraw();
+
+        if (_sprite?.SpriteFrames == null)
+        {
+            QueueFree();
+            return;
+        }
+
+        string anim = EncontrarAnimacaoMorte();
+        if (!string.IsNullOrEmpty(anim))
+        {
+            _sprite.SpriteFrames.SetAnimationLoop(anim, false);
+            _sprite.Play(anim);
+            _sprite.SpeedScale = 1.0f;
+        }
+        else
+        {
+            _sprite.Stop();
+            QueueFree();
+        }
     }
 
     private void AtualizarDirecaoEstavel(Vector2 direction, bool force = false)
@@ -250,6 +301,42 @@ public partial class Inimigo : CharacterBody2D
         string currentAnim = _sprite.Animation.ToString();
         if (currentAnim.Contains("attack"))
             TocarAnimacao($"idle_{CardinalDirection(_facingDirection)}", true);
+        else if (_mortoVisual && (currentAnim.Contains("dead") || currentAnim.Contains("death")))
+        {
+            QueueFree();
+        }
+    }
+
+    private string EncontrarAnimacaoMorte()
+    {
+        if (_sprite?.SpriteFrames == null)
+            return string.Empty;
+
+        string[] candidates =
+        {
+            "dead",
+            "death",
+            "death_down",
+            $"{AnimPrefix}dead",
+            $"{AnimPrefix}death",
+            $"{AnimPrefix}death_down",
+        };
+
+        foreach (string candidate in candidates)
+        {
+            if (_sprite.SpriteFrames.HasAnimation(candidate))
+                return candidate;
+        }
+
+        foreach (StringName name in _sprite.SpriteFrames.GetAnimationNames())
+        {
+            string anim = name.ToString();
+            if (anim.Contains("dead", System.StringComparison.OrdinalIgnoreCase) ||
+                anim.Contains("death", System.StringComparison.OrdinalIgnoreCase))
+                return anim;
+        }
+
+        return string.Empty;
     }
 
     private void TocarAnimacao(string suffix, bool force = false)
@@ -257,7 +344,7 @@ public partial class Inimigo : CharacterBody2D
         if (_sprite?.SpriteFrames == null)
             return;
 
-        string animationName = $"{AnimPrefix}{suffix}";
+        string animationName = suffix;
         if (!_sprite.SpriteFrames.HasAnimation(animationName))
             animationName = BuscarFallbackAnimacao(suffix);
 
@@ -277,9 +364,10 @@ public partial class Inimigo : CharacterBody2D
 
         string[] candidates =
         {
+            suffix,
+            $"{AnimPrefix}{suffix}",
+            "idle_down",
             $"{AnimPrefix}idle_down",
-            $"{MobSpriteFramesBuilder.ObterPrefixo(MobType)}idle_down",
-            "goblin_idle_down"
         };
 
         foreach (string candidate in candidates)

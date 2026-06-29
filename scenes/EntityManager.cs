@@ -589,16 +589,16 @@ public partial class EntityManager : Node
         sprite.Name = "AnimatedSprite";
         sprite.Scale = Vector2.One * 2f;
 
-        string raceFile = (race ?? "Humano").Trim() switch
-        {
-            "Dark Elfo" => "DarkElfo",
-            "Morto Vivo" => "MortoVivo",
-            _ => (race ?? "Humano").Replace(" ", "")
-        };
-        string sheetPath = LpcSpriteFramesBuilder.PastaSpritesRaca + raceFile + ".png";
+        var resolvedFrames = Player.CriarSpriteFramesParaRacaClasse(race, characterClass, out string sheetPath, out string perfilVisual);
         root.SetMeta(MetaSpritePath, sheetPath);
 
-        if (ResourceLoader.Exists(sheetPath))
+        if (resolvedFrames != null)
+        {
+            sprite.SpriteFrames = resolvedFrames;
+            sprite.Play("idle_down");
+            GameNetwork.Log($"CreatePlayerEntity: sprite frames carregados para {name} ({race}/{characterClass}/{perfilVisual})");
+        }
+        else if (!string.IsNullOrWhiteSpace(sheetPath) && ResourceLoader.Exists(sheetPath))
         {
             var sheet = ResourceLoader.Load<Texture2D>(sheetPath);
             if (sheet != null)
@@ -608,10 +608,10 @@ public partial class EntityManager : Node
                 {
                     sprite.SpriteFrames = frames;
                     sprite.Play("idle_down");
-                    GameNetwork.Log($"CreatePlayerEntity: sprite frames carregados para {name} ({raceFile})");
+                    GameNetwork.Log($"CreatePlayerEntity: sprite frames carregados para {name} ({race})");
                 }
                 else
-                    GameNetwork.Log($"CreatePlayerEntity: frames vazios para {name} ({raceFile})");
+                    GameNetwork.Log($"CreatePlayerEntity: frames vazios para {name} ({race})");
             }
             else
                 GameNetwork.Log($"CreatePlayerEntity: sheet nulo para {name} ({sheetPath})");
@@ -723,7 +723,7 @@ public partial class EntityManager : Node
             inimigo.Level = level;
             inimigo.MobType = mobType;
             inimigo.AtualizarPetPadrao();
-            inimigo.AnimPrefix = MobSpriteFramesBuilder.ObterPrefixo(mobType);
+            inimigo.AnimPrefix = "";
             inimigo.SetMeta("network_id", entityId);
             inimigo.SetMeta(MetaAnimPrefix, inimigo.AnimPrefix);
             inimigo.NetworkTargetPos = new Vector2(x, y);
@@ -1056,9 +1056,20 @@ public partial class EntityManager : Node
     {
         if (_networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node))
         {
+            if (node is Inimigo inimigo)
+            {
+                inimigo.TocarMorteVisual();
+                EsquecerEntidadeRede(entityId);
+
+                if (_gameNet != null)
+                    _gameNet.RemoveEntity(entityId);
+
+                return;
+            }
+
             node.QueueFree();
         }
-        _networkNodes.Remove(entityId);
+        EsquecerEntidadeRede(entityId);
 
         if (_gameNet != null)
             _gameNet.RemoveEntity(entityId);
@@ -1431,14 +1442,13 @@ public partial class EntityManager : Node
             };
 
             string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(ownerClass);
-            string raceFile = (ownerRace ?? "Humano").Trim() switch
+            var resolvedFrames = Player.CriarSpriteFramesParaRacaClasse(ownerRace, ownerClass, out string sheetPath, out _);
+            if (resolvedFrames != null)
             {
-                "Dark Elfo" => "DarkElfo",
-                "Morto Vivo" => "MortoVivo",
-                _ => (ownerRace ?? "Humano").Replace(" ", "")
-            };
-            string sheetPath = LpcSpriteFramesBuilder.PastaSpritesRaca + raceFile + ".png";
-            if (ResourceLoader.Exists(sheetPath))
+                sprite.SpriteFrames = resolvedFrames;
+                sprite.Play("idle_down");
+            }
+            else if (!string.IsNullOrWhiteSpace(sheetPath) && ResourceLoader.Exists(sheetPath))
             {
                 var sheet = ResourceLoader.Load<Texture2D>(sheetPath);
                 if (sheet != null)
@@ -1805,13 +1815,12 @@ public partial class EntityManager : Node
     public void RemoveNetworkEntity(ulong entityId)
     {
         if (_networkNodes.TryGetValue(entityId, out var registered) && IsInstanceValid(registered))
-            registered.QueueFree();
+        {
+            if (!EstaMorrendoVisualmente(registered))
+                registered.QueueFree();
+        }
 
-        _networkNodes.Remove(entityId);
-        _remoteStates.Remove(entityId);
-        _lastDirections.Remove(entityId);
-        _previousPositions.Remove(entityId);
-        _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
+        EsquecerEntidadeRede(entityId);
 
         // Remove também cópias órfãs criadas por pacotes duplicados de versões antigas.
         var root = GetTree()?.Root;
@@ -1824,8 +1833,25 @@ public partial class EntityManager : Node
 
             ulong candidateId = node.GetMeta("network_id").AsUInt64();
             if (candidateId == entityId)
-                node.QueueFree();
+            {
+                if (!EstaMorrendoVisualmente(node))
+                    node.QueueFree();
+            }
         }
+    }
+
+    private void EsquecerEntidadeRede(ulong entityId)
+    {
+        _networkNodes.Remove(entityId);
+        _remoteStates.Remove(entityId);
+        _lastDirections.Remove(entityId);
+        _previousPositions.Remove(entityId);
+        _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
+    }
+
+    private static bool EstaMorrendoVisualmente(Node node)
+    {
+        return node.HasMeta("dying") && node.GetMeta("dying").AsBool();
     }
 
     public override void _ExitTree()

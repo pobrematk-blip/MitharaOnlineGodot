@@ -14,6 +14,7 @@ public partial class RespawnUI : Control
     private float _waitTimer;
     private bool _isWaiting;
     private bool _isDead;
+    private bool _respawnRequested;
 
     public override void _Ready()
     {
@@ -31,20 +32,22 @@ public partial class RespawnUI : Control
 
         _panel.Visible = false;
         _timerLabel.Visible = false;
+        _waitButton.Visible = false;
     }
 
     public void ShowDeathScreen()
     {
         _isDead = true;
-        _isWaiting = false;
-        _waitTimer = 0f;
-        _titleLabel.Text = "Voc? morreu!";
-        _messageLabel.Text = "Deseja reviver agora ou aguardar ajuda?";
-        _timerLabel.Visible = false;
-        _respawnButton.Text = "Reviver Agora";
-        _waitButton.Text = "Aguardar (5:00)";
+        _isWaiting = true;
+        _respawnRequested = false;
+        _waitTimer = WaitDuration;
+        _titleLabel.Text = "Voce morreu!";
+        _messageLabel.Text = "Reviva agora ou aguarde o revive automatico.";
+        _timerLabel.Visible = true;
+        _timerLabel.Text = "Revive automatico em 5:00";
+        _respawnButton.Text = "Reviver";
+        _waitButton.Visible = false;
         _respawnButton.Disabled = false;
-        _waitButton.Disabled = false;
         _panel.Visible = true;
         Centralizar();
     }
@@ -53,16 +56,13 @@ public partial class RespawnUI : Control
     {
         _isDead = false;
         _isWaiting = false;
+        _respawnRequested = false;
         _panel.Visible = false;
     }
 
     private void OnRespawnNow()
     {
-        if (_gameNet == null || !_isDead) return;
-        _isWaiting = false;
-        _respawnButton.Disabled = true;
-        _waitButton.Disabled = true;
-        _gameNet.SendRespawn();
+        RequestRespawn();
     }
 
     private void OnWait()
@@ -85,14 +85,27 @@ public partial class RespawnUI : Control
         {
             _waitTimer = 0f;
             _isWaiting = false;
-            if (_gameNet != null)
-                _gameNet.SendRespawn();
+            RequestRespawn();
             return;
         }
 
         int minutes = Mathf.FloorToInt(_waitTimer / 60f);
         int seconds = Mathf.FloorToInt(_waitTimer % 60f);
         _timerLabel.Text = $"Revive automatico em {minutes}:{seconds:D2}";
+    }
+
+    private void RequestRespawn()
+    {
+        if (_gameNet == null || !_isDead || _respawnRequested)
+            return;
+
+        _respawnRequested = true;
+        _isWaiting = false;
+        _respawnButton.Disabled = true;
+        _waitButton.Disabled = true;
+        _messageLabel.Text = "Reviver solicitado ao servidor...";
+        _timerLabel.Text = "";
+        _gameNet.SendRespawn();
     }
 
     private void Centralizar()

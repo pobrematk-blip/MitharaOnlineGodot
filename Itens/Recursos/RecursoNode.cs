@@ -8,6 +8,9 @@ public partial class RecursoNode : StaticBody2D
     [ExportGroup("Colisao")]
     [Export] public float CapsulaRaio { get; set; } = 21f;
     [Export] public float DistanciaInteracao { get; set; } = 120f;
+    [Export] public Vector2 ColisaoBaseTamanho { get; set; } = new(34f, 22f);
+    [Export] public float ColisaoBaseOffsetY { get; set; } = 50f;
+    [Export] public float ColisaoExtraParaCima { get; set; } = 10f;
 
     private int _faseAtual = 5;
     private Sprite2D _sprite;
@@ -32,8 +35,8 @@ public partial class RecursoNode : StaticBody2D
         AddChild(_sprite);
 
         _colisao = new CollisionShape2D();
-        _colisao.Shape = new CapsuleShape2D { Radius = CapsulaRaio, Height = 21f };
-        _colisao.Position = new Vector2(0, 28);
+        _colisao.Shape = new RectangleShape2D { Size = ColisaoBaseTamanho };
+        _colisao.Position = new Vector2(0, ColisaoBaseOffsetY);
         AddChild(_colisao);
 
         _timerCrescimento = new Timer();
@@ -209,18 +212,33 @@ public partial class RecursoNode : StaticBody2D
         _sprite.Texture = tex;
         _sprite.Scale = RecursoData?.Scale ?? Vector2.One;
 
-        if (_faseAtual == 1)
-        {
-            _colisao.Position = new Vector2(0, 8);
-            ((CapsuleShape2D)_colisao.Shape).Height = 30f;
-        }
-        else
-        {
-            _colisao.Position = new Vector2(0, 28);
-            ((CapsuleShape2D)_colisao.Shape).Height = 115f;
-        }
+        AtualizarColisaoBase(tex);
 
         if (_playerPerto)
             _prompt.Visible = _faseAtual >= 5;
+    }
+
+    private void AtualizarColisaoBase(Texture2D textura)
+    {
+        if (_colisao == null)
+            return;
+
+        if (_faseAtual == 1)
+        {
+            _colisao.Shape = new RectangleShape2D { Size = new Vector2(34f, 18f) };
+            _colisao.Position = new Vector2(0, 10f);
+            return;
+        }
+
+        Vector2 escala = RecursoData?.Scale ?? Vector2.One;
+        float alturaRenderizada = textura != null ? textura.GetHeight() * escala.Y : 96f;
+        float baseY = Mathf.Max(18f, (alturaRenderizada * 0.5f) - 18f);
+
+        float extraTopo = Mathf.Max(0f, ColisaoExtraParaCima);
+        var tamanho = new Vector2(ColisaoBaseTamanho.X, ColisaoBaseTamanho.Y + extraTopo);
+        float centroY = Mathf.Max(ColisaoBaseOffsetY, baseY) - (extraTopo * 0.5f);
+
+        _colisao.Shape = new RectangleShape2D { Size = tamanho };
+        _colisao.Position = new Vector2(0, centroY);
     }
 }

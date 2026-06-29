@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=127 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -31,7 +31,8 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/006 - Purificação.tres" id="sk_27"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/007 - Aura Sagrada.tres" id="sk_28"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/008 - Guardião Celestial.tres" id="sk_29"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/009 - Avatar do Templo.tres" id="sk_30"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Templário/009 - Avatar do Templo.tres" id="sk_30"]
+
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/33.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/16.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/17.png" id="icon_sk_11"]
@@ -62,6 +63,9 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/18.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/15.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/21.png" id="icon_sk_9"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/002 - Investida.tres" id="shared_sk_2"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/003 - Postura Defensiva.tres" id="shared_sk_3"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "gua_base"
@@ -122,7 +126,7 @@ Descricao = "O Guardião reúne suas forças no meio da batalha, respirando fund
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
-Posicao = Vector2(815, 716.2)
+Posicao = Vector2(815, 676.2)
 Requisitos = PackedStringArray("gua_protetor_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -749,10 +753,46 @@ Requisitos = PackedStringArray("gua_templario_escolha_externa_3")
 CustoPontos = 1
 NivelMinimo = 70
 
+[sub_resource type="Resource" id="shared_1"]
+script = ExtResource("2_node")
+NodeId = "guashared1"
+Nome = "Segundo F?lego"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+NodeType = 1
+Posicao = Vector2(800, 945)
+Requisitos = PackedStringArray("gua_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_2"]
+script = ExtResource("2_node")
+NodeId = "guashared2"
+Nome = "Investida"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_2")
+NodeType = 1
+Posicao = Vector2(950, 1100)
+Requisitos = PackedStringArray("gua_base")
+CustoPontos = 1
+NivelMinimo = 1
+
+[sub_resource type="Resource" id="shared_3"]
+script = ExtResource("2_node")
+NodeId = "guashared3"
+Nome = "Postura Defensiva"
+Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
+HabilidadeAtiva = ExtResource("shared_sk_3")
+NodeType = 1
+Posicao = Vector2(1100, 985)
+Requisitos = PackedStringArray("gua_base")
+CustoPontos = 1
+NivelMinimo = 1
+
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Guardião"
-Nodes = Array[Resource]([SubResource("base"), SubResource("protetor_rota"), SubResource("protetor_ci1"), SubResource("protetor_ci2"), SubResource("protetor_ci3"), SubResource("protetor_s1"), SubResource("protetor_s2"), SubResource("protetor_s3"), SubResource("protetor_ul"), SubResource("protetor_ur"), SubResource("protetor_s4"), SubResource("protetor_s5"), SubResource("protetor_s6"), SubResource("protetor_s7"), SubResource("protetor_ce1"), SubResource("protetor_ce2"), SubResource("protetor_ce3"), SubResource("protetor_s8"), SubResource("protetor_s9"), SubResource("protetor_s10"), SubResource("vanguarda_rota"), SubResource("vanguarda_ci1"), SubResource("vanguarda_ci2"), SubResource("vanguarda_ci3"), SubResource("vanguarda_s1"), SubResource("vanguarda_s2"), SubResource("vanguarda_s3"), SubResource("vanguarda_ul"), SubResource("vanguarda_ur"), SubResource("vanguarda_s4"), SubResource("vanguarda_s5"), SubResource("vanguarda_s6"), SubResource("vanguarda_s7"), SubResource("vanguarda_ce1"), SubResource("vanguarda_ce2"), SubResource("vanguarda_ce3"), SubResource("vanguarda_s8"), SubResource("vanguarda_s9"), SubResource("vanguarda_s10"), SubResource("templario_rota"), SubResource("templario_ci1"), SubResource("templario_ci2"), SubResource("templario_ci3"), SubResource("templario_s1"), SubResource("templario_s2"), SubResource("templario_s3"), SubResource("templario_ul"), SubResource("templario_ur"), SubResource("templario_s4"), SubResource("templario_s5"), SubResource("templario_s6"), SubResource("templario_s7"), SubResource("templario_ce1"), SubResource("templario_ce2"), SubResource("templario_ce3"), SubResource("templario_s8"), SubResource("templario_s9"), SubResource("templario_s10")])
+Nodes = Array[Resource]([SubResource("base"), SubResource("protetor_rota"), SubResource("protetor_ci1"), SubResource("protetor_ci2"), SubResource("protetor_ci3"), SubResource("protetor_s1"), SubResource("protetor_s2"), SubResource("protetor_s3"), SubResource("protetor_ul"), SubResource("protetor_ur"), SubResource("protetor_s4"), SubResource("protetor_s5"), SubResource("protetor_s6"), SubResource("protetor_s7"), SubResource("protetor_ce1"), SubResource("protetor_ce2"), SubResource("protetor_ce3"), SubResource("protetor_s8"), SubResource("protetor_s9"), SubResource("protetor_s10"), SubResource("vanguarda_rota"), SubResource("vanguarda_ci1"), SubResource("vanguarda_ci2"), SubResource("vanguarda_ci3"), SubResource("vanguarda_s1"), SubResource("vanguarda_s2"), SubResource("vanguarda_s3"), SubResource("vanguarda_ul"), SubResource("vanguarda_ur"), SubResource("vanguarda_s4"), SubResource("vanguarda_s5"), SubResource("vanguarda_s6"), SubResource("vanguarda_s7"), SubResource("vanguarda_ce1"), SubResource("vanguarda_ce2"), SubResource("vanguarda_ce3"), SubResource("vanguarda_s8"), SubResource("vanguarda_s9"), SubResource("vanguarda_s10"), SubResource("templario_rota"), SubResource("templario_ci1"), SubResource("templario_ci2"), SubResource("templario_ci3"), SubResource("templario_s1"), SubResource("templario_s2"), SubResource("templario_s3"), SubResource("templario_ul"), SubResource("templario_ur"), SubResource("templario_s4"), SubResource("templario_s5"), SubResource("templario_s6"), SubResource("templario_s7"), SubResource("templario_ce1"), SubResource("templario_ce2"), SubResource("templario_ce3"), SubResource("templario_s8"), SubResource("templario_s9"), SubResource("templario_s10"), SubResource("shared_1"), SubResource("shared_2"), SubResource("shared_3")])
 RootNodeIds = PackedStringArray("gua_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

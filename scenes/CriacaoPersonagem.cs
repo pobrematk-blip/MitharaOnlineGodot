@@ -47,6 +47,10 @@ public partial class CriacaoPersonagem : Control
     private readonly List<RacaResource> _racasVisiveis = new();
     private Tween _tweenCaminhada;
     private bool _aguardandoFimAtaque;
+    private bool _aguardandoCriacaoServidor;
+    private string _nomePendente = "";
+    private string _classePendente = "";
+    private string _racaPendente = "";
 
     private void OnCancelar()
     {
@@ -109,7 +113,18 @@ public partial class CriacaoPersonagem : Control
         _nomeEdit.TextChanged += _ => AtualizarOverlayConfirmacao();
         _personagemPreview.AnimationFinished += OnPersonagemPreviewAnimacaoFinalizada;
 
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+            net.OnCreateCharacterResult += OnCreateCharacterResult;
+
         CallDeferred(nameof(ConfigurarAposReady));
+    }
+
+    public override void _ExitTree()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null)
+            net.OnCreateCharacterResult -= OnCreateCharacterResult;
     }
 
     private static void ConfigurarConteudoBotaoComoVisual(Button botao)
@@ -317,7 +332,8 @@ public partial class CriacaoPersonagem : Control
         if (_classeSelecionada == null || _racaSelecionada == null) return;
 
         var preview = MontarPreview();
-        var frames = preview.ObterSpriteFramesCompletos();
+        var frames = Player.CriarSpriteFramesParaRacaClasse(_racaSelecionada.NomeRaca, preview.NomeClasse, out _, out _)
+            ?? preview.ObterSpriteFramesCompletos();
         if (frames == null || !frames.HasAnimation("walk_down"))
         {
             GD.PrintErr("[CRIACAO] Sprites de caminhada (walk_down) não encontrados para o preview.");
@@ -350,7 +366,7 @@ public partial class CriacaoPersonagem : Control
 
     private void IniciarAnimacaoAtaqueEntrada(ClasseCustomResource preview)
     {
-        string prefixo = preview.ObterPrefixoAtaque();
+        string prefixo = ClasseRegistry.ObterPrefixoAtaqueRecomendado(preview.NomeClasse);
         string animAtaque = ResolverNomeAnimacaoAtaque(_personagemPreview.SpriteFrames, $"{prefixo}_attack_down");
 
         if (_personagemPreview.SpriteFrames == null || !_personagemPreview.SpriteFrames.HasAnimation(animAtaque))
@@ -562,13 +578,44 @@ public partial class CriacaoPersonagem : Control
         {
             string nomeClasse = _classeSelecionada.NomeClasse;
             string nomeRaca = _racaSelecionada.NomeRaca;
+            _nomePendente = escolhido.NomePersonagem;
+            _classePendente = nomeClasse;
+            _racaPendente = nomeRaca;
+            _aguardandoCriacaoServidor = true;
+            _btnEntrarJogo.Disabled = true;
             net.SendCreateCharacter(escolhido.NomePersonagem, nomeClasse, nomeRaca);
-            net.SendEnterWorld(escolhido.NomePersonagem, nomeClasse, nomeRaca, 230f, 300f);
             MostrarTelaCarregamento();
         }
         else
         {
             GD.PrintErr("[CRIA??O] Cria??o offline bloqueada. Conecte ao servidor para criar personagem.");
+        }
+    }
+
+    private void OnCreateCharacterResult(bool success, string message)
+    {
+        if (!_aguardandoCriacaoServidor)
+            return;
+
+        _aguardandoCriacaoServidor = false;
+        _btnEntrarJogo.Disabled = false;
+
+        var loading = GetTree().Root.GetNodeOrNull("LoadingScreen");
+        loading?.QueueFree();
+
+        if (!success)
+        {
+            if (_descricaoPersonagem != null)
+                _descricaoPersonagem.Text = message;
+            GD.PrintErr($"[CRIACAO] {message}");
+            return;
+        }
+
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net != null && net.IsConnected && net.LoggedIn)
+        {
+            MostrarTelaCarregamento();
+            net.SendEnterWorld(_nomePendente, _classePendente, _racaPendente, 230f, 300f);
         }
     }
 

@@ -37,6 +37,7 @@ public class DatabaseManager
             CREATE TABLE IF NOT EXISTS accounts (
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(255) UNIQUE NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL DEFAULT '',
                 password_hash VARCHAR(255) NOT NULL,
                 security_question VARCHAR(255) NOT NULL DEFAULT '',
                 security_answer VARCHAR(255) NOT NULL DEFAULT '',
@@ -209,6 +210,7 @@ public class DatabaseManager
         {
             ("accounts", "security_question", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "security_answer", "VARCHAR(255) NOT NULL DEFAULT ''"),
+            ("accounts", "email", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "salt", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("items", "refine_level", "INT NOT NULL DEFAULT 0"),
             ("items", "roll_data", "TEXT NOT NULL DEFAULT ''"),
@@ -271,31 +273,42 @@ public class DatabaseManager
         try
         {
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS ux_items_character_slot ON items(character_id, slot)";
+            cmd.CommandText = """
+                CREATE UNIQUE INDEX IF NOT EXISTS ux_items_character_slot ON items(character_id, slot);
+                CREATE UNIQUE INDEX IF NOT EXISTS ux_characters_name_lower ON characters (LOWER(name));
+                CREATE UNIQUE INDEX IF NOT EXISTS ux_guilds_name_lower ON guilds (LOWER(name));
+                """;
             cmd.ExecuteNonQuery();
-            Logger.Info("Indice unico ux_items_character_slot verificado.");
+            Logger.Info("Indices unicos principais verificados.");
         }
         catch (Exception ex)
         {
-            Logger.Info($"N?o foi poss?vel criar ?ndice ?nico de items: {ex.Message}");
+            Logger.Info($"N?o foi poss?vel criar todos os ?ndices ?nicos: {ex.Message}");
         }
     }
 
     public int? CreateAccount(string username, string password, string securityQuestion = "", string securityAnswer = "")
     {
+        return CreateAccount(username, $"{username}@mithara.local", password, securityQuestion, securityAnswer);
+    }
+
+    public int? CreateAccount(string username, string email, string password, string securityQuestion = "", string securityAnswer = "")
+    {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
 
         using var check = conn.CreateCommand();
-        check.CommandText = "SELECT id FROM accounts WHERE username = @u";
+        check.CommandText = "SELECT id FROM accounts WHERE username = @u OR LOWER(email) = LOWER(@e)";
         check.Parameters.AddWithValue("@u", username);
+        check.Parameters.AddWithValue("@e", email);
         var exists = check.ExecuteScalar();
         if (exists != null) return null;
 
         using var cmd = conn.CreateCommand();
         string salt = GenerateSalt();
-        cmd.CommandText = "INSERT INTO accounts (username, password_hash, security_question, security_answer, salt) VALUES (@u, @p, @q, @a, @s) RETURNING id";
+        cmd.CommandText = "INSERT INTO accounts (username, email, password_hash, security_question, security_answer, salt) VALUES (@u, @e, @p, @q, @a, @s) RETURNING id";
         cmd.Parameters.AddWithValue("@u", username);
+        cmd.Parameters.AddWithValue("@e", email);
         cmd.Parameters.AddWithValue("@p", HashPassword(password, salt));
         cmd.Parameters.AddWithValue("@q", securityQuestion);
         cmd.Parameters.AddWithValue("@a", HashPassword(securityAnswer, salt));
@@ -321,17 +334,47 @@ public class DatabaseManager
         return reader.GetInt32(0);
     }
 
-    public int CreateCharacter(int accountId, string name, string className, string race)
+    public bool CharacterNameExists(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT EXISTS (SELECT 1 FROM characters WHERE LOWER(name) = LOWER(@n))";
+        cmd.Parameters.AddWithValue("@n", name.Trim());
+        return Convert.ToBoolean(cmd.ExecuteScalar());
+    }
+
+    public int? CreateCharacter(int accountId, string name, string className, string race)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
+        using var tx = conn.BeginTransaction();
+
+        name = name.Trim();
+
+        using (var existsCmd = conn.CreateCommand())
+        {
+            existsCmd.Transaction = tx;
+            existsCmd.CommandText = "SELECT EXISTS (SELECT 1 FROM characters WHERE LOWER(name) = LOWER(@n))";
+            existsCmd.Parameters.AddWithValue("@n", name);
+            if (Convert.ToBoolean(existsCmd.ExecuteScalar()))
+            {
+                tx.Rollback();
+                return null;
+            }
+        }
 
         using var slotCmd = conn.CreateCommand();
+        slotCmd.Transaction = tx;
         slotCmd.CommandText = "SELECT COALESCE(MAX(slot_index), -1) + 1 FROM characters WHERE account_id = @a";
         slotCmd.Parameters.AddWithValue("@a", accountId);
         int slotIndex = Convert.ToInt32(slotCmd.ExecuteScalar());
 
         using var cmd = conn.CreateCommand();
+        cmd.Transaction = tx;
         cmd.CommandText = """
             INSERT INTO characters (account_id, slot_index, name, class, race, level)
             VALUES (@a, @s, @n, @c, @r, 1)
@@ -342,7 +385,17 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@n", name);
         cmd.Parameters.AddWithValue("@c", className);
         cmd.Parameters.AddWithValue("@r", race);
-        return Convert.ToInt32(cmd.ExecuteScalar());
+        try
+        {
+            int id = Convert.ToInt32(cmd.ExecuteScalar());
+            tx.Commit();
+            return id;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            tx.Rollback();
+            return null;
+        }
     }
 
     public List<CharacterRow> GetCharacters(int accountId)
@@ -393,6 +446,17 @@ public class DatabaseManager
         if (result == null || result == DBNull.Value) return null;
         string q = (string)result;
         return string.IsNullOrEmpty(q) ? null : q;
+    }
+
+    public bool AccountEmailExists(string email)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT id FROM accounts WHERE LOWER(email) = LOWER(@e)";
+        cmd.Parameters.AddWithValue("@e", email);
+        return cmd.ExecuteScalar() != null;
     }
 
     public bool RecoverPassword(string username, string answer, string newPassword)
@@ -826,7 +890,20 @@ public class DatabaseManager
         }
     }
 
-    public void SaveGuild(int guildId, string name, int level, int xp, int skillPoints)
+    public bool GuildNameExists(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT EXISTS (SELECT 1 FROM guilds WHERE LOWER(name) = LOWER(@n))";
+        cmd.Parameters.AddWithValue("@n", name.Trim());
+        return Convert.ToBoolean(cmd.ExecuteScalar());
+    }
+
+    public bool SaveGuild(int guildId, string name, int level, int xp, int skillPoints)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
@@ -840,7 +917,15 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@l", level);
         cmd.Parameters.AddWithValue("@x", xp);
         cmd.Parameters.AddWithValue("@s", skillPoints);
-        cmd.ExecuteNonQuery();
+        try
+        {
+            cmd.ExecuteNonQuery();
+            return true;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            return false;
+        }
     }
 
     public void SaveGuildMember(int guildId, ulong entityId, string name, int rank)
@@ -1398,11 +1483,12 @@ public class DatabaseManager
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"INSERT INTO accounts (id, username, password_hash, security_question, security_answer, salt)
-            VALUES (@i, @u, @p, @q, @a, @s)
-            ON CONFLICT (id) DO UPDATE SET username=@u, password_hash=@p";
+        cmd.CommandText = @"INSERT INTO accounts (id, username, email, password_hash, security_question, security_answer, salt)
+            VALUES (@i, @u, @e, @p, @q, @a, @s)
+            ON CONFLICT (id) DO UPDATE SET username=@u, email=@e, password_hash=@p";
         cmd.Parameters.AddWithValue("@i", id);
         cmd.Parameters.AddWithValue("@u", username);
+        cmd.Parameters.AddWithValue("@e", $"{username}@mithara.local");
         cmd.Parameters.AddWithValue("@p", hash);
         cmd.Parameters.AddWithValue("@q", secQ);
         cmd.Parameters.AddWithValue("@a", secA);

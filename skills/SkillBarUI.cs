@@ -35,10 +35,13 @@ public partial class SkillBarUI : Control
         RegisterInputActions();
         CallDeferred(nameof(ConnectXpBar));
         CallDeferred(nameof(ConnectVipStatus));
+        GetTree().Root.SizeChanged += CenterBar;
     }
 
     public override void _ExitTree()
     {
+        GetTree().Root.SizeChanged -= CenterBar;
+
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null)
         {
@@ -51,23 +54,12 @@ public partial class SkillBarUI : Control
     private void BuildUI()
     {
         _barContainer = new PanelContainer();
-        _barContainer.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0, 0, 0, 0.55f),
-            BorderColor = new Color(0.35f, 0.35f, 0.45f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 1,
-            BorderWidthRight = 1,
-            BorderWidthTop = 1,
-            CornerRadiusBottomLeft = 6,
-            CornerRadiusBottomRight = 6,
-            CornerRadiusTopLeft = 6,
-            CornerRadiusTopRight = 6,
-            ContentMarginBottom = 0,
-            ContentMarginLeft = 0,
-            ContentMarginRight = 0,
-            ContentMarginTop = 0,
-        });
+        var barStyle = MitharaUiTheme.Panel(0.88f);
+        barStyle.ContentMarginBottom = 0;
+        barStyle.ContentMarginLeft = 0;
+        barStyle.ContentMarginRight = 0;
+        barStyle.ContentMarginTop = 0;
+        _barContainer.AddThemeStyleboxOverride("panel", barStyle);
         AddChild(_barContainer);
 
         var vbox = new VBoxContainer();
@@ -86,19 +78,7 @@ public partial class SkillBarUI : Control
         _titleBar = new Panel();
         _titleBar.CustomMinimumSize = new Vector2(0, 18);
         _titleBar.MouseDefaultCursorShape = CursorShape.Arrow;
-        _titleBar.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0.2f, 0.2f, 0.28f, 0.8f),
-            BorderColor = new Color(0.4f, 0.4f, 0.5f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 0,
-            BorderWidthRight = 0,
-            BorderWidthTop = 0,
-            CornerRadiusBottomLeft = 0,
-            CornerRadiusBottomRight = 0,
-            CornerRadiusTopLeft = 6,
-            CornerRadiusTopRight = 6,
-        });
+        _titleBar.AddThemeStyleboxOverride("panel", MitharaUiTheme.TitleBar());
         _titleBar.GuiInput += OnTitleBarGuiInput;
         parent.AddChild(_titleBar);
 
@@ -115,7 +95,7 @@ public partial class SkillBarUI : Control
         label.SizeFlagsHorizontal = SizeFlags.Expand;
         label.SizeFlagsVertical = SizeFlags.Fill;
         label.AddThemeFontSizeOverride("font_size", 10);
-        label.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.7f));
+        label.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         hbox.AddChild(label);
 
         _lockButton = new Button();
@@ -130,19 +110,15 @@ public partial class SkillBarUI : Control
     private void BuildXpSection(VBoxContainer parent)
     {
         var xpPanel = new PanelContainer();
-        xpPanel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0, 0, 0, 0.3f),
-            BorderColor = new Color(0.2f, 0.2f, 0.3f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 0,
-            BorderWidthRight = 0,
-            BorderWidthTop = 0,
-            ContentMarginBottom = 2,
-            ContentMarginLeft = 4,
-            ContentMarginRight = 4,
-            ContentMarginTop = 2,
-        });
+        var xpStyle = MitharaUiTheme.Inner(0.58f, 0);
+        xpStyle.BorderWidthLeft = 0;
+        xpStyle.BorderWidthRight = 0;
+        xpStyle.BorderWidthTop = 0;
+        xpStyle.ContentMarginBottom = 2;
+        xpStyle.ContentMarginLeft = 4;
+        xpStyle.ContentMarginRight = 4;
+        xpStyle.ContentMarginTop = 2;
+        xpPanel.AddThemeStyleboxOverride("panel", xpStyle);
         parent.AddChild(xpPanel);
 
         var innerVBox = new VBoxContainer();
@@ -154,7 +130,7 @@ public partial class SkillBarUI : Control
         _xpLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _xpLabel.SizeFlagsHorizontal = SizeFlags.Fill;
         _xpLabel.AddThemeFontSizeOverride("font_size", 8);
-        _xpLabel.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.6f));
+        _xpLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
         innerVBox.AddChild(_xpLabel);
 
         _xpBar = new ProgressBar();
@@ -162,27 +138,8 @@ public partial class SkillBarUI : Control
         _xpBar.MaxValue = 1.0;
         _xpBar.Value = 0.0;
         _xpBar.ShowPercentage = false;
-        _xpBar.AddThemeStyleboxOverride("background", new StyleBoxFlat
-        {
-            BgColor = new Color(0.08f, 0.08f, 0.12f, 0.9f),
-            BorderColor = new Color(0.25f, 0.25f, 0.35f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 1,
-            BorderWidthRight = 1,
-            BorderWidthTop = 1,
-            CornerRadiusBottomLeft = 2,
-            CornerRadiusBottomRight = 2,
-            CornerRadiusTopLeft = 2,
-            CornerRadiusTopRight = 2,
-        });
-        _xpBar.AddThemeStyleboxOverride("fill", new StyleBoxFlat
-        {
-            BgColor = new Color(0.85f, 0.65f, 0.15f, 1.0f),
-            CornerRadiusBottomLeft = 1,
-            CornerRadiusBottomRight = 1,
-            CornerRadiusTopLeft = 1,
-            CornerRadiusTopRight = 1,
-        });
+        _xpBar.AddThemeStyleboxOverride("background", MitharaUiTheme.BarBackground(new Color(0.02f, 0.025f, 0.04f, 0.92f)));
+        _xpBar.AddThemeStyleboxOverride("fill", MitharaUiTheme.Fill(MitharaUiTheme.Accent, 2));
         innerVBox.AddChild(_xpBar);
     }
 
@@ -344,19 +301,13 @@ public partial class SkillBarUI : Control
     private void BuildSlotRows(VBoxContainer parent)
     {
         var slotPanel = new PanelContainer();
-        slotPanel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0, 0, 0, 0.35f),
-            BorderColor = new Color(0, 0, 0, 0),
-            BorderWidthBottom = 0,
-            BorderWidthLeft = 0,
-            BorderWidthRight = 0,
-            BorderWidthTop = 0,
-            ContentMarginBottom = 4,
-            ContentMarginLeft = 4,
-            ContentMarginRight = 4,
-            ContentMarginTop = 3,
-        });
+        var slotPanelStyle = MitharaUiTheme.Inner(0.45f, 0);
+        slotPanelStyle.SetBorderWidthAll(0);
+        slotPanelStyle.ContentMarginBottom = 4;
+        slotPanelStyle.ContentMarginLeft = 4;
+        slotPanelStyle.ContentMarginRight = 4;
+        slotPanelStyle.ContentMarginTop = 3;
+        slotPanel.AddThemeStyleboxOverride("panel", slotPanelStyle);
         parent.AddChild(slotPanel);
 
         var innerVBox = new VBoxContainer();
@@ -395,8 +346,8 @@ public partial class SkillBarUI : Control
         var viewportSize = GetViewportRect().Size;
         var barSize = _barContainer.Size;
         _barContainer.Position = new Vector2(
-            (viewportSize.X - barSize.X) * 0.5f + 200f,
-            viewportSize.Y - barSize.Y - 10f
+            (viewportSize.X - barSize.X) * 0.5f,
+            viewportSize.Y - barSize.Y
         );
     }
 
@@ -795,7 +746,7 @@ public partial class BuffIconUI : Panel
         _label.AddThemeColorOverride("font_color", Colors.White);
         AddChild(_label);
 
-        TooltipText = $"{_skill?.Nome}\n{_skill?.Descricao}";
+        TooltipText = _skill?.ObterDescricaoCompleta() ?? "";
         AtualizarLabel();
         SetProcess(true);
     }

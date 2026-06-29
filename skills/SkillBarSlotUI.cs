@@ -29,19 +29,7 @@ public partial class SkillBarSlotUI : Panel
         _keyName = keyName;
         _owner = owner;
         CustomMinimumSize = new Vector2(42, 42);
-        AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0.12f, 0.12f, 0.18f, 0.9f),
-            BorderColor = new Color(0.3f, 0.3f, 0.4f),
-            BorderWidthBottom = 1,
-            BorderWidthLeft = 1,
-            BorderWidthRight = 1,
-            BorderWidthTop = 1,
-            CornerRadiusBottomLeft = 3,
-            CornerRadiusBottomRight = 3,
-            CornerRadiusTopLeft = 3,
-            CornerRadiusTopRight = 3,
-        });
+        AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
 
         _icon = new TextureRect();
         _icon.Name = "Icon";
@@ -131,7 +119,7 @@ public partial class SkillBarSlotUI : Panel
         {
             _icon.Texture = _assignedSkill.Icone;
             _keyLabel.Text = _assignedSkill.Nome;
-            TooltipText = $"{_assignedSkill.Nome}\n{_assignedSkill.Descricao}";
+            TooltipText = _assignedSkill.ObterDescricaoCompleta();
         }
         else if (_assignedItem != null)
         {
@@ -149,17 +137,18 @@ public partial class SkillBarSlotUI : Panel
 
     public override bool _CanDropData(Vector2 position, Variant data)
     {
+        if (TryGetSkillFromDragData(data, out _)) return true;
+
         var obj = data.AsGodotObject();
-        if (obj is SkillResource) return true;
         if (obj is SkillBarSlotUI) return true;
         if (obj is SlotUI slot)
-            return slot.SlotInterno?.Item?.Tipo == TipoEquipamento.Consumivel;
+            return IsConsumableShortcut(slot.SlotInterno?.Item);
         return false;
     }
 
     public override void _DropData(Vector2 position, Variant data)
     {
-        if (data.AsGodotObject() is SkillResource skill && _owner != null)
+        if (TryGetSkillFromDragData(data, out var skill) && _owner != null)
         {
             _owner.AssignSkill(Row, Col, skill);
         }
@@ -177,11 +166,70 @@ public partial class SkillBarSlotUI : Panel
         else if (data.AsGodotObject() is SlotUI slot && _owner != null)
         {
             var item = slot.SlotInterno?.Item;
-            if (item != null && item.Tipo == TipoEquipamento.Consumivel)
+            if (IsConsumableShortcut(item))
             {
                 _owner.AssignItem(Row, Col, item, slot.SlotIndex);
             }
         }
+    }
+
+    private static bool IsConsumableShortcut(ItemResource item)
+    {
+        if (item == null)
+            return false;
+
+        return item.Tipo == TipoEquipamento.Consumivel
+            || (item.ItemID >= 100 && item.ItemID < 200);
+    }
+
+    private bool TryGetSkillFromDragData(Variant data, out SkillResource skill)
+    {
+        skill = null;
+
+        if (data.AsGodotObject() is SkillResource directSkill)
+        {
+            skill = directSkill;
+            return true;
+        }
+
+        if (data.VariantType != Variant.Type.Dictionary)
+            return false;
+
+        var dict = data.AsGodotDictionary();
+        string kind = GetString(dict, "kind");
+        if (!string.Equals(kind, "skill", System.StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        string skillPath = GetString(dict, "skill_path");
+        int skillId = GetInt(dict, "skill_id");
+
+        if (!string.IsNullOrWhiteSpace(skillPath))
+            skill = ResourceLoader.Load<SkillResource>(skillPath);
+
+        if (skill == null && skillId > 0)
+            skill = ResolveSkillById(skillId);
+
+        if (skill == null)
+            GD.PrintErr($"[SKILL BAR] Drop de skill recebido, mas nao consegui resolver a skill. id={skillId}, path='{skillPath}'");
+
+        return skill != null;
+    }
+
+    private static string GetString(Godot.Collections.Dictionary dict, string key)
+    {
+        return dict.ContainsKey(key) ? dict[key].AsString() : string.Empty;
+    }
+
+    private static int GetInt(Godot.Collections.Dictionary dict, string key)
+    {
+        return dict.ContainsKey(key) ? dict[key].AsInt32() : 0;
+    }
+
+    private SkillResource ResolveSkillById(int skillId)
+    {
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        var comp = player?.FindChild("PlayerSkillComponent", true, false) as PlayerSkillComponent;
+        return comp?.ObterSkillPorId(skillId);
     }
 
     public override Variant _GetDragData(Vector2 position)

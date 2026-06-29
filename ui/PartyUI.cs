@@ -272,11 +272,8 @@ public partial class PartyUI : Control
             var memberPanel = new Panel();
             memberPanel.CustomMinimumSize = new Vector2(280, 56);
 
-            var panelStyle = new StyleBoxFlat();
-            panelStyle.BgColor = new Color(0, 0, 0, 0.35f);
-            panelStyle.SetCornerRadiusAll(4);
-            panelStyle.BorderColor = isLeader ? new Color(0.9f, 0.7f, 0.1f, 0.5f) : new Color(0.2f, 0.2f, 0.3f, 0.4f);
-            panelStyle.SetBorderWidthAll(1);
+            var panelStyle = MitharaUiTheme.Inner(0.76f);
+            panelStyle.BorderColor = isLeader ? MitharaUiTheme.Accent : MitharaUiTheme.BorderMuted;
             if (isLeader)
                 panelStyle.SetBorderWidthAll(2);
             memberPanel.AddThemeStyleboxOverride("panel", panelStyle);
@@ -293,12 +290,12 @@ public partial class PartyUI : Control
             nameLabel.Text = isLeader ? $"{nome} [L]" : nome;
             nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             nameLabel.AddThemeFontSizeOverride("font_size", 12);
-            nameLabel.AddThemeColorOverride("font_color", new Color(0.95f, 0.95f, 1, 0.9f));
+            nameLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
 
             var levelLabel = new Label();
             levelLabel.Text = $"Lv.{level}";
             levelLabel.AddThemeFontSizeOverride("font_size", 11);
-            levelLabel.AddThemeColorOverride("font_color", new Color(0.8f, 0.8f, 0.3f, 0.85f));
+            levelLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
 
             topRow.AddChild(nameLabel);
             topRow.AddChild(levelLabel);
@@ -325,10 +322,8 @@ public partial class PartyUI : Control
             hpBar.MaxValue = System.Math.Max(1, maxHp);
             hpBar.Value = System.Math.Clamp(hp, 0, System.Math.Max(1, maxHp));
             hpBar.ShowPercentage = false;
-            var hpBg = new StyleBoxFlat { BgColor = new Color(0.15f, 0.04f, 0.04f, 0.85f) };
-            hpBg.SetCornerRadiusAll(3);
-            var hpFill = new StyleBoxFlat { BgColor = new Color(0.9f, 0.12f, 0.12f, 0.95f) };
-            hpFill.SetCornerRadiusAll(3);
+            var hpBg = MitharaUiTheme.BarBackground(new Color(0.13f, 0.035f, 0.045f, 0.86f));
+            var hpFill = MitharaUiTheme.Fill(new Color(0.9f, 0.12f, 0.12f, 0.95f), 3);
             hpBar.AddThemeStyleboxOverride("background", hpBg);
             hpBar.AddThemeStyleboxOverride("fill", hpFill);
             bars.AddChild(hpBar);
@@ -338,10 +333,8 @@ public partial class PartyUI : Control
             mpBar.MaxValue = System.Math.Max(1, maxMp);
             mpBar.Value = System.Math.Clamp(mp, 0, System.Math.Max(1, maxMp));
             mpBar.ShowPercentage = false;
-            var mpBg = new StyleBoxFlat { BgColor = new Color(0.04f, 0.04f, 0.15f, 0.85f) };
-            mpBg.SetCornerRadiusAll(3);
-            var mpFill = new StyleBoxFlat { BgColor = new Color(0.2f, 0.4f, 1f, 0.95f) };
-            mpFill.SetCornerRadiusAll(3);
+            var mpBg = MitharaUiTheme.BarBackground(new Color(0.035f, 0.04f, 0.13f, 0.86f));
+            var mpFill = MitharaUiTheme.Fill(new Color(0.2f, 0.4f, 1f, 0.95f), 3);
             mpBar.AddThemeStyleboxOverride("background", mpBg);
             mpBar.AddThemeStyleboxOverride("fill", mpFill);
             bars.AddChild(mpBar);

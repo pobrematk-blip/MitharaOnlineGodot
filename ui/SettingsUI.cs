@@ -20,6 +20,7 @@ public partial class SettingsUI : Control
     private Label _cameraZoomValueLabel;
     private Player _player;
     private ColorRect _brightnessOverlay;
+    private ScrollContainer _teclasScroll;
     private VBoxContainer _teclasList;
     private string _acaoEsperandoTecla;
     private Button _botaoEsperandoTecla;
@@ -29,6 +30,7 @@ public partial class SettingsUI : Control
     private CheckBox _mostrarTagCheck;
     private CheckBox _mostrarEmblemaCheck;
     private CheckBox _mostrarPartyHUDCheck;
+    private OptionButton _languageOption;
 
     private static readonly Vector2I[] Resolutions = {
         new Vector2I(1280, 720),
@@ -48,6 +50,48 @@ public partial class SettingsUI : Control
     private const string SectionCamera = "Camera";
     private const string SectionTeclas = "Teclas";
     private const string SectionUI = "UI";
+    private const string SectionLanguage = "Language";
+
+    private static readonly Dictionary<string, Key> DefaultKeyBindings = new()
+    {
+        ["mover_cima"] = Key.W,
+        ["mover_baixo"] = Key.S,
+        ["mover_esquerda"] = Key.A,
+        ["mover_direita"] = Key.D,
+        ["atacar"] = Key.E,
+        ["inventario"] = Key.I,
+        ["equipamento"] = Key.C,
+        ["editor_classe"] = Key.F1,
+        ["talent_tree"] = Key.K,
+        ["settings"] = Key.Escape,
+        ["amigos"] = Key.O,
+        ["guild"] = Key.G,
+        ["party"] = Key.P,
+        ["quest"] = Key.L,
+        ["mapa"] = Key.M,
+        ["pular"] = Key.Space,
+        ["correr"] = Key.Shift,
+        ["skill_1"] = Key.Key1,
+        ["skill_2"] = Key.Key2,
+        ["skill_3"] = Key.Key3,
+        ["skill_4"] = Key.Key4,
+        ["skill_5"] = Key.Key5,
+        ["skill_6"] = Key.Key6,
+        ["skill_7"] = Key.Key7,
+        ["skill_8"] = Key.Key8,
+        ["skill_9"] = Key.Key9,
+        ["skill_0"] = Key.Key0,
+        ["skill_f1"] = Key.F1,
+        ["skill_f2"] = Key.F2,
+        ["skill_f3"] = Key.F3,
+        ["skill_f4"] = Key.F4,
+        ["skill_f5"] = Key.F5,
+        ["skill_f6"] = Key.F6,
+        ["skill_f7"] = Key.F7,
+        ["skill_f8"] = Key.F8,
+        ["skill_f9"] = Key.F9,
+        ["skill_f10"] = Key.F10,
+    };
 
     public bool EstaAberto => _panel != null && _panel.Visible;
 
@@ -70,6 +114,7 @@ public partial class SettingsUI : Control
         _cameraZoomValueLabel = _tabContainer.GetNode<Label>("Camera/ZoomValueLabel");
 
         _brightnessOverlay = GetNode<ColorRect>("BrightnessOverlay");
+        _teclasScroll = _tabContainer.GetNode<ScrollContainer>("Teclas/ScrollContainer");
         _teclasList = _tabContainer.GetNode<VBoxContainer>("Teclas/ScrollContainer/TeclasList");
 
         _mostrarNomeCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarNomeCheck");
@@ -78,6 +123,8 @@ public partial class SettingsUI : Control
         _mostrarTagCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarTagCheck");
         _mostrarEmblemaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarEmblemaCheck");
         _mostrarPartyHUDCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarPartyHUDCheck");
+        PrepararAbaTeclas();
+        PrepararControleIdioma();
         PrepararAbaUIScroll();
 
         PopulateResolutions();
@@ -90,6 +137,7 @@ public partial class SettingsUI : Control
         _mostrarTagCheck.Toggled += OnMostrarTagToggled;
         _mostrarEmblemaCheck.Toggled += OnMostrarEmblemaToggled;
         _mostrarPartyHUDCheck.Toggled += OnMostrarPartyHUDToggled;
+        _languageOption.ItemSelected += OnLanguageSelected;
 
         AplicarOverheadUIDoCheckbox();
 
@@ -164,6 +212,56 @@ public partial class SettingsUI : Control
                 }
             }
         }
+    }
+
+    private void PrepararAbaTeclas()
+    {
+        _panel.ClipContents = true;
+        _tabContainer.ClipContents = true;
+
+        var teclasTab = _tabContainer.GetNodeOrNull<VBoxContainer>("Teclas");
+        if (teclasTab != null)
+        {
+            teclasTab.ClipContents = true;
+            teclasTab.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            teclasTab.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
+        _teclasScroll.ClipContents = true;
+        _teclasScroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _teclasScroll.SizeFlagsVertical = SizeFlags.ExpandFill;
+        _teclasScroll.CustomMinimumSize = Vector2.Zero;
+
+        _teclasList.ClipContents = true;
+        _teclasList.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+    }
+
+    private void PrepararControleIdioma()
+    {
+        var uiTab = _tabContainer.GetNodeOrNull<VBoxContainer>("UI");
+        if (uiTab == null || uiTab.GetNodeOrNull<OptionButton>("LanguageOptionRuntime") != null)
+            return;
+
+        var title = new Label
+        {
+            Text = "Idioma",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        title.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.85f));
+
+        _languageOption = new OptionButton
+        {
+            Name = "LanguageOptionRuntime",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            TooltipText = "Sistema de idioma preparado para traduções futuras.",
+        };
+        _languageOption.AddItem("Português", 0);
+        _languageOption.AddItem("English", 1);
+        _languageOption.AddItem("Español", 2);
+        _languageOption.Selected = 0;
+
+        uiTab.AddChild(title);
+        uiTab.AddChild(_languageOption);
     }
 
     private void CriarBotaoToggle()
@@ -385,6 +483,12 @@ public partial class SettingsUI : Control
         }
     }
 
+    private void OnLanguageSelected(long index)
+    {
+        SaveSettings();
+        GD.Print($"[SETTINGS] Idioma selecionado: {_languageOption.GetItemText((int)index)}");
+    }
+
     private static void AplicarOverheadUI(string propriedade, bool value)
     {
         if (Engine.GetMainLoop() is not SceneTree tree) return;
@@ -408,6 +512,15 @@ public partial class SettingsUI : Control
         foreach (var child in _teclasList.GetChildren())
             child.QueueFree();
 
+        var resetBtn = new Button
+        {
+            Text = "Restaurar teclas padrão",
+            CustomMinimumSize = new Vector2(0, 30),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        resetBtn.Pressed += ResetarTeclasPadrao;
+        _teclasList.AddChild(resetBtn);
+
         string[] ignorar = { "ui_focus_next", "ui_focus_prev", "ui_left", "ui_right", "ui_up", "ui_down" };
 
         foreach (var nome in InputMap.GetActions())
@@ -417,28 +530,31 @@ public partial class SettingsUI : Control
             if (nomeStr.StartsWith("ui_")) continue;
 
             var hbox = new HBoxContainer();
+            hbox.ClipContents = true;
             hbox.AddThemeConstantOverride("separation", 8);
             hbox.CustomMinimumSize = new Vector2(0, 32);
             hbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
-            var label = new Label();
-            label.Text = NomeAmigavel(nomeStr);
-            label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            label.ClipText = true;
-            label.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.85f));
-            label.CustomMinimumSize = new Vector2(110, 0);
-
             var keyBtn = new Button();
-            keyBtn.CustomMinimumSize = new Vector2(96, 28);
+            keyBtn.CustomMinimumSize = new Vector2(104, 28);
+            keyBtn.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
             keyBtn.ClipText = true;
             keyBtn.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.9f));
             string acao = nomeStr;
             keyBtn.Pressed += () => IniciarRebinding(acao, keyBtn);
             AtualizarTextoTecla(keyBtn, acao);
 
-            hbox.AddChild(label);
             hbox.AddChild(keyBtn);
+
+            var label = new Label();
+            label.Text = DescricaoAcao(nomeStr);
+            label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            label.ClipText = true;
+            label.AddThemeColorOverride("font_color", new Color(1, 1, 1, 0.85f));
+            label.CustomMinimumSize = new Vector2(210, 0);
+            hbox.AddChild(label);
+
             _teclasList.AddChild(hbox);
         }
     }
@@ -469,17 +585,74 @@ public partial class SettingsUI : Control
         };
     }
 
+    private string DescricaoAcao(string nome)
+    {
+        if (nome.StartsWith("skill_f"))
+            return $"Usar habilidade da linha superior {nome.Replace("skill_f", "F")}";
+        if (nome.StartsWith("skill_"))
+            return $"Usar habilidade da linha inferior {nome.Replace("skill_", "").Replace("0", "10")}";
+
+        return nome switch
+        {
+            "mover_cima" => "Mover personagem para cima",
+            "mover_baixo" => "Mover personagem para baixo",
+            "mover_esquerda" => "Mover personagem para a esquerda",
+            "mover_direita" => "Mover personagem para a direita",
+            "atacar" => "Interagir ou atacar alvo",
+            "pular" => "Pular",
+            "correr" => "Correr enquanto estiver pressionado",
+            "inventario" => "Abrir inventário",
+            "equipamento" => "Abrir equipamentos do personagem",
+            "banco" => "Abrir banco quando disponível",
+            "talent_tree" => "Abrir árvore de talentos",
+            "editor_classe" => "Abrir editor de classe",
+            "settings" => "Abrir ou fechar configurações",
+            "amigos" => "Abrir lista de amigos",
+            "guild" => "Abrir painel da guilda",
+            "party" => "Abrir painel do grupo",
+            "quest" => "Abrir missões",
+            "mapa" => "Abrir mapa",
+            _ => NomeAmigavel(nome),
+        };
+    }
+
     private void AtualizarTextoTecla(Button btn, string acao)
     {
         foreach (var evento in InputMap.ActionGetEvents(acao))
         {
             if (evento is InputEventKey keyEvent)
             {
-                btn.Text = keyEvent.AsText();
+                btn.Text = keyEvent.AsText().Replace(" (Physical)", "").Replace("(Physical)", "").Trim();
                 return;
             }
         }
         btn.Text = "Nenhuma";
+    }
+
+    private void ResetarTeclasPadrao()
+    {
+        foreach (var (acao, key) in DefaultKeyBindings)
+        {
+            if (!InputMap.HasAction(acao))
+                InputMap.AddAction(acao);
+
+            var apagar = new List<InputEvent>();
+            foreach (var e in InputMap.ActionGetEvents(acao))
+            {
+                if (e is InputEventKey)
+                    apagar.Add(e);
+            }
+            foreach (var e in apagar)
+                InputMap.ActionEraseEvent(acao, e);
+
+            var novo = new InputEventKey { Keycode = key };
+            InputMap.ActionAddEvent(acao, novo);
+        }
+
+        _acaoEsperandoTecla = null;
+        _botaoEsperandoTecla = null;
+        PopularTeclas();
+        SaveSettings();
     }
 
     private void IniciarRebinding(string acao, Button btn)
@@ -561,6 +734,7 @@ public partial class SettingsUI : Control
         cfg.SetValue(SectionUI, "mostrar_tag_guild", _mostrarTagCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_emblema_guild", _mostrarEmblemaCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_party_hud", _mostrarPartyHUDCheck.ButtonPressed);
+        cfg.SetValue(SectionLanguage, "selected", _languageOption?.Selected ?? 0);
 
         foreach (var nome in InputMap.GetActions())
         {
@@ -614,6 +788,13 @@ public partial class SettingsUI : Control
         _mostrarEmblemaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_emblema_guild", true).AsBool();
         _mostrarPartyHUDCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_party_hud", true).AsBool();
         Callable.From(() => OnMostrarPartyHUDToggled(_mostrarPartyHUDCheck.ButtonPressed)).CallDeferred();
+
+        if (_languageOption != null)
+        {
+            int languageIndex = cfg.GetValue(SectionLanguage, "selected", 0).AsInt32();
+            if (languageIndex >= 0 && languageIndex < _languageOption.ItemCount)
+                _languageOption.Selected = languageIndex;
+        }
 
         foreach (var nome in InputMap.GetActions())
         {

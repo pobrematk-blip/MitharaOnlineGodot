@@ -329,15 +329,7 @@ partial class GameServer
         channel.RemoveLojinha(lojinha.Id);
         _db.DeleteLojinha(lojinha.DbId);
 
-        var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
-        w.Put(lojinha.Id);
-        foreach (var eid in channel.GetEntitiesInAoi(lojinha.X, lojinha.Y))
-        {
-            var p = channel.GetPlayerPeer(eid);
-            p?.Send(w, DeliveryMethod.ReliableOrdered);
-            w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
-            w.Put(lojinha.Id);
-        }
+        BroadcastLojinhaDespawn(lojinha, channel);
 
         SendSystemMessage(peer, "Lojinha fechada.");
     }
@@ -456,28 +448,22 @@ partial class GameServer
         if (!lojinha.IsOpen)
             return;
 
-        var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
-        WriteLojinhaSpawnPacket(w, lojinha);
-        foreach (var eid in channel.GetEntitiesInAoi(lojinha.X, lojinha.Y))
+        foreach (var targetPeer in GetPeersDoCanal(channel))
         {
-            var p = channel.GetPlayerPeer(eid);
-            p?.Send(w, DeliveryMethod.ReliableOrdered);
-            w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
+            var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
             WriteLojinhaSpawnPacket(w, lojinha);
+            targetPeer.Send(w, DeliveryMethod.ReliableOrdered);
         }
     }
 
     private void BroadcastLojinhaDespawn(LojinhaEntity lojinha, Channel channel, NetPeer? except = null)
     {
-        var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
-        w.Put(lojinha.Id);
-        foreach (var eid in channel.GetEntitiesInAoi(lojinha.X, lojinha.Y))
+        foreach (var targetPeer in GetPeersDoCanal(channel))
         {
-            var p = channel.GetPlayerPeer(eid);
-            if (p == null || p == except) continue;
-            p.Send(w, DeliveryMethod.ReliableOrdered);
-            w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
+            if (targetPeer == except) continue;
+            var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaDespawn);
             w.Put(lojinha.Id);
+            targetPeer.Send(w, DeliveryMethod.ReliableOrdered);
         }
     }
 
@@ -486,6 +472,19 @@ partial class GameServer
         var w = PacketSerializer.WritePacket(PacketId.S2C_LojinhaSpawn);
         WriteLojinhaSpawnPacket(w, lojinha);
         peer.Send(w, DeliveryMethod.ReliableOrdered);
+    }
+
+    private IEnumerable<NetPeer> GetPeersDoCanal(Channel channel)
+    {
+        foreach (var session in _sessions.Values)
+        {
+            if (session.ChannelId != channel.Id || session.EntityId == 0)
+                continue;
+
+            var peer = channel.GetPlayerPeer(session.EntityId);
+            if (peer != null)
+                yield return peer;
+        }
     }
 
     private static void WriteLojinhaSpawnPacket(NetDataWriter writer, LojinhaEntity lojinha)
