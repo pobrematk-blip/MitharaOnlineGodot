@@ -285,7 +285,7 @@ partial class GameServer
             return;
         }
 
-        if (!ServerTalentCatalog.IsSkillUnlocked(caster.CharacterClass, caster.UnlockedTalents, skill.SkillId))
+        if (!ServerTalentCatalog.IsSkillUnlockedForPlayer(caster.CharacterClass, caster.UnlockedTalents, skill.SkillId))
         {
             SendSystemMessage(peer, "Esta habilidade ainda nÃ£o foi desbloqueada na Ã¡rvore de talentos.");
             return;

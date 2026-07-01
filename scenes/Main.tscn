@@ -1,4 +1,4 @@
-[gd_scene load_steps=89 format=4 uid="uid://dyh80bpnl256a"]
+[gd_scene load_steps=90 format=4 uid="uid://dyh80bpnl256a"]
 
 [ext_resource type="Texture2D" uid="uid://buwum1ed2iflk" path="res://tiles/TileSets/$CL_Buildings (1).png" id="1_agua"]
 [ext_resource type="Texture2D" uid="uid://c2s12g1mrpj68" path="res://tiles/TileSets/$CL_Buildings (6).png" id="1_bjd11"]
@@ -46,6 +46,7 @@
 [ext_resource type="Script" uid="uid://bwvijovnrw5it" path="res://ui/BossHPBar.cs" id="43_bossbar"]
 [ext_resource type="Shader" uid="uid://jcbe483v8cpc" path="res://shaders/dark_fantasy_grade.gdshader" id="44_darkfantasy"]
 [ext_resource type="PackedScene" path="res://scenes/tools/TeleportPairMarker.tscn" id="45_tpair"]
+[ext_resource type="Script" path="res://ui/InvitePopupUI.cs" id="46_invitepopup"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8b871"]
 texture = ExtResource("1_cmqll")
@@ -78664,6 +78665,10 @@ script = ExtResource("43_bossbar")
 [node name="TradeUI" parent="HUD" instance=ExtResource("19_tradeui")]
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="InvitePopupUI" type="Panel" parent="HUD"]
+z_index = 300
+script = ExtResource("46_invitepopup")
 
 [node name="TalentTreeUI" parent="HUD" instance=ExtResource("11_talenttree")]
 grow_horizontal = 2

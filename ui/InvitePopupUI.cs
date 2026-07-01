@@ -17,6 +17,8 @@ public partial class InvitePopupUI : Panel
     {
         _instance = this;
         Visible = false;
+        ZIndex = 4090;
+        MouseFilter = MouseFilterEnum.Stop;
 
         CustomMinimumSize = new Vector2(420, 150);
         Size = CustomMinimumSize;
@@ -59,28 +61,36 @@ public partial class InvitePopupUI : Panel
 
     public static void ShowInvite(string inviteType, string senderName)
     {
-        if (_instance == null || !_instance.IsInsideTree()) return;
+        if (_instance == null || !_instance.IsInsideTree())
+            return;
+
         _instance._inviteType = inviteType;
         _instance._titleLabel.Text = inviteType switch
         {
-            "party" => $"{senderName} convidou você para um grupo!",
-            "guild" => $"{senderName} convidou você para a guild!",
-            "guild_promote" => $"{senderName} quer passar a liderança da guild para você!",
-            "duel" => $"{senderName} desafiou você para um duelo!",
-            "trade" => $"{senderName} quer trocar itens com você!",
-            _ => $"{senderName} convidou você!",
+            "party" => $"{senderName} convidou voc\u00ea para um grupo!",
+            "guild" => $"{senderName} convidou voc\u00ea para a guild!",
+            "guild_promote" => $"{senderName} quer passar a lideran\u00e7a da guild para voc\u00ea!",
+            "duel" => $"{senderName} desafiou voc\u00ea para um duelo!",
+            "trade" => $"{senderName} quer trocar itens com voc\u00ea!",
+            _ => $"{senderName} convidou voc\u00ea!",
         };
+
         var vp = _instance.GetViewportRect();
         _instance.Size = _instance.CustomMinimumSize;
-        _instance.Position = new Vector2(vp.Size.X / 2 - _instance.Size.X / 2, vp.Size.Y / 2 - _instance.Size.Y / 2);
+        _instance.Position = new Vector2(
+            vp.Size.X / 2 - _instance.Size.X / 2,
+            vp.Size.Y / 2 - _instance.Size.Y / 2);
         _instance.Visible = true;
+        _instance.MoveToFront();
     }
 
     private void OnAccept()
     {
         Visible = false;
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (net == null) return;
+        if (net == null)
+            return;
+
         switch (_inviteType)
         {
             case "party": net.SendPartyAccept(); break;
@@ -95,7 +105,9 @@ public partial class InvitePopupUI : Panel
     {
         Visible = false;
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (net == null) return;
+        if (net == null)
+            return;
+
         switch (_inviteType)
         {
             case "duel": net.SendDuelDecline(); break;

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -819,16 +821,42 @@ internal static class ServerTalentCatalog
         if (IsSkillUnlocked(className, unlocked, skillId))
             return true;
 
+        var requestedSkill = ServerSkillCatalog.Get(skillId);
+        string requestedName = NormalizeSkillName(requestedSkill?.Nome ?? "");
+
         foreach (var tree in Trees.Value.Values)
         {
             foreach (var node in tree.Values)
             {
                 if (node.SkillId == skillId && unlocked.Contains(node.NodeId))
                     return true;
+
+                if (node.SkillId > 0
+                    && unlocked.Contains(node.NodeId)
+                    && !string.IsNullOrWhiteSpace(requestedName)
+                    && NormalizeSkillName(node.Nome) == requestedName)
+                {
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    private static string NormalizeSkillName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        string formD = value.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(formD.Length);
+        foreach (char c in formD)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(char.ToLowerInvariant(c));
+        }
+        return sb.ToString().Normalize(NormalizationForm.FormC).Replace(" ", "");
     }
 
     private static bool RequirementSatisfied(Dictionary<string, ServerTalentNode> tree, string nodeId, HashSet<string> unlocked)
