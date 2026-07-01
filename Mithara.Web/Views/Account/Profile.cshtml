@@ -1,0 +1,62 @@
+@model AccountInfo
+@{
+    ViewData["Title"] = "Meu Perfil";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Meu Perfil</h1>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">@Model.Username[0].ToString().ToUpper()</div>
+                <div class="profile-info">
+                    <h2>@Model.Username</h2>
+                    <p>Email: @Model.Email</p>
+                    <p>Conta criada em: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
+                    <p>VIP: @(Model.VipExpiry > DateTime.UtcNow ? "Ativo até " + Model.VipExpiry.ToString("dd/MM/yyyy") : "Inativo")</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 2rem;">Personagens</h2>
+
+        @if (Model.Characters.Count == 0)
+        {
+            <p class="empty-state">Nenhum personagem criado. Crie um personagem no jogo!</p>
+        }
+        else
+        {
+            <div class="characters-grid">
+                @foreach (var character in Model.Characters)
+                {
+                    <div class="character-card">
+                        <div class="char-class-icon">
+                            @switch (character.Class.ToLower())
+                            {
+                                case "arqueiro": <text>&#127919;</text> break;
+                                case "assassino": <text>&#128298;</text> break;
+                                case "berserker": <text>&#9876;</text> break;
+                                case "guardiao": <text>&#128737;</text> break;
+                                case "mago": <text>&#128302;</text> break;
+                                case "clerigo": <text>&#10086;</text> break;
+                                default: <text>&#9876;</text> break;
+                            }
+                        </div>
+                        <h3>@character.Name</h3>
+                        <p class="char-class">@character.Class</p>
+                        <p class="char-race">@character.Race</p>
+                        <div class="char-stats">
+                            <span>Nível @character.Level</span>
+                            <span>Gold: @character.Gold</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

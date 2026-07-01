@@ -10,6 +10,7 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private const int InventorySlotCount = 30;
+    private const double PotionUseCooldownSeconds = 30.0;
 
     private void HandleAdminUpdateItemDefinition(NetPeer peer, NetDataReader reader)
     {
@@ -574,6 +575,8 @@ partial class GameServer
                 SendSystemMessage(peer, "Sua vida já está cheia.");
                 return;
             }
+            if (!TryConsumePotionCooldown(peer, player, "potion:health", "pocao de vida"))
+                return;
             player.Health += restoredHealth;
             BroadcastPartyMemberUpdateForEntity(player.Id);
         }
@@ -585,6 +588,8 @@ partial class GameServer
                 SendSystemMessage(peer, "Sua mana já está cheia.");
                 return;
             }
+            if (!TryConsumePotionCooldown(peer, player, "potion:mana", "pocao de mana"))
+                return;
             player.Mana += restoredMana;
             BroadcastPartyMemberUpdateForEntity(player.Id);
         }
@@ -722,6 +727,19 @@ partial class GameServer
         result.Put(player.Mana);
         result.Put(player.MaxMana);
         peer.Send(result, DeliveryMethod.ReliableOrdered);
+    }
+
+    private bool TryConsumePotionCooldown(NetPeer peer, PlayerEntity player, string cooldownKey, string potionName)
+    {
+        if (player.ItemCooldowns.TryGetValue(cooldownKey, out double readyAt) && readyAt > _gameTime)
+        {
+            int remainingSeconds = Math.Max(1, (int)Math.Ceiling(readyAt - _gameTime));
+            SendSystemMessage(peer, $"Aguarde {remainingSeconds}s para usar outra {potionName}.");
+            return false;
+        }
+
+        player.ItemCooldowns[cooldownKey] = _gameTime + PotionUseCooldownSeconds;
+        return true;
     }
 
     private void HandleDropItem(NetPeer peer, NetDataReader reader)
@@ -909,10 +927,18 @@ partial class GameServer
         if (!TryGetPlayer(peer, out var player, out var channel)) return;
 
         int itemId = reader.GetInt();
-        int preco = reader.GetInt();
+        _ = reader.GetInt();
 
         if (!_sessions.TryGetValue(peer, out var cashSession) || cashSession.SelectedCharacter == null)
             return;
+
+        int preco = GetCashShopPrice(itemId);
+        if (preco <= 0)
+        {
+            SendCashShopResult(peer, false, "Item nao disponivel na loja cash.");
+            SendCashBalance(peer, cashSession.AccountId);
+            return;
+        }
 
         var def = ItemDefinitions.Get(itemId);
         if (def == null)
@@ -921,14 +947,40 @@ partial class GameServer
             return;
         }
 
+        if (!_db.TrySpendCash(cashSession.AccountId, preco, out var balanceAfterSpend))
+        {
+            SendCashShopResult(peer, false, "Diamantes insuficientes.");
+            SendCashBalance(peer, cashSession.AccountId);
+            return;
+        }
+
         if (!TryAddItemToInventory(player, cashSession.SelectedCharacter.Id, itemId, 1))
         {
+            int refundedBalance = _db.AddCash(cashSession.AccountId, preco);
             SendCashShopResult(peer, false, "Inventário cheio.");
+            SendCashBalanceValue(peer, refundedBalance);
             return;
         }
 
         SendCashShopResult(peer, true, "Compra realizada!");
+        SendCashBalanceValue(peer, balanceAfterSpend);
         SendInventoryData(peer, player);
+    }
+
+    private static int GetCashShopPrice(int itemId)
+    {
+        return itemId switch
+        {
+            100 => 30,
+            102 => 50,
+            103 => 100,
+            104 => 180,
+            105 => 300,
+            108 => 50,
+            109 => 100,
+            112 => 200,
+            _ => 0,
+        };
     }
 
     private void SendCashShopResult(NetPeer peer, bool success, string message)
@@ -936,6 +988,18 @@ partial class GameServer
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CashShopResult);
         writer.Put(success);
         writer.Put(message);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void SendCashBalance(NetPeer peer, int accountId)
+    {
+        SendCashBalanceValue(peer, _db.GetCashBalance(accountId));
+    }
+
+    private void SendCashBalanceValue(NetPeer peer, int balance)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_CashBalance);
+        writer.Put(balance);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 

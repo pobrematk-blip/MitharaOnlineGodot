@@ -718,10 +718,12 @@ public partial class EntityManager : Node
             PrepararEntidadeYSort(inimigo);
             inimigo.NomeDoInimigo = name;
             inimigo.VidaMaxima = maxHealth;
-            inimigo.SetVidaAtual(health, maxHealth);
             inimigo.IsBoss = isBoss;
             inimigo.Level = level;
             inimigo.MobType = mobType;
+            if (isBoss)
+                inimigo.AddToGroup("Bosses");
+            inimigo.SetVidaAtual(health, maxHealth);
             inimigo.AtualizarPetPadrao();
             inimigo.AnimPrefix = "";
             inimigo.SetMeta("network_id", entityId);
@@ -917,7 +919,7 @@ public partial class EntityManager : Node
         return root;
     }
 
-    private void OnRespawnHandler(ulong entityId, float x, float y, int health, int maxHealth)
+    private void OnRespawnHandler(ulong entityId, float x, float y, int health, int maxHealth, int mana, int maxMana)
     {
         if (!_networkNodes.TryGetValue(entityId, out var node) || !IsInstanceValid(node))
             return;
@@ -925,7 +927,11 @@ public partial class EntityManager : Node
         node.Position = new Vector2(x, y);
 
         if (node is Player player)
+        {
             player.SetHealthFromServer(health, maxHealth);
+            if (maxMana > 0)
+                player.SetManaFromServer(mana, maxMana);
+        }
         else if (node is Inimigo inimigo)
             inimigo.SetVidaAtual(health, maxHealth);
 
@@ -1131,8 +1137,69 @@ public partial class EntityManager : Node
                 prog.DefinirProgresso(newLevel, remainingXp);
                 prog.EmitSignal(LevelProgressionComponent.SignalName.SubiuDeLevel, newLevel);
             }
+
+            TocarEfeitoLevelUp(player);
         }
 
+    }
+
+    private void TocarEfeitoLevelUp(Player player)
+    {
+        const string animName = "level_up";
+        const string basePath = "res://skills/Animacao/Animacao de Mapa/Level up/effect";
+
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int i = 1; i <= 17; i++)
+        {
+            string path = $"{basePath}{i}.png";
+            var texture = CarregarTexturaLevelUp(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+            else
+                GD.PrintErr($"[LEVEL UP FX] Frame ausente: {path}");
+        }
+
+        if (frames.GetFrameCount(animName) == 0)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "LevelUpEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0, -42),
+            Scale = new Vector2(1.15f, 1.15f),
+            ZIndex = 20,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        player.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private static Texture2D? CarregarTexturaLevelUp(string path)
+    {
+        if (ResourceLoader.Exists(path))
+            return ResourceLoader.Load<Texture2D>(path);
+
+        string absolutePath = ProjectSettings.GlobalizePath(path);
+        if (string.IsNullOrWhiteSpace(absolutePath) || !System.IO.File.Exists(absolutePath))
+            return null;
+
+        var image = Image.LoadFromFile(absolutePath);
+        if (image == null || image.IsEmpty())
+            return null;
+
+        return ImageTexture.CreateFromImage(image);
     }
 
     private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana)
@@ -1398,7 +1465,7 @@ public partial class EntityManager : Node
             110 => "res://Itens/Incones/Porcao de Vida.png",
             111 => "res://Itens/Incones/Porcao de Mana.png",
             >= 300000 and < 301000 => "res://Itens/Incones/Luva de couro.png",
-            _ => "res://Itens/Incones/bagitem.png",
+            _ => "res://Itens/Incones/Bag 3.png",
         };
 
         return ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
@@ -1467,7 +1534,7 @@ public partial class EntityManager : Node
             {
                 var icon = new Sprite2D
                 {
-                    Texture = GD.Load<Texture2D>("res://Itens/Incones/1.png"),
+                    Texture = GD.Load<Texture2D>("res://Itens/Incones/Bag 3.png"),
                     Position = new Vector2(0, -12),
                     ZIndex = 0,
                     ZAsRelative = true,

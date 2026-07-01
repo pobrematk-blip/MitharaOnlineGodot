@@ -193,7 +193,10 @@ public partial class PetController : Node
         }
         else
         {
-            DespawnPet();
+            // Equipamento pode chegar do servidor em etapas. Nao remova o pet em
+            // refresh temporario sem slot; ele so deve sumir ao morrer ou quando
+            // houver uma remocao explicita.
+            GD.Print("[PET] Slot de pet vazio no refresh; pet ativo mantido.");
         }
     }
 
@@ -208,6 +211,7 @@ public partial class PetController : Node
 
         _petNode.PetID = petId;
         _petNode.NomePet = _petResource?.Nome ?? petNome;
+        _petNode.DefinirDono(_player);
 
         string mobType = NormalizarMobType(_petResource?.AnimPrefix, _petResource?.Nome ?? petNome);
 
@@ -216,30 +220,32 @@ public partial class PetController : Node
             _petNode.AnimPrefix = mobType;
             _petNode.TipoPet = _petResource.Tipo;
             _petNode.Velocidade = _petResource.Speed;
-            _petNode.AtaqueRange = _petResource.AttackRange;
+            _petNode.AtaqueRange = Mathf.Clamp(_petResource.AttackRange, 1f, PetNode.OneTileAttackRange);
             _petNode.AtaqueCooldown = _petResource.AttackCooldown;
             _petNode.AtaqueDano = _petResource.AttackDamage;
             _petNode.ColetaRange = _petResource.ColetaRange;
             _petNode.GuardaRange = _petResource.GuardRange;
+            _petNode.ConfigurarAtributos(_petResource.HP, _petResource.Defense);
         }
         else
         {
             _petNode.AnimPrefix = mobType;
             _petNode.TipoPet = TipoPet.Combate;
             _petNode.Velocidade = 250f;
-            _petNode.AtaqueRange = 60f;
+            _petNode.AtaqueRange = PetNode.OneTileAttackRange;
             _petNode.AtaqueCooldown = 0.8f;
             _petNode.AtaqueDano = 8;
             _petNode.GuardaRange = 200f;
+            _petNode.ConfigurarAtributos(240, 15);
         }
 
         var sprite = _petNode.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
         if (sprite != null)
         {
-            var frames = MobSpriteFramesBuilder.GetOrBuild(mobType);
+            var frames = CarregarSpriteFramesFallback(mobType, _petResource?.Nome ?? petNome);
             if (frames == null || frames.GetAnimationNames().Length == 0)
             {
-                frames = CarregarSpriteFramesFallback(mobType, _petResource?.Nome ?? petNome);
+                frames = MobSpriteFramesBuilder.GetOrBuild(mobType);
             }
             if ((frames == null || frames.GetAnimationNames().Length == 0) && _petResource != null)
             {
@@ -251,6 +257,7 @@ public partial class PetController : Node
                 sprite.Visible = true;
                 sprite.ZIndex = 1;
                 TocarPrimeiraAnimacao(sprite);
+                RemoverVisualFallback(_petNode);
             }
             else
             {
@@ -267,14 +274,16 @@ public partial class PetController : Node
             (float)GD.RandRange(-60, 60)
         );
 
-        _petNode.Scale = new Vector2(2, 2);
-        var parent = GetTree().CurrentScene?.FindChild("World", true, false) as Node;
+        _petNode.Scale = new Vector2(1.4f, 1.4f);
+        var parent = _player.GetParent();
         if (parent == null)
-            parent = _player.GetParent();
+            parent = GetTree().CurrentScene?.FindChild("World", true, false) as Node;
         parent?.AddChild(_petNode);
         if (_petNode.GetParent() == null)
             AddChild(_petNode);
         _petNode.GlobalPosition = spawnPos;
+        _petNode.Visible = true;
+        _petNode.ZIndex = _player.ZIndex + 1;
         _petNode.DefinirModo(PetMode.Seguir);
 
         AtualizarHUD();
@@ -307,8 +316,9 @@ public partial class PetController : Node
     private static void CriarVisualFallback(PetNode petNode, PetResource resource, string petNome)
     {
         if (petNode == null) return;
+        RemoverVisualFallback(petNode);
 
-        Texture2D tex = resource?.SpriteAtlas ?? resource?.Icone;
+        Texture2D tex = resource?.Icone ?? resource?.SpriteAtlas;
         if (tex != null)
         {
             var sprite = new Sprite2D
@@ -316,8 +326,8 @@ public partial class PetController : Node
                 Name = "PetFallbackSprite",
                 Texture = tex,
                 Centered = true,
-                Scale = new Vector2(0.5f, 0.5f),
-                ZIndex = 2,
+                Scale = new Vector2(1.2f, 1.2f),
+                ZIndex = 10,
             };
             petNode.AddChild(sprite);
         }
@@ -335,6 +345,17 @@ public partial class PetController : Node
             label.AddThemeColorOverride("font_color", Colors.Gold);
             petNode.AddChild(label);
         }
+    }
+
+    private static void RemoverVisualFallback(PetNode petNode)
+    {
+        if (petNode == null)
+            return;
+
+        var fallbackSprite = petNode.GetNodeOrNull<Node>("PetFallbackSprite");
+        fallbackSprite?.QueueFree();
+        var fallbackLabel = petNode.GetNodeOrNull<Node>("PetFallbackLabel");
+        fallbackLabel?.QueueFree();
     }
 
     private PetResource CarregarPetResource(int petId, string petNome)
@@ -428,9 +449,12 @@ public partial class PetController : Node
                     return loaded;
             }
         }
-        string mobScene = $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn";
-        if (ResourceLoader.Exists(mobScene))
+
+        foreach (string mobScene in ObterCenasPossiveisDoPet(mobType, petFile))
         {
+            if (!ResourceLoader.Exists(mobScene))
+                continue;
+
             var scene = ResourceLoader.Load<PackedScene>(mobScene);
             if (scene != null)
             {
@@ -439,17 +463,43 @@ public partial class PetController : Node
                 if (animSprite?.SpriteFrames != null)
                 {
                     var original = animSprite.SpriteFrames;
-                    var prefix = _petResource?.AnimPrefix ?? mobType;
-                    if (MontarFramesDoMob(original, prefix, out var novo))
+                    if (original.GetAnimationNames().Length > 0)
                     {
                         temp.QueueFree();
-                        return novo;
+                        return original.Duplicate(true) as SpriteFrames ?? original;
                     }
                 }
                 temp?.QueueFree();
             }
         }
         return new SpriteFrames();
+    }
+
+    private static string[] ObterCenasPossiveisDoPet(string mobType, string petFile)
+    {
+        return mobType switch
+        {
+            "slime" => new[]
+            {
+                "res://characters/Inimigos/SpriteInimigo/Slime.tscn",
+                $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn",
+            },
+            "cogumelo" => new[]
+            {
+                "res://characters/Inimigos/SpriteInimigo/Cogumelo.tscn",
+                $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn",
+            },
+            "plantacarnivora" => new[]
+            {
+                "res://characters/Inimigos/SpriteInimigo/PlanTaCarnivora.tscn",
+                "res://characters/Inimigos/SpriteInimigo/PlantaCarnivora.tscn",
+                $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn",
+            },
+            _ => new[]
+            {
+                $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn",
+            },
+        };
     }
 
     private static bool MontarFramesDoMob(SpriteFrames original, string prefix, out SpriteFrames novo)

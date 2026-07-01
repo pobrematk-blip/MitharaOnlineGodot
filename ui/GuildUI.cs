@@ -32,6 +32,7 @@ public partial class GuildUI : Control
     private ProgressBar _infoXpBar;
     private Label _infoMembrosLabel;
     private Label _infoLiderLabel;
+    private Button _leaveGuildButton;
 
     private int _guildId;
     private string _guildName = "";
@@ -69,6 +70,7 @@ public partial class GuildUI : Control
     };
 
     private string[] _emblemFiles;
+    private GameNetwork _net;
 
     private string[] CarregarEmblemas()
     {
@@ -148,6 +150,16 @@ public partial class GuildUI : Control
         _infoXpBar = _panel.GetNode<ProgressBar>("TabContainer/Informacoes/InfoXpBar");
         _infoMembrosLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoMembrosLabel");
         _infoLiderLabel = _panel.GetNode<Label>("TabContainer/Informacoes/InfoLiderLabel");
+        _leaveGuildButton = _panel.GetNodeOrNull<Button>("TabContainer/Informacoes/LeaveGuildButton");
+        if (_leaveGuildButton == null)
+        {
+            _leaveGuildButton = new Button();
+            _leaveGuildButton.Name = "LeaveGuildButton";
+            _leaveGuildButton.Text = "Sair do Clã";
+            _leaveGuildButton.CustomMinimumSize = new Vector2(0, 30);
+            _panel.GetNode<VBoxContainer>("TabContainer/Informacoes").AddChild(_leaveGuildButton);
+        }
+        _leaveGuildButton.Pressed += OnLeaveGuild;
 
         _closeButton.Pressed += OnClose;
         _titleBar.GuiInput += OnTitleBarGuiInput;
@@ -155,14 +167,14 @@ public partial class GuildUI : Control
         _inviteInput.TextSubmitted += _ => OnInvite();
         _panel.Visible = false;
 
-        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (net != null)
+        _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (_net != null)
         {
-            net.OnGuildData += OnNetworkGuildData;
-            net.OnGuildMemberUpdate += OnNetworkGuildMemberUpdate;
-            net.OnGuildRankUpdate += OnNetworkGuildRankUpdate;
-            net.OnGuildSkillUpdate += OnNetworkGuildSkillUpdate;
-            net.OnGuildCleared += OnNetworkGuildCleared;
+            _net.OnGuildData += OnNetworkGuildData;
+            _net.OnGuildMemberUpdate += OnNetworkGuildMemberUpdate;
+            _net.OnGuildRankUpdate += OnNetworkGuildRankUpdate;
+            _net.OnGuildSkillUpdate += OnNetworkGuildSkillUpdate;
+            _net.OnGuildCleared += OnNetworkGuildCleared;
         }
 
         _emblemFiles = CarregarEmblemas();
@@ -172,6 +184,7 @@ public partial class GuildUI : Control
 
         AtualizarLista();
         AtualizarSkills();
+        AplicarCacheServidor();
 
         CallDeferred(MethodName.Centralizar);
         GetTree().Root.SizeChanged += OnRootSizeChanged;
@@ -211,9 +224,23 @@ public partial class GuildUI : Control
 
     public override void _ExitTree()
     {
-        GetTree().Root.SizeChanged -= OnRootSizeChanged;
-        if (_toggleButton != null)
-            GetTree().Root.SizeChanged -= OnSizeChanged;
+        var root = GetTree()?.Root;
+        if (root != null)
+        {
+            root.SizeChanged -= OnRootSizeChanged;
+            if (_toggleButton != null)
+                root.SizeChanged -= OnSizeChanged;
+        }
+
+        if (_net != null)
+        {
+            _net.OnGuildData -= OnNetworkGuildData;
+            _net.OnGuildMemberUpdate -= OnNetworkGuildMemberUpdate;
+            _net.OnGuildRankUpdate -= OnNetworkGuildRankUpdate;
+            _net.OnGuildSkillUpdate -= OnNetworkGuildSkillUpdate;
+            _net.OnGuildCleared -= OnNetworkGuildCleared;
+            _net = null;
+        }
     }
 
     public override void _Input(InputEvent @event)
@@ -246,6 +273,7 @@ public partial class GuildUI : Control
             Centralizar();
             TrazerParaFrente();
             RecarregarDadosArquivo();
+            AplicarCacheServidor();
         }
         _arrastando = false;
     }
@@ -253,6 +281,21 @@ public partial class GuildUI : Control
     public void RecarregarDadosArquivo()
     {
         GD.Print("[GUILD] Cache local de guilda desativado. Dados devem vir do servidor.");
+    }
+
+    private void AplicarCacheServidor()
+    {
+        if (_net == null || _net.GuildId < 0) return;
+        OnNetworkGuildData(
+            _net.GuildId,
+            _net.GuildName,
+            _net.GuildTag,
+            _net.GuildEmblem,
+            _net.CachedGuildMembers,
+            _net.GuildLevel,
+            _net.GuildXp,
+            _net.GuildSkillPoints,
+            _net.CachedGuildSkills);
     }
 
     private void TrazerParaFrente()
@@ -291,12 +334,23 @@ public partial class GuildUI : Control
         return XpLimites[_guildLevel - 1];
     }
 
+    private bool UiValida()
+    {
+        return IsInsideTree()
+            && IsInstanceValid(_panel)
+            && IsInstanceValid(_membersList)
+            && IsInstanceValid(_skillsList);
+    }
+
     // ================= NETWORK CALLBACKS =================
 
     private void OnNetworkGuildData(int guildId, string guildName, string guildTag, int guildEmblem, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills)
     {
+        if (!UiValida()) return;
+
         _guildId = guildId;
         _guildName = guildName;
+        _guildTag = guildTag;
         _guildLevel = level;
         _guildXp = xp;
         _skillPoints = skillPoints;
@@ -317,6 +371,8 @@ public partial class GuildUI : Control
 
     private void OnNetworkGuildCleared()
     {
+        if (!UiValida()) return;
+
         _guildId = -1;
         _guildName = "";
         _guildTag = "";
@@ -327,11 +383,15 @@ public partial class GuildUI : Control
         AtualizarLista();
         AtualizarSkills();
         AtualizarInfo();
-        _infoEmblem.Visible = false;
+        if (IsInstanceValid(_infoEmblem))
+            _infoEmblem.Visible = false;
     }
 
     private void CarregarEmblemaInfo(int emblemIdx)
     {
+        if (!IsInstanceValid(_infoEmblem)) return;
+
+        _emblemFiles ??= CarregarEmblemas();
         if (emblemIdx < 0 || _emblemFiles == null || emblemIdx >= _emblemFiles.Length)
         {
             _infoEmblem.Visible = false;
@@ -364,6 +424,8 @@ public partial class GuildUI : Control
 
     private void AtualizarInfo()
     {
+        if (!UiValida() || !IsInstanceValid(_infoNameLabel)) return;
+
         int contagemMembros = _membros.Count;
         _infoNameLabel.Text = _guildId > 0 ? _guildName : "Sem Guilda";
         _infoTagLabel.Text = _guildId > 0 ? _guildTag : "";
@@ -393,6 +455,8 @@ public partial class GuildUI : Control
 
     private void OnNetworkGuildMemberUpdate(ulong entityId, string name, int rank, bool joined)
     {
+        if (!UiValida()) return;
+
         if (joined)
         {
             _membros.Add(new Godot.Collections.Dictionary
@@ -410,10 +474,13 @@ public partial class GuildUI : Control
             }
         }
         AtualizarLista();
+        AtualizarInfo();
     }
 
     private void OnNetworkGuildRankUpdate(ulong entityId, int newRank)
     {
+        if (!UiValida()) return;
+
         foreach (var m in _membros)
         {
             if ((ulong)(long)m["entity_id"] == entityId)
@@ -423,10 +490,13 @@ public partial class GuildUI : Control
             }
         }
         AtualizarLista();
+        AtualizarInfo();
     }
 
     private void OnNetworkGuildSkillUpdate(string skillId, int newLevel)
     {
+        if (!UiValida()) return;
+
         _skillLevels[skillId] = newLevel;
         AtualizarSkills();
     }
@@ -467,10 +537,18 @@ public partial class GuildUI : Control
         net?.SendGuildBuySkill(skillId);
     }
 
+    private void OnLeaveGuild()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        net?.SendGuildLeave();
+    }
+
     // ================= UI =================
 
     private void AtualizarLista()
     {
+        if (!UiValida()) return;
+
         foreach (var child in _membersList.GetChildren())
             child.QueueFree();
 
@@ -588,6 +666,8 @@ public partial class GuildUI : Control
 
     private void AtualizarSkills()
     {
+        if (!UiValida() || !IsInstanceValid(_skillPointsLabel)) return;
+
         foreach (var child in _skillsList.GetChildren())
             child.QueueFree();
 

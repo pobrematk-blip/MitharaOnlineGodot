@@ -103,10 +103,14 @@ public partial class GameServer : INetEventListener
 
     private void LoadGuildsFromDb()
     {
+        int repairedGuilds = _db.RepairMissingGuildVisualData();
+        if (repairedGuilds > 0)
+            Logger.Info($"Guildas antigas sem sigla/emblema reparadas: {repairedGuilds}.");
+
         _db.LoadAllGuilds(
-            onGuild: (id, name, level, xp, skillPoints) =>
+            onGuild: (id, name, level, xp, skillPoints, tag, emblem) =>
             {
-                var guild = new Guild(name, 0);
+                var guild = new Guild(name, 0, tag, emblem);
                 guild.Id = id;
                 guild.Level = level;
                 guild.Xp = xp;
@@ -366,9 +370,6 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_RecoverPassword:
                 HandleRecoverPassword(peer, reader);
                 break;
-            case PacketId.C2S_SceneTeleport:
-                HandleSceneTeleport(peer, reader);
-                break;
             case PacketId.C2S_DeleteCharacter:
                 HandleDeleteCharacter(peer, reader);
                 break;
@@ -625,6 +626,7 @@ public partial class GameServer : INetEventListener
         if (channel == null) return;
         var entity = channel.GetEntity(session.EntityId) as PlayerEntity;
         if (entity == null || entity.Health <= 0) return;
+        if (!ClassePodeUsarProjetilBasico(entity.CharacterClass)) return;
 
         ulong entityId = entity.Id;
         float originX = reader.GetFloat();
@@ -641,6 +643,13 @@ public partial class GameServer : INetEventListener
         }
 
         BroadcastProjectileSpawn(channel, entityId, originX, originY, dirX, dirY, projectileType, includeCaster: false);
+    }
+
+    private static bool ClassePodeUsarProjetilBasico(string? classe)
+    {
+        if (string.IsNullOrWhiteSpace(classe)) return false;
+        string cls = classe.Trim().ToLowerInvariant();
+        return cls == "mago" || cls == "arqueiro";
     }
 
     private void SendPetData(NetPeer peer, int characterId)

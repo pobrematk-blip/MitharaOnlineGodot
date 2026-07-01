@@ -54,14 +54,14 @@ public partial class PlayerHud : Control
         string classe = escolhido?.ClasseBase?.NomeClasse ?? "";
         string iconPath = classe.ToLowerInvariant() switch
         {
-            "arqueiro" => "res://Itens/Incones/Arco do Atirador.png",
-            "assassino" or "ladino" => "res://Itens/Incones/Adaga Sombria.png",
+            "arqueiro" => "res://Itens/Incones/Arco 1.png",
+            "assassino" or "ladino" => "res://Itens/Incones/Adaga 1.png",
             "guerreiro" => "res://Itens/Incones/Machados Perdisos 1.png",
             "berserker" => "res://Itens/Incones/Machados Perdisos 2.png",
-            "mago" => "res://Itens/Incones/1.png",
+            "mago" => "res://Itens/Incones/Cajado 6.png",
             "clerigo" => "res://Itens/Incones/Martelo quebrada.png",
             "guardiao" => "res://Itens/Incones/Escudo de Goglin.png",
-            _ => "res://Itens/Incones/1.png",
+            _ => "res://Itens/Incones/Bag 3.png",
         };
         if (!string.IsNullOrEmpty(iconPath) && ResourceLoader.Exists(iconPath))
             _portraitIcon.Texture = ResourceLoader.Load<Texture2D>(iconPath);

@@ -24,6 +24,7 @@ public partial class PlayerSkillComponent : Node
     private readonly List<object> _activeBuffs = new();
     private readonly Dictionary<int, SkillResource> _skillCatalog = new();
     private Player _player;
+    private GameNetwork _gameNet;
 
     public override void _Ready()
     {
@@ -33,13 +34,20 @@ public partial class PlayerSkillComponent : Node
         System.Array.Fill(ItemSlotIndexes, -1);
         CarregarCatalogoDeSkills();
 
-        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (gameNet != null)
+        _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (_gameNet != null)
         {
-            gameNet.OnSkillBarData += AplicarBarraServidor;
-            if (gameNet.PendingSkillBarData != null)
-                AplicarBarraServidor(gameNet.PendingSkillBarData);
+            _gameNet.OnSkillBarData += AplicarBarraServidor;
+            if (_gameNet.PendingSkillBarData != null)
+                AplicarBarraServidor(_gameNet.PendingSkillBarData);
         }
+    }
+
+    public override void _ExitTree()
+    {
+        if (_gameNet != null)
+            _gameNet.OnSkillBarData -= AplicarBarraServidor;
+        base._ExitTree();
     }
 
     public SkillResource ObterSkillPorId(int skillId)
@@ -49,6 +57,9 @@ public partial class PlayerSkillComponent : Node
 
     public void AplicarBarraServidor(Godot.Collections.Array<int> skillIds)
     {
+        if (!IsInsideTree())
+            return;
+
         for (int i = 0; i < SkillSlots.Length; i++)
         {
             int skillId = i < skillIds.Count ? skillIds[i] : 0;

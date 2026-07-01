@@ -7,6 +7,7 @@
     public static int XpParaProximoLevel(int nivelAtual)
     {
         if (nivelAtual < 1) nivelAtual = 1;
-        return 80 + nivelAtual * 15 + nivelAtual * nivelAtual * 2;
+        long xp = 600L + nivelAtual * 260L + nivelAtual * nivelAtual * 90L;
+        return xp > int.MaxValue ? int.MaxValue : (int)xp;
     }
 }

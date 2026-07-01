@@ -244,7 +244,14 @@ partial class GameServer
             return;
         }
 
-        int totalCost = entry.Price * quantity;
+        long totalCostLong = (long)entry.Price * quantity;
+        if (totalCostLong <= 0 || totalCostLong > int.MaxValue)
+        {
+            SendNpcBuyResult(peer, false, "Valor da compra invalido.");
+            return;
+        }
+
+        int totalCost = (int)totalCostLong;
         if (player.Gold < totalCost)
         {
             SendNpcBuyResult(peer, false, "Gold insuficiente.");
@@ -320,7 +327,14 @@ partial class GameServer
         int sellPrice = itemDef.BuyPrice / 4;
         if (sellPrice < 1) sellPrice = 1;
 
-        int totalGold = sellPrice * quantity;
+        long totalGoldLong = (long)sellPrice * quantity;
+        if (totalGoldLong <= 0 || totalGoldLong > int.MaxValue)
+        {
+            SendNpcSellResult(peer, false, "Valor da venda invalido.");
+            return;
+        }
+
+        int totalGold = (int)totalGoldLong;
         player.Gold += totalGold;
         if (_sessions.TryGetValue(peer, out var sellSession) && sellSession.SelectedCharacter != null)
         {

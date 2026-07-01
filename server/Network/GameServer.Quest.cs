@@ -22,8 +22,9 @@ partial class GameServer
     private void HandleQuestClaimReward(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
-        var player = _world.GetChannel(session.ChannelId)?.GetEntity(session.EntityId) as PlayerEntity;
-        if (player == null) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        var player = channel?.GetEntity(session.EntityId) as PlayerEntity;
+        if (channel == null || player == null) return;
 
         int questId = reader.GetInt();
         if (!player.Quests.TryGetValue(questId, out var pq)) return;
@@ -39,6 +40,36 @@ partial class GameServer
         if (IsPlayerVip(player))
             questXp *= 2;
         player.Experience += questXp;
+
+        var writerExp = PacketSerializer.WritePacket(PacketId.S2C_GainExp);
+        writerExp.Put(player.Id);
+        writerExp.Put((int)System.Math.Min(int.MaxValue, questXp));
+        writerExp.Put(player.Experience);
+        peer.Send(writerExp, DeliveryMethod.ReliableOrdered);
+
+        long xpForNextLevel = XpForNextLevel(player.Level);
+        while (player.Experience >= xpForNextLevel)
+        {
+            player.Experience -= xpForNextLevel;
+            player.Level++;
+            xpForNextLevel = XpForNextLevel(player.Level);
+
+            RecalculatePlayerStats(player);
+            player.Health = player.MaxHealth;
+            player.Mana = player.MaxMana;
+            player.StatPoints += 5;
+
+            var writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
+            writerLevelUp.Put(player.Id);
+            writerLevelUp.Put(player.Level);
+            writerLevelUp.Put((int)System.Math.Min(int.MaxValue, player.Experience));
+            peer.Send(writerLevelUp, DeliveryMethod.ReliableOrdered);
+
+            SendSystemMessage(peer, $"Parabens! Voce alcancou o nivel {player.Level}!");
+            SendStatUpdate(peer, player);
+            SendTalentData(peer, player);
+            BroadcastSingleEntityUpdate(channel, player);
+        }
 
         // Award gold
         player.Gold += def.Reward.Gold;
@@ -58,8 +89,12 @@ partial class GameServer
             JsonSerializer.Serialize(pq.Progress), pq.Completed, pq.Claimed);
 
         _db.SaveCharacterXp(characterId, player.Experience);
+        _db.SaveCharacterLevel(characterId, player.Level);
+        _db.SaveCharacterStats(characterId, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
         _db.SaveCharacterGold(characterId, player.Gold);
         session.SelectedCharacter.Xp = player.Experience;
+        session.SelectedCharacter.Level = player.Level;
+        session.SelectedCharacter.StatPoints = player.StatPoints;
         session.SelectedCharacter.Gold = player.Gold;
 
         SendInventoryData(peer, player);

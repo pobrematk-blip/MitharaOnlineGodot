@@ -1,0 +1,73 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Painel Admin";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Painel Administrativo</h1>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="admin-stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalAccounts</div>
+                <div class="stat-label">Contas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalCharacters</div>
+                <div class="stat-label">Personagens</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalGuilds</div>
+                <div class="stat-label">Guildas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalForumTopics</div>
+                <div class="stat-label">Tópicos no Fórum</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalForumPosts</div>
+                <div class="stat-label">Posts no Fórum</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@Model.OnlinePlayers</div>
+                <div class="stat-label">Jogadores Online</div>
+            </div>
+        </div>
+
+        <div class="admin-nav">
+            <a href="/Admin/Users" class="btn btn-secondary">Gerenciar Usuários</a>
+            <a href="/Admin/Forum" class="btn btn-secondary">Gerenciar Fórum</a>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 2rem;">Logs Recentes</h2>
+        <div class="logs-table-wrapper">
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Usuário</th>
+                        <th>Ação</th>
+                        <th>Detalhes</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.RecentLogs)
+                    {
+                        <tr>
+                            <td>@log.CreatedAt.ToString("dd/MM/yy HH:mm")</td>
+                            <td>@log.Username</td>
+                            <td>@log.Action</td>
+                            <td>@log.Details</td>
+                            <td>@log.IpAddress</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

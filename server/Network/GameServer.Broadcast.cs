@@ -268,6 +268,61 @@ partial class GameServer
         peer.Send(packet, DeliveryMethod.ReliableOrdered);
     }
 
+    private void BroadcastSingleEntityUpdate(Channel channel, Entity entity)
+    {
+        var aoi = channel.GetEntitiesInAoi(entity.X, entity.Y);
+        foreach (var eid in aoi)
+        {
+            var peer = channel.GetPlayerPeer(eid);
+            if (peer == null)
+                continue;
+
+            var data = new NetDataWriter();
+            WriteEntityUpdate(data, entity);
+
+            var packet = PacketSerializer.WritePacket(PacketId.S2C_EntityUpdate);
+            packet.Put(1);
+            packet.Put(data.CopyData());
+            peer.Send(packet, DeliveryMethod.ReliableOrdered);
+        }
+    }
+
+    private void WriteEntityUpdate(NetDataWriter writer, Entity entity)
+    {
+        writer.Put(entity.Id);
+        writer.Put(entity.X);
+        writer.Put(entity.Y);
+        writer.Put(entity.DirX);
+        writer.Put(entity.DirY);
+        writer.Put(entity.Moving);
+        writer.Put(entity.Sprinting);
+        writer.Put(entity.Health);
+        writer.Put(entity.MaxHealth);
+        writer.Put(entity.Mana);
+        writer.Put(entity.MaxMana);
+        writer.Put(entity.Level);
+        writer.Put(entity.Name);
+        writer.Put(entity.FactionId);
+        writer.Put(entity is MonsterEntity monster ? (byte)monster.AIState : (byte)0);
+        if (entity is PlayerEntity player)
+        {
+            writer.Put(player.Experience);
+            writer.Put(XpForNextLevel(player.Level));
+            var guild = player.GuildId >= 0 ? _world.Guilds.GetGuild(player.GuildId) : null;
+            writer.Put(guild?.Name ?? "");
+            writer.Put(guild?.Tag ?? "");
+            writer.Put(guild?.Emblem ?? -1);
+        }
+        else
+        {
+            writer.Put(0L);
+            writer.Put(1L);
+            writer.Put("");
+            writer.Put("");
+            writer.Put(-1);
+        }
+    }
+
     private static int EstimateEntitySize(Entity entity)
     {
         return 80 + (entity.Name.Length * 2) + (entity.FactionId.Length * 2);

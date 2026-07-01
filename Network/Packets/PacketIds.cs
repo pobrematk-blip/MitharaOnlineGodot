@@ -171,6 +171,7 @@ public enum PacketId : ushort
     S2C_LojinhaSpawn = 0x02A4,
     S2C_ItemUseResult = 0x02A5,
     S2C_SceneChange = 0x02A6,
+    S2C_CashBalance = 0x02A7,
     S2C_MapEditorTileData = 0x02B0,
     S2C_MapEditorTileUpdate = 0x02B1,
     S2C_MapMarkerUpdate = 0x02B2,

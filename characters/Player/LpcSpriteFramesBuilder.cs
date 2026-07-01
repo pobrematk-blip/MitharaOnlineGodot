@@ -89,6 +89,59 @@ public static class LpcSpriteFramesBuilder
         Texture2D sheetBase,
         Texture2D sheetAtaque,
         string prefixoAtaque,
+        PlayerSpriteAnimationProfile profile)
+    {
+        if (profile == null)
+            return ConstruirEquipamento(sheetBase, sheetAtaque, prefixoAtaque);
+
+        var sheetPadrao = sheetBase ?? sheetAtaque;
+        if (sheetPadrao == null) return new SpriteFrames();
+
+        prefixoAtaque = string.IsNullOrWhiteSpace(prefixoAtaque) ? "mago" : prefixoAtaque.Trim().ToLowerInvariant();
+        string ataquePath = sheetAtaque?.ResourcePath ?? "";
+        string basePath = sheetBase?.ResourcePath ?? "";
+        string cacheKey = $"equip-profile:{basePath}:{ataquePath}:{prefixoAtaque}:{profile.ResourcePath}";
+        if (_cache.TryGetValue(cacheKey, out var cached))
+            return cached;
+
+        var frames = new SpriteFrames();
+        for (int d = 0; d < Direcoes.Length; d++)
+        {
+            string dir = Direcoes[d];
+            int walkRow = profile.GetWalkRow(d);
+            int walkStartCol = profile.GetWalkStartCol(d);
+            int walkFrames = profile.GetWalkFrameCount(d);
+            AdicionarAnimacao(frames, sheetPadrao, $"walk_{dir}", walkRow, walkFrames, true, profile.WalkSpeed, profile.FrameWidth, profile.FrameHeight, walkStartCol);
+            AdicionarAnimacao(frames, sheetPadrao, $"run_{dir}", walkRow, walkFrames, true, profile.RunSpeed, profile.FrameWidth, profile.FrameHeight, walkStartCol);
+        }
+
+        var sheetAtaqueFinal = sheetAtaque ?? sheetPadrao;
+        int attackFrameWidth = profile.AttackFrameWidth > 0 ? profile.AttackFrameWidth : profile.FrameWidth;
+        int attackFrameHeight = profile.AttackFrameHeight > 0 ? profile.AttackFrameHeight : profile.FrameHeight;
+        for (int d = 0; d < Direcoes.Length; d++)
+        {
+            string dir = Direcoes[d];
+            AdicionarAnimacao(
+                frames,
+                sheetAtaqueFinal,
+                $"{prefixoAtaque}_attack_{dir}",
+                profile.GetAttackRow(d),
+                profile.GetAttackFrameCount(d),
+                false,
+                profile.AttackSpeed,
+                attackFrameWidth,
+                attackFrameHeight,
+                profile.GetAttackStartCol(d));
+        }
+
+        _cache[cacheKey] = frames;
+        return frames;
+    }
+
+    public static SpriteFrames ConstruirEquipamento(
+        Texture2D sheetBase,
+        Texture2D sheetAtaque,
+        string prefixoAtaque,
         int[] movimentoRows,
         int movimentoFrameSize,
         int[] ataqueRows,
@@ -111,7 +164,9 @@ public static class LpcSpriteFramesBuilder
             atkFrameCount = ataqueFrameCountOverride;
         movimentoRows = NormalizarRows(movimentoRows, RowWalk);
         int[] idleRows = NormalizarRows(null, RowIdle);
-        int[] corridaRows = NormalizarRows(null, RowRun);
+        int[] corridaRows = movimentoFrameSize == FrameSize
+            ? NormalizarRows(null, RowRun)
+            : movimentoRows;
         ataqueRows = NormalizarRows(ataqueRows, atkRowBase);
         movimentoFrameSize = movimentoFrameSize > 0 ? movimentoFrameSize : FrameSize;
         ataqueFrameSize = ataqueFrameSize > 0 ? ataqueFrameSize : FrameSize;

@@ -213,14 +213,26 @@ public class NpcManager
         _spawnPoints.Clear();
         foreach (var point in spawnPoints)
         {
+            if (!point.Enabled)
+                continue;
+
             if (string.IsNullOrWhiteSpace(point.PrefabId))
                 continue;
+
+            if (!_templates.ContainsKey(point.PrefabId))
+            {
+                Logger.Info($"NPC spawn ignorado: template '{point.PrefabId}' nao existe.");
+                continue;
+            }
 
             _spawnPoints.Add(new NpcSpawnPoint
             {
                 X = point.X,
                 Y = point.Y,
                 PrefabId = point.PrefabId,
+                Map = string.IsNullOrWhiteSpace(point.Map) ? "main" : point.Map,
+                Direction = string.IsNullOrWhiteSpace(point.Direction) ? "down" : point.Direction,
+                Enabled = point.Enabled,
             });
         }
     }
@@ -266,4 +278,7 @@ public class NpcSpawnPoint
     public float X { get; set; }
     public float Y { get; set; }
     public string PrefabId { get; set; } = "";
+    public string Map { get; set; } = "main";
+    public string Direction { get; set; } = "down";
+    public bool Enabled { get; set; } = true;
 }

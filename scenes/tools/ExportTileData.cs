@@ -7,7 +7,25 @@ using System.Text.Json;
 [Tool]
 public partial class ExportTileData : Node
 {
-    private static readonly string[] ScenesToExport = new[]
+    private sealed class SceneExportData
+    {
+        public string ScenePath { get; set; } = "";
+        public string SceneName { get; set; } = "";
+        public List<TileMarker> Markers { get; set; } = new();
+        public HashSet<(int X, int Y)> BlockedTiles { get; set; } = new();
+        public List<TeleportPairPoint> PairTeleports { get; set; } = new();
+    }
+
+    private sealed class TeleportPairPoint
+    {
+        public int PairId { get; set; }
+        public string SceneName { get; set; } = "";
+        public int TileX { get; set; }
+        public int TileY { get; set; }
+        public Vector2 Destination { get; set; }
+    }
+
+    private static readonly string[] ScenesToExport =
     {
         "res://scenes/Main.tscn",
         "res://scenes/Interiors/Alfaiataria.tscn",
@@ -35,92 +53,193 @@ public partial class ExportTileData : Node
     private void Export()
     {
         string projectDir = ProjectSettings.GlobalizePath("res://");
-        string serverTilesDir = System.IO.Path.Combine(projectDir, "server", "data", "tiles");
+        string serverTilesDir = Path.Combine(projectDir, "server", "data", "tiles");
         DirAccess.MakeDirRecursiveAbsolute(serverTilesDir);
 
+        var scenes = new List<SceneExportData>();
         foreach (string scenePath in ScenesToExport)
         {
-            ExportScene(scenePath, serverTilesDir);
+            var data = CollectSceneData(scenePath);
+            if (data != null)
+                scenes.Add(data);
         }
+
+        var pairedTeleports = BuildPairedTeleports(scenes);
+        foreach (var sceneData in scenes)
+            ExportScene(sceneData, serverTilesDir, pairedTeleports);
     }
 
-    private void ExportScene(string scenePath, string outputDir)
+    private SceneExportData CollectSceneData(string scenePath)
     {
         var scene = ResourceLoader.Load<PackedScene>(scenePath);
         if (scene == null)
         {
             GD.PrintErr($"[TILE EXPORT] Falha ao carregar: {scenePath}");
-            return;
+            return null;
         }
 
         var instance = scene.Instantiate<Node>();
-        var markers = FindMarkers(instance);
-        var blockedTiles = FindBlockedTiles(instance);
-        instance.QueueFree();
-
-        if (markers.Count == 0 && blockedTiles.Count == 0)
+        string sceneName = Path.GetFileNameWithoutExtension(scenePath).ToLower();
+        var data = new SceneExportData
         {
-            GD.Print($"[TILE EXPORT] {scenePath}: 0 marcadores/colisoes (ignorado)");
+            ScenePath = scenePath,
+            SceneName = sceneName,
+            Markers = FindMarkers(instance),
+            BlockedTiles = FindBlockedTiles(instance),
+            PairTeleports = FindTeleportPairs(instance, sceneName),
+        };
+        instance.QueueFree();
+        return data;
+    }
+
+    private Dictionary<string, Dictionary<(int X, int Y), Dictionary<string, object>>> BuildPairedTeleports(List<SceneExportData> scenes)
+    {
+        var result = new Dictionary<string, Dictionary<(int X, int Y), Dictionary<string, object>>>();
+        var allPairs = scenes.SelectMany(s => s.PairTeleports).GroupBy(p => p.PairId);
+
+        foreach (var pair in allPairs)
+        {
+            var points = pair.ToList();
+            if (points.Count != 2)
+            {
+                GD.PrintErr($"[TILE EXPORT] Teleporte PairId={pair.Key} precisa ter exatamente 2 marcadores. Encontrado: {points.Count}");
+                continue;
+            }
+
+            AddPairTeleport(result, points[0], points[1]);
+            AddPairTeleport(result, points[1], points[0]);
+        }
+
+        return result;
+    }
+
+    private static void AddPairTeleport(
+        Dictionary<string, Dictionary<(int X, int Y), Dictionary<string, object>>> result,
+        TeleportPairPoint from,
+        TeleportPairPoint to)
+    {
+        if (!result.TryGetValue(from.SceneName, out var sceneTeleports))
+        {
+            sceneTeleports = new Dictionary<(int X, int Y), Dictionary<string, object>>();
+            result[from.SceneName] = sceneTeleports;
+        }
+
+        sceneTeleports[(from.TileX, from.TileY)] = new Dictionary<string, object>
+        {
+            { "tileX", from.TileX },
+            { "tileY", from.TileY },
+            { "type", (int)TileMarker.TileType.Teleport },
+            { "targetScene", to.SceneName },
+            { "targetX", to.Destination.X },
+            { "targetY", to.Destination.Y },
+            { "pairId", from.PairId },
+            { "source", "teleport_pair" },
+        };
+    }
+
+    private void ExportScene(
+        SceneExportData sceneData,
+        string outputDir,
+        Dictionary<string, Dictionary<(int X, int Y), Dictionary<string, object>>> pairedTeleports)
+    {
+        if (sceneData.Markers.Count == 0 && sceneData.BlockedTiles.Count == 0 && sceneData.PairTeleports.Count == 0)
+        {
+            GD.Print($"[TILE EXPORT] {sceneData.ScenePath}: 0 marcadores/colisoes (ignorado)");
             return;
         }
 
         var outputByTile = new Dictionary<(int X, int Y), Dictionary<string, object>>();
-        foreach (var tile in blockedTiles)
+        foreach (var tile in sceneData.BlockedTiles)
         {
             outputByTile[tile] = new Dictionary<string, object>
             {
                 { "tileX", tile.X },
                 { "tileY", tile.Y },
                 { "type", (int)TileMarker.TileType.Block },
-                { "source", "godot_collision" }
+                { "source", "godot_collision" },
             };
         }
 
-        foreach (var m in markers)
+        foreach (var marker in sceneData.Markers)
         {
-            int tileX = Mathf.FloorToInt(m.Position.X / 32f);
-            int tileY = Mathf.FloorToInt(m.Position.Y / 32f);
+            int tileX = Mathf.FloorToInt(marker.GlobalPosition.X / 32f);
+            int tileY = Mathf.FloorToInt(marker.GlobalPosition.Y / 32f);
 
             var entry = new Dictionary<string, object>
             {
                 { "tileX", tileX },
                 { "tileY", tileY },
-                { "type", (int)m.Type }
+                { "type", (int)marker.Type },
             };
 
-            if (m.Type == TileMarker.TileType.Teleport)
+            if (marker.Type == TileMarker.TileType.Teleport)
             {
-                entry["targetScene"] = m.TargetScene;
-                entry["targetX"] = m.TargetX;
-                entry["targetY"] = m.TargetY;
+                entry["targetScene"] = marker.TargetScene;
+                entry["targetX"] = marker.TargetX;
+                entry["targetY"] = marker.TargetY;
             }
 
             outputByTile[(tileX, tileY)] = entry;
         }
 
-        string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath).ToLower();
-        string jsonPath = System.IO.Path.Combine(outputDir, $"{sceneName}.json");
+        if (pairedTeleports.TryGetValue(sceneData.SceneName, out var sceneTeleports))
+        {
+            foreach (var kvp in sceneTeleports)
+                outputByTile[kvp.Key] = kvp.Value;
+        }
+
+        string jsonPath = Path.Combine(outputDir, $"{sceneData.SceneName}.json");
         var output = outputByTile
             .OrderBy(kvp => kvp.Key.Y)
             .ThenBy(kvp => kvp.Key.X)
             .Select(kvp => kvp.Value)
             .ToList();
         string json = JsonSerializer.Serialize(output, new JsonSerializerOptions { WriteIndented = true });
-        System.IO.File.WriteAllText(jsonPath, json);
-        GD.Print($"[TILE EXPORT] {scenePath}: {markers.Count} marcadores, {blockedTiles.Count} tiles de colisao -> {jsonPath}");
+        File.WriteAllText(jsonPath, json);
+        GD.Print($"[TILE EXPORT] {sceneData.ScenePath}: {sceneData.Markers.Count} marcadores, {sceneData.BlockedTiles.Count} tiles de colisao, {sceneData.PairTeleports.Count} teleportes de casal -> {jsonPath}");
     }
 
     private List<TileMarker> FindMarkers(Node node)
     {
         var result = new List<TileMarker>();
-        if (node is TileMarker tm)
-            result.Add(tm);
+        if (node is TileMarker marker)
+            result.Add(marker);
+
         foreach (var child in node.GetChildren())
         {
             if (child is Node childNode)
                 result.AddRange(FindMarkers(childNode));
         }
+
         return result;
+    }
+
+    private List<TeleportPairPoint> FindTeleportPairs(Node node, string sceneName)
+    {
+        var result = new List<TeleportPairPoint>();
+        CollectTeleportPairs(node, sceneName, result);
+        return result;
+    }
+
+    private void CollectTeleportPairs(Node node, string sceneName, List<TeleportPairPoint> result)
+    {
+        if (node is TeleportPairMarker marker)
+        {
+            result.Add(new TeleportPairPoint
+            {
+                PairId = marker.PairId,
+                SceneName = sceneName,
+                TileX = marker.GetTileX(),
+                TileY = marker.GetTileY(),
+                Destination = marker.GlobalPosition + marker.DestinationOffset,
+            });
+        }
+
+        foreach (var child in node.GetChildren())
+        {
+            if (child is Node childNode)
+                CollectTeleportPairs(childNode, sceneName, result);
+        }
     }
 
     private HashSet<(int X, int Y)> FindBlockedTiles(Node node)

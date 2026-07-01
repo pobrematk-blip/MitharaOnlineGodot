@@ -1,0 +1,119 @@
+@model WikiMobDetailViewModel
+@{
+    ViewData["Title"] = Model.Mob.Name;
+}
+
+<section class="page-header">
+    <div class="container">
+        <p><a href="/Wiki/Mobs" class="back-link">← Voltar para Monstros</a></p>
+        <h1>@Model.Mob.Name</h1>
+        <p>Nível @Model.Mob.Level @(Model.Mob.IsBoss ? "- Boss" : Model.Mob.IsElite ? "- Elite" : "")</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="wiki-detail-grid">
+            <div class="wiki-detail-main">
+                <div class="wiki-detail-card">
+                    <h2>Informações do Monstro</h2>
+                    <table class="wiki-stats-table">
+                        <tr>
+                            <td class="stat-name">Nome</td>
+                            <td class="stat-value">@Model.Mob.Name</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Nível</td>
+                            <td class="stat-value">@Model.Mob.Level</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">HP</td>
+                            <td class="stat-value">@Model.Mob.Health</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Ataque</td>
+                            <td class="stat-value">@Model.Mob.AttackDamage</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Experiência</td>
+                            <td class="stat-value">@Model.Mob.ExperienceReward XP</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Gold</td>
+                            <td class="stat-value">@Model.Mob.GoldMin ~ @Model.Mob.GoldMax</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Categoria</td>
+                            <td class="stat-value">
+                                @if (Model.Mob.IsBoss) { <span class="mob-category boss">BOSS</span> }
+                                else if (Model.Mob.IsElite) { <span class="mob-category elite">ELITE</span> }
+                                else { <span class="mob-category normal">NORMAL</span> }
+                            </td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(Model.Mob.SpawnMaps))
+                        {
+                            <tr>
+                                <td class="stat-name">Mapas</td>
+                                <td class="stat-value">@Model.Mob.SpawnMaps</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Mob.Description))
+                {
+                    <div class="wiki-detail-card">
+                        <h2>Descrição</h2>
+                        <p class="wiki-description">@Model.Mob.Description</p>
+                    </div>
+                }
+            </div>
+
+            <div class="wiki-detail-side">
+                <div class="wiki-detail-card">
+                    <h2>Itens Dropados</h2>
+                    @if (Model.Drops.Count == 0)
+                    {
+                        <p class="text-muted">Este monstro não dropa itens específicos.</p>
+                    }
+                    else
+                    {
+                        <div class="wiki-drop-list">
+                            @foreach (var drop in Model.Drops.OrderByDescending(d => d.DropChance))
+                            {
+                                <div class="wiki-drop-entry">
+                                    @if (!string.IsNullOrEmpty(drop.ItemIcon))
+                                    {
+                                        <img src="@drop.ItemIcon" alt="@drop.ItemName" class="drop-item-icon" />
+                                    }
+                                    <div class="wiki-drop-item">
+                                        @if (drop.IsEquipmentDrop)
+                                        {
+                                            <strong>@drop.ItemName</strong>
+                                            <span>Equipamento @(drop.EquipmentTier == "elite" ? "Elite" : "Normal")</span>
+                                        }
+                                        else if (drop.ItemId > 0)
+                                        {
+                                            <a href="/Wiki/Item/@drop.ItemId"><strong>@drop.ItemName</strong></a>
+                                        }
+                                        else
+                                        {
+                                            <strong>@drop.ItemName</strong>
+                                        }
+                                    </div>
+                                    <div class="wiki-drop-info">
+                                        <span class="wiki-drop-chance">@drop.DropChanceDisplay</span>
+                                        @if (drop.MaxQuantity > 1)
+                                        {
+                                            <span class="wiki-drop-qty">@drop.MinQuantity-@drop.MaxQuantity</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

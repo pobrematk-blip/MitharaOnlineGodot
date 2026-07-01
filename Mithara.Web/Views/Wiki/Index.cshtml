@@ -1,0 +1,90 @@
+@model WikiIndexViewModel
+@{
+    ViewData["Title"] = "Wiki";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Wiki de Mithara</h1>
+        <p>Consulte informações sobre itens, monstros, drops e mais</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="wiki-search-box">
+            <form method="get" action="/Wiki/Index" class="wiki-search-form">
+                <input type="text" name="search" value="@Model.SearchQuery" placeholder="Buscar itens, monstros..." class="form-control wiki-search-input" />
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </form>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.SearchQuery))
+        {
+            <div class="wiki-search-results">
+                <h2>Resultados para "@Model.SearchQuery"</h2>
+                @if (Model.SearchResults.Count == 0)
+                {
+                    <p class="empty-state">Nenhum resultado encontrado.</p>
+                }
+                else
+                {
+                    <div class="wiki-result-list">
+                        @foreach (var r in Model.SearchResults)
+                        {
+                            <a href="/Wiki/@(r.Type == "item" ? "Item" : "Mob")/@r.Id" class="wiki-result-item">
+                                <div class="wiki-result-icon">
+                                    @if (r.Type == "item") { <text>🛡️</text> }
+                                    else { <text>👹</text> }
+                                </div>
+                                <div class="wiki-result-info">
+                                    <strong>@r.Name</strong>
+                                    <span>@r.Subtitle</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="wiki-categories">
+                <a href="/Wiki/Items" class="wiki-category-card">
+                    <div class="wiki-category-icon">📦</div>
+                    <h3>Itens</h3>
+                    <p>@Model.TotalItems itens registrados</p>
+                </a>
+                <a href="/Wiki/Mobs" class="wiki-category-card">
+                    <div class="wiki-category-icon">👹</div>
+                    <h3>Monstros</h3>
+                    <p>@Model.TotalMobs monstros registrados</p>
+                </a>
+            </div>
+
+            @if (Model.RecentMobs.Count > 0)
+            {
+                <div class="wiki-section">
+                    <h2>Monstros</h2>
+                    <div class="wiki-mob-grid">
+                        @foreach (var mob in Model.RecentMobs)
+                        {
+                            <a href="/Wiki/Mob/@mob.Id" class="wiki-mob-card">
+                                <div class="wiki-mob-card-header @(mob.IsBoss ? "boss" : mob.IsElite ? "elite" : "")">
+                                    <span class="wiki-mob-level">Nv. @mob.Level</span>
+                                    @if (mob.IsBoss) { <span class="wiki-mob-tag boss-tag">BOSS</span> }
+                                    else if (mob.IsElite) { <span class="wiki-mob-tag elite-tag">ELITE</span> }
+                                </div>
+                                <div class="wiki-mob-card-body">
+                                    <div class="wiki-mob-avatar">@mob.Name[0]</div>
+                                    <h4>@mob.Name</h4>
+                                    <p>HP: @mob.Health | ATK: @mob.AttackDamage</p>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</section>

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dwbk8vko2f8qm"]
 
 [ext_resource type="Script" uid="uid://byob5ab6kusvl" path="res://resources/Projetil/Projetil.cs" id="1_mdcmk"]
-[ext_resource type="SpriteFrames" path="res://resources/Projetil/ProjetilMageFrames.tres" id="2_mage_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/Projetil/ProjetilBolaFogoFrames.tres" id="2_mage_frames"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_v7x51"]
 radius = 12.369317
@@ -11,6 +11,8 @@ collision_mask = 6
 script = ExtResource("1_mdcmk")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+rotation = 1.5708
+scale = Vector2(0.32, 0.32)
 sprite_frames = ExtResource("2_mage_frames")
 animation = &"default"
 playing = true

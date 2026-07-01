@@ -5,7 +5,7 @@ public enum TipoItem { Normal, Elite }
 
 public enum Raridade { Comum, Incomum, Raro, Epico, Lendario, Mistico }
 
-public enum PesoItem { Leve, Medio, Pesado }
+public enum PesoItem { Nenhum = -1, Leve = 0, Medio = 1, Pesado = 2 }
 
 public enum TipoAfixo
 {
@@ -55,7 +55,7 @@ public partial class ItemResource : Resource
     [Export] public TipoEquipamento Tipo { get; set; } = TipoEquipamento.Nenhum;
     [Export] public bool EhDuasMaos { get; set; } = false;
     [Export] public bool EhPvp { get; set; } = false;
-    [Export] public PesoItem CategoriaPeso { get; set; } = PesoItem.Medio;
+    [Export] public PesoItem CategoriaPeso { get; set; } = PesoItem.Nenhum;
 
     [ExportGroup("Raridade")]
     [Export] public TipoItem TipoItem { get; set; } = TipoItem.Normal;
@@ -187,4 +187,11 @@ public partial class ItemResource : Resource
 
     [ExportGroup("Afixos")]
     [Export] public string PoolDeAfixos { get; set; } = "";
+
+    public bool UsaCategoriaPeso()
+    {
+        return Tipo is TipoEquipamento.Capacete or TipoEquipamento.Peitoral
+            or TipoEquipamento.Cinto or TipoEquipamento.Luvas
+            or TipoEquipamento.Calca or TipoEquipamento.Botas;
+    }
 }

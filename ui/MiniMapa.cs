@@ -8,6 +8,7 @@ public partial class MiniMapa : Control
     private Node2D _player;
     private Label _fpsLabel;
     private Label _pingLabel;
+    private Panel _statsPanel;
     private Control _borderOverlay;
     private Control _dotsOverlay;
     private Control _resizeHandle;
@@ -34,14 +35,17 @@ public partial class MiniMapa : Control
     private const float Padding = 3f;
     private const float EdgeMargin = 3f;
     private const float MinSize = 150f;
+    private const string SettingsPath = "user://settings.cfg";
+    private const string SectionUI = "UI";
 
     public override void _Ready()
     {
         _viewportContainer = GetNode<SubViewportContainer>("SubViewportContainer");
         _viewport = GetNode<SubViewport>("SubViewportContainer/MiniViewport");
         _minimapCamera = GetNode<Camera2D>("SubViewportContainer/MiniViewport/MiniCamera");
-        _fpsLabel = GetNode<Label>("FpsLabel");
-        _pingLabel = GetNode<Label>("PingLabel");
+        _statsPanel = GetNodeOrNull<Panel>("StatsPanel");
+        _fpsLabel = GetNode<Label>("StatsPanel/FpsLabel");
+        _pingLabel = GetNode<Label>("StatsPanel/PingLabel");
         _borderOverlay = GetNode<Control>("BorderOverlay");
         _dotsOverlay = GetNode<Control>("DotsOverlay");
         _resizeHandle = GetNode<Control>("ResizeHandle");
@@ -63,6 +67,8 @@ public partial class MiniMapa : Control
         _resizeHandle.Draw += OnResizeHandleDraw;
         _resizeHandle.Resized += () => _resizeHandle.QueueRedraw();
         _cashBtn.GuiInput += OnCashBtnGuiInput;
+        ConfigurarStatsPanel();
+        CarregarVisibilidadeStats();
 
         Resized += OnRootResized;
         GetTree().Root.SizeChanged += ManterNaBordaDireita;
@@ -75,6 +81,61 @@ public partial class MiniMapa : Control
     private void OnRootResized()
     {
         AtualizarLayout();
+    }
+
+    private void ConfigurarStatsPanel()
+    {
+        if (_statsPanel != null)
+        {
+            var style = new StyleBoxFlat
+            {
+                BgColor = new Color(0.015f, 0.018f, 0.025f, 0.88f),
+                BorderColor = new Color(1.0f, 0.72f, 0.16f, 0.95f),
+                CornerRadiusTopLeft = 4,
+                CornerRadiusTopRight = 4,
+                CornerRadiusBottomLeft = 4,
+                CornerRadiusBottomRight = 4,
+                ShadowColor = new Color(0, 0, 0, 0.55f),
+                ShadowSize = 5,
+            };
+            style.SetBorderWidthAll(1);
+            style.ContentMarginLeft = 7;
+            style.ContentMarginRight = 7;
+            style.ContentMarginTop = 4;
+            style.ContentMarginBottom = 4;
+            _statsPanel.AddThemeStyleboxOverride("panel", style);
+        }
+
+        ConfigurarLabelStats(_fpsLabel, new Color(0.3f, 1.0f, 0.35f, 1));
+        ConfigurarLabelStats(_pingLabel, new Color(0.35f, 0.82f, 1.0f, 1));
+    }
+
+    private static void ConfigurarLabelStats(Label label, Color color)
+    {
+        if (label == null) return;
+        label.AddThemeColorOverride("font_color", color);
+        label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+        label.AddThemeConstantOverride("outline_size", 2);
+        label.AddThemeFontSizeOverride("font_size", 13);
+    }
+
+    private void CarregarVisibilidadeStats()
+    {
+        var cfg = new ConfigFile();
+        bool visible = true;
+        if (cfg.Load(SettingsPath) == Error.Ok)
+            visible = cfg.GetValue(SectionUI, "mostrar_fps_ping", true).AsBool();
+        SetFpsPingVisible(visible);
+    }
+
+    public void SetFpsPingVisible(bool visible)
+    {
+        if (_statsPanel != null)
+            _statsPanel.Visible = visible;
+        if (_fpsLabel != null)
+            _fpsLabel.Visible = visible;
+        if (_pingLabel != null)
+            _pingLabel.Visible = visible;
     }
 
     private void AtualizarLayout()
@@ -120,6 +181,16 @@ public partial class MiniMapa : Control
                 Mathf.Max(0f, Size.X - cashSize.X - EdgeMargin),
                 Mathf.Max(Padding + size + 8f, Size.Y - cashSize.Y - EdgeMargin)
             );
+
+            if (_statsPanel != null)
+            {
+                Vector2 statsSize = new(118f, 42f);
+                _statsPanel.Size = statsSize;
+                _statsPanel.Position = new Vector2(
+                    Mathf.Max(0f, _cashBtn.Position.X - statsSize.X - 8f),
+                    _cashBtn.Position.Y + Mathf.Max(0f, (cashSize.Y - statsSize.Y) * 0.5f)
+                );
+            }
         }
 
         AtualizarZoomCamera();
@@ -233,9 +304,9 @@ public partial class MiniMapa : Control
 
     private void UpdateLabels()
     {
-        _fpsLabel.Text = $"FPS: {Engine.GetFramesPerSecond()}";
+        _fpsLabel.Text = $"FPS  {Engine.GetFramesPerSecond()}";
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        _pingLabel.Text = net != null && net.IsConnected ? $"Ping: {net.ServerPing}ms" : "Ping: Offline";
+        _pingLabel.Text = net != null && net.IsConnected ? $"PING {net.ServerPing} ms" : "PING OFF";
     }
 
     private void AtualizarVipIndicator()

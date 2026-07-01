@@ -12,9 +12,15 @@ public partial class Projetil : Area2D
     
     private Vector2 _direcao = Vector2.Zero;
     private EquipamentoComponent _equipamentoDoPlayer;  // Referência ao sistema de status do Player
+    private Node _dono;
+    private AnimatedSprite2D _animatedSprite;
 
     public override void _Ready()
     {
+        _animatedSprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")
+            ?? FindChild("AnimatedSprite2D", true, false) as AnimatedSprite2D;
+        ReiniciarAnimacaoVisual();
+
         // Conecta o sinal para saber quando o projétil bateu em algo
         BodyEntered += OnBodyEntered;
 
@@ -44,15 +50,43 @@ public partial class Projetil : Area2D
         Rotation = _direcao.Angle();
     }
 
+    public void DefinirDono(Node dono)
+    {
+        _dono = dono;
+    }
+
     private double _tempoDeVida = 0;
 
     public override void _Process(double delta)
     {
         _tempoDeVida += delta;
+        if (_animatedSprite != null && !_animatedSprite.IsPlaying())
+            ReiniciarAnimacaoVisual();
+    }
+
+    private void ReiniciarAnimacaoVisual()
+    {
+        if (_animatedSprite == null || _animatedSprite.SpriteFrames == null)
+            return;
+
+        string anim = _animatedSprite.Animation.ToString();
+        if (string.IsNullOrWhiteSpace(anim) || !_animatedSprite.SpriteFrames.HasAnimation(anim))
+            anim = _animatedSprite.SpriteFrames.HasAnimation("default") ? "default" : "";
+
+        if (string.IsNullOrWhiteSpace(anim))
+            return;
+
+        _animatedSprite.SpriteFrames.SetAnimationLoop(anim, true);
+        _animatedSprite.Animation = anim;
+        _animatedSprite.Frame = 0;
+        _animatedSprite.Play(anim);
     }
 
     private void OnBodyEntered(Node2D body)
     {
+        if (_dono != null && IsInstanceValid(_dono) && body == _dono)
+            return;
+
         var collBody = body as CollisionObject2D;
         GD.Print($"[PROJETIL] Colidiu com: {body.Name} (tipo={body.GetType().Name}, layer={(collBody?.CollisionLayer ?? 0)}, grupo Inimigos={body.IsInGroup("Inimigos")})");
 

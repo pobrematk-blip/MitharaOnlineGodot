@@ -1,0 +1,49 @@
+@model AdminUsersViewModel
+@{
+    ViewData["Title"] = "Usuários";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Gerenciar Usuários</h1>
+        <a href="/Admin/Dashboard" class="btn btn-secondary">Voltar</a>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="ranking-table-wrapper">
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuário</th>
+                        <th>Email</th>
+                        <th>Criado em</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var account in Model.Accounts)
+                    {
+                        <tr>
+                            <td>@account.Id</td>
+                            <td>@account.Username</td>
+                            <td>@account.Email</td>
+                            <td>@account.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="pagination">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a href="/Admin/Users?page=@i" class="page-link @(i == Model.Page ? "active" : "")">@i</a>
+                }
+            </div>
+        }
+    </div>
+</section>

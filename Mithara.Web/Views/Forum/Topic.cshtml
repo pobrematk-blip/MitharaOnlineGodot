@@ -1,0 +1,74 @@
+@model ForumTopicViewModel
+@{
+    ViewData["Title"] = Model.Topic.Title;
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>@Model.Topic.Title</h1>
+        <p>Por @Model.Topic.AuthorName &middot; @Model.Topic.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        @if (Model.Topic.IsLocked)
+        {
+            <div class="alert alert-warning">Este tópico está bloqueado. Não é possível postar novas respostas.</div>
+        }
+
+        <div class="post-list">
+            @for (int i = 0; i < Model.Posts.Count; i++)
+            {
+                var post = Model.Posts[i];
+                <div class="post-card" id="post-@post.Id">
+                    <div class="post-sidebar">
+                        <div class="post-author-avatar">@post.AuthorName[0].ToString().ToUpper()</div>
+                        <strong>@post.AuthorName</strong>
+                        <span class="post-number">#@(i + 1 + (Model.Page - 1) * 20)</span>
+                    </div>
+                    <div class="post-content">
+                        <div class="post-header">
+                            <span class="post-date">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            @if (post.EditedAt.HasValue)
+                            {
+                                <span class="post-edited">Editado: @post.EditedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            }
+                        </div>
+                        <div class="post-body">
+                            @Html.Raw(post.Content.Replace("\n", "<br />"))
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="pagination">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <a href="/Forum/Topic/@Model.Topic.Id?page=@i" class="page-link @(i == Model.Page ? "active" : "")">@i</a>
+                }
+            </div>
+        }
+
+        @if (!Model.Topic.IsLocked && User.Identity?.IsAuthenticated == true)
+        {
+            <div class="reply-form">
+                <h3>Responder</h3>
+                <form asp-action="CreatePost" asp-controller="Forum" method="post">
+                    <input type="hidden" name="TopicId" value="@Model.Topic.Id" />
+                    <div class="form-group">
+                        <textarea name="Content" class="form-control" required rows="6" placeholder="Escreva sua resposta..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+                </form>
+            </div>
+        }
+        else if (!Model.Topic.IsLocked && User.Identity?.IsAuthenticated != true)
+        {
+            <p class="auth-link"><a href="/Account/Login">Faça login</a> para responder.</p>
+        }
+    </div>
+</section>

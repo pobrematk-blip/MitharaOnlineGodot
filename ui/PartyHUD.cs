@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public partial class PartyHUD : Control
 {
+    private const string PartyXpIconPath = "res://Itens/Incones/Fragmento Estelar.png";
+    private const float PartyXpIconSize = 18f;
+
     private VBoxContainer _container = null!;
     private List<Godot.Collections.Dictionary> _members = new();
     private int _partyId;
@@ -179,6 +182,7 @@ public partial class PartyHUD : Control
 
         Visible = true;
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        AdicionarBuffXpParty(net);
 
         foreach (var m in _members)
         {
@@ -289,15 +293,70 @@ public partial class PartyHUD : Control
         }
     }
 
+    private void AdicionarBuffXpParty(GameNetwork? net)
+    {
+        int xpBonus = net?.PartyXpBonusPercent ?? Mathf.Clamp(_members.Count * 5, 0, 25);
+        if (xpBonus <= 0)
+            return;
+
+        var panel = new Panel();
+        panel.CustomMinimumSize = new Vector2(0, 26);
+        panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        panel.MouseFilter = MouseFilterEnum.Ignore;
+
+        var style = MitharaUiTheme.Inner(0.88f);
+        style.BorderColor = MitharaUiTheme.Accent;
+        panel.AddThemeStyleboxOverride("panel", style);
+
+        var row = new HBoxContainer();
+        row.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        row.OffsetLeft = 5;
+        row.OffsetTop = 3;
+        row.OffsetRight = -5;
+        row.OffsetBottom = -3;
+        row.AddThemeConstantOverride("separation", 5);
+        row.MouseFilter = MouseFilterEnum.Ignore;
+        panel.AddChild(row);
+
+        Texture2D? xpIcon = CarregarIconeXpParty();
+        if (xpIcon != null)
+        {
+            var iconRect = new TextureRect
+            {
+                Texture = xpIcon,
+                CustomMinimumSize = new Vector2(PartyXpIconSize, PartyXpIconSize),
+                SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
+                SizeFlagsVertical = SizeFlags.ShrinkCenter,
+                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            row.AddChild(iconRect);
+        }
+
+        var label = new Label
+        {
+            Text = $"+{xpBonus}% XP Party",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        label.AddThemeFontSizeOverride("font_size", 9);
+        label.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
+        row.AddChild(label);
+
+        _container.AddChild(panel);
+    }
+
     private static Texture2D? CarregarIconeClasse(string classe)
     {
         string iconPath = classe.ToLowerInvariant() switch
         {
-            "arqueiro" => "res://Itens/Incones/Arco do Atirador.png",
-            "assassino" or "ladino" => "res://Itens/Incones/Adaga Sombria.png",
+            "arqueiro" => "res://Itens/Incones/Arco 1.png",
+            "assassino" or "ladino" => "res://Itens/Incones/Adaga 1.png",
             "guerreiro" => "res://Itens/Incones/Machados Perdisos 1.png",
             "berserker" => "res://Itens/Incones/Machados Perdisos 2.png",
-            "mago" => "res://Itens/Incones/1.png",
+            "mago" => "res://Itens/Incones/Cajado 6.png",
             "clerigo" => "res://Itens/Incones/Martelo quebrada.png",
             "guardiao" => "res://Itens/Incones/Escudo de Goglin.png",
             _ => "",
@@ -305,6 +364,13 @@ public partial class PartyHUD : Control
         if (!string.IsNullOrEmpty(iconPath) && ResourceLoader.Exists(iconPath))
             return ResourceLoader.Load<Texture2D>(iconPath);
         return null;
+    }
+
+    private static Texture2D? CarregarIconeXpParty()
+    {
+        return ResourceLoader.Exists(PartyXpIconPath)
+            ? ResourceLoader.Load<Texture2D>(PartyXpIconPath)
+            : null;
     }
 
     private static StyleBoxFlat CriarBarra(Color cor)

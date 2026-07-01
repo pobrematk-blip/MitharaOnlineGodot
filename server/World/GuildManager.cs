@@ -29,6 +29,24 @@ public class Guild
         MemberRanks[leaderId] = 0; // Lider
     }
 
+    public void ClearLoadedMembers()
+    {
+        Members.Clear();
+        MemberRanks.Clear();
+        LeaderEntityId = 0;
+    }
+
+    public static void EnsureNextIdAtLeast(int id)
+    {
+        while (true)
+        {
+            int current = _nextId;
+            if (current >= id) return;
+            if (Interlocked.CompareExchange(ref _nextId, id, current) == current)
+                return;
+        }
+    }
+
     public int GetRank(ulong entityId) =>
         MemberRanks.TryGetValue(entityId, out var r) ? r : 4; // Novato
 
@@ -153,6 +171,8 @@ public class GuildManager
     {
         lock (_lock)
         {
+            guild.ClearLoadedMembers();
+            Guild.EnsureNextIdAtLeast(guild.Id);
             _guilds[guild.Id] = guild;
         }
     }

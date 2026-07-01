@@ -6,7 +6,12 @@ using System.Collections.Generic;
 public partial class Player : CharacterBody2D
 {
     private const float NpcInteractionRange = 180f;
+    private const float MeleeTargetFallbackRadius = 24f;
+    private const float MeleeTargetContactPadding = 10f;
     private const float IdleTransitionDelay = 5f;
+    private const float AttackAnimationSpeedScale = 4.0f;
+    private const string PlayerAnimationModelScenePath = "res://characters/Player/player.tscn";
+    private static SpriteFrames _modeloAnimacaoPlayer;
     [Signal] public delegate void StatusAtualizadoEventHandler();
 
     [Export] public float MaxSpeed = 185.0f;
@@ -29,6 +34,7 @@ public partial class Player : CharacterBody2D
     private SpriteFrames _spriteFramesBasePersonagem;
     private string _nomeRacaAtual = "";
     private string _spriteCorpoAtual = "";
+    private bool _morteAnimationFinishedConectado;
 
     private sealed class HumanFullSpriteProfile
     {
@@ -40,11 +46,13 @@ public partial class Player : CharacterBody2D
         public readonly int[] AtaqueRows;
         public readonly int AtaqueFrameSize;
         public readonly int AtaqueFrameCount;
+        public readonly string AnimationProfilePath;
 
         public HumanFullSpriteProfile(string nome, string[] palavrasChave, string[] sufixosArquivo,
             int[] movimentoRows = null, int movimentoFrameSize = LpcSpriteFramesBuilder.FrameSize,
             int[] ataqueRows = null, int ataqueFrameSize = LpcSpriteFramesBuilder.FrameSize,
-            int ataqueFrameCount = 0)
+            int ataqueFrameCount = 0,
+            string animationProfilePath = "")
         {
             Nome = nome;
             PalavrasChave = palavrasChave;
@@ -54,58 +62,70 @@ public partial class Player : CharacterBody2D
             AtaqueRows = ataqueRows;
             AtaqueFrameSize = ataqueFrameSize;
             AtaqueFrameCount = ataqueFrameCount;
+            AnimationProfilePath = animationProfilePath;
         }
     }
 
     private static readonly HumanFullSpriteProfile HumanUnarmedProfile = new(
         "Desarmado",
         Array.Empty<string>(),
-        new[] { "{race} Desarmado", "{race} desarmado", "{race} com Desarmado", "{raceNoSpace}" });
+        new[] { "{race} Desarmado", "{raceNoSpace}" });
 
     private static readonly HumanFullSpriteProfile[] HumanFullSpriteProfiles =
     {
         new("Arco", new[] { "arco" },
             new[] { "{race} com Arco" },
             new[] { 27, 28, 29, 30 }, 128,
-            new[] { 16, 17, 18, 19 }, 64),
+            new[] { 16, 17, 18, 19 }, 64,
+            13,
+            "res://characters/Player/AnimationProfiles/Arco.tres"),
 
         new("Adaga", new[] { "adaga", "lamina", "lâmina" },
-            new[] { "{race} com Adaga", "{race} de Adaga" },
+            new[] { "{race} com Adaga" },
             new[] { 8, 9, 10, 11 }, 128,
-            new[] { 35, 36, 37, 38 }, 128,
-            13),
+            new[] { 31, 34, 33, 32 }, 128,
+            13,
+            "res://characters/Player/AnimationProfiles/Adaga.tres"),
 
         new("Espada e Escudo", new[] { "espada", "escudo" },
-            new[] { "{race} com Espada e Escudo", "{race} com Espada e  Escudo", "{race} com Espada e escudo", "{race} de Espada e Escudo" },
+            new[] { "{race} com Espada e Escudo" },
             new[] { 8, 9, 10, 11 }, 128,
-            new[] { 28, 29, 30, 31 }, 128),
+            new[] { 27, 28, 29, 30 }, 128,
+            6,
+            "res://characters/Player/AnimationProfiles/EspadaEEscudo.tres"),
 
-        new("Machado Duas Maos", new[] { "machado duas", "machado de duas", "machadao", "machadão" },
-            new[] { "{race} com Machado de Duas Maos", "{race} com Machado de Guerra", "{race} com Machado de guerra", "{race} com Machao de Guerra", "{race} com Machao de guerra", "{race} com Machado", "{race} de Machado", "Machado de Duas mao" },
+        new("Machado Duas Maos", new[] { "machado de guerra", "machado duas", "machado de duas", "machadao", "machadão" },
+            new[] { "{race} com Machado de Guerra" },
             new[] { 8, 9, 10, 11 }, 128,
-            new[] { 29, 30, 31, 32 }, 128),
+            new[] { 18, 19, 20, 21 }, 192,
+            6,
+            "res://characters/Player/AnimationProfiles/MachadoDeGuerra.tres"),
 
         new("Machado de Coleta", new[] { "machado de coleta", "machado coleta" },
             new[] { "{race} com Machado de Coleta" }),
 
-        new("Maca e Escudo", new[] { "maca", "maça", "mangual" },
-            new[] { "{race} com Maca e Escudo", "{race} com Mangual e escudo" },
+        new("Maca e Escudo", new[] { "maca", "maça", "mangual", "martelo", "escudo magico", "escudo mágico" },
+            new[] { "{race} com Maca e Escudo" },
             new[] { 8, 9, 10, 11 }, 128,
-            new[] { 29, 30, 31, 32 }, 128),
+            new[] { 18, 19, 20, 21 }, 192,
+            6,
+            "res://characters/Player/AnimationProfiles/MacaEEscudo.tres"),
 
         new("Martelo", new[] { "martelo" },
-            new[] { "{race} com Martelo", "{race} de Martelo" }),
+            new[] { "{race} com Martelo" }),
 
         new("Cajado", new[] { "cajado", "staff" },
-            new[] { "{race} com Cajado", "{race} de Cajado" },
+            new[] { "{race} com Cajado" },
             new[] { 8, 9, 10, 11 }, 128,
-            new[] { 29, 30, 31, 32 }, 128),
+            new[] { 18, 21, 20, 19 }, 192,
+            8,
+            "res://characters/Player/AnimationProfiles/Cajado.tres"),
 
         new("Picareta", new[] { "picareta" },
-            new[] { "{race} com Picareta", "{race} de Picareta" }),
+            new[] { "{race} com Picareta" }),
 
         new("Regador", new[] { "regador" },
-            new[] { "{race} com Regador", "{race} de Regador" }),
+            new[] { "{race} com Regador" }),
 
         new("Vara de Pesca", new[] { "vara de pesca", "pesca" },
             new[] { "{race} com Vara de Pesca" },
@@ -119,6 +139,8 @@ public partial class Player : CharacterBody2D
         perfilVisual = "";
 
         var profile = EncontrarPerfilSpritePorClasse(nomeClasse) ?? HumanUnarmedProfile;
+        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
+        SpriteFrames baseFrames = CriarSpriteFramesBaseParaRaca(nomeRaca, prefixoAtaque);
         Texture2D sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile, nomeRaca));
         if (sheet == null && profile != HumanUnarmedProfile)
         {
@@ -129,30 +151,67 @@ public partial class Player : CharacterBody2D
         if (sheet == null)
             return null;
 
-        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
         SpriteFrames frames = profile == HumanUnarmedProfile
             ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
-            : LpcSpriteFramesBuilder.ConstruirEquipamento(
-                sheet,
-                sheet,
-                prefixoAtaque,
-                profile.MovimentoRows,
-                profile.MovimentoFrameSize,
-                profile.AtaqueRows,
-                profile.AtaqueFrameSize,
-                profile.AtaqueFrameCount);
+            : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
 
         if (frames == null || frames.GetAnimationNames().Length == 0)
             return null;
+
+        if (profile != HumanUnarmedProfile && baseFrames != null)
+            CopiarAnimacoesBaseParaSpriteArmado(frames, baseFrames);
+
+        AplicarModeloAnimacaoEditavel(frames, profile, sheet, sheet, prefixoAtaque);
 
         spritesheetPath = sheet.ResourcePath;
         perfilVisual = profile.Nome;
         return frames;
     }
+
+    private static SpriteFrames CriarSpriteFramesEquipamento(Texture2D sheet, string prefixoAtaque, HumanFullSpriteProfile profile)
+    {
+        PlayerSpriteAnimationProfile animationProfile = CarregarPerfilAnimacao(profile);
+        if (animationProfile != null)
+            return LpcSpriteFramesBuilder.ConstruirEquipamento(sheet, sheet, prefixoAtaque, animationProfile);
+
+        return LpcSpriteFramesBuilder.ConstruirEquipamento(
+            sheet,
+            sheet,
+            prefixoAtaque,
+            profile.MovimentoRows,
+            profile.MovimentoFrameSize,
+            profile.AtaqueRows,
+            profile.AtaqueFrameSize,
+            profile.AtaqueFrameCount);
+    }
+
+    private static PlayerSpriteAnimationProfile CarregarPerfilAnimacao(HumanFullSpriteProfile profile)
+    {
+        if (profile == null || string.IsNullOrWhiteSpace(profile.AnimationProfilePath))
+            return null;
+
+        return ResourceLoader.Exists(profile.AnimationProfilePath)
+            ? ResourceLoader.Load<PlayerSpriteAnimationProfile>(profile.AnimationProfilePath)
+            : null;
+    }
+
+    private static SpriteFrames CriarSpriteFramesBaseParaRaca(string nomeRaca, string prefixoAtaque)
+    {
+        Texture2D sheetBase = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(HumanUnarmedProfile, nomeRaca));
+        if (sheetBase == null)
+            return null;
+
+        var frames = LpcSpriteFramesBuilder.Construir(sheetBase, prefixoAtaque);
+        if (frames != null && frames.GetAnimationNames().Length > 0)
+            AplicarModeloAnimacaoEditavel(frames, HumanUnarmedProfile, sheetBase, null, prefixoAtaque);
+
+        return frames != null && frames.GetAnimationNames().Length > 0 ? frames : null;
+    }
     public string CurrentDirection { get; protected set; } = "down";
     protected bool IsAttacking = false;
     private float _attackTimeoutCounter = 0f;
     private float _maxAttackDuration = 0.8f;
+    private float _attackCooldownRemaining;
     private bool _wasFPressed = false;
     private bool _projetilDisparado = false;
     private float _promptUpdateTimer;
@@ -170,6 +229,7 @@ public partial class Player : CharacterBody2D
     private bool _holdingBeforeIdle;
 
     [Export] public int MaxStamina = 100;
+    [Export] public float BasicAttackCooldown = 1.2f;
     public int CurrentStamina { get; private set; }
     public bool IsSprinting { get; private set; }
     private float _staminaRegenCooldown = 0f;
@@ -257,14 +317,16 @@ public partial class Player : CharacterBody2D
     {
         if (target is Player p && p.IsDead)
         {
-            p.CurrentHealth = Math.Min(p.MaxHealth, p.MaxHealth / 2);
+            p.CurrentHealth = p.MaxHealth;
+            p.CurrentMana = p.MaxMana;
+            p.EmitSignal(SignalName.StatusAtualizado);
             p.SetPhysicsProcess(true);
             GD.Print("[PLAYER] Revive aplicado em alvo.");
         }
     }
 
     // (full implementations later in file)
-    [Export] public float MeleeAttackRange = 88.0f;
+    [Export] public float MeleeAttackRange = 96.0f;
     [Export] public float AttackDotThreshold = 0.5f;
     
     // Define qual classe esse script está controlando no momento
@@ -323,6 +385,9 @@ public partial class Player : CharacterBody2D
         _network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (_network != null)
         {
+            if (_network.PendingPlayerSpawn != Vector2.Zero)
+                ApplyServerPosition(_network.PendingPlayerSpawn.X, _network.PendingPlayerSpawn.Y);
+
             _network.OnRespawn += OnRespawnReceived;
             _network.OnTeleport += OnTeleportReceived;
             _network.OnEnterWorld += AplicarProgressaoServidorPendente;
@@ -382,7 +447,7 @@ public partial class Player : CharacterBody2D
         if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
         {
             SelecionarAlvoEm(GetGlobalMousePosition());
-            if (!IsAttacking)
+            if (!IsAttacking && _attackCooldownRemaining <= 0f)
                 Atacar();
             GetViewport().SetInputAsHandled();
             return;
@@ -524,6 +589,13 @@ public partial class Player : CharacterBody2D
         return true;
     }
 
+    public bool TryGetSelectedCombatTarget(out Node2D targetNode)
+    {
+        targetNode = null;
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        return TryGetSelectedTarget(net, out targetNode, out _);
+    }
+
     public void ApplyServerPosition(float x, float y, bool animated = false)
     {
         var target = new Vector2(x, y);
@@ -542,10 +614,10 @@ public partial class Player : CharacterBody2D
         _lastSentPosition = target;
     }
 
-    private void OnRespawnReceived(ulong entityId, float x, float y, int health, int maxHealth)
+    private void OnRespawnReceived(ulong entityId, float x, float y, int health, int maxHealth, int mana, int maxMana)
     {
         if (entityId == _network?.LocalPlayerId)
-            Reviver(x, y, health, maxHealth);
+            Reviver(x, y, health, maxHealth, mana, maxMana);
     }
 
     private void OnTeleportReceived(ulong entityId, float x, float y)
@@ -655,7 +727,7 @@ public partial class Player : CharacterBody2D
             if (frames != null && frames.GetAnimationNames().Length > 0)
             {
                 AnimatedSprite.SpriteFrames = frames;
-                _spriteFramesBasePersonagem = frames;
+                _spriteFramesBasePersonagem = CriarSpriteFramesBaseParaRaca(_nomeRacaAtual, ObterPrefixoAtaqueAtual()) ?? frames;
                 _spriteCorpoAtual = string.IsNullOrWhiteSpace(perfilVisual) ? "base" : perfilVisual;
                 GD.Print($"[PLAYER] Sprites aplicados: {escolhido.Raca?.NomeRaca} / {classe.NomeClasse} / {perfilVisual} ({sheetPath})");
             }
@@ -665,9 +737,13 @@ public partial class Player : CharacterBody2D
             }
         }
 
-        if (classe.UsaProjetil)
+        if (classe.UsaProjetil && ClassePodeUsarProjetilBasico(classe.NomeClasse))
         {
             ProjetilScene = classe.CenaDoProjetil;
+        }
+        else
+        {
+            ProjetilScene = null;
         }
 
         MaxSpeed = classe.VelocidadeMovimento > 0 ? classe.VelocidadeMovimento : MaxSpeed;
@@ -739,32 +815,21 @@ public partial class Player : CharacterBody2D
         if (AnimatedSprite == null) return;
 
         // Gerencia timeout de ataque para evitar travamento
+        if (_attackCooldownRemaining > 0f)
+            _attackCooldownRemaining = Mathf.Max(0f, _attackCooldownRemaining - (float)delta);
+
         if (IsAttacking)
         {
             _attackTimeoutCounter += (float)delta;
             if (_attackTimeoutCounter >= _maxAttackDuration)
             {
-                GD.PrintErr("[PLAYER] ✘ TIMEOUT: Ataque demorou muito, liberando manualmente!");
-                IsAttacking = false;
-                _attackTimeoutCounter = 0f;
+                TentarDispararProjetilNoFinalDaAnimacao();
+                FinalizarAtaqueAtual("[PLAYER] Ataque finalizado por seguranca apos exceder o tempo maximo.");
             }
-        }
-
-        // Dispara projetil no meio da animação de ataque (arqueiro)
-        if (IsAttacking && !_projetilDisparado && AnimatedSprite.Frame >= 2 && AnimatedSprite.Animation.ToString().Contains("attack"))
-        {
-            if (ProjetilScene != null)
+            else if (DeveEncerrarAtaqueNoUltimoFrame())
             {
-                if (TemArcoEquipado())
-                {
-                    DispararProjetil();
-                    _projetilDisparado = true;
-                }
-                else
-                {
-                    GD.Print("[PLAYER] Arqueiro sem arco equipado, projetil não disparado.");
-                    _projetilDisparado = true;
-                }
+                TentarDispararProjetilNoFinalDaAnimacao();
+                FinalizarAtaqueAtual();
             }
         }
 
@@ -777,6 +842,9 @@ public partial class Player : CharacterBody2D
             }
             else if (!IsAttacking)
             {
+                if (_attackCooldownRemaining > 0f)
+                    return;
+
                 // Verifica se inventário ou tela de personagem estão abertos
                 var inventarioUI = GetTree().CurrentScene.FindChild("InventarioUi", true, false) as InventarioUI;
                 var characterUI = GetTree().CurrentScene.FindChild("CharacterUI", true, false) as CharacterUI;
@@ -1115,23 +1183,18 @@ public partial class Player : CharacterBody2D
         }
 
         string prefixoAtaque = ObterPrefixoAtaqueAtual();
+        SpriteFrames baseFrames = CriarSpriteFramesBaseParaRaca(_nomeRacaAtual, prefixoAtaque) ?? _spriteFramesBasePersonagem;
         SpriteFrames frames = profile == HumanUnarmedProfile
             ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
-            : LpcSpriteFramesBuilder.ConstruirEquipamento(
-                sheet,
-                sheet,
-                prefixoAtaque,
-                profile.MovimentoRows,
-                profile.MovimentoFrameSize,
-                profile.AtaqueRows,
-                profile.AtaqueFrameSize,
-                profile.AtaqueFrameCount);
+            : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
 
         if (frames == null || frames.GetAnimationNames().Length == 0)
             return false;
 
-        if (profile != HumanUnarmedProfile && _spriteFramesBasePersonagem != null)
-            CopiarAnimacoesBaseParaSpriteArmado(frames, _spriteFramesBasePersonagem);
+        if (profile != HumanUnarmedProfile && baseFrames != null)
+            CopiarAnimacoesBaseParaSpriteArmado(frames, baseFrames);
+
+        AplicarModeloAnimacaoEditavel(frames, profile, sheet, sheet, prefixoAtaque);
 
         string animAtual = AnimatedSprite.Animation.ToString();
         int frameAtual = AnimatedSprite.Frame;
@@ -1187,6 +1250,244 @@ public partial class Player : CharacterBody2D
         return paths.ToArray();
     }
 
+    private static void AplicarModeloAnimacaoEditavel(SpriteFrames destino, HumanFullSpriteProfile profile, Texture2D sheetBase, Texture2D sheetAcao, string prefixoAtaque)
+    {
+        SpriteFrames modelo = CarregarModeloAnimacaoPlayer();
+        if (destino == null || modelo == null)
+            return;
+
+        string[] direcoes = { "up", "left", "down", "right" };
+        foreach (string dir in direcoes)
+        {
+            CopiarAnimacaoModeloComAtlas(destino, modelo, $"idle_{dir}", sheetBase, EhAtlasDesarmado);
+            CopiarAnimacaoModeloComAtlas(destino, modelo, $"walk_{dir}", sheetBase, EhAtlasDesarmado);
+            string runOrigem = dir switch
+            {
+                "left" => "right",
+                "right" => "left",
+                _ => dir
+            };
+            CopiarAnimacaoModeloComAtlas(destino, modelo, $"run_{runOrigem}", $"run_{dir}", sheetBase, EhAtlasDesarmado);
+        }
+
+        CopiarAnimacaoModeloComAtlas(destino, modelo, "death", sheetBase, EhAtlasDesarmado);
+
+        if (profile == HumanUnarmedProfile || sheetAcao == null)
+            return;
+
+        PlayerSpriteAnimationProfile perfilAnimacao = CarregarPerfilAnimacao(profile);
+        Func<string, bool> filtroAtaque = CriarFiltroAtlasModeloAtaque(profile);
+        prefixoAtaque = string.IsNullOrWhiteSpace(prefixoAtaque) ? ObterPrefixoAtaqueDoPerfil(profile) : prefixoAtaque.Trim().ToLowerInvariant();
+        foreach (string dir in direcoes)
+        {
+            string animDestino = $"{prefixoAtaque}_attack_{dir}";
+            foreach (string prefixoModelo in ObterPrefixosModeloAtaque(profile, prefixoAtaque))
+            {
+                string animModelo = $"{prefixoModelo}_attack_{dir}";
+                if (CopiarAnimacaoModeloComAtlas(destino, modelo, animModelo, animDestino, sheetAcao, filtroAtaque, perfilAnimacao))
+                    break;
+            }
+        }
+    }
+
+    private static string ObterPrefixoAtaqueDoPerfil(HumanFullSpriteProfile profile)
+    {
+        return profile?.Nome switch
+        {
+            "Arco" => "arqueiro",
+            "Adaga" => "ladino",
+            "Cajado" => "mago",
+            _ => "guerreiro"
+        };
+    }
+
+    private static IEnumerable<string> ObterPrefixosModeloAtaque(HumanFullSpriteProfile profile, string prefixoAtaque)
+    {
+        if (profile != null)
+        {
+            switch (profile.Nome)
+            {
+                case "Machado Duas Maos":
+                    yield return "machado_guerra";
+                    break;
+                case "Espada e Escudo":
+                    yield return "espada_escudo";
+                    break;
+                case "Maca e Escudo":
+                    yield return "maca_escudo";
+                    break;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(prefixoAtaque))
+            yield return prefixoAtaque.Trim().ToLowerInvariant();
+    }
+
+    private static SpriteFrames CarregarModeloAnimacaoPlayer()
+    {
+        if (_modeloAnimacaoPlayer != null)
+            return _modeloAnimacaoPlayer;
+
+        try
+        {
+            if (!ResourceLoader.Exists(PlayerAnimationModelScenePath))
+                return null;
+
+            var scene = ResourceLoader.Load<PackedScene>(PlayerAnimationModelScenePath);
+            var instance = scene?.Instantiate();
+            var sprite = instance?.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+            _modeloAnimacaoPlayer = sprite?.SpriteFrames;
+            instance?.Free();
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"[PLAYER] Falha ao carregar modelo editavel de animacao: {ex.Message}");
+        }
+
+        return _modeloAnimacaoPlayer;
+    }
+
+    private static bool EhAtlasDesarmado(string path)
+    {
+        return path.Contains("Desarmado", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/Humano.png", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/Elfo.png", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/DarkElfo.png", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/MortoVivo.png", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/Orc.png", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/Troll.png", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Func<string, bool> CriarFiltroAtlasModeloAtaque(HumanFullSpriteProfile profile)
+    {
+        var nomesEsperados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string sufixo in profile?.SufixosArquivo ?? Array.Empty<string>())
+        {
+            string nome = sufixo.Replace("{race}", "Humano").Replace("{raceNoSpace}", "Humano");
+            if (nome.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                nome = nome[..^4];
+            nomesEsperados.Add(nome);
+        }
+
+        return path =>
+        {
+            if (string.IsNullOrWhiteSpace(path) || EhAtlasDesarmado(path))
+                return false;
+
+            if (nomesEsperados.Count == 0)
+                return true;
+
+            string arquivo = System.IO.Path.GetFileNameWithoutExtension(path.Replace('\\', '/'));
+            return nomesEsperados.Contains(arquivo);
+        };
+    }
+
+    private static void CopiarAnimacaoModeloComAtlas(SpriteFrames destino, SpriteFrames modelo, string anim, Texture2D atlasDestino, Func<string, bool> filtroAtlasOrigem)
+    {
+        CopiarAnimacaoModeloComAtlas(destino, modelo, anim, anim, atlasDestino, filtroAtlasOrigem);
+    }
+
+    private static bool CopiarAnimacaoModeloComAtlas(SpriteFrames destino, SpriteFrames modelo, string animOrigem, string animDestino, Texture2D atlasDestino, Func<string, bool> filtroAtlasOrigem, PlayerSpriteAnimationProfile perfilAtaque = null)
+    {
+        if (destino == null || modelo == null || atlasDestino == null || !modelo.HasAnimation(animOrigem))
+            return false;
+
+        var frames = new List<(Texture2D texture, float duration)>();
+        int frameCount = modelo.GetFrameCount(animOrigem);
+        Vector2 atlasSize = atlasDestino.GetSize();
+
+        for (int i = 0; i < frameCount; i++)
+        {
+            Texture2D frameTexture = modelo.GetFrameTexture(animOrigem, i);
+            if (frameTexture is not AtlasTexture atlasOrigem || atlasOrigem.Atlas == null)
+                continue;
+
+            string origemPath = atlasOrigem.Atlas.ResourcePath ?? "";
+            if (!filtroAtlasOrigem(origemPath))
+                continue;
+
+            Rect2 region = atlasOrigem.Region;
+            if (perfilAtaque != null)
+            {
+                Rect2? normalizada = NormalizarRegiaoAtaqueModelo(region, animOrigem, perfilAtaque, atlasSize);
+                if (!normalizada.HasValue)
+                    continue;
+
+                region = normalizada.Value;
+            }
+
+            if (region.Position.X + region.Size.X > atlasSize.X || region.Position.Y + region.Size.Y > atlasSize.Y)
+                continue;
+
+            frames.Add((new AtlasTexture
+            {
+                Atlas = atlasDestino,
+                Region = region
+            }, modelo.GetFrameDuration(animOrigem, i)));
+        }
+
+        if (frames.Count == 0)
+            return false;
+
+        if (destino.HasAnimation(animDestino))
+            destino.RemoveAnimation(animDestino);
+
+        destino.AddAnimation(animDestino);
+        destino.SetAnimationLoop(animDestino, modelo.GetAnimationLoop(animOrigem));
+        destino.SetAnimationSpeed(animDestino, modelo.GetAnimationSpeed(animOrigem));
+        foreach (var frame in frames)
+            destino.AddFrame(animDestino, frame.texture, frame.duration);
+
+        return true;
+    }
+
+    private static Rect2? NormalizarRegiaoAtaqueModelo(Rect2 region, string animOrigem, PlayerSpriteAnimationProfile perfil, Vector2 atlasSize)
+    {
+        int dirIndex = ObterIndiceDirecaoDaAnimacao(animOrigem);
+        if (dirIndex < 0)
+            return region;
+
+        int frameWidth = perfil.AttackFrameWidth > 0 ? perfil.AttackFrameWidth : perfil.FrameWidth;
+        int frameHeight = perfil.AttackFrameHeight > 0 ? perfil.AttackFrameHeight : perfil.FrameHeight;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return region;
+
+        int row = perfil.GetAttackRow(dirIndex);
+        int startCol = Math.Max(0, perfil.GetAttackStartCol(dirIndex));
+        int frameCount = Math.Max(1, perfil.GetAttackFrameCount(dirIndex));
+        float rowY = row * frameHeight;
+        float rowEnd = rowY + frameHeight;
+
+        if (region.Position.Y >= rowY && region.Position.Y < rowEnd && region.Size.X <= frameWidth && region.Size.Y <= frameHeight)
+        {
+            int col = Math.Clamp((int)Mathf.Floor(region.Position.X / frameWidth), startCol, startCol + frameCount - 1);
+            var normalizada = new Rect2(col * frameWidth, rowY, frameWidth, frameHeight);
+            return normalizada.Position.X + normalizada.Size.X <= atlasSize.X && normalizada.Position.Y + normalizada.Size.Y <= atlasSize.Y
+                ? normalizada
+                : null;
+        }
+
+        bool tamanhoCorreto = Mathf.IsEqualApprox(region.Size.X, frameWidth) && Mathf.IsEqualApprox(region.Size.Y, frameHeight);
+        if (tamanhoCorreto && Mathf.IsEqualApprox(region.Position.Y, rowY))
+            return region;
+
+        return null;
+    }
+
+    private static int ObterIndiceDirecaoDaAnimacao(string anim)
+    {
+        if (anim.EndsWith("_up", StringComparison.OrdinalIgnoreCase))
+            return 0;
+        if (anim.EndsWith("_left", StringComparison.OrdinalIgnoreCase))
+            return 1;
+        if (anim.EndsWith("_down", StringComparison.OrdinalIgnoreCase))
+            return 2;
+        if (anim.EndsWith("_right", StringComparison.OrdinalIgnoreCase))
+            return 3;
+
+        return -1;
+    }
+
     private static void CopiarAnimacoesBaseParaSpriteArmado(SpriteFrames destino, SpriteFrames origem)
     {
         if (destino == null || origem == null)
@@ -1194,7 +1495,11 @@ public partial class Player : CharacterBody2D
 
         string[] direcoes = { "up", "left", "down", "right" };
         foreach (string dir in direcoes)
+        {
             CopiarAnimacao(destino, origem, $"idle_{dir}");
+            CopiarAnimacao(destino, origem, $"walk_{dir}");
+            CopiarAnimacao(destino, origem, $"run_{dir}");
+        }
 
         CopiarAnimacao(destino, origem, "death");
     }
@@ -1373,6 +1678,7 @@ public partial class Player : CharacterBody2D
     public virtual void Atacar()
     {
         if (AnimatedSprite == null) return;
+        if (IsAttacking || _attackCooldownRemaining > 0f) return;
 
         var targetFinder = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (TryGetSelectedTarget(targetFinder, out var targetNode, out _))
@@ -1396,14 +1702,16 @@ public partial class Player : CharacterBody2D
         {
             IsAttacking = true;
             _attackTimeoutCounter = 0f;
+            AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoDeAtaque, false);
             AnimatedSprite.Play(animacaoDeAtaque);
-            AnimatedSprite.SpeedScale = 2.0f;
+            AnimatedSprite.SpeedScale = AttackAnimationSpeedScale;
             SincronizarOverlays();
             GD.Print($"[PLAYER] Iniciando ataque: '{animacaoDeAtaque}'");
         }
         else
         {
             GD.Print($"[PLAYER] Animação '{animacaoDeAtaque}' não encontrada. Atacando sem animação.");
+            IniciarCooldownAtaqueBasico();
         }
 
         // A animação também é uma ação online: servidor valida e replica aos demais jogadores.
@@ -1411,11 +1719,15 @@ public partial class Player : CharacterBody2D
             _network.SendPlayerAction(1, DirectionUtil.DirectionToVector(CurrentDirection));
 
         // Executa a lógica de ataque independente da animação
-        if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase))
+        if (ClasseEhMago())
         {
             if (ProjetilScene != null)
-                DispararProjetil();
+            {
+                if (IsAttacking)
+                    _projetilDisparado = false;
+                else
+                    DispararProjetil();
+            }
             else
                 GD.PrintErr("[PLAYER] Erro: ProjetilScene não configurada!");
         }
@@ -1430,6 +1742,97 @@ public partial class Player : CharacterBody2D
         {
             ExecutarAtaqueMelee();
         }
+    }
+
+    private bool DeveEncerrarAtaqueNoUltimoFrame()
+    {
+        if (AnimatedSprite == null || AnimatedSprite.SpriteFrames == null)
+            return false;
+
+        string anim = AnimatedSprite.Animation.ToString();
+        if (!anim.Contains("attack", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        int frameCount = AnimatedSprite.SpriteFrames.GetFrameCount(anim);
+        return frameCount > 0 && AnimatedSprite.Frame >= frameCount - 1;
+    }
+
+    private void TentarDispararProjetilNoFinalDaAnimacao()
+    {
+        if (_projetilDisparado || ProjetilScene == null)
+            return;
+
+        bool usaProjetil = ClasseEhMago() || ClasseEhArqueiro();
+        if (!usaProjetil)
+            return;
+
+        if (ClasseEhArqueiro() && !TemArcoEquipado())
+        {
+            GD.Print("[PLAYER] Arqueiro sem arco equipado, projetil não disparado.");
+            _projetilDisparado = true;
+            return;
+        }
+
+        DispararProjetil();
+        _projetilDisparado = true;
+    }
+
+    private void FinalizarAtaqueAtual(string log = "")
+    {
+        IsAttacking = false;
+        _attackTimeoutCounter = 0f;
+        IniciarCooldownAtaqueBasico();
+
+        if (AnimatedSprite != null)
+        {
+            AnimatedSprite.SpeedScale = 1.0f;
+            RetomarAnimacaoAposAtaque();
+        }
+
+        if (!string.IsNullOrWhiteSpace(log))
+            GD.Print(log);
+    }
+
+    private void IniciarCooldownAtaqueBasico()
+    {
+        _attackCooldownRemaining = Mathf.Max(0f, ObterCooldownAtaqueBasico());
+    }
+
+    private float ObterCooldownAtaqueBasico()
+    {
+        string classe = NomeDaClasse?.Trim().ToLowerInvariant() ?? "";
+        return classe switch
+        {
+            "berseker" or "berserker" or "barbaro" or "bárbaro" => 1.5f,
+            "arqueiro" or "mago" => 1.1f,
+            _ => BasicAttackCooldown,
+        };
+    }
+
+    private void RetomarAnimacaoAposAtaque()
+    {
+        if (AnimatedSprite == null)
+            return;
+
+        _idleTransitionTimer = IdleTransitionDelay;
+        _holdingBeforeIdle = false;
+
+        Vector2 velocity = Velocity;
+        if (velocity.Length() > 10.0f)
+        {
+            string cardinalMovimento = DirectionUtil.DirectionToCardinal(DirectionUtil.VectorToDirectionString(velocity));
+            string runAnim = $"run_{cardinalMovimento}";
+            string walkAnim = $"walk_{cardinalMovimento}";
+            string anim = IsSprinting && AnimatedSprite.SpriteFrames?.HasAnimation(runAnim) == true ? runAnim : walkAnim;
+            if (AnimatedSprite.SpriteFrames?.HasAnimation(anim) == true)
+                AnimatedSprite.Play(anim);
+            return;
+        }
+
+        string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+        string idleAnim = $"idle_{cardinal}";
+        if (AnimatedSprite.SpriteFrames?.HasAnimation(idleAnim) == true)
+            AnimatedSprite.Play(idleAnim);
     }
 
     private void DispararProjetil()
@@ -1459,6 +1862,7 @@ public partial class Player : CharacterBody2D
 
         if (novoProjetil is Projetil proj)
         {
+            proj.DefinirDono(this);
             proj.DefinirDirecao(direcaoDoVetor);
 
             var equip = GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent");
@@ -1476,13 +1880,6 @@ public partial class Player : CharacterBody2D
                 proj.DanoMax = equip?.DanoFisicoMax ?? 16;
                 proj.EhDanoMagico = false;
             }
-            else if (string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase))
-            {
-                proj.Speed = 280.0f;
-                proj.DanoMin = equip?.DanoMagicoMin ?? 12;
-                proj.DanoMax = equip?.DanoMagicoMax ?? 18;
-                proj.EhDanoMagico = true;
-            }
         }
         else
         {
@@ -1492,10 +1889,25 @@ public partial class Player : CharacterBody2D
         // Envia pacote para replicar o projétil para outros jogadores
         if (gameNet != null && gameNet.IsConnected)
         {
-            byte projType = string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(NomeDaClasse, "prist", StringComparison.OrdinalIgnoreCase) ? (byte)1 : (byte)0;
+            byte projType = ClasseEhMago() ? (byte)1 : (byte)0;
             gameNet.SendProjectileFire(novoProjetil.GlobalPosition.X, novoProjetil.GlobalPosition.Y, direcaoDoVetor.X, direcaoDoVetor.Y, projType);
         }
+    }
+
+    private bool ClasseEhMago()
+    {
+        return string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool ClasseEhArqueiro()
+    {
+        return string.Equals(NomeDaClasse, "arqueiro", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ClassePodeUsarProjetilBasico(string nomeClasse)
+    {
+        return string.Equals(nomeClasse, "mago", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(nomeClasse, "arqueiro", StringComparison.OrdinalIgnoreCase);
     }
 
     private bool TemArcoEquipado()
@@ -1551,7 +1963,7 @@ public partial class Player : CharacterBody2D
             return false;
         }
         targetNode = node;
-        distance = GlobalPosition.DistanceTo(node.GlobalPosition);
+        distance = DistanciaMeleeAte(node);
         return true;
     }
 
@@ -1565,7 +1977,7 @@ public partial class Player : CharacterBody2D
             if (kvp.Key == gameNet.LocalPlayerId) continue;
             if (!IsInstanceValid(kvp.Value) || kvp.Value is not Inimigo) continue;
 
-            float d = GlobalPosition.DistanceTo(kvp.Value.GlobalPosition);
+            float d = DistanciaMeleeAte(kvp.Value);
             if (d < closestDist)
             {
                 closestDist = d;
@@ -1574,6 +1986,31 @@ public partial class Player : CharacterBody2D
         }
 
         return closest;
+    }
+
+    private float DistanciaMeleeAte(Node2D target)
+    {
+        float centerDistance = GlobalPosition.DistanceTo(target.GlobalPosition);
+        float targetRadius = ObterRaioContatoMelee(target);
+        return Mathf.Max(0f, centerDistance - targetRadius - MeleeTargetContactPadding);
+    }
+
+    private static float ObterRaioContatoMelee(Node2D target)
+    {
+        var shapeNode = target.FindChild("CollisionShape2D", true, false) as CollisionShape2D;
+        if (shapeNode?.Shape == null)
+            return MeleeTargetFallbackRadius;
+
+        float radius = shapeNode.Shape switch
+        {
+            CircleShape2D circle => circle.Radius,
+            RectangleShape2D rect => Mathf.Max(rect.Size.X, rect.Size.Y) * 0.5f,
+            CapsuleShape2D capsule => Mathf.Max(capsule.Radius, capsule.Height * 0.5f),
+            _ => MeleeTargetFallbackRadius,
+        };
+
+        float scale = Mathf.Max(Mathf.Abs(shapeNode.GlobalScale.X), Mathf.Abs(shapeNode.GlobalScale.Y));
+        return Mathf.Clamp(radius * Mathf.Max(scale, 0.01f), 16f, 72f);
     }
 
     private int CalcularDanoFisico()
@@ -1646,8 +2083,11 @@ public partial class Player : CharacterBody2D
             {
                 AnimatedSprite.SpriteFrames.SetAnimationLoop("death", false);
                 AnimatedSprite.Play("death");
-                AnimatedSprite.AnimationFinished -= AoTerminarMorte;
-                AnimatedSprite.AnimationFinished += AoTerminarMorte;
+                if (!_morteAnimationFinishedConectado)
+                {
+                    AnimatedSprite.AnimationFinished += AoTerminarMorte;
+                    _morteAnimationFinishedConectado = true;
+                }
                 SincronizarOverlays();
             }
             else
@@ -1671,12 +2111,16 @@ public partial class Player : CharacterBody2D
             if (frameCount > 0)
                 AnimatedSprite.Frame = frameCount - 1;
             AnimatedSprite.Stop();
-            AnimatedSprite.AnimationFinished -= AoTerminarMorte;
+            if (_morteAnimationFinishedConectado)
+            {
+                AnimatedSprite.AnimationFinished -= AoTerminarMorte;
+                _morteAnimationFinishedConectado = false;
+            }
             SincronizarOverlays();
         }
     }
 
-    public void Reviver(float x, float y, int health, int maxHealth)
+    public void Reviver(float x, float y, int health, int maxHealth, int mana = 0, int maxMana = 0)
     {
         _isLyingDown = false;
         _idleTransitionTimer = 0f;
@@ -1684,6 +2128,8 @@ public partial class Player : CharacterBody2D
         RemoveFromGroup("PlayersDowned");
         GlobalPosition = new Vector2(x, y);
         SetHealthFromServer(health, maxHealth);
+        if (maxMana > 0)
+            SetManaFromServer(mana, maxMana);
         SetPhysicsProcess(true);
         SetProcess(true);
 
@@ -2071,10 +2517,8 @@ public partial class Player : CharacterBody2D
 
         if (anim.Contains("attack"))
         {
-            GD.Print($"[PLAYER] ✅ Animação de ataque '{anim}' terminou. Liberando IsAttacking.");
-            IsAttacking = false;
-            _attackTimeoutCounter = 0f;
-            AnimatedSprite.SpeedScale = 1.0f;
+            TentarDispararProjetilNoFinalDaAnimacao();
+            FinalizarAtaqueAtual($"[PLAYER] ✅ Animação de ataque '{anim}' terminou. Liberando IsAttacking.");
         }
         // death handled by AoTerminarMorte
     }
@@ -2113,7 +2557,16 @@ public partial class Player : CharacterBody2D
         {
             _network.OnRespawn -= OnRespawnReceived;
             _network.OnTeleport -= OnTeleportReceived;
+            _network.OnEnterWorld -= AplicarProgressaoServidorPendente;
+            _network.OnGainExp -= OnGainExpReceived;
+            _network.OnLevelUp -= OnLevelUpReceived;
             _network.OnSceneChange -= OnSceneChangeReceived;
+        }
+
+        if (AnimatedSprite != null && _morteAnimationFinishedConectado)
+        {
+            AnimatedSprite.AnimationFinished -= AoTerminarMorte;
+            _morteAnimationFinishedConectado = false;
         }
     }
 }

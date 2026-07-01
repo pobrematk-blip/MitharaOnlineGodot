@@ -1,0 +1,86 @@
+@model ForumCategoryViewModel
+@{
+    ViewData["Title"] = Model.Category.Name;
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>@Model.Category.Name</h1>
+        <p>@Model.Category.Description</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="forum-actions">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <button class="btn btn-primary" onclick="document.getElementById('newTopicForm').style.display='block'">Novo Tópico</button>
+            }
+            else
+            {
+                <a href="/Account/Login" class="btn btn-primary">Faça login para criar tópico</a>
+            }
+        </div>
+
+        <div id="newTopicForm" class="topic-form" style="display:none;">
+            <form asp-action="CreateTopic" asp-controller="Forum" method="post">
+                <input type="hidden" name="CategoryId" value="@Model.Category.Id" />
+                <div class="form-group">
+                    <label>Título</label>
+                    <input name="Title" class="form-control" required maxlength="200" placeholder="Título do tópico" />
+                </div>
+                <div class="form-group">
+                    <label>Conteúdo</label>
+                    <textarea name="Content" class="form-control" required rows="6" placeholder="Escreva seu conteúdo..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Criar Tópico</button>
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('newTopicForm').style.display='none'">Cancelar</button>
+            </form>
+        </div>
+
+        @if (Model.Topics.Count == 0)
+        {
+            <p class="empty-state">Nenhum tópico nesta categoria ainda.</p>
+        }
+        else
+        {
+            <div class="topic-list">
+                @foreach (var topic in Model.Topics)
+                {
+                    <div class="topic-row @(topic.IsPinned ? "pinned" : "") @(topic.IsLocked ? "locked" : "")">
+                        <div class="topic-icon">
+                            @if (topic.IsPinned) { <text>&#128204;</text> }
+                            else if (topic.IsLocked) { <text>&#128274;</text> }
+                            else { <text>&#128172;</text> }
+                        </div>
+                        <div class="topic-info">
+                            <h3><a href="/Forum/Topic/@topic.Id">@topic.Title</a></h3>
+                            <p class="topic-meta">
+                                Por @topic.AuthorName &middot; @topic.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                @if (topic.LastPostAt.HasValue)
+                                {
+                                    <text>&middot; Último post: @topic.LastPostAt.Value.ToString("dd/MM/yyyy HH:mm")</text>
+                                }
+                            </p>
+                        </div>
+                        <div class="topic-stats">
+                            <span>@topic.ViewCount visualizações</span>
+                            <span>@topic.Posts.Count respostas</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <a href="/Forum/Category/@Model.Category.Id?page=@i" class="page-link @(i == Model.Page ? "active" : "")">@i</a>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>

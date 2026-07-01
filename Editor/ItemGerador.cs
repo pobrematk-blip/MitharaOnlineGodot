@@ -23,7 +23,13 @@ public static class ItemGerador
 
         item.Raridade = raridade;
 
-        PesoItem peso = item.CategoriaPeso;
+        bool isArmor = item.UsaCategoriaPeso();
+        PesoItem peso = isArmor ? item.CategoriaPeso : PesoItem.Nenhum;
+        if (!isArmor)
+            item.CategoriaPeso = PesoItem.Nenhum;
+        else if (peso == PesoItem.Nenhum)
+            peso = PesoItem.Medio;
+
         int hpBase, defFisicaBase, defMagicaBase;
         if (peso == PesoItem.Pesado)
         {
@@ -52,13 +58,6 @@ public static class ItemGerador
 
         int defMagicaMin = defMagicaBase, defMagicaMax = defMagicaBase + 2 + rarityIndex;
         item.DefesaMagica = _rng.Next(defMagicaMin, defMagicaMax + 1);
-
-        bool isArmor = item.Tipo switch
-        {
-            TipoEquipamento.Capacete or TipoEquipamento.Peitoral or TipoEquipamento.Cinto
-                or TipoEquipamento.Calca or TipoEquipamento.Botas or TipoEquipamento.Luvas => true,
-            _ => false
-        };
 
         bool isBootGloveHelm = item.Tipo is TipoEquipamento.Capacete or TipoEquipamento.Botas or TipoEquipamento.Luvas;
 

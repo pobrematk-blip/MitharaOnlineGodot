@@ -1,0 +1,86 @@
+@{
+    ViewData["Title"] = "Ranking";
+    var characters = ViewBag.Characters as List<CharacterInfo> ?? new();
+    var guilds = ViewBag.Guilds as List<GuildInfo> ?? new();
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Ranking</h1>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="ranking-tabs">
+            <button class="tab-btn active" data-tab="characters">Personagens</button>
+            <button class="tab-btn" data-tab="guilds">Guildas</button>
+        </div>
+
+        <div id="tab-characters" class="tab-content active">
+            <h2>Top Personagens</h2>
+            <div class="ranking-table-wrapper">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nome</th>
+                            <th>Classe</th>
+                            <th>Raça</th>
+                            <th>Nível</th>
+                            <th>XP</th>
+                            <th>Gold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < characters.Count; i++)
+                        {
+                            var c = characters[i];
+                            <tr class="@(i < 3 ? "top-" + (i + 1) : "")">
+                                <td class="rank-num">@(i + 1)</td>
+                                <td>@c.Name</td>
+                                <td>@c.Class</td>
+                                <td>@c.Race</td>
+                                <td>@c.Level</td>
+                                <td>@c.Xp.ToString("N0")</td>
+                                <td>@c.Gold.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-guilds" class="tab-content">
+            <h2>Top Guildas</h2>
+            <div class="ranking-table-wrapper">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nome</th>
+                            <th>Nível</th>
+                            <th>Membros</th>
+                            <th>Líder</th>
+                            <th>Criada em</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < guilds.Count; i++)
+                        {
+                            var g = guilds[i];
+                            <tr class="@(i < 3 ? "top-" + (i + 1) : "")">
+                                <td class="rank-num">@(i + 1)</td>
+                                <td>@g.Name</td>
+                                <td>@g.Level</td>
+                                <td>@g.MemberCount</td>
+                                <td>@g.LeaderName</td>
+                                <td>@g.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

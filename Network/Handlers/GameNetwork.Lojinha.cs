@@ -9,6 +9,7 @@ public partial class GameNetwork
 {
     public void SendLojinhaOpen(ulong lojinhaId)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaOpen, w =>
         {
             w.Put(lojinhaId);
@@ -17,6 +18,7 @@ public partial class GameNetwork
 
     public void SendLojinhaAddItem(ulong lojinhaId, int invSlot, int quantity, int pricePerUnit)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaAddItem, w =>
         {
             w.Put(lojinhaId);
@@ -28,6 +30,7 @@ public partial class GameNetwork
 
     public void SendLojinhaRemoveItem(ulong lojinhaId, int slot)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaRemoveItem, w =>
         {
             w.Put(lojinhaId);
@@ -37,6 +40,7 @@ public partial class GameNetwork
 
     public void SendLojinhaBuyItem(ulong lojinhaId, int slot, int quantity)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaBuyItem, w =>
         {
             w.Put(lojinhaId);
@@ -47,6 +51,7 @@ public partial class GameNetwork
 
     public void SendLojinhaCollect(ulong lojinhaId)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaCollect, w =>
         {
             w.Put(lojinhaId);
@@ -55,6 +60,7 @@ public partial class GameNetwork
 
     public void SendLojinhaClose(ulong lojinhaId)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaClose, w =>
         {
             w.Put(lojinhaId);
@@ -63,11 +69,13 @@ public partial class GameNetwork
 
     public void SendLojinhaListRequest()
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaListRequest, w => { });
     }
 
     public void SendLojinhaConfigure(ulong lojinhaId, string shopName, bool abrir)
     {
+        if (_client == null) return;
         _client.SendPacket(PacketId.C2S_LojinhaRequestItems, w =>
         {
             w.Put(lojinhaId);

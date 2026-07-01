@@ -247,14 +247,7 @@ public partial class LojaCashUI : Control
 
         if (itemId == -1)
         {
-            if (!_cash.ComprarSlotPersonagem())
-                MostrarFeedback("❌ Erro ao comprar slot!", new Color(0.9f, 0.3f, 0.3f));
-            else
-            {
-                _cash.GastarDiamantes(preco);
-                MostrarFeedback("✓ Slot comprado!", new Color(0.3f, 0.8f, 0.4f));
-                AtualizarUI();
-            }
+            MostrarFeedback("❌ Compra de slot precisa ser validada pelo servidor.", new Color(0.9f, 0.3f, 0.3f));
             return;
         }
 
@@ -279,11 +272,8 @@ public partial class LojaCashUI : Control
     {
         if (success)
         {
-            if (_cash != null && _cash.GastarDiamantes(_ultimoPrecoCompra))
-            {
-                MostrarFeedback("✓ Item comprado!", new Color(0.3f, 0.8f, 0.4f));
-                AtualizarUI();
-            }
+            MostrarFeedback("✓ Item comprado!", new Color(0.3f, 0.8f, 0.4f));
+            AtualizarUI();
         }
         else
         {

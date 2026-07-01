@@ -29,7 +29,16 @@ launcher/bin/
 launcher/obj/
 
 # Animation asset packs (external)
-skills/Animação/
+skills/AnimaÃ§Ã£o/
 
 # Large zip files (exceeds GitHub 100MB limit)
 *.zip
+
+# Local build / tunnel tools / runtime logs
+Mithara.Web/bin/
+Mithara.Web/obj/
+cloudflared.exe
+ngrok.exe
+playit-cli.exe
+playit.exe
+server/run_*.log

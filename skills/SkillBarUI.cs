@@ -40,7 +40,14 @@ public partial class SkillBarUI : Control
 
     public override void _ExitTree()
     {
-        GetTree().Root.SizeChanged -= CenterBar;
+        var tree = GetTree();
+        if (tree?.Root != null)
+            tree.Root.SizeChanged -= CenterBar;
+
+        if (_xpLevelComp != null)
+            _xpLevelComp.ProgressaoAtualizada -= UpdateXpBar;
+        if (_skillComp != null)
+            _skillComp.SkillSlotsAtualizados -= RefreshSkillSlotsFromComponent;
 
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null)
@@ -279,6 +286,8 @@ public partial class SkillBarUI : Control
 
     private void UpdateXpBar()
     {
+        if (!IsInsideTree() || _xpBar == null || _xpLabel == null)
+            return;
         if (_xpLevelComp == null) return;
 
         int nivel = _xpLevelComp.Nivel;

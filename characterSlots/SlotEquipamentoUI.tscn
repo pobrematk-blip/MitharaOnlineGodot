@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ddcwutpertafj"]
 
 [ext_resource type="Script" uid="uid://pxk5n4j1qnuy" path="res://characterSlots/SlotEquipamentoUI.cs" id="1_slot"]
-[ext_resource type="Texture2D" uid="uid://77fei5pbtuu7" path="res://Itens/Incones/bagitem.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Bag 3.png" id="2_icon"]
 
 [node name="SlotEquipamentoUi" type="Control"]
 custom_minimum_size = Vector2(42, 42)

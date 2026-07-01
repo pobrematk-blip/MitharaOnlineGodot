@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Início";
+}
+
+<section class="hero">
+    <div class="hero-content">
+        <p class="hero-desc">Um MMORPG 2D Top-Down onde sua escolha define o destino. Explore um mundo vasto, enfrente criaturas lendaarias e forje seu legado.</p>
+        <div class="hero-buttons">
+            <a href="@ViewBag.DownloadUrl" class="btn btn-primary" target="_blank" rel="noopener">Jogue Agora</a>
+            <a href="/Home/About" class="btn btn-secondary">Saiba Mais</a>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Por que Jogar?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <img src="~/images/class-arqueiro.png" alt="Arqueiro" class="feature-icon-img" />
+                <h3>6 Classes</h3>
+                <p>Arqueiro, Assassino, Berserker, Guardião, Mago e Clérigo. Cada uma com habilidades e estilos únicos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#127758;</div>
+                <h3>Mundo Aberto</h3>
+                <p>Explore mapas gigantescos com biomas variados, desde florestas até desertos amaldiçoados.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#9881;</div>
+                <h3>Customização</h3>
+                <p>Centenas de itens, sistema de refino, afixos aleatórios e árvore de talentos para montar seu build.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128176;</div>
+                <h3>Economia</h3>
+                <p>Sistema de lojinhas entre jogadores, banco compartilhado e economia totalmente player-driven.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#128153;</div>
+                <h3>Guildas</h3>
+                <p>Crie ou entre em guildas, suba de nível, aprenda habilidades e domine o ranking.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#127918;</div>
+                <h3>MMORPG Online</h3>
+                <p>100% online. Tudo é validado pelo servidor. Jogue com amigos e enfrente desafios juntos.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="factions-section">
+    <div class="container">
+        <h2 class="section-title">Facções</h2>
+        <p class="section-subtitle">Escolha seu lado no conflito que define Mithara</p>
+        <div class="factions-grid">
+            <div class="faction-card faction-solari">
+                <img src="~/images/faccao-solari.png" alt="Solari" class="faction-banner" />
+                <div class="faction-info">
+                    <h3>Solari</h3>
+                    <p>A facção da luz e da ordem. Defensores da civilização, buscam prosperidade e justiça em Mithara.</p>
+                </div>
+            </div>
+            <div class="faction-card faction-noctori">
+                <img src="~/images/faccao-noctori.png" alt="Noctori" class="faction-banner" />
+                <div class="faction-info">
+                    <h3>Noctori</h3>
+                    <p>A facção das sombras e do poder. Buscam conhecimento arcano e domínio sobre as terras de Mithara.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <h2>Pronto para a aventura?</h2>
+        <p>Baixe agora e comece sua jornada em Mithara.</p>
+        <a href="@ViewBag.DownloadUrl" class="btn btn-primary btn-large" target="_blank" rel="noopener">Baixar Agora</a>
+    </div>
+</section>

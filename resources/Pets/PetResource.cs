@@ -14,6 +14,7 @@ public partial class PetResource : Resource
     [Export] public int Level { get; set; } = 1;
     [Export] public int HP { get; set; } = 50;
     [Export] public int Mana { get; set; } = 20;
+    [Export] public int Defense { get; set; } = 8;
     [Export] public int AttackDamage { get; set; } = 5;
     [Export] public int Forca { get; set; } = 1;
     [Export] public int Agilidade { get; set; } = 1;

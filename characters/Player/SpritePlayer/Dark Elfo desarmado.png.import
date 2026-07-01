@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cg6h3cn5gxs8s"
-path="res://.godot/imported/Dark Elfo desarmado.png-3aa1a94bddd64b2ed12debd52e39a949.ctex"
+uid="uid://bvhurwouk64xj"
+path="res://.godot/imported/Dark Elfo Desarmado.png-da93342aad7fe1fefd5a2dd4439adfaf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://characters/Player/SpritePlayer/Dark Elfo desarmado.png"
-dest_files=["res://.godot/imported/Dark Elfo desarmado.png-3aa1a94bddd64b2ed12debd52e39a949.ctex"]
+source_file="res://characters/Player/SpritePlayer/Dark Elfo Desarmado.png"
+dest_files=["res://.godot/imported/Dark Elfo Desarmado.png-da93342aad7fe1fefd5a2dd4439adfaf.ctex"]
 
 [params]
 

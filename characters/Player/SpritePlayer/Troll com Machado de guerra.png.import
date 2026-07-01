@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cqbbt3kw7pggp"
-path="res://.godot/imported/Troll com Machado de guerra.png-ee0888f309a8318b999bb2e7216d6551.ctex"
+uid="uid://el44j07trtoe"
+path="res://.godot/imported/Troll com Machado de Guerra.png-af7ea6a6f0448e4eb7b9c6fa37dc2825.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://characters/Player/SpritePlayer/Troll com Machado de guerra.png"
-dest_files=["res://.godot/imported/Troll com Machado de guerra.png-ee0888f309a8318b999bb2e7216d6551.ctex"]
+source_file="res://characters/Player/SpritePlayer/Troll com Machado de Guerra.png"
+dest_files=["res://.godot/imported/Troll com Machado de Guerra.png-af7ea6a6f0448e4eb7b9c6fa37dc2825.ctex"]
 
 [params]
 

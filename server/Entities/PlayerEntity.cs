@@ -30,6 +30,9 @@ public class PlayerEntity : Entity
     public Dictionary<int, ItemInstance> Equipment { get; set; } = new();
     public int Gold { get; set; }
     public Dictionary<int, double> SkillCooldowns { get; } = new();
+    public Dictionary<string, double> ItemCooldowns { get; } = new();
+    public double NextBasicAttackTime { get; set; }
+    public double NextPetAttackTime { get; set; }
     public Dictionary<string, double> ActiveServerBuffs { get; } = new();
     public float TemporaryPrecisionBonus { get; set; }
     public float TemporaryCritChanceBonus { get; set; }

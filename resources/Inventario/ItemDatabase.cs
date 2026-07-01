@@ -87,6 +87,9 @@ public partial class ItemDatabase : Node
 
     public ItemResource? GetItem(int itemId)
     {
+        if (itemId < 0)
+            return null;
+
         if (!_scanned) ScanItensFolder();
 
         if (_cache.TryGetValue(itemId, out var cached))
@@ -149,11 +152,11 @@ public partial class ItemDatabase : Node
                 6 or 7 => "res://Itens/Incones/Luva de couro.png",
                 8 or 9 => "res://Itens/Incones/Botas de Montros.png",
                 10 or 11 => "res://Itens/Incones/Cinto de Troll.png",
-                _ => "res://Itens/Incones/bagitem.png",
+                _ => "res://Itens/Incones/Bag 3.png",
             };
         }
 
-        return "res://Itens/Incones/bagitem.png";
+        return "res://Itens/Incones/Bag 3.png";
     }
 
     private ItemResource CriarItemFallback(int itemId, string? knownPath = null)
@@ -166,11 +169,11 @@ public partial class ItemDatabase : Node
             103 => "res://Itens/Incones/Vip 1.png",
             104 => "res://Itens/Incones/Vip 2.png",
             105 => "res://Itens/Incones/vip 3.png",
-            107 => "res://Itens/Incones/Poeira Estelar.png",
+            107 => "res://Itens/Incones/Fragmento Estelar.png",
             108 or 109 or 112 => "res://Itens/Incones/Bau surpresa 1.png",
             110 => "res://Itens/Incones/Porcao de Vida.png",
             111 => "res://Itens/Incones/Porcao de Mana.png",
-            113 => "res://Itens/Incones/Pergaminho de Reset.png",
+            113 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
             114 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
             _ => IconeEquipamentoFallback(itemId),
         };
@@ -201,8 +204,8 @@ public partial class ItemDatabase : Node
             Descricao = "Item recebido do servidor. O recurso visual definitivo ainda não está no cliente.",
             Icone = ResourceLoader.Exists(iconPath)
                 ? GD.Load<Texture2D>(iconPath)
-                : ResourceLoader.Exists("res://Itens/Incones/bagitem.png")
-                    ? GD.Load<Texture2D>("res://Itens/Incones/bagitem.png")
+                : ResourceLoader.Exists("res://Itens/Incones/Bag 3.png")
+                    ? GD.Load<Texture2D>("res://Itens/Incones/Bag 3.png")
                     : null,
             Acumulavel = true,
             QuantidadeMaximaPorSlot = 99,

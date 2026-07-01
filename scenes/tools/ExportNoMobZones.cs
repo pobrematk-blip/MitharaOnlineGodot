@@ -1,91 +1,97 @@
 using Godot;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 [Tool]
 public partial class ExportNoMobZones : Node
 {
-	public override void _Ready()
-	{
-		if (Engine.IsEditorHint()) return;
-		Export();
-	}
+    public override void _Ready()
+    {
+        if (Engine.IsEditorHint()) return;
+        Export();
+    }
 
-	private void Export()
-	{
-		GD.PrintRaw("[ExportNoMobZones] Carregando Main.tscn...\n");
+    private void Export()
+    {
+        GD.PrintRaw("[ExportNoMobZones] Carregando Main.tscn...\n");
 
-		var mainScene = ResourceLoader.Load<PackedScene>("res://scenes/Main.tscn");
-		if (mainScene == null)
-		{
-			GD.PrintErr("[ExportNoMobZones] ERRO: nao encontrou res://scenes/Main.tscn");
-			QueueFree();
-			return;
-		}
+        var mainScene = ResourceLoader.Load<PackedScene>("res://scenes/Main.tscn");
+        if (mainScene == null)
+        {
+            GD.PrintErr("[ExportNoMobZones] ERRO: nao encontrou res://scenes/Main.tscn");
+            QueueFree();
+            return;
+        }
 
-		var main = mainScene.Instantiate();
-		AddChild(main);
+        var main = mainScene.Instantiate();
+        AddChild(main);
 
-		var markers = new List<NoMobZoneMarker>();
-		FindMarkers(main, markers);
-		GD.PrintRaw($"[ExportNoMobZones] Encontrou {markers.Count} NoMobZoneMarker(s)\n");
+        var areas = new List<NoMobZoneArea>();
+        FindAreas(main, areas);
+        GD.PrintRaw($"[ExportNoMobZones] Encontrou {areas.Count} NoMobZoneArea(s)\n");
 
-		if (markers.Count == 0)
-		{
-			GD.PrintRaw("[ExportNoMobZones] Nenhum marcador encontrado. Nada exportado.\n");
-			main.QueueFree();
-			QueueFree();
-			return;
-		}
+        if (areas.Count == 0)
+        {
+            GD.PrintRaw("[ExportNoMobZones] Nenhuma area encontrada. Nada exportado.\n");
+            main.QueueFree();
+            QueueFree();
+            return;
+        }
 
-		var zones = new JsonArray();
-		foreach (var m in markers)
-		{
-			var rect = m.GetZoneRect();
-			var obj = new JsonObject
-			{
-				["X"] = (int)rect.Position.X,
-				["Y"] = (int)rect.Position.Y,
-				["Width"] = (int)rect.Size.X,
-				["Height"] = (int)rect.Size.Y,
-			};
-			zones.Add(obj);
-			GD.PrintRaw($"  Zona: X={rect.Position.X:F0} Y={rect.Position.Y:F0} W={rect.Size.X:F0} H={rect.Size.Y:F0}\n");
-		}
+        var zones = new JsonArray();
+        foreach (var area in areas)
+        {
+            Vector2[] points = area.GetWorldPolygon();
+            if (points.Length < 3)
+                continue;
 
-		string projectDir = ProjectSettings.GlobalizePath("res://");
-		string configPath = Path.GetFullPath(Path.Combine(projectDir, "..", "server", "server_config.json"));
+            var serializedPoints = new JsonArray();
+            foreach (Vector2 point in points)
+            {
+                serializedPoints.Add(new JsonObject
+                {
+                    ["X"] = point.X,
+                    ["Y"] = point.Y,
+                });
+            }
 
-		if (!File.Exists(configPath))
-		{
-			GD.PrintErr($"[ExportNoMobZones] ERRO: {configPath} nao encontrado");
-			main.QueueFree();
-			QueueFree();
-			return;
-		}
+            zones.Add(new JsonObject { ["Points"] = serializedPoints });
+            GD.PrintRaw($"  Zona poligonal: {points.Length} ponto(s)\n");
+        }
 
-		string jsonText = File.ReadAllText(configPath);
-		var config = JsonNode.Parse(jsonText)!.AsObject();
-		config["NoMobZones"] = zones;
+        string projectDir = ProjectSettings.GlobalizePath("res://");
+        string configPath = Path.GetFullPath(Path.Combine(projectDir, "server", "server_config.json"));
 
-		var options = new JsonSerializerOptions { WriteIndented = true };
-		File.WriteAllText(configPath, config.ToJsonString(options));
+        if (!File.Exists(configPath))
+        {
+            GD.PrintErr($"[ExportNoMobZones] ERRO: {configPath} nao encontrado");
+            main.QueueFree();
+            QueueFree();
+            return;
+        }
 
-		GD.PrintRaw($"[ExportNoMobZones] OK! {markers.Count} zona(s) exportada(s) para server_config.json\n");
+        string jsonText = File.ReadAllText(configPath);
+        var config = JsonNode.Parse(jsonText)!.AsObject();
+        config["NoMobZones"] = zones;
 
-		main.QueueFree();
-		QueueFree();
-	}
-	private static void FindMarkers(Node parent, List<NoMobZoneMarker> results)
-	{
-		if (parent is NoMobZoneMarker marker)
-		{
-			results.Add(marker);
-			return;
-		}
-		foreach (var child in parent.GetChildren())
-			FindMarkers(child, results);
-	}
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        File.WriteAllText(configPath, config.ToJsonString(options));
+
+        GD.PrintRaw($"[ExportNoMobZones] OK! {zones.Count} zona(s) exportada(s) para server_config.json\n");
+
+        main.QueueFree();
+        QueueFree();
+    }
+
+    private static void FindAreas(Node parent, List<NoMobZoneArea> results)
+    {
+        if (parent is NoMobZoneArea area)
+            results.Add(area);
+
+        foreach (var child in parent.GetChildren().OfType<Node>())
+            FindAreas(child, results);
+    }
 }

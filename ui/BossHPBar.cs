@@ -6,7 +6,6 @@ public partial class BossHPBar : Panel
     private ProgressBar _hpBar;
     private Label _hpLabel;
     private VBoxContainer _contentBox;
-    private float _detectRange = 1400f;
     private const float BarHeight = 74f;
 
     public override void _Ready()
@@ -112,16 +111,19 @@ public partial class BossHPBar : Panel
         }
 
         Inimigo nearestBoss = null;
-        float nearestDist = _detectRange;
+        float nearestDistSq = float.MaxValue;
 
         foreach (var node in GetTree().GetNodesInGroup("Inimigos"))
         {
             if (node is Inimigo mob && mob.IsBoss && mob.IsInsideTree())
             {
-                float dist = player.GlobalPosition.DistanceSquaredTo(mob.GlobalPosition);
-                if (dist < nearestDist * nearestDist)
+                if (mob.VidaAtual <= 0)
+                    continue;
+
+                float distSq = player.GlobalPosition.DistanceSquaredTo(mob.GlobalPosition);
+                if (distSq < nearestDistSq)
                 {
-                    nearestDist = Mathf.Sqrt(dist);
+                    nearestDistSq = distSq;
                     nearestBoss = mob;
                 }
             }

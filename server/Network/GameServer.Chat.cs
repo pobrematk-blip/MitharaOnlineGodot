@@ -100,8 +100,7 @@ partial class GameServer
                 break;
 
             case "/gcreate":
-                if (parts.Length < 2) { SendSystemMessage(peer, "Use: /gcreate <nome>"); return; }
-                HandleGuildCreate(peer, sender, parts[1], "", -1);
+                SendSystemMessage(peer, "Crie guilda pelo NPC para escolher sigla e emblema.");
                 break;
 
             case "/ginvite":

@@ -136,6 +136,12 @@ partial class GameNetwork
             skills.Add(s);
         }
 
+        GuildLevel = guildLevel;
+        GuildXp = guildXp;
+        GuildSkillPoints = skillPoints;
+        CachedGuildMembers = members;
+        CachedGuildSkills = skills;
+
         AtualizarOverheadUI();
 
         EmitSignal(SignalName.OnGuildData, guildId, guildName, guildTag, guildEmblem, members, guildLevel, guildXp, skillPoints, skills);
@@ -153,6 +159,12 @@ partial class GameNetwork
         GuildTag = "";
         GuildEmblem = -1;
         IsGuildLeader = false;
+        GuildLevel = 1;
+        GuildXp = 0;
+        GuildSkillPoints = 0;
+        CachedGuildMembers.Clear();
+        CachedGuildSkills.Clear();
+        AtualizarOverheadUI();
         EmitSignal(SignalName.OnGuildCleared);
     }
 
@@ -163,7 +175,9 @@ partial class GameNetwork
 
     private void AtualizarOverheadUI()
     {
-        var overhead = GetTree()?.Root.FindChild("OverheadUI", true, false) as OverheadUI;
+        var scene = GetTree()?.CurrentScene;
+        var overhead = scene?.GetNodeOrNull<OverheadUI>("HUD/OverheadUI")
+            ?? scene?.FindChild("OverheadUI", true, false) as OverheadUI;
         overhead?.RecarregarDadosGuild();
     }
 
@@ -173,6 +187,26 @@ partial class GameNetwork
         string name = r.GetString();
         int rank = r.GetByte();
         bool joined = r.GetBool();
+        for (int i = CachedGuildMembers.Count - 1; i >= 0; i--)
+        {
+            if ((string)CachedGuildMembers[i]["name"] == name)
+                CachedGuildMembers.RemoveAt(i);
+        }
+
+        if (joined)
+        {
+            CachedGuildMembers.Add(new Godot.Collections.Dictionary
+            {
+                ["entity_id"] = (long)entityId,
+                ["name"] = name,
+                ["rank"] = rank,
+                ["health"] = 0,
+                ["max_health"] = 0,
+                ["mana"] = 0,
+                ["max_mana"] = 0,
+                ["level"] = 1,
+            });
+        }
         EmitSignal(SignalName.OnGuildMemberUpdate, entityId, name, rank, joined);
     }
 
@@ -180,6 +214,14 @@ partial class GameNetwork
     {
         ulong entityId = r.GetULong();
         int newRank = r.GetByte();
+        foreach (var member in CachedGuildMembers)
+        {
+            if ((ulong)(long)member["entity_id"] == entityId)
+            {
+                member["rank"] = newRank;
+                break;
+            }
+        }
         EmitSignal(SignalName.OnGuildRankUpdate, entityId, newRank);
     }
 
@@ -187,6 +229,18 @@ partial class GameNetwork
     {
         string skillId = r.GetString();
         int newLevel = r.GetInt();
+        bool updated = false;
+        foreach (var skill in CachedGuildSkills)
+        {
+            if ((string)skill["id"] == skillId)
+            {
+                skill["level"] = newLevel;
+                updated = true;
+                break;
+            }
+        }
+        if (!updated)
+            CachedGuildSkills.Add(new Godot.Collections.Dictionary { ["id"] = skillId, ["level"] = newLevel });
         EmitSignal(SignalName.OnGuildSkillUpdate, skillId, newLevel);
     }
 

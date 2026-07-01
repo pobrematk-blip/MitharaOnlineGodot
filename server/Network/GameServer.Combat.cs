@@ -11,10 +11,29 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private const double DefaultBasicAttackCooldown = 1.2;
+    private const double BerserkerBasicAttackCooldown = 1.5;
+    private const double RangedBasicAttackCooldown = 1.1;
+    private const int PetAttackSkillId = -100;
+    private const float BasicAttackRange = 640f;
+    private const float PetOwnerCommandRange = 32f * 12f;
+    private const double PetAttackCooldown = 0.8;
+
     private static long XpForNextLevel(int level)
     {
         if (level < 1) level = 1;
         return 600L + level * 260L + level * level * 90L;
+    }
+
+    private static double GetBasicAttackCooldown(PlayerEntity player)
+    {
+        string classe = player.CharacterClass?.Trim().ToLowerInvariant() ?? "";
+        return classe switch
+        {
+            "berseker" or "berserker" or "bárbaro" or "barbaro" => BerserkerBasicAttackCooldown,
+            "arqueiro" or "mago" => RangedBasicAttackCooldown,
+            _ => DefaultBasicAttackCooldown,
+        };
     }
 
     private bool HandleMonsterAIAttack(Channel channel, MonsterEntity mob, Entity target, double gameTime)
@@ -87,15 +106,25 @@ partial class GameServer
         if (player == null || player.Health > 0) return;
 
         player.Health = player.MaxHealth;
+        player.Mana = player.MaxMana;
         player.LastCombatTime = _gameTime - 120.0;
 
         var character = session.SelectedCharacter;
-        float spawnX = character?.PosX ?? 1000f;
-        float spawnY = character?.PosY ?? 1000f;
+        float spawnX = MainSpawnX;
+        float spawnY = MainSpawnY;
 
         float oldX = player.X;
         float oldY = player.Y;
         channel.MoveEntity(player.Id, spawnX, spawnY);
+        session.CurrentMap = MainSceneName;
+
+        if (character != null)
+        {
+            character.PosX = spawnX;
+            character.PosY = spawnY;
+            character.CurrentMap = MainSceneName;
+            _db.SaveCharacterPosition(character.Id, spawnX, spawnY, MainSceneName);
+        }
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
         writer.Put(player.Id);
@@ -103,9 +132,12 @@ partial class GameServer
         writer.Put(spawnY);
         writer.Put(player.Health);
         writer.Put(player.MaxHealth);
+        writer.Put(player.Mana);
+        writer.Put(player.MaxMana);
 
         var aoi = channel.GetEntitiesInAoi(spawnX, spawnY);
         aoi.UnionWith(channel.GetEntitiesInAoi(oldX, oldY));
+        BroadcastPartyMemberUpdateForEntity(player.Id);
         foreach (var eid in aoi)
         {
             var p = channel.GetPlayerPeer(eid);
@@ -118,6 +150,8 @@ partial class GameServer
                 writer.Put(spawnY);
                 writer.Put(player.Health);
                 writer.Put(player.MaxHealth);
+                writer.Put(player.Mana);
+                writer.Put(player.MaxMana);
             }
         }
     }
@@ -173,6 +207,7 @@ partial class GameServer
         peer.Send(wItemUpdate, DeliveryMethod.ReliableOrdered);
 
         target.Health = target.MaxHealth;
+        target.Mana = target.MaxMana;
         target.LastCombatTime = _gameTime - 120.0;
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
@@ -181,8 +216,11 @@ partial class GameServer
         writer.Put(target.Y);
         writer.Put(target.Health);
         writer.Put(target.MaxHealth);
+        writer.Put(target.Mana);
+        writer.Put(target.MaxMana);
 
         var aoi = channel.GetEntitiesInAoi(target.X, target.Y);
+        BroadcastPartyMemberUpdateForEntity(target.Id);
         foreach (var eid in aoi)
         {
             var p = channel.GetPlayerPeer(eid);
@@ -195,6 +233,8 @@ partial class GameServer
                 writer.Put(target.Y);
                 writer.Put(target.Health);
                 writer.Put(target.MaxHealth);
+                writer.Put(target.Mana);
+                writer.Put(target.MaxMana);
             }
         }
     }
@@ -709,11 +749,32 @@ partial class GameServer
         float dx = target.X - attacker.X;
         float dy = target.Y - attacker.Y;
         float dist = MathF.Sqrt(dx * dx + dy * dy);
-        float attackRange = 640f;
+        bool isPetAttack = skillId == PetAttackSkillId;
+        float attackRange = isPetAttack ? PetOwnerCommandRange : BasicAttackRange;
 
         if (dist > attackRange) return;
 
         if (target is MonsterEntity mob && mob.FactionId == attacker.FactionId) return;
+        if (isPetAttack && target is not MonsterEntity) return;
+
+        if (isPetAttack)
+        {
+            if (_gameTime < attacker.NextPetAttackTime)
+                return;
+
+            attacker.NextPetAttackTime = _gameTime + PetAttackCooldown;
+        }
+        else if (skillId == 0)
+        {
+            if (_gameTime < attacker.NextBasicAttackTime)
+                return;
+
+            attacker.NextBasicAttackTime = _gameTime + GetBasicAttackCooldown(attacker);
+        }
+        else if (skillId < 0)
+        {
+            return;
+        }
 
         int targetDefense = target switch
         {
@@ -804,11 +865,6 @@ partial class GameServer
         writerDied.Put(mobId);
         writerDied.Put(killer.Id);
 
-        var writerGainExp = PacketSerializer.WritePacket(PacketId.S2C_GainExp);
-        writerGainExp.Put(killer.Id);
-        writerGainExp.Put(xpReward);
-        writerGainExp.Put(killer.Experience);
-
         var aoi = channel.GetEntitiesInAoi(mob.X, mob.Y);
         foreach (var eid in aoi)
         {
@@ -847,8 +903,9 @@ partial class GameServer
             killer.Level++;
             xpForNextLevel = XpForNextLevel(killer.Level);
 
-            killer.MaxHealth = 80 + killer.Forca * 2 + killer.Level * 10;
+            RecalculatePlayerStats(killer);
             killer.Health = killer.MaxHealth;
+            killer.Mana = killer.MaxMana;
             killer.StatPoints += 5;
 
             var writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
@@ -875,6 +932,7 @@ partial class GameServer
                 SendStatUpdate(peer, killer);
                 SendTalentData(peer, killer);
             }
+            BroadcastSingleEntityUpdate(channel, killer);
         }
 
         _db.SaveCharacterXp(killerSession.SelectedCharacter!.Id, killer.Experience);

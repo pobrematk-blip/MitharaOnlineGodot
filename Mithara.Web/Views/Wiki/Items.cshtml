@@ -1,0 +1,102 @@
+@model WikiItemsViewModel
+@{
+    ViewData["Title"] = "Itens";
+    var typeNames = ViewBag.TypeNames as Dictionary<string, string> ?? new();
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Itens</h1>
+        <p>Todos os itens do Mithara Online</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="wiki-filter-bar">
+            <form method="get" action="/Wiki/Items" class="wiki-filter-form">
+                <input type="text" name="search" value="@Model.Search" placeholder="Buscar item..." class="form-control wiki-filter-input" />
+                <select name="type" class="form-control wiki-filter-select">
+                    <option value="">Todos os tipos</option>
+                    @foreach (var t in Model.ItemTypes)
+                    {
+                        <option value="@t" selected="@(t == Model.TypeFilter)">@(typeNames.ContainsKey(t) ? typeNames[t] : "Tipo " + t)</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+        </div>
+
+        @if (Model.Items.Count == 0)
+        {
+            <p class="empty-state">Nenhum item encontrado.</p>
+        }
+        else
+        {
+            <div class="wiki-item-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ícone</th>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Nível</th>
+                                <th>Preço</th>
+                                <th>Classe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr onclick="window.location='/Wiki/Item/@item.Id'" class="clickable-row">
+                                    <td class="item-icon-cell">
+                                        @if (!string.IsNullOrEmpty(item.IconUrl))
+                                        {
+                                            <img src="@item.IconUrl" alt="@item.Name" class="item-icon" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <span class="item-icon-placeholder">?</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="item-name">@item.Name</span>
+                                        @if (item.IsElite)
+                                        {
+                                            <span class="item-elite-badge">Elite</span>
+                                        }
+                                    </td>
+                                    <td>@item.TypeName</td>
+                                    <td>@(item.RequiredLevel > 0 ? item.RequiredLevel.ToString() : "—")</td>
+                                    <td>@(item.BuyPrice > 0 ? item.BuyPrice + "g" : "—")</td>
+                                    <td class="item-classes">
+                                        @if (item.Classes.Count > 0)
+                                        {
+                                            @foreach (var c in item.Classes)
+                                            {
+                                                <span class="class-tag">@c</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="class-all">Todas</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <a href="/Wiki/Items?search=@Model.Search&type=@Model.TypeFilter&page=@i" class="page-link @(i == Model.Page ? "active" : "")">@i</a>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>

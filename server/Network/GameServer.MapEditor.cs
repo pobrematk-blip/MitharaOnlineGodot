@@ -25,14 +25,15 @@ public partial class GameServer
         _tileData.Clear();
         _teleportTargets.Clear();
 
-        string exeDir = AppDomain.CurrentDomain.BaseDirectory;
-        string dataDir = Path.GetFullPath(Path.Combine(exeDir, "..", "..", "..", "data", "tiles"));
+        string dataDir = ResolveTileDataDirectory();
 
         if (!Directory.Exists(dataDir))
         {
             Logger.Info($"[TILE DATA] Diretorio nao encontrado: {dataDir}");
             return;
         }
+
+        Logger.Info($"[TILE DATA] Lendo tiles de: {dataDir}");
 
         foreach (string file in Directory.GetFiles(dataDir, "*.json"))
         {
@@ -70,6 +71,29 @@ public partial class GameServer
         }
 
         ApplyTileBlocksToPathGrids();
+    }
+
+    private static string ResolveTileDataDirectory()
+    {
+        string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+        string currentDir = Directory.GetCurrentDirectory();
+        var candidates = new[]
+        {
+            Path.Combine(exeDir, "data", "tiles"),
+            Path.Combine(exeDir, "..", "..", "..", "data", "tiles"),
+            Path.Combine(exeDir, "..", "..", "..", "..", "server", "data", "tiles"),
+            Path.Combine(currentDir, "server", "data", "tiles"),
+            Path.Combine(currentDir, "data", "tiles"),
+        };
+
+        foreach (string candidate in candidates)
+        {
+            string fullPath = Path.GetFullPath(candidate);
+            if (Directory.Exists(fullPath) && Directory.GetFiles(fullPath, "*.json").Length > 0)
+                return fullPath;
+        }
+
+        return Path.GetFullPath(Path.Combine(exeDir, "..", "..", "..", "data", "tiles"));
     }
 
     private void ApplyTileBlocksToPathGrids()

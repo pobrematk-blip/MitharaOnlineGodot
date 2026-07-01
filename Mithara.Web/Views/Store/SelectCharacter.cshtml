@@ -1,0 +1,53 @@
+@model SelectCharacterViewModel
+@{
+    ViewData["Title"] = "Selecionar Personagem";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>@Model.Product.Name</h1>
+        <p>Selecione o personagem que receberá os itens</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="select-char-card">
+            <div class="product-summary">
+                <div class="pack-icon @Model.Product.IconClass"></div>
+                <div class="product-info">
+                    <h3>@Model.Product.Name</h3>
+                    <p>@Model.Product.Description</p>
+                    <div class="pack-price">R$ @Model.Product.Price.ToString("F2")</div>
+                </div>
+            </div>
+
+            @if (Model.Characters.Count == 0)
+            {
+                <p class="empty-state">Você não possui personagens. Crie um personagem no jogo primeiro.</p>
+            }
+            else
+            {
+                <form asp-action="ConfirmPurchase" method="post" class="char-select-form">
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+                    <div class="char-options">
+                        @foreach (var character in Model.Characters)
+                        {
+                            <label class="char-option">
+                                <input type="radio" name="characterId" value="@character.Id" required />
+                                <div class="char-option-content">
+                                    <div class="char-avatar">@character.Name[0].ToString().ToUpper()</div>
+                                    <div class="char-details">
+                                        <strong>@character.Name</strong>
+                                        <span>Nível @character.Level - @character.Class</span>
+                                    </div>
+                                </div>
+                            </label>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Confirmar Compra</button>
+                </form>
+            }
+        </div>
+    </div>
+</section>

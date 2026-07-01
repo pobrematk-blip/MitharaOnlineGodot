@@ -16,6 +16,7 @@ public partial class TalentTreeComponent : Node
 
     private readonly List<string> _nosDesbloqueados = new();
     private Player _player;
+    private GameNetwork _gameNet;
 
     public IReadOnlyList<string> NosDesbloqueados => _nosDesbloqueados;
     public IEnumerable<TalentNodeResource> NosAtivos => _nosDesbloqueados.Select(id => TalentTree?.ObterNo(id)).Where(n => n != null);
@@ -26,13 +27,20 @@ public partial class TalentTreeComponent : Node
         if (_player == null)
             GD.PrintErr("[TALENT TREE] ✘ Player não encontrado!");
 
-        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-        if (gameNet != null)
+        _gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (_gameNet != null)
         {
-            gameNet.OnTalentData += AplicarEstadoServidor;
-            if (gameNet.PendingTalentPoints.HasValue && gameNet.PendingTalentNodes != null)
-                AplicarEstadoServidor(gameNet.PendingTalentPoints.Value, gameNet.PendingTalentNodes);
+            _gameNet.OnTalentData += AplicarEstadoServidor;
+            if (_gameNet.PendingTalentPoints.HasValue && _gameNet.PendingTalentNodes != null)
+                AplicarEstadoServidor(_gameNet.PendingTalentPoints.Value, _gameNet.PendingTalentNodes);
         }
+    }
+
+    public override void _ExitTree()
+    {
+        if (_gameNet != null)
+            _gameNet.OnTalentData -= AplicarEstadoServidor;
+        base._ExitTree();
     }
 
     public bool TemNoDesbloqueado(string nodeId)
@@ -71,6 +79,9 @@ public partial class TalentTreeComponent : Node
 
     private void AplicarEstadoServidor(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados)
     {
+        if (!IsInsideTree())
+            return;
+
         _nosDesbloqueados.Clear();
         foreach (string nodeId in nosDesbloqueados)
         {

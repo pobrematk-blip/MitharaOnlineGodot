@@ -1,0 +1,51 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Cadastro";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Criar Conta</h1>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container container-small">
+        <form asp-action="Register" method="post" class="auth-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Username">Usuário</label>
+                <input asp-for="Username" class="form-control" placeholder="Escolha um usuário" autofocus />
+                <span asp-validation-for="Username" class="text-danger"></span>
+                <small>Apenas letras, números e underscore</small>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" class="form-control" placeholder="Seu email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password">Senha</label>
+                <input asp-for="Password" class="form-control" placeholder="Mínimo 6 caracteres" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ConfirmPassword">Confirmar Senha</label>
+                <input asp-for="ConfirmPassword" class="form-control" placeholder="Repita a senha" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">Criar Conta</button>
+
+            <p class="auth-link">Já tem conta? <a href="/Account/Login">Entrar</a></p>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

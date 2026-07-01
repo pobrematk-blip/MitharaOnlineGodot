@@ -1,0 +1,73 @@
+@model StoreIndexViewModel
+@{
+    ViewData["Title"] = "Loja";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Loja</h1>
+        <p>Adquira moedas de cash e pacotes especiais</p>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="store-tabs">
+            <button class="tab-btn active" onclick="switchTab('founder')">Pacotes Fundador</button>
+            <button class="tab-btn" onclick="switchTab('cash')">Moedas de Cash</button>
+        </div>
+
+        <div id="tab-founder" class="tab-content active">
+            <div class="store-grid">
+                @foreach (var pack in Model.FounderPacks)
+                {
+                    <div class="pack-card @pack.Tier">
+                        @if (!string.IsNullOrEmpty(pack.BadgeText))
+                        {
+                            <span class="pack-badge">@pack.BadgeText</span>
+                        }
+                        <div class="pack-icon @pack.IconClass"></div>
+                        <h3>@pack.Name</h3>
+                        <p>@pack.Description</p>
+                        <div class="pack-price">R$ @pack.Price.ToString("F2")</div>
+                        <a href="@(User.Identity?.IsAuthenticated == true ? Url.Action("SelectCharacter", new { productId = pack.Id }) : Url.Action("Login", "Account"))" class="btn btn-primary btn-full">
+                            @(User.Identity?.IsAuthenticated == true ? "Comprar Agora" : "Faça Login")
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div id="tab-cash" class="tab-content">
+            <div class="store-grid cash-grid">
+                @foreach (var item in Model.CashProducts)
+                {
+                    <div class="cash-card">
+                        @if (!string.IsNullOrEmpty(item.BadgeText))
+                        {
+                            <span class="cash-badge">@item.BadgeText</span>
+                        }
+                        <div class="cash-icon @item.IconClass">
+                            <span class="cash-amount">@item.CashAmount</span>
+                        </div>
+                        <h3>@item.Name</h3>
+                        <p>@item.Description</p>
+                        <div class="cash-price">R$ @item.Price.ToString("F2")</div>
+                        <a href="@(User.Identity?.IsAuthenticated == true ? Url.Action("SelectCharacter", new { productId = item.Id }) : Url.Action("Login", "Account"))" class="btn btn-primary btn-full">
+                            @(User.Identity?.IsAuthenticated == true ? "Comprar" : "Faça Login")
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.tab-btn[onclick*="'${tab}'"]`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+}
+</script>

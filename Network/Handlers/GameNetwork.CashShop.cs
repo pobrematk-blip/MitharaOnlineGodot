@@ -21,4 +21,11 @@ partial class GameNetwork
         Log($"[CASH SHOP] Result: {message}");
         EmitSignal(SignalName.OnCashShopResult, success, message);
     }
+
+    private void HandleCashBalance(NetDataReader r)
+    {
+        CashBalance = r.GetInt();
+        Log($"[CASH SHOP] Saldo atualizado: {CashBalance}");
+        EmitSignal(SignalName.OnCashBalance, CashBalance);
+    }
 }

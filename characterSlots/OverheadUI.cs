@@ -72,6 +72,7 @@ public partial class OverheadUI : Control
     private Label _guildLabel;
     private Player _player;
     private Camera2D _camera;
+    private LevelProgressionComponent _levelProgression;
 
     private string _nomePersonagem;
     private string _guildTag = "";
@@ -224,6 +225,7 @@ public partial class OverheadUI : Control
         if (_player != null)
         {
             _player.StatusAtualizado += Atualizar;
+            ConectarProgressaoLocal();
             Atualizar();
         }
         else
@@ -257,6 +259,30 @@ public partial class OverheadUI : Control
         _xpMaximo = System.Math.Max(1, xpMax);
         if (_nomeLabel != null)
             AtualizarNomeCompleto();
+        AtualizarXp();
+    }
+
+    private void ConectarProgressaoLocal()
+    {
+        if (_remoteMode || _player == null)
+            return;
+
+        _levelProgression = _player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
+        if (_levelProgression == null)
+            return;
+
+        _levelProgression.ProgressaoAtualizada -= AtualizarXpLocal;
+        _levelProgression.ProgressaoAtualizada += AtualizarXpLocal;
+        AtualizarXpLocal();
+    }
+
+    private void AtualizarXpLocal()
+    {
+        if (!IsInsideTree() || _levelProgression == null)
+            return;
+
+        _xpAtual = _levelProgression.ExperienciaAtual;
+        _xpMaximo = _levelProgression.ExperienciaProximoLevel;
         AtualizarXp();
     }
 
@@ -351,7 +377,7 @@ public partial class OverheadUI : Control
 
     private void Atualizar()
     {
-        if (_player == null) return;
+        if (!IsInsideTree() || _player == null || _hpFill == null || _manaFill == null) return;
 
         float hpPct = Mathf.Clamp(_player.CurrentHealth / (float)_player.MaxHealth, 0, 1);
         float manaPct = Mathf.Clamp(_player.CurrentMana / (float)_player.MaxMana, 0, 1);
@@ -361,8 +387,17 @@ public partial class OverheadUI : Control
 
     private void AtualizarXp()
     {
-        if (_xpFill == null) return;
+        if (!IsInsideTree() || _xpFill == null) return;
         float xpPct = Mathf.Clamp(_xpAtual / (float)System.Math.Max(1, _xpMaximo), 0, 1);
         _xpFill.Size = new Vector2(BarraLargura * xpPct, BarraAltura);
+    }
+
+    public override void _ExitTree()
+    {
+        if (_player != null)
+            _player.StatusAtualizado -= Atualizar;
+        if (_levelProgression != null)
+            _levelProgression.ProgressaoAtualizada -= AtualizarXpLocal;
+        base._ExitTree();
     }
 }

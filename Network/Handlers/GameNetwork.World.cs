@@ -56,20 +56,6 @@ partial class GameNetwork
         });
     }
 
-    public void SendSceneTeleport(string targetScene, string teleportId, float targetX = 0f, float targetY = 0f, float entryX = 0f, float entryY = 0f)
-    {
-        _client?.SendPacket(PacketId.C2S_SceneTeleport, w =>
-        {
-            w.Put(targetScene);
-            w.Put(teleportId);
-            w.Put(targetX);
-            w.Put(targetY);
-            w.Put(entryX);
-            w.Put(entryY);
-        });
-        GameNetwork.Log($"[SCENE] Pedido de teleporte: cena={targetScene}, id={teleportId}, alvo=({targetX:F1},{targetY:F1})");
-    }
-
     private void HandleSpawnEntity(NetDataReader r)
     {
         ulong entityId = r.GetULong();

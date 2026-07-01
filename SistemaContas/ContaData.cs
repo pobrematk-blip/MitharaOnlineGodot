@@ -4,7 +4,7 @@ using System.Collections.Generic;
 [GlobalClass]
 public partial class ContaData : Resource
 {
-    [Export] public int Diamantes { get; set; } = 100;
+    [Export] public int Diamantes { get; set; } = 0;
     [Export] public int SlotsComprados { get; set; } = 0;
     [Export] public int SlotsBase { get; set; } = 3;
     [Export] public int UltimoSlotSelecionado { get; set; } = 0;

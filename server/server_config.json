@@ -11,8 +11,22 @@
   "PgUser": "mithara",
   "PgPassword": "Tk7142536@",
   "NoMobZones": [
-    { "X": 350, "Y": 700, "Width": 1050, "Height": 700 },
-    { "X": 1475, "Y": 700, "Width": 1050, "Height": 700 }
+    {
+      "Points": [
+        { "X": 251, "Y": 1163 },
+        { "X": 1301, "Y": 1163 },
+        { "X": 1301, "Y": 1863 },
+        { "X": 251, "Y": 1863 }
+      ]
+    },
+    {
+      "Points": [
+        { "X": -1108, "Y": -2344 },
+        { "X": -58, "Y": -2344 },
+        { "X": -58, "Y": -1644 },
+        { "X": -1108, "Y": -1644 }
+      ]
+    }
   ],
   "SpawnPoints": [
     {
@@ -223,16 +237,52 @@
     }
   ],
   "NpcSpawnPoints": [
-    { "X": 1109, "Y": 957, "PrefabId": "banqueiro" },
-    { "X": 1098, "Y": 1177, "PrefabId": "guarda_solareth" },
-    { "X": 1130, "Y": 1040, "PrefabId": "general_merchant" },
-    { "X": 1070, "Y": 1025, "PrefabId": "refiner" }
+    {
+      "X": 1109,
+      "Y": 957,
+      "PrefabId": "banqueiro",
+      "Map": "main",
+      "Direction": "down",
+      "Enabled": true
+    },
+    {
+      "X": 1098,
+      "Y": 1177,
+      "PrefabId": "guarda_solareth",
+      "Map": "main",
+      "Direction": "down",
+      "Enabled": true
+    },
+    {
+      "X": 1130,
+      "Y": 1040,
+      "PrefabId": "general_merchant",
+      "Map": "main",
+      "Direction": "down",
+      "Enabled": true
+    },
+    {
+      "X": 1070,
+      "Y": 1025,
+      "PrefabId": "refiner",
+      "Map": "main",
+      "Direction": "down",
+      "Enabled": true
+    },
+    {
+      "X": 1145,
+      "Y": 1040,
+      "PrefabId": "merchant_auctioneer",
+      "Map": "main",
+      "Direction": "down",
+      "Enabled": true
+    }
   ],
-  "PathfindingGridWidth": 700,
-  "PathfindingGridHeight": 400,
+  "PathfindingGridWidth": 800,
+  "PathfindingGridHeight": 450,
   "PathfindingCellSize": 32,
-  "PathfindingOriginX": -10000,
-  "PathfindingOriginY": -8000,
+  "PathfindingOriginX": -11000,
+  "PathfindingOriginY": -8500,
   "BlockedAreas": [
     { "X": 400, "Y": 400, "Width": 64, "Height": 64 },
     { "X": 800, "Y": 800, "Width": 128, "Height": 128 },

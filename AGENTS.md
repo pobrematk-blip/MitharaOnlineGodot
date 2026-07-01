@@ -188,6 +188,16 @@
 - Equipamentos iniciais de personagem são sempre do tipo Normal e raridade Comum.
 - Toda seleção de drop, tipo do item, nível e raridade deve ser validada e sorteada exclusivamente pelo servidor.
 
+## Site Oficial (Mithara.Web)
+
+- **Projeto**: `Mithara.Web/` — ASP.NET Core MVC (.NET 8, Razor Pages)
+- **Rodar**: `dotnet run --project Mithara.Web` na porta 5000
+- **Banco**: usa o mesmo `mithara_db` PostgreSQL + novas tabelas web (`forum_categories`, `forum_topics`, `forum_posts`, `admin_logs`, `site_config`)
+- **Autenticação**: Cookie-based, reaproveita tabela `accounts` do jogo (login/cadastro)
+- **Páginas**: Home (landing), Sobre, Recursos, Download, Ranking, Fórum, Admin
+- **Config**: `Mithara.Web/appsettings.json` — ConnectionStrings.GameDb
+- **Adicionado à solution**: `Mithara.sln` contém os 3 projetos (Godot cliente, servidor, site)
+
 ## Idioma: SEMPRE português
 
 - Quando der opções ou perguntar algo para o usuário, use SEMPRE português.

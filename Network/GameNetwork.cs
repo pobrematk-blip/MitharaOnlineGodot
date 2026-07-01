@@ -52,11 +52,17 @@ public partial class GameNetwork : Node
     public ulong LocalPlayerId { get; private set; }
     public int LocalChannelId { get; private set; }
     public int Gold { get; set; }
+    public int CashBalance { get; private set; }
     public int GuildId { get; set; } = -1;
     public string GuildName { get; set; } = "";
     public string GuildTag { get; set; } = "";
     public int GuildEmblem { get; set; } = -1;
     public bool IsGuildLeader { get; set; }
+    public int GuildLevel { get; set; } = 1;
+    public int GuildXp { get; set; }
+    public int GuildSkillPoints { get; set; }
+    public Godot.Collections.Array<Godot.Collections.Dictionary> CachedGuildMembers { get; private set; } = new();
+    public Godot.Collections.Array<Godot.Collections.Dictionary> CachedGuildSkills { get; private set; } = new();
     public Vector2 PendingPlayerSpawn { get; private set; }
     public int? PendingTalentPoints { get; private set; }
     public Godot.Collections.Array<string>? PendingTalentNodes { get; private set; }
@@ -93,7 +99,7 @@ public partial class GameNetwork : Node
 
     [Signal] public delegate void OnEntityHealthUpdateEventHandler(ulong entityId, int health, int maxHealth);
     [Signal] public delegate void OnEntityManaUpdateEventHandler(ulong entityId, int mana, int maxMana);
-    [Signal] public delegate void OnRespawnEventHandler(ulong entityId, float x, float y, int health, int maxHealth);
+    [Signal] public delegate void OnRespawnEventHandler(ulong entityId, float x, float y, int health, int maxHealth, int mana, int maxMana);
     [Signal] public delegate void OnTeleportEventHandler(ulong entityId, float x, float y);
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
@@ -116,6 +122,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnTradePartnerConfirmEventHandler(ulong playerSide, bool confirmed);
     [Signal] public delegate void OnTradeEndEventHandler(bool success);
     [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);
+    [Signal] public delegate void OnCashBalanceEventHandler(int balance);
     [Signal] public delegate void OnRefineResultEventHandler(bool success, int newLevel, string message);
     [Signal] public delegate void OnOpenRefineEventHandler();
     [Signal] public delegate void OnOpenLojinhaEventHandler(ulong lojinhaId, bool isOwner, string ownerName, string shopName, bool isOpen, int maxSlots, Godot.Collections.Array<Godot.Collections.Dictionary> items);
@@ -557,6 +564,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_CashShopResult:
                 HandleCashShopResult(r);
                 break;
+            case PacketId.S2C_CashBalance:
+                HandleCashBalance(r);
+                break;
             case PacketId.S2C_RefineResult:
                 HandleRefineResult(r);
                 break;
@@ -701,6 +711,9 @@ public partial class GameNetwork : Node
                     int qty = (int)entry["quantity"];
                     int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
                     string instanceData = entry.ContainsKey("instance_data") ? (string)entry["instance_data"] : "";
+                    if (itemId <= 0 || qty <= 0)
+                        continue;
+
                     var resource = ItemDB.GetItem(itemId);
                     if (resource != null)
                     {

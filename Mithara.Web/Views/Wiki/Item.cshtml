@@ -1,0 +1,97 @@
+@model WikiItemDetailViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="page-header">
+    <div class="container">
+        <p><a href="/Wiki/Items" class="back-link">← Voltar para Itens</a></p>
+        <div class="item-detail-header">
+            @if (!string.IsNullOrEmpty(Model.IconUrl))
+            {
+                <img src="@Model.IconUrl" alt="@Model.Name" class="item-detail-icon" />
+            }
+            <div>
+                <h1>@Model.Name</h1>
+                <p>@Model.TypeName @(Model.IsElite ? "- Elite" : "")</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="wiki-detail-grid">
+            <div class="wiki-detail-main">
+                <div class="wiki-detail-card">
+                    <h2>Informações</h2>
+                    <table class="wiki-stats-table">
+                        @foreach (var stat in Model.Stats)
+                        {
+                            <tr>
+                                <td class="stat-name">@stat.Name</td>
+                                <td class="stat-value">@stat.Value</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.AffixPool))
+                {
+                    <div class="wiki-detail-card">
+                        <h2>Possíveis Afixos</h2>
+                        <div class="wiki-affix-list">
+                            @foreach (var affix in Model.AffixPool.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                            {
+                                <span class="wiki-affix-tag">@affix</span>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="wiki-detail-card">
+                    <h2>Classes Permitidas</h2>
+                    <div class="wiki-class-list">
+                        @if (Model.AllowedClasses.Count > 0)
+                        {
+                            @foreach (var cls in Model.AllowedClasses)
+                            {
+                                <span class="wiki-class-tag">@cls</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="wiki-class-tag class-all">Todas as classes</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="wiki-detail-side">
+                <div class="wiki-detail-card">
+                    <h2>Onde Dropar</h2>
+                    @if (Model.DroppedBy.Count == 0)
+                    {
+                        <p class="text-muted">Nenhum monstro dropa este item diretamente.</p>
+                        <p class="text-muted small">Equipamentos podem ser obtidos como drop de monstros Elite.</p>
+                    }
+                    else
+                    {
+                        <div class="wiki-drop-list">
+                            @foreach (var drop in Model.DroppedBy.OrderByDescending(d => d.DropChance))
+                            {
+                                <a href="/Wiki/Mob/@drop.MobId" class="wiki-drop-entry">
+                                    <div class="wiki-drop-mob">
+                                        <strong>@drop.MobName</strong>
+                                        <span>Nível @drop.MobLevel</span>
+                                    </div>
+                                    <div class="wiki-drop-chance">@drop.DropChanceDisplay</div>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

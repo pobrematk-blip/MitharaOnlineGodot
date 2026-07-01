@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mithara Online</title>
+    <meta name="description" content="Mithara Online - MMORPG 2D Top-Down. Entre em um mundo de conflito entre raças." />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <header class="site-header">
+        <nav class="navbar">
+            <a href="/" class="nav-logo">
+                <img src="~/images/logo.svg" alt="Mithara Online" class="logo-img" />
+                <span class="logo-text">Mithara Online</span>
+            </a>
+            <button class="nav-toggle" aria-label="Menu">&#9776;</button>
+            <ul class="nav-links">
+                <li><a href="/">Início</a></li>
+                <li><a href="/Home/About">Sobre</a></li>
+                <li><a href="/Home/Features">Recursos</a></li>
+                <li><a href="/Ranking">Ranking</a></li>
+                <li><a href="/Wiki">Wiki</a></li>
+                <li><a href="/Store">Loja</a></li>
+                <li><a href="/Forum">Fórum</a></li>
+                <li><a href="/Download">Download</a></li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-dropdown">
+                        <a href="/Account/Profile">@User.Identity.Name</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/Account/Profile">Meu Perfil</a></li>
+                            <li><a href="/Admin/Dashboard">Admin</a></li>
+                            <li><a href="/Account/Logout">Sair</a></li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li><a href="/Account/Login">Entrar</a></li>
+                    <li><a href="/Account/Register" class="btn-register">Cadastrar</a></li>
+                }
+            </ul>
+        </nav>
+    </header>
+
+    <main role="main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-error">@TempData["Error"]</div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h3>Mithara Online</h3>
+                <p>MMORPG 2D Top-Down.<br />Conflito de Raças.</p>
+                <p class="footer-small">&#169; 2026 Mithara Online. Todos os direitos reservados.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links</h3>
+                <ul>
+                    <li><a href="/Home/About">Sobre</a></li>
+                    <li><a href="/Home/Features">Recursos</a></li>
+                    <li><a href="/Download">Download</a></li>
+                    <li><a href="/Wiki">Wiki</a></li>
+                    <li><a href="/Store">Loja</a></li>
+                    <li><a href="/Ranking">Ranking</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Comunidade</h3>
+                <ul>
+                    <li><a href="/Forum">Fórum</a></li>
+                    <li><a href="https://discord.gg/mithara" target="_blank" rel="noopener">Discord</a></li>
+                    <li><a href="https://github.com/pobrematk-blip/MitharaOnlineGodot" target="_blank" rel="noopener">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Suporte</h3>
+                <ul>
+                    <li><a href="/Home/Privacy">Política de Privacidade</a></li>
+                    <li><a href="/Forum/Category/3">Dúvidas</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

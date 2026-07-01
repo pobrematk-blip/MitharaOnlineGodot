@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PlayerSpriteAnimationProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://characters/Player/PlayerSpriteAnimationProfile.cs" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+AttackFrameWidth = 64
+AttackFrameHeight = 64
+AttackUpRow = 16
+AttackLeftRow = 17
+AttackDownRow = 18
+AttackRightRow = 19
+AttackUpFrames = 13
+AttackLeftFrames = 13
+AttackDownFrames = 13
+AttackRightFrames = 13
+AttackSpeed = 10.0

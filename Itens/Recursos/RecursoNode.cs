@@ -164,7 +164,7 @@ public partial class RecursoNode : StaticBody2D
         if (RecursoData.QuantidadeMaxima > RecursoData.QuantidadeMinima)
             qtd += (int)(GD.Randi() % (RecursoData.QuantidadeMaxima - RecursoData.QuantidadeMinima + 1));
 
-        var lootScene = ResourceLoader.Load<PackedScene>("res://resources/Inventario/ItemColetavel.tscn");
+        var lootScene = ResourceLoader.Load<PackedScene>("res://Itens/Outros/ItemColetavel.tscn");
         if (lootScene == null) return 0;
 
         var loot = lootScene.Instantiate<ItemColetavel>();

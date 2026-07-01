@@ -30,6 +30,7 @@ public partial class SettingsUI : Control
     private CheckBox _mostrarTagCheck;
     private CheckBox _mostrarEmblemaCheck;
     private CheckBox _mostrarPartyHUDCheck;
+    private CheckBox _mostrarFpsPingCheck;
     private OptionButton _languageOption;
 
     private static readonly Vector2I[] Resolutions = {
@@ -123,6 +124,7 @@ public partial class SettingsUI : Control
         _mostrarTagCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarTagCheck");
         _mostrarEmblemaCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarEmblemaCheck");
         _mostrarPartyHUDCheck = _tabContainer.GetNode<CheckBox>("UI/MostrarPartyHUDCheck");
+        _mostrarFpsPingCheck = ObterOuCriarMostrarFpsPingCheck();
         PrepararAbaTeclas();
         PrepararControleIdioma();
         PrepararAbaUIScroll();
@@ -137,6 +139,7 @@ public partial class SettingsUI : Control
         _mostrarTagCheck.Toggled += OnMostrarTagToggled;
         _mostrarEmblemaCheck.Toggled += OnMostrarEmblemaToggled;
         _mostrarPartyHUDCheck.Toggled += OnMostrarPartyHUDToggled;
+        _mostrarFpsPingCheck.Toggled += OnMostrarFpsPingToggled;
         _languageOption.ItemSelected += OnLanguageSelected;
 
         AplicarOverheadUIDoCheckbox();
@@ -165,6 +168,26 @@ public partial class SettingsUI : Control
         GetTree().Root.SizeChanged += OnRootSizeChanged;
 
         CriarBotaoToggle();
+    }
+
+    private CheckBox ObterOuCriarMostrarFpsPingCheck()
+    {
+        var existente = _tabContainer.GetNodeOrNull<CheckBox>("UI/MostrarFpsPingCheck");
+        if (existente != null)
+            return existente;
+
+        var uiTab = _tabContainer.GetNodeOrNull<VBoxContainer>("UI");
+        var check = new CheckBox
+        {
+            Name = "MostrarFpsPingCheck",
+            Text = "Mostrar FPS e Ping",
+            ButtonPressed = true,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            ClipText = true,
+        };
+        uiTab?.AddChild(check);
+        return check;
     }
 
     private void PrepararAbaUIScroll()
@@ -483,6 +506,12 @@ public partial class SettingsUI : Control
         }
     }
 
+    private void OnMostrarFpsPingToggled(bool pressed)
+    {
+        AplicarFpsPingUI(pressed);
+        SaveSettings();
+    }
+
     private void OnLanguageSelected(long index)
     {
         SaveSettings();
@@ -503,6 +532,13 @@ public partial class SettingsUI : Control
             case "MostrarTagGuild": overhead.MostrarTagGuild = value; break;
             case "MostrarEmblemaGuild": overhead.MostrarEmblemaGuild = value; break;
         }
+    }
+
+    private static void AplicarFpsPingUI(bool visible)
+    {
+        if (Engine.GetMainLoop() is not SceneTree tree) return;
+        var miniMapa = tree.CurrentScene?.FindChild("MiniMapa", true, false) as MiniMapa;
+        miniMapa?.SetFpsPingVisible(visible);
     }
 
     // ========== KEY BINDING ==========
@@ -734,6 +770,7 @@ public partial class SettingsUI : Control
         cfg.SetValue(SectionUI, "mostrar_tag_guild", _mostrarTagCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_emblema_guild", _mostrarEmblemaCheck.ButtonPressed);
         cfg.SetValue(SectionUI, "mostrar_party_hud", _mostrarPartyHUDCheck.ButtonPressed);
+        cfg.SetValue(SectionUI, "mostrar_fps_ping", _mostrarFpsPingCheck.ButtonPressed);
         cfg.SetValue(SectionLanguage, "selected", _languageOption?.Selected ?? 0);
 
         foreach (var nome in InputMap.GetActions())
@@ -787,6 +824,8 @@ public partial class SettingsUI : Control
         _mostrarTagCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_tag_guild", true).AsBool();
         _mostrarEmblemaCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_emblema_guild", true).AsBool();
         _mostrarPartyHUDCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_party_hud", true).AsBool();
+        _mostrarFpsPingCheck.ButtonPressed = cfg.GetValue(SectionUI, "mostrar_fps_ping", true).AsBool();
+        AplicarFpsPingUI(_mostrarFpsPingCheck.ButtonPressed);
         Callable.From(() => OnMostrarPartyHUDToggled(_mostrarPartyHUDCheck.ButtonPressed)).CallDeferred();
 
         if (_languageOption != null)

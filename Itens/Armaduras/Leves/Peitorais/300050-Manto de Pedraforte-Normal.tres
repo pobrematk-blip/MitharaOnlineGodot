@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
-[ext_resource type="Texture2D" path="res://Itens/Incones/p19.png" id="1_102k2"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Peitoral leve level 40.png" id="1_102k2"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
 
 [resource]

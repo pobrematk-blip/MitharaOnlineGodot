@@ -11,29 +11,38 @@ public enum PetMode
 
 public partial class PetNode : Node2D
 {
+    public const float TileSize = 32f;
+    public const float OwnerAttackLeashRange = TileSize * 12f;
+    public const float OneTileAttackRange = 96f;
+    public const int PetAttackSkillId = -100;
+
     [Export] public float SeguirDistancia = 80f;
     [Export] public float Velocidade = 300f;
     [Export] public float ColetaRange = 150f;
-    [Export] public float AtaqueRange = 60f;
+    [Export] public float AtaqueRange = OneTileAttackRange;
     [Export] public float AtaqueCooldown = 0.8f;
     [Export] public int AtaqueDano = 5;
+    [Export] public int VidaMaxima = 200;
+    [Export] public int Defesa = 12;
     [Export] public float GuardaRange = 200f;
+    [Export] public float EscalaVisual = 1.1f;
 
     public PetMode ModoAtual { get; private set; } = PetMode.Seguir;
     public int PetID { get; set; }
-    public string NomePet { get; set; } = "";
-    public string AnimPrefix { get; set; } = "";
+    public string NomePet { get; set; } = "Goblin";
+    public string AnimPrefix { get; set; } = "Goblin";
     private string _animPrefixo
     {
         get
         {
             string prefix = string.IsNullOrWhiteSpace(AnimPrefix) ? NomePet : AnimPrefix;
-            return prefix.Trim().TrimEnd('_').ToLowerInvariant();
+            return prefix.Trim().TrimEnd('_');
         }
     }
     public TipoPet TipoPet { get; set; }
     public bool Ativo { get; set; } = true;
     public bool ColetaAtiva { get; set; } = true;
+    public int VidaAtual { get; private set; }
 
     private Player _player;
     private AnimatedSprite2D _sprite;
@@ -45,12 +54,27 @@ public partial class PetNode : Node2D
     private Area2D _areaColeta;
     private Area2D _areaAtaque;
 
+    public void DefinirDono(Player player)
+    {
+        _player = player;
+    }
+
+    public void ConfigurarAtributos(int hp, int defesa)
+    {
+        VidaMaxima = Mathf.Max(1, hp);
+        Defesa = Mathf.Max(0, defesa);
+        VidaAtual = VidaMaxima;
+    }
+
     public override void _Ready()
     {
-        _player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
+        _player ??= GetTree().CurrentScene.FindChild("Player", true, false) as Player;
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
         if (_sprite != null)
-            _sprite.Scale = new Vector2(0.7f, 0.7f);
+        {
+            _sprite.Scale = Vector2.One * EscalaVisual;
+            TocarAnimacao($"{_animPrefixo}_idle_down");
+        }
         _posicaoGuarda = GlobalPosition;
 
         _areaColeta = new Area2D();
@@ -83,7 +107,25 @@ public partial class PetNode : Node2D
         AddChild(_coletaTimer);
         _coletaTimer.Start();
 
+        if (VidaAtual <= 0)
+            VidaAtual = VidaMaxima;
         AtualizarAreaModo();
+    }
+
+    public void LevarDano(int danoBruto)
+    {
+        if (!Ativo || danoBruto <= 0)
+            return;
+
+        int danoFinal = Mathf.Max(1, danoBruto - Defesa);
+        VidaAtual = Mathf.Max(0, VidaAtual - danoFinal);
+        GD.Print($"[PET] {NomePet} levou {danoFinal} de dano. Vida: {VidaAtual}/{VidaMaxima}");
+
+        if (VidaAtual <= 0)
+        {
+            Ativo = false;
+            QueueFree();
+        }
     }
 
     public void DefinirModo(PetMode novoModo)
@@ -161,7 +203,8 @@ public partial class PetNode : Node2D
         if (_alvoInimigo != null && IsInstanceValid(_alvoInimigo))
         {
             float distAlvo = GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
-            if (distAlvo > GuardaRange * 1.5f)
+            float distAlvoDoPlayer = _player.GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
+            if (distAlvoDoPlayer > OwnerAttackLeashRange)
             {
                 _alvoInimigo = null;
             }
@@ -196,7 +239,7 @@ public partial class PetNode : Node2D
         if (!IsInstanceValid(_player)) return;
 
         float distPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
-        if (distPlayer > SeguirDistancia * 2f)
+        if (distPlayer > OwnerAttackLeashRange)
         {
             AtualizarSeguir(delta);
 
@@ -208,6 +251,14 @@ public partial class PetNode : Node2D
         if (_alvoInimigo != null && IsInstanceValid(_alvoInimigo))
         {
             float distAlvo = GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
+            float distAlvoDoPlayer = _player.GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
+            if (distAlvoDoPlayer > OwnerAttackLeashRange)
+            {
+                _alvoInimigo = null;
+                AtualizarSeguir(delta);
+                return;
+            }
+
             if (distAlvo <= AtaqueRange)
             {
                 AtacarAlvo();
@@ -228,15 +279,27 @@ public partial class PetNode : Node2D
 
     private void ProcurarAlvoProximo()
     {
+        if (!IsInstanceValid(_player))
+            return;
+
+        if (_player.TryGetSelectedCombatTarget(out var targetSelecionado)
+            && IsInstanceValid(targetSelecionado)
+            && targetSelecionado.IsInGroup("Inimigos")
+            && _player.GlobalPosition.DistanceTo(targetSelecionado.GlobalPosition) <= OwnerAttackLeashRange)
+        {
+            _alvoInimigo = targetSelecionado;
+            return;
+        }
+
         var inimigos = GetTree().GetNodesInGroup("Inimigos");
-        float menorDist = Mathf.Max(AtaqueRange * 5f, 400f);
+        float menorDist = OwnerAttackLeashRange;
         Node2D alvo = null;
 
         foreach (var node in inimigos)
         {
             if (node is Node2D n && n != _player)
             {
-                float d = GlobalPosition.DistanceTo(n.GlobalPosition);
+                float d = _player.GlobalPosition.DistanceTo(n.GlobalPosition);
                 if (d < menorDist && IsInstanceValid(n))
                 {
                     menorDist = d;
@@ -266,8 +329,7 @@ public partial class PetNode : Node2D
                 Vector2 v when v.X > 0.5f => $"{_animPrefixo}_attack_right",
                 _ => $"{_animPrefixo}_attack_down"
             };
-            if (_sprite?.SpriteFrames?.HasAnimation(anim) == true)
-                _sprite.Play(anim);
+            TocarAnimacaoComFallback(anim);
         }
 
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -276,7 +338,7 @@ public partial class PetNode : Node2D
             if (_alvoInimigo.HasMeta("network_id"))
             {
                 ulong targetId = (ulong)_alvoInimigo.GetMeta("network_id");
-                gameNet.SendAttack(targetId);
+                gameNet.SendAttack(targetId, PetAttackSkillId);
             }
         }
         else
@@ -394,9 +456,8 @@ public partial class PetNode : Node2D
             baseAnim = $"{_animPrefixo}_idle_{lastDir}";
         }
 
-        if (_sprite?.SpriteFrames?.HasAnimation(baseAnim) == true)
+        if (TocarAnimacaoComFallback(baseAnim))
         {
-            _sprite.Play(baseAnim);
             return;
         }
 
@@ -406,5 +467,45 @@ public partial class PetNode : Node2D
             if (names.Length > 0 && string.IsNullOrEmpty(_sprite.Animation.ToString()))
                 _sprite.Play(names[0]);
         }
+    }
+
+    private bool TocarAnimacao(string anim)
+    {
+        if (_sprite?.SpriteFrames == null || string.IsNullOrWhiteSpace(anim))
+            return false;
+
+        if (_sprite.SpriteFrames.HasAnimation(anim))
+        {
+            _sprite.Play(anim);
+            return true;
+        }
+
+        string alvo = anim.Trim();
+        foreach (string nome in _sprite.SpriteFrames.GetAnimationNames())
+        {
+            if (string.Equals(nome, alvo, StringComparison.OrdinalIgnoreCase))
+            {
+                _sprite.Play(nome);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool TocarAnimacaoComFallback(string anim)
+    {
+        if (TocarAnimacao(anim))
+            return true;
+
+        string prefix = _animPrefixo;
+        if (!string.IsNullOrWhiteSpace(prefix) && anim.StartsWith(prefix + "_", StringComparison.OrdinalIgnoreCase))
+        {
+            string semPrefixo = anim[(prefix.Length + 1)..];
+            if (TocarAnimacao(semPrefixo))
+                return true;
+        }
+
+        return false;
     }
 }

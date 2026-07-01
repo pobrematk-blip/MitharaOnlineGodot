@@ -212,6 +212,9 @@ public class DatabaseManager
             ("accounts", "security_answer", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "email", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "salt", "VARCHAR(255) NOT NULL DEFAULT ''"),
+            ("accounts", "cash_balance", "INT NOT NULL DEFAULT 0"),
+            ("guilds", "tag", "VARCHAR(12) NOT NULL DEFAULT ''"),
+            ("guilds", "emblem", "INT NOT NULL DEFAULT -1"),
             ("items", "refine_level", "INT NOT NULL DEFAULT 0"),
             ("items", "roll_data", "TEXT NOT NULL DEFAULT ''"),
             ("item_definitions", "magic_defense", "INT NOT NULL DEFAULT 0"),
@@ -345,6 +348,58 @@ public class DatabaseManager
         cmd.CommandText = "SELECT EXISTS (SELECT 1 FROM characters WHERE LOWER(name) = LOWER(@n))";
         cmd.Parameters.AddWithValue("@n", name.Trim());
         return Convert.ToBoolean(cmd.ExecuteScalar());
+    }
+
+    public int GetCashBalance(int accountId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT cash_balance FROM accounts WHERE id = @a";
+        cmd.Parameters.AddWithValue("@a", accountId);
+        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+    }
+
+    public bool TrySpendCash(int accountId, int amount, out int newBalance)
+    {
+        newBalance = GetCashBalance(accountId);
+        if (amount <= 0) return false;
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            UPDATE accounts
+            SET cash_balance = cash_balance - @amount
+            WHERE id = @a AND cash_balance >= @amount
+            RETURNING cash_balance
+            """;
+        cmd.Parameters.AddWithValue("@a", accountId);
+        cmd.Parameters.AddWithValue("@amount", amount);
+        var result = cmd.ExecuteScalar();
+        if (result == null)
+            return false;
+
+        newBalance = Convert.ToInt32(result);
+        return true;
+    }
+
+    public int AddCash(int accountId, int amount)
+    {
+        if (amount <= 0) return GetCashBalance(accountId);
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            UPDATE accounts
+            SET cash_balance = cash_balance + @amount
+            WHERE id = @a
+            RETURNING cash_balance
+            """;
+        cmd.Parameters.AddWithValue("@a", accountId);
+        cmd.Parameters.AddWithValue("@amount", amount);
+        return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
     }
 
     public int? CreateCharacter(int accountId, string name, string className, string race)
@@ -903,20 +958,45 @@ public class DatabaseManager
         return Convert.ToBoolean(cmd.ExecuteScalar());
     }
 
-    public bool SaveGuild(int guildId, string name, int level, int xp, int skillPoints)
+    public int RepairMissingGuildVisualData()
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            UPDATE guilds
+            SET
+                tag = CASE
+                    WHEN LENGTH(TRIM(COALESCE(tag, ''))) = 3 THEN UPPER(TRIM(tag))
+                    ELSE LEFT(UPPER(REGEXP_REPLACE(name, '[^A-Za-z]', '', 'g')) || 'GLD', 3)
+                END,
+                emblem = CASE
+                    WHEN emblem IS NULL OR emblem < 0 THEN 0
+                    ELSE emblem
+                END
+            WHERE LENGTH(TRIM(COALESCE(tag, ''))) <> 3
+               OR emblem IS NULL
+               OR emblem < 0
+            """;
+        return cmd.ExecuteNonQuery();
+    }
+
+    public bool SaveGuild(int guildId, string name, int level, int xp, int skillPoints, string tag = "", int emblem = -1)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO guilds (id, name, level, xp, skill_points)
-            VALUES (@i, @n, @l, @x, @s)
-            ON CONFLICT (id) DO UPDATE SET name=@n, level=@l, xp=@x, skill_points=@s";
+            INSERT INTO guilds (id, name, level, xp, skill_points, tag, emblem)
+            VALUES (@i, @n, @l, @x, @s, @t, @e)
+            ON CONFLICT (id) DO UPDATE SET name=@n, level=@l, xp=@x, skill_points=@s, tag=@t, emblem=@e";
         cmd.Parameters.AddWithValue("@i", guildId);
         cmd.Parameters.AddWithValue("@n", name);
         cmd.Parameters.AddWithValue("@l", level);
         cmd.Parameters.AddWithValue("@x", xp);
         cmd.Parameters.AddWithValue("@s", skillPoints);
+        cmd.Parameters.AddWithValue("@t", tag);
+        cmd.Parameters.AddWithValue("@e", emblem);
         try
         {
             cmd.ExecuteNonQuery();
@@ -1033,7 +1113,7 @@ public class DatabaseManager
         cmd.ExecuteNonQuery();
     }
 
-    public void LoadAllGuilds(Action<int, string, int, int, int> onGuild,
+    public void LoadAllGuilds(Action<int, string, int, int, int, string, int> onGuild,
         Action<int, ulong, string, int> onMember,
         Action<int, string, int> onSkill)
     {
@@ -1041,12 +1121,14 @@ public class DatabaseManager
         conn.Open();
 
         using var gcmd = conn.CreateCommand();
-        gcmd.CommandText = "SELECT id, name, level, xp, skill_points FROM guilds";
+        gcmd.CommandText = "SELECT id, name, level, xp, skill_points, tag, emblem FROM guilds";
         using var greader = gcmd.ExecuteReader();
         while (greader.Read())
         {
             onGuild(greader.GetInt32(0), greader.GetString(1), greader.GetInt32(2),
-                greader.GetInt32(3), greader.GetInt32(4));
+                greader.GetInt32(3), greader.GetInt32(4),
+                greader.IsDBNull(5) ? "" : greader.GetString(5),
+                greader.IsDBNull(6) ? -1 : greader.GetInt32(6));
         }
         greader.Close();
 
@@ -1458,6 +1540,20 @@ public class DatabaseManager
         using var reader = cmd.ExecuteReader();
         if (!reader.Read()) return (-1, 0, 0);
         return (reader.GetInt32(0), (ulong)reader.GetInt64(1), reader.GetInt32(2));
+    }
+
+    public List<(ulong entityId, string name, int rank)> GetGuildMembers(int guildId)
+    {
+        var result = new List<(ulong entityId, string name, int rank)>();
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT entity_id, name, rank FROM guild_members WHERE guild_id = @g ORDER BY rank, name";
+        cmd.Parameters.AddWithValue("@g", guildId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            result.Add(((ulong)reader.GetInt64(0), reader.GetString(1), reader.GetInt32(2)));
+        return result;
     }
 
     private static string GenerateSalt()

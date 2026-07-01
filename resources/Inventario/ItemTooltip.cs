@@ -503,7 +503,7 @@ public partial class ItemTooltip : Panel
 			PesoItem.Pesado => "PESADO",
 			_ => "",
 		};
-		if (!string.IsNullOrEmpty(pesoNome))
+		if (item.UsaCategoriaPeso() && !string.IsNullOrEmpty(pesoNome))
 		{
 			var pesoLabel = new Label();
 			pesoLabel.Text = $"Categoria da Armadura: {pesoNome}";

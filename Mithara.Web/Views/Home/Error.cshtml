@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Erro";
+    var errorMessage = TempData["Error"] ?? "Ocorreu um erro inesperado.";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Oops!</h1>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container text-center">
+        <p style="color: var(--text-secondary); font-size: 1.2rem;">@errorMessage</p>
+        <a href="/" class="btn btn-primary" style="margin-top: 1.5rem;">Voltar ao Início</a>
+    </div>
+</section>

@@ -256,3 +256,9 @@ text = "Líder: —"
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(1, 0.8, 0, 0.8)
 theme_override_font_sizes/font_size = 12
+
+[node name="LeaveGuildButton" type="Button" parent="Panel/TabContainer/Informacoes"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 30)
+text = "Sair do Clã"

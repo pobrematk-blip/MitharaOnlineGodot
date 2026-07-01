@@ -15,6 +15,9 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private const int TalentPointsPerLevel = 3;
+    private const float MainSpawnX = 230f;
+    private const float MainSpawnY = 300f;
+    private const string MainSceneName = "main";
 
     private static readonly Dictionary<string, int[]> _classStartingItems = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -382,7 +385,14 @@ partial class GameServer
             {
                 // Replace stale entity ID with current runtime ID
                 if (oldEntityId > 0 && oldEntityId != entityId)
-                    _world.Guilds.ReplaceMemberEntityId(guildId, oldEntityId, entityId);
+                {
+                    if (!_world.Guilds.ReplaceMemberEntityId(guildId, oldEntityId, entityId))
+                        _world.Guilds.LoadMember(guildId, entityId, rank);
+                }
+                else
+                {
+                    _world.Guilds.LoadMember(guildId, entityId, rank);
+                }
 
                 _world.Guilds.SetMemberRank(guildId, entityId, rank);
                 if (rank == 0)
@@ -437,7 +447,11 @@ partial class GameServer
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
         if (restoredGuild != null)
+        {
             WriteGuildDataPacket(peer, restoredGuild);
+            if (channel != null)
+                BroadcastSingleEntityUpdate(channel, player);
+        }
 
         if (!useInline && ch != null)
         {
@@ -910,11 +924,16 @@ internal static class ServerTalentCatalog
     private static Dictionary<string, int> GetSkillResourceIds(string root, string treeText)
     {
         var result = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (Match match in Regex.Matches(treeText, @"\[ext_resource[^\]]*script_class=""SkillResource""[^\]]*path=""(?<path>[^""]+)""[^\]]*id=""(?<id>[^""]+)""[^\]]*\]"))
+        foreach (Match match in Regex.Matches(treeText, @"\[ext_resource[^\]]*\]"))
         {
-            string id = match.Groups["id"].Value;
-            string resourcePath = match.Groups["path"].Value;
+            string line = match.Value;
+            string id = GetAttribute(line, "id");
+            string resourcePath = GetAttribute(line, "path");
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(resourcePath))
+                continue;
             if (!resourcePath.StartsWith("res://", StringComparison.Ordinal))
+                continue;
+            if (!resourcePath.Contains("/skills/habilidades/", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             string filePath = Path.Combine(root, resourcePath["res://".Length..].Replace('/', Path.DirectorySeparatorChar));
@@ -926,6 +945,12 @@ internal static class ServerTalentCatalog
                 result[id] = skillId;
         }
         return result;
+    }
+
+    private static string GetAttribute(string text, string key)
+    {
+        var match = Regex.Match(text, $@"\b{Regex.Escape(key)}=""(?<v>[^""]*)""");
+        return match.Success ? match.Groups["v"].Value : "";
     }
 
     private static int GetNodeSkillId(string body, Dictionary<string, int> skillResourceIds)

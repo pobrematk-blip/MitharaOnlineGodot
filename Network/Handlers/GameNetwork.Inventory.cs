@@ -118,11 +118,11 @@ partial class GameNetwork
         if (equip == null) return;
 
         var tipo = (TipoEquipamento)equipSlot;
-        var newItem = ItemDB?.GetItem(itemId);
+        var newItem = itemId > 0 ? ItemDB?.GetItem(itemId) : null;
 
         if (hasUnequip && inv != null)
         {
-            var oldItem = ItemDB?.GetItem(unequipItemId);
+            var oldItem = unequipItemId > 0 ? ItemDB?.GetItem(unequipItemId) : null;
             if (oldItem != null && invSlot >= 0 && invSlot < inv.Slots.Count)
             {
                 inv.Slots[invSlot] = new SlotInventario(oldItem, unequipQuantity, unequipRefineLevel, unequipInstanceData);
@@ -137,7 +137,7 @@ partial class GameNetwork
         {
             equip.ItensEquipados[tipo] = new SlotInventario(newItem, quantity, refineLevel, instanceData);
         }
-        else if (itemId == 0 && equip.ItensEquipados.ContainsKey(tipo))
+        else if (itemId <= 0 && equip.ItensEquipados.ContainsKey(tipo))
         {
             equip.ItensEquipados.Remove(tipo);
         }

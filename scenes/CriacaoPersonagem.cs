@@ -427,13 +427,19 @@ public partial class CriacaoPersonagem : Control
     {
         if (_personagemPreview.SpriteFrames == null) return;
 
-        AtualizarOverlayPrevisao(_previsoCabelo, _opcaoCabelo.Selected, _corCabelo.Color, "res://Itens/Cabelos/Cabelo Dread Branco.png");
-        AtualizarOverlayPrevisao(_previsoBarba, _opcaoBarba.Selected, _corBarba.Color, "res://Itens/Cabelos/Barba Normal Branca.png");
+        AtualizarOverlayPrevisao(_previsoCabelo, _opcaoCabelo.Selected, _corCabelo.Color, "");
+        AtualizarOverlayPrevisao(_previsoBarba, _opcaoBarba.Selected, _corBarba.Color, "");
     }
 
     private void AtualizarOverlayPrevisao(AnimatedSprite2D overlay, int selected, Color cor, string path)
     {
         if (selected <= 0 || string.IsNullOrEmpty(path))
+        {
+            overlay.Visible = false;
+            return;
+        }
+
+        if (!ResourceLoader.Exists(path))
         {
             overlay.Visible = false;
             return;
@@ -561,8 +567,10 @@ public partial class CriacaoPersonagem : Control
         var escolhido = GetNode<PersonagemEscolhido>("/root/PersonagemEscolhido");
         escolhido.Definir(_classeSelecionada, _racaSelecionada, _nomeEdit.Text);
 
-        escolhido.CabeloPath = _opcaoCabelo.Selected > 0 ? "res://Itens/Cabelos/Cabelo Dread Branco.png" : "";
-        escolhido.BarbaPath = _opcaoBarba.Selected > 0 ? "res://Itens/Cabelos/Barba Normal Branca.png" : "";
+        string cabeloPath = "";
+        string barbaPath = "";
+        escolhido.CabeloPath = _opcaoCabelo.Selected > 0 && ResourceLoader.Exists(cabeloPath) ? cabeloPath : "";
+        escolhido.BarbaPath = _opcaoBarba.Selected > 0 && ResourceLoader.Exists(barbaPath) ? barbaPath : "";
         escolhido.CabeloCor = _corCabelo.Color;
         escolhido.BarbaCor = _corBarba.Color;
         escolhido.Salvar();
@@ -583,8 +591,8 @@ public partial class CriacaoPersonagem : Control
             _racaPendente = nomeRaca;
             _aguardandoCriacaoServidor = true;
             _btnEntrarJogo.Disabled = true;
-            net.SendCreateCharacter(escolhido.NomePersonagem, nomeClasse, nomeRaca);
             MostrarTelaCarregamento();
+            net.SendCreateCharacter(escolhido.NomePersonagem, nomeClasse, nomeRaca);
         }
         else
         {
@@ -600,11 +608,11 @@ public partial class CriacaoPersonagem : Control
         _aguardandoCriacaoServidor = false;
         _btnEntrarJogo.Disabled = false;
 
-        var loading = GetTree().Root.GetNodeOrNull("LoadingScreen");
-        loading?.QueueFree();
-
         if (!success)
         {
+            var loading = GetTree().Root.GetNodeOrNull("LoadingScreen");
+            loading?.QueueFree();
+
             if (_descricaoPersonagem != null)
                 _descricaoPersonagem.Text = message;
             GD.PrintErr($"[CRIACAO] {message}");

@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Download";
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1>Download</h1>
+    </div>
+</section>
+
+<section class="content-section">
+    <div class="container">
+        <div class="download-card">
+            <h2>Mithara Online - Cliente do Jogo</h2>
+            <p>Baixe o cliente mais recente e comece sua aventura.</p>
+            <div class="download-info">
+                <div class="download-item">
+                    <h3>&#128187; Windows</h3>
+                    <p>Baixe o instalador para Windows e execute o launcher.</p>
+                    <a href="@ViewBag.DownloadUrl" class="btn btn-primary" target="_blank" rel="noopener">Baixar para Windows</a>
+                </div>
+                <div class="download-item">
+                    <h3>&#128279; Launcher</h3>
+                    <p>O launcher verifica atualizações automaticamente e mantém o jogo sempre na versão mais recente.</p>
+                </div>
+                <div class="download-item">
+                    <h3>&#128172; Comunidade</h3>
+                    <p>Entre no nosso Discord para ficar por dentro das novidades e se conectar com outros jogadores.</p>
+                    <a href="@ViewBag.DiscordUrl" class="btn btn-secondary" target="_blank" rel="noopener">Entrar no Discord</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="download-requirements">
+            <h2>Requisitos Mínimos</h2>
+            <ul>
+                <li><strong>Sistema:</strong> Windows 10 ou superior</li>
+                <li><strong>Processador:</strong> Dual-core 2.0 GHz</li>
+                <li><strong>Memória:</strong> 4 GB RAM</li>
+                <li><strong>Placa de Vídeo:</strong> Compatível com DirectX 11</li>
+                <li><strong>Armazenamento:</strong> 500 MB</li>
+                <li><strong>Conexão:</strong> Internet banda larga</li>
+            </ul>
+
+            <h2>Como Instalar</h2>
+            <ol>
+                <li>Baixe o launcher pelo link acima</li>
+                <li>Execute o instalador</li>
+                <li>O launcher baixará automaticamente os arquivos do jogo</li>
+                <li>Crie sua conta no site e faça login no jogo</li>
+                <li>Divirta-se!</li>
+            </ol>
+        </div>
+    </div>
+</section>

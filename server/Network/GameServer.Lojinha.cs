@@ -8,6 +8,8 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private const int LojinhaMaxPricePerUnit = 1_000_000_000;
+
     private void HandleLojinhaOpen(NetPeer peer, NetDataReader reader)
     {
         if (!TryGetPlayer(peer, out var player, out var channel)) return;
@@ -77,7 +79,7 @@ partial class GameServer
             return;
         }
 
-        if (quantity <= 0 || pricePerUnit < 1)
+        if (quantity <= 0 || pricePerUnit < 1 || pricePerUnit > LojinhaMaxPricePerUnit)
         {
             SendSystemMessage(peer, "Quantidade ou preço inválido.");
             return;
@@ -223,7 +225,14 @@ partial class GameServer
         }
 
         int buyQty = Math.Min(quantity, lojinhaItem.Quantity);
-        int totalCost = buyQty * lojinhaItem.PricePerUnit;
+        long totalCostLong = (long)buyQty * lojinhaItem.PricePerUnit;
+        if (totalCostLong <= 0 || totalCostLong > int.MaxValue)
+        {
+            SendSystemMessage(peer, "Valor da compra invalido.");
+            return;
+        }
+
+        int totalCost = (int)totalCostLong;
 
         if (player.Gold < totalCost)
         {

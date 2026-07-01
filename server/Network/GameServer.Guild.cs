@@ -39,6 +39,7 @@ partial class GameServer
                 _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 4);
                 BroadcastGuildMemberUpdate(guild, sender.Id, sender.Name, true);
                 BroadcastGuildData(sender);
+                BroadcastGuildVisualUpdate(sender);
             }
         }
     }
@@ -79,6 +80,7 @@ partial class GameServer
         _world.Guilds.RemoveMember(target.Id);
         target.GuildId = -1;
         target.GuildName = "";
+        BroadcastGuildVisualUpdate(target);
         SendSystemMessage(peer, $"{target.Name} foi expulso da guilda.");
         if (targetPeer != null)
         {
@@ -229,7 +231,7 @@ partial class GameServer
         if (sender is not PlayerEntity player) return false;
 
         guildName = guildName.Trim();
-        tag = tag.Trim();
+        tag = NormalizeGuildTag(tag);
 
         Logger.Info($"[GUILD] HandleGuildCreate: player={sender.Name}, guildName={guildName}, tag={tag}, emblem={emblem}, gold={player.Gold}, itemsCount={player.Items.Count}");
         foreach (var item in player.Items)
@@ -244,6 +246,20 @@ partial class GameServer
         if (guildName.Length < 2 || guildName.Length > 30)
         {
             SendSystemMessage(peer, "O nome da guilda deve ter entre 2 e 30 caracteres.");
+            return false;
+        }
+
+        if (tag.Length != 3)
+        {
+            message = "Escolha uma sigla de 3 letras para a guilda.";
+            SendSystemMessage(peer, message);
+            return false;
+        }
+
+        if (emblem < 0)
+        {
+            message = "Escolha um emblema para a guilda.";
+            SendSystemMessage(peer, message);
             return false;
         }
 
@@ -272,7 +288,7 @@ partial class GameServer
             return false;
         }
 
-        if (!_db.SaveGuild(guild.Id, guild.Name, guild.Level, guild.Xp, guild.SkillPoints))
+        if (!_db.SaveGuild(guild.Id, guild.Name, guild.Level, guild.Xp, guild.SkillPoints, guild.Tag, guild.Emblem))
         {
             _world.Guilds.RemoveGuild(guild.Id);
             message = "Ja existe uma guilda com este nome.";
@@ -310,10 +326,27 @@ partial class GameServer
         player.GuildName = guild.Name;
         _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 0);
         BroadcastGuildData(sender);
+        BroadcastGuildVisualUpdate(player);
         message = $"Guilda '{guildName}' criada com sucesso!";
         SendSystemMessage(peer, $"Guilda '{guildName}' criada com sucesso!");
         Logger.Info($"[GUILD] Guild '{guildName}' criada com sucesso por {sender.Name}!");
         return true;
+    }
+
+    private static string NormalizeGuildTag(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+            return "";
+
+        var normalized = new System.Text.StringBuilder(3);
+        foreach (char c in tag.Trim().ToUpperInvariant())
+        {
+            if (c >= 'A' && c <= 'Z')
+                normalized.Append(c);
+            if (normalized.Length == 3)
+                break;
+        }
+        return normalized.ToString();
     }
 
     private void HandleGuildInvite(NetPeer peer, PlayerSession session, Entity sender, string targetName)
@@ -378,6 +411,7 @@ partial class GameServer
         {
             _db.SaveGuildMember(guild.Id, sender.Id, sender.Name, 4);
             BroadcastGuildMemberUpdate(guild, sender.Id, sender.Name, true);
+            BroadcastGuildVisualUpdate(player);
         }
     }
 
@@ -386,18 +420,45 @@ partial class GameServer
         if (sender is not PlayerEntity player || player.GuildId < 0) return;
 
         var guild = _world.Guilds.GetGuild(player.GuildId);
+        bool wasLeader = guild != null && guild.IsLeader(sender.Id);
         _world.Guilds.RemoveMember(sender.Id);
         player.GuildId = -1;
         player.GuildName = "";
+        BroadcastGuildVisualUpdate(player);
 
         if (guild != null)
         {
             _db.DeleteGuildMemberByName(guild.Id, sender.Name);
             var remaining = _world.Guilds.GetGuild(guild.Id);
             if (remaining == null)
+            {
                 _db.DeleteGuild(guild.Id);
+            }
             else
+            {
+                if (wasLeader)
+                {
+                    var nextLeader = _db.GetGuildMembers(remaining.Id).FirstOrDefault();
+                    if (nextLeader.entityId != 0)
+                    {
+                        remaining.SetRank(nextLeader.entityId, 0);
+                        _db.SaveGuildMember(remaining.Id, nextLeader.entityId, nextLeader.name, 0);
+                        BroadcastGuildRankUpdate(remaining, nextLeader.entityId, 0);
+                    }
+                }
                 BroadcastGuildMemberUpdate(remaining, sender.Id, sender.Name, false);
+                BroadcastGuildDataToOnlineMembers(remaining);
+            }
+        }
+    }
+
+    private void BroadcastGuildDataToOnlineMembers(Guild guild)
+    {
+        foreach (var eid in guild.Members)
+        {
+            var peer = FindPeerByEntityId(eid);
+            if (peer != null)
+                WriteGuildDataPacket(peer, guild);
         }
     }
 
@@ -422,14 +483,30 @@ partial class GameServer
         writer.Put(guild.Name);
         writer.Put(guild.Tag);
         writer.Put(guild.Emblem);
-        writer.Put((byte)guild.Members.Count);
 
-        foreach (var eid in guild.Members.OrderBy(e => guild.GetRank(e)))
+        var members = _db.GetGuildMembers(guild.Id);
+        if (members.Count == 0)
+            members = guild.Members
+                .Select(eid => (entityId: eid, name: GetEntityDisplayData(eid).name, rank: guild.GetRank(eid)))
+                .ToList();
+
+        writer.Put((byte)Math.Min(byte.MaxValue, members.Count));
+
+        foreach (var member in members
+            .OrderBy(m => m.rank)
+            .ThenBy(m => m.name, StringComparer.OrdinalIgnoreCase)
+            .Take(byte.MaxValue))
         {
-            var (name, hp, maxHp, mana, maxMana, level) = GetEntityDisplayData(eid);
-            writer.Put(eid);
+            var (displayName, hp, maxHp, mana, maxMana, level) = GetEntityDisplayData(member.entityId);
+            string name = string.IsNullOrWhiteSpace(member.name) || member.name == "?"
+                ? displayName
+                : member.name;
+            if (string.IsNullOrWhiteSpace(name))
+                name = "?";
+
+            writer.Put(member.entityId);
             writer.Put(name);
-            writer.Put((byte)guild.GetRank(eid));
+            writer.Put((byte)Math.Clamp(member.rank, 0, 4));
             writer.Put(hp);
             writer.Put(maxHp);
             writer.Put(mana);
@@ -450,6 +527,13 @@ partial class GameServer
         }
 
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void BroadcastGuildVisualUpdate(PlayerEntity player)
+    {
+        var entity = FindEntityById(player.Id, out _, out var channel);
+        if (entity != null && channel != null)
+            BroadcastSingleEntityUpdate(channel, entity);
     }
 
     private void BroadcastGuildMemberUpdate(Guild guild, ulong entityId, string name, bool joined)

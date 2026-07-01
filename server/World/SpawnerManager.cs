@@ -94,12 +94,12 @@ public class SpawnerManager
             Agilidade = 1,
             Speed = 72f,
             ExperienceReward = 8,
-            GoldMin = 3,
-            GoldMax = 10,
+            GoldMin = 2,
+            GoldMax = 6,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
             },
         });
 
@@ -116,14 +116,14 @@ public class SpawnerManager
             Speed = 84f,
             ExperienceReward = 30,
             Passive = true,
-            GoldMin = 15,
-            GoldMax = 40,
+            GoldMin = 8,
+            GoldMax = 18,
             DropsNormalEquipment = true,
-            EliteDropChance = 0.80,
+            EliteDropChance = 0.25,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
-                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
             },
         });
 
@@ -141,11 +141,7 @@ public class SpawnerManager
             ExperienceReward = 5,
             GoldMin = 3,
             GoldMax = 10,
-            LootTable = new List<LootEntry>
-            {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
-            },
+            LootTable = new List<LootEntry>(),
         });
 
         RegisterTemplate(new MonsterTemplate
@@ -162,11 +158,7 @@ public class SpawnerManager
             ExperienceReward = 8,
             GoldMin = 5,
             GoldMax = 15,
-            LootTable = new List<LootEntry>
-            {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
-            },
+            LootTable = new List<LootEntry>(),
         });
 
         RegisterTemplate(new MonsterTemplate
@@ -183,11 +175,7 @@ public class SpawnerManager
             ExperienceReward = 14,
             GoldMin = 8,
             GoldMax = 25,
-            LootTable = new List<LootEntry>
-            {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.12 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.10 },
-            },
+            LootTable = new List<LootEntry>(),
         });
 
         RegisterTemplate(new MonsterTemplate
@@ -200,21 +188,21 @@ public class SpawnerManager
             AttackDamage = 35,
             Forca = 12,
             Agilidade = 4,
-            Speed = 84f,
+            Speed = 96f,
             AttackRange = 55f,
             AggroRange = 500f,
             AttackCooldown = 2.0f,
             ExperienceReward = 150,
             IsBoss = true,
             Passive = false,
-            GoldMin = 100,
-            GoldMax = 500,
+            GoldMin = 120,
+            GoldMax = 280,
             GoldDropChance = 0.20,
-            DropsEliteEquipment = false,
-            EliteDropChance = 0.0,
+            DropsEliteEquipment = true,
+            EliteDropChance = 0.15,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PoeiraEstelar, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.30 },
+                new() { ItemId = ItemDefinitions.PoeiraEstelar, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.25 },
                 new() { ItemId = ItemDefinitions.PergaminhoDoPet5, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.01 },
             },
         });
@@ -235,12 +223,12 @@ public class SpawnerManager
             AttackRange = 35f,
             AggroRange = 250f,
             ExperienceReward = 35,
-            GoldMin = 15,
-            GoldMax = 40,
+            GoldMin = 6,
+            GoldMax = 14,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.15 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.12 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
             },
         });
 
@@ -260,14 +248,14 @@ public class SpawnerManager
             AttackRange = 40f,
             AggroRange = 300f,
             ExperienceReward = 90,
-            GoldMin = 45,
-            GoldMax = 120,
-            DropsNormalEquipment = false,
-            EliteDropChance = 0.0,
+            GoldMin = 18,
+            GoldMax = 40,
+            DropsNormalEquipment = true,
+            EliteDropChance = 0.25,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
-                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
             },
         });
 
@@ -289,11 +277,7 @@ public class SpawnerManager
             ExperienceReward = 45,
             GoldMin = 18,
             GoldMax = 50,
-            LootTable = new List<LootEntry>
-            {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.15 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.12 },
-            },
+            LootTable = new List<LootEntry>(),
         });
 
         RegisterTemplate(new MonsterTemplate
@@ -312,15 +296,11 @@ public class SpawnerManager
             AttackRange = 45f,
             AggroRange = 350f,
             ExperienceReward = 110,
-            GoldMin = 60,
-            GoldMax = 150,
-            DropsNormalEquipment = false,
-            EliteDropChance = 0.0,
-            LootTable = new List<LootEntry>
-            {
-                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.30 },
-                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 1, MaxQuantity = 2, DropChance = 0.25 },
-            },
+            GoldMin = 22,
+            GoldMax = 48,
+            DropsNormalEquipment = true,
+            EliteDropChance = 0.25,
+            LootTable = new List<LootEntry>(),
         });
 
         RegisterTemplate(new MonsterTemplate

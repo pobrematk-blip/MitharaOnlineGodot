@@ -198,6 +198,7 @@ partial class GameServer
             writer.Put(ch.Level);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        SendCashBalance(peer, accountId.Value);
 
         Logger.Info($"Login: {username} (id={accountId}) chars={chars.Count}");
     }

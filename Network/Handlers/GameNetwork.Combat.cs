@@ -84,7 +84,9 @@ partial class GameNetwork
         float y = r.GetFloat();
         int health = r.GetInt();
         int maxHealth = r.GetInt();
-        EmitSignal(SignalName.OnRespawn, entityId, x, y, health, maxHealth);
+        int mana = r.AvailableBytes >= 8 ? r.GetInt() : 0;
+        int maxMana = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        EmitSignal(SignalName.OnRespawn, entityId, x, y, health, maxHealth, mana, maxMana);
     }
 
     private void HandleTeleport(NetDataReader r)

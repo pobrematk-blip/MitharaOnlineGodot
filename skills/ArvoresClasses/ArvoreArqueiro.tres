@@ -1,68 +1,63 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=123 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=118 format=3 uid="uid://c565vi013bfxu"]
 
-[ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
-[ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Todas/001 - Segundo Fôlego.tres" id="sk_1"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/001 - Sherigan.tres" id="sk_2"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/002 - Armadilha de Aprisionamento.tres" id="sk_3"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/003 - Comando de Ataque.tres" id="sk_4"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/004 - Instinto de Sobrevivência.tres" id="sk_5"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/005 - Armadilha Explosiva.tres" id="sk_6"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/006 - Marca da Caçada.tres" id="sk_7"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/007 - Rede de Caça.tres" id="sk_8"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/008 - Uivo de Guerra.tres" id="sk_9"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Caçador/009 - Rei da Selva.tres" id="sk_10"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Todas/002 - Salto para Trás.tres" id="sk_11"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/001 - Disparo Múltiplo.tres" id="sk_12"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/002 - Flecha Envenenada.tres" id="sk_13"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/003 - Chuva de Flechas.tres" id="sk_14"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/004 - Flechas Perfurantes.tres" id="sk_15"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/005 - Flecha Explosiva.tres" id="sk_16"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/006 - Tiro Ricochete.tres" id="sk_17"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/007 - Disparo em Leque.tres" id="sk_18"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/008 - Olho do Falcão.tres" id="sk_19"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Ranger/009 - Postura do Mestre Ranger.tres" id="sk_20"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/001 - Tiro Preciso.tres" id="sk_21"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/002 - Mira Apurada.tres" id="sk_22"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/003 - Tiro Penetrante.tres" id="sk_23"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/004 - Tiro Paralisante.tres" id="sk_24"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/005 - Disparo Crítico.tres" id="sk_25"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/006 - Marca do Executor.tres" id="sk_26"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/007 - Impacto Repulsor.tres" id="sk_27"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/008 - Olho da Águia.tres" id="sk_28"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
+[ext_resource type="Script" uid="uid://cgvivuu5r3dpv" path="res://skills/TalentTreeResource.cs" id="1_tree"]
+[ext_resource type="Script" uid="uid://wkx02komrwdx" path="res://skills/TalentNodeResource.cs" id="2_node"]
+[ext_resource type="Texture2D" uid="uid://dlxn2xodjnm2c" path="res://skills/Incone Skills/Arqueiro/48.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" uid="uid://r67uyt4m2m05" path="res://skills/Incone Skills/Arqueiro/42.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" uid="uid://cmm8xrcjelkr5" path="res://skills/Incone Skills/Arqueiro/26.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" uid="uid://bm82jcjg5rfpn" path="res://skills/Incone Skills/Arqueiro/31.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" uid="uid://dukqeyxrw4v01" path="res://skills/Incone Skills/Arqueiro/32.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" uid="uid://bx5dr463ry6f" path="res://skills/Incone Skills/Arqueiro/44.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" uid="uid://wctdas8bqllv" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" uid="uid://chvk8p8ccimr5" path="res://skills/Incone Skills/Arqueiro/25.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" uid="uid://mv25nu7247am" path="res://skills/Incone Skills/Arqueiro/35.png" id="icon_sk_9"]
+[ext_resource type="Texture2D" uid="uid://bhm6lkq6s8bha" path="res://skills/Incone Skills/Arqueiro/23.png" id="icon_sk_10"]
+[ext_resource type="Texture2D" uid="uid://demtba0qfu72o" path="res://skills/Incone Skills/Arqueiro/18.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" uid="uid://jn4qksoeew3d" path="res://skills/Incone Skills/Arqueiro/10.png" id="icon_sk_12"]
+[ext_resource type="Texture2D" uid="uid://boiy423jjvpyx" path="res://skills/Incone Skills/Arqueiro/37.png" id="icon_sk_13"]
+[ext_resource type="Texture2D" uid="uid://767jkgsn21dn" path="res://skills/Incone Skills/Arqueiro/43.png" id="icon_sk_14"]
+[ext_resource type="Texture2D" uid="uid://litd3u8silf2" path="res://skills/Incone Skills/Arqueiro/9.png" id="icon_sk_15"]
+[ext_resource type="Texture2D" uid="uid://clookixwtno18" path="res://skills/Incone Skills/Arqueiro/29.png" id="icon_sk_17"]
+[ext_resource type="Texture2D" uid="uid://sni7ptgi7tvj" path="res://skills/Incone Skills/Arqueiro/4.png" id="icon_sk_18"]
+[ext_resource type="Texture2D" uid="uid://btxb3ny4duuj5" path="res://skills/Incone Skills/Arqueiro/36.png" id="icon_sk_20"]
+[ext_resource type="Texture2D" uid="uid://dy5q31seseqqx" path="res://skills/Incone Skills/Arqueiro/14.png" id="icon_sk_21"]
+[ext_resource type="Texture2D" uid="uid://dray8syq2b2ii" path="res://skills/Incone Skills/Arqueiro/38.png" id="icon_sk_23"]
+[ext_resource type="Texture2D" uid="uid://h7ri0qd0u3pf" path="res://skills/Incone Skills/Arqueiro/13.png" id="icon_sk_24"]
+[ext_resource type="Texture2D" uid="uid://7gs3oyxsb5yc" path="res://skills/Incone Skills/Arqueiro/39.png" id="icon_sk_25"]
+[ext_resource type="Texture2D" uid="uid://cbvou7hcpyv50" path="res://skills/Incone Skills/Arqueiro/17.png" id="icon_sk_26"]
+[ext_resource type="Texture2D" uid="uid://bh6q6i8d4veyq" path="res://skills/Incone Skills/Arqueiro/16.png" id="icon_sk_27"]
+[ext_resource type="Texture2D" uid="uid://bhqv1d8ejb14w" path="res://skills/Incone Skills/Arqueiro/24.png" id="icon_sk_28"]
+[ext_resource type="Texture2D" uid="uid://dn0w88m2wk4p8" path="res://skills/Incone Skills/Arqueiro/45.png" id="icon_sk_29"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Todas/002 - Salto para Trás.tres" id="shared_sk_2"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/001 - Sherigan.tres" id="sk_2"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/002 - Armadilha de Aprisionamento.tres" id="sk_3"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/003 - Comando de Ataque.tres" id="sk_4"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/004 - Instinto de Sobrevivência.tres" id="sk_5"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/005 - Armadilha Explosiva.tres" id="sk_6"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/006 - Marca da Caçada.tres" id="sk_7"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/007 - Rede de Caça.tres" id="sk_8"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/008 - Uivo de Guerra.tres" id="sk_9"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Caçador/009 - Rei da Selva.tres" id="sk_10"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/001 - Disparo Múltiplo.tres" id="sk_12"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/002 - Flecha Envenenada.tres" id="sk_13"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/003 - Chuva de Flechas.tres" id="sk_14"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/004 - Flechas Perfurantes.tres" id="sk_15"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/005 - Flecha Explosiva.tres" id="sk_16"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/006 - Tiro Ricochete.tres" id="sk_17"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/007 - Disparo em Leque.tres" id="sk_18"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/008 - Olho do Falcão.tres" id="sk_19"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Ranger/009 - Postura do Mestre Ranger.tres" id="sk_20"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/001 - Tiro Preciso.tres" id="sk_21"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/002 - Mira Apurada.tres" id="sk_22"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/003 - Tiro Penetrante.tres" id="sk_23"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/004 - Tiro Paralisante.tres" id="sk_24"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/005 - Disparo Crítico.tres" id="sk_25"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/006 - Marca do Executor.tres" id="sk_26"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/007 - Impacto Repulsor.tres" id="sk_27"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/008 - Olho da Águia.tres" id="sk_28"]
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
 
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/48.png" id="icon_sk_1"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/23.png" id="icon_sk_10"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/18.png" id="icon_sk_11"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/10.png" id="icon_sk_12"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/37.png" id="icon_sk_13"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/43.png" id="icon_sk_14"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/9.png" id="icon_sk_15"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/16.png" id="icon_sk_16"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/29.png" id="icon_sk_17"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/4.png" id="icon_sk_18"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_19"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/42.png" id="icon_sk_2"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/36.png" id="icon_sk_20"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/14.png" id="icon_sk_21"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_22"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/38.png" id="icon_sk_23"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/13.png" id="icon_sk_24"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/39.png" id="icon_sk_25"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/17.png" id="icon_sk_26"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/16.png" id="icon_sk_27"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/24.png" id="icon_sk_28"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/45.png" id="icon_sk_29"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/26.png" id="icon_sk_3"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/31.png" id="icon_sk_4"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/32.png" id="icon_sk_5"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/44.png" id="icon_sk_6"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="icon_sk_7"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/25.png" id="icon_sk_8"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/35.png" id="icon_sk_9"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Arqueiro/Todas/002 - Salto para Trás.tres" id="shared_sk_2"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "arq_base"
@@ -70,7 +65,6 @@ Nome = "Fundamentos do Arqueiro"
 Descricao = "Nó central que abre as três especializações de Arqueiro."
 NodeType = 1
 Posicao = Vector2(950, 950)
-CustoPontos = 1
 
 [sub_resource type="Resource" id="cacador_rota"]
 script = ExtResource("2_node")
@@ -80,7 +74,6 @@ Descricao = "Caminho de especialização: Caçador."
 NodeType = 5
 Posicao = Vector2(950, 830)
 Requisitos = PackedStringArray("arq_base")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="cacador_ci1"]
 script = ExtResource("2_node")
@@ -89,7 +82,6 @@ Nome = "Escolha de atributos — Caçador"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(860.8, 782.2)
 Requisitos = PackedStringArray("arq_cacador_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Agilidade", "Evasao", "Destreza")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -100,7 +92,6 @@ Nome = "Escolha de atributos — Caçador"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(950, 760)
 Requisitos = PackedStringArray("arq_cacador_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Tenacidade")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -111,7 +102,6 @@ Nome = "Escolha de atributos — Caçador"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1039.2, 782.2)
 Requisitos = PackedStringArray("arq_cacador_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Precisao", "VelocidadeAtaque", "VelocidadeMovimento")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -120,38 +110,33 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_1"
 Nome = "Segundo Fôlego"
 Descricao = "Recupera HP e Mana."
-HabilidadeAtiva = ExtResource("sk_1")
-Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(815, 676.2)
+Icone = ExtResource("icon_sk_1")
+HabilidadeAtiva = ExtResource("shared_sk_1")
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_1")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="cacador_s2"]
 script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_2"
 Nome = "Sherigan"
 Descricao = "Lobo espiritual companheiro."
-HabilidadeAtiva = ExtResource("sk_2")
-Icone = ExtResource("icon_sk_2")
 NodeType = 1
 Posicao = Vector2(950, 680)
+Icone = ExtResource("icon_sk_2")
+HabilidadeAtiva = ExtResource("sk_2")
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_2")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="cacador_s3"]
 script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_3"
 Nome = "Armadilha de Aprisionamento"
 Descricao = "Prende o alvo."
-HabilidadeAtiva = ExtResource("sk_3")
-Icone = ExtResource("icon_sk_3")
 NodeType = 1
 Posicao = Vector2(1085, 716.2)
+Icone = ExtResource("icon_sk_3")
+HabilidadeAtiva = ExtResource("sk_3")
 Requisitos = PackedStringArray("arq_cacador_escolha_interna_3")
-CustoPontos = 1
 NivelMinimo = 5
 
 [sub_resource type="Resource" id="cacador_ul"]
@@ -162,7 +147,6 @@ Descricao = "Marco de progressão do caminho Caçador."
 NodeType = 5
 Posicao = Vector2(830.3, 621.1)
 Requisitos = PackedStringArray("arq_cacador_skill_1", "arq_cacador_skill_2")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="cacador_ur"]
 script = ExtResource("2_node")
@@ -172,19 +156,17 @@ Descricao = "Marco de progressão do caminho Caçador."
 NodeType = 5
 Posicao = Vector2(1069.7, 621.1)
 Requisitos = PackedStringArray("arq_cacador_skill_2", "arq_cacador_skill_3")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="cacador_s4"]
 script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_4"
 Nome = "Comando de Ataque"
 Descricao = "Ordena ataque."
-HabilidadeAtiva = ExtResource("sk_4")
-Icone = ExtResource("icon_sk_4")
 NodeType = 1
 Posicao = Vector2(662.3, 630.4)
+Icone = ExtResource("icon_sk_4")
+HabilidadeAtiva = ExtResource("sk_4")
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_esquerdo")
-CustoPontos = 1
 NivelMinimo = 10
 
 [sub_resource type="Resource" id="cacador_s5"]
@@ -192,12 +174,11 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_5"
 Nome = "Instinto de Sobrevivência"
 Descricao = "Recupera HP e Mana."
-HabilidadeAtiva = ExtResource("sk_5")
-Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(846, 532.8)
+Icone = ExtResource("icon_sk_5")
+HabilidadeAtiva = ExtResource("sk_5")
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_esquerdo")
-CustoPontos = 1
 NivelMinimo = 15
 
 [sub_resource type="Resource" id="cacador_s6"]
@@ -205,12 +186,11 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_6"
 Nome = "Armadilha Explosiva"
 Descricao = "Armadilha explosiva."
-HabilidadeAtiva = ExtResource("sk_6")
-Icone = ExtResource("icon_sk_6")
 NodeType = 1
 Posicao = Vector2(1054, 532.8)
+Icone = ExtResource("icon_sk_6")
+HabilidadeAtiva = ExtResource("sk_6")
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_direito")
-CustoPontos = 1
 NivelMinimo = 20
 
 [sub_resource type="Resource" id="cacador_s7"]
@@ -218,12 +198,11 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_7"
 Nome = "Marca da Caçada"
 Descricao = "Marca o alvo."
-HabilidadeAtiva = ExtResource("sk_7")
-Icone = ExtResource("icon_sk_7")
 NodeType = 1
 Posicao = Vector2(1237.7, 630.4)
+Icone = ExtResource("icon_sk_7")
+HabilidadeAtiva = ExtResource("sk_7")
 Requisitos = PackedStringArray("arq_cacador_desbloqueio_direito")
-CustoPontos = 1
 NivelMinimo = 30
 
 [sub_resource type="Resource" id="cacador_ce1"]
@@ -233,7 +212,6 @@ Nome = "Escolha de atributos — Caçador"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(687.7, 530.2)
 Requisitos = PackedStringArray("arq_cacador_skill_4", "arq_cacador_skill_5")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("PenetracaoArmadura", "ChanceCritica", "Precisao")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -244,7 +222,6 @@ Nome = "Escolha de atributos — Caçador"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(950, 455)
 Requisitos = PackedStringArray("arq_cacador_skill_5", "arq_cacador_skill_6")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Agilidade")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -255,7 +232,6 @@ Nome = "Escolha de atributos — Caçador"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1212.3, 530.2)
 Requisitos = PackedStringArray("arq_cacador_skill_6", "arq_cacador_skill_7")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("DanoCriticoBonus", "Destreza", "Evasao")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -264,12 +240,11 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_8"
 Nome = "Rede de Caça"
 Descricao = "Reduz movimento."
-HabilidadeAtiva = ExtResource("sk_8")
-Icone = ExtResource("icon_sk_8")
 NodeType = 1
 Posicao = Vector2(554, 554)
+Icone = ExtResource("icon_sk_8")
+HabilidadeAtiva = ExtResource("sk_8")
 Requisitos = PackedStringArray("arq_cacador_escolha_externa_1")
-CustoPontos = 1
 NivelMinimo = 40
 
 [sub_resource type="Resource" id="cacador_s9"]
@@ -277,12 +252,11 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_9"
 Nome = "Uivo de Guerra"
 Descricao = "Buff do pet."
-HabilidadeAtiva = ExtResource("sk_9")
-Icone = ExtResource("icon_sk_9")
 NodeType = 1
 Posicao = Vector2(950, 390)
+Icone = ExtResource("icon_sk_9")
+HabilidadeAtiva = ExtResource("sk_9")
 Requisitos = PackedStringArray("arq_cacador_escolha_externa_2")
-CustoPontos = 1
 NivelMinimo = 50
 
 [sub_resource type="Resource" id="cacador_s10"]
@@ -290,12 +264,11 @@ script = ExtResource("2_node")
 NodeId = "arq_cacador_skill_10"
 Nome = "Rei da Selva"
 Descricao = "Forma ancestral."
-HabilidadeAtiva = ExtResource("sk_10")
-Icone = ExtResource("icon_sk_10")
 NodeType = 1
 Posicao = Vector2(1346, 554)
+Icone = ExtResource("icon_sk_10")
+HabilidadeAtiva = ExtResource("sk_10")
 Requisitos = PackedStringArray("arq_cacador_escolha_externa_3")
-CustoPontos = 1
 NivelMinimo = 70
 
 [sub_resource type="Resource" id="ranger_rota"]
@@ -306,7 +279,6 @@ Descricao = "Caminho de especialização: Ranger."
 NodeType = 5
 Posicao = Vector2(1053.9, 1010)
 Requisitos = PackedStringArray("arq_base")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="ranger_ci1"]
 script = ExtResource("2_node")
@@ -315,7 +287,6 @@ Nome = "Escolha de atributos — Ranger"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1139.9, 956.6)
 Requisitos = PackedStringArray("arq_ranger_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Precisao", "VelocidadeAtaque", "VelocidadeMovimento")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -326,7 +297,6 @@ Nome = "Escolha de atributos — Ranger"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1114.5, 1045)
 Requisitos = PackedStringArray("arq_ranger_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("PenetracaoArmadura", "ChanceCritica", "Precisao")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -337,7 +307,6 @@ Nome = "Escolha de atributos — Ranger"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1050.7, 1111.1)
 Requisitos = PackedStringArray("arq_ranger_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Agilidade")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -346,38 +315,33 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_1"
 Nome = "Salto para Trás"
 Descricao = "Salta para trás 3 tiles."
-HabilidadeAtiva = ExtResource("sk_11")
-Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(1220, 950)
+Icone = ExtResource("icon_sk_11")
+HabilidadeAtiva = ExtResource("shared_sk_2")
 Requisitos = PackedStringArray("arq_ranger_escolha_interna_1")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="ranger_s2"]
 script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_2"
 Nome = "Disparo Múltiplo"
 Descricao = "3 flechas em V."
-HabilidadeAtiva = ExtResource("sk_12")
-Icone = ExtResource("icon_sk_12")
 NodeType = 1
 Posicao = Vector2(1183.8, 1085)
+Icone = ExtResource("icon_sk_12")
+HabilidadeAtiva = ExtResource("sk_12")
 Requisitos = PackedStringArray("arq_ranger_escolha_interna_2")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="ranger_s3"]
 script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_3"
 Nome = "Flecha Envenenada"
 Descricao = "Aplica veneno."
-HabilidadeAtiva = ExtResource("sk_13")
-Icone = ExtResource("icon_sk_13")
 NodeType = 1
 Posicao = Vector2(1085, 1183.8)
+Icone = ExtResource("icon_sk_13")
+HabilidadeAtiva = ExtResource("sk_13")
 Requisitos = PackedStringArray("arq_ranger_escolha_interna_3")
-CustoPontos = 1
 NivelMinimo = 5
 
 [sub_resource type="Resource" id="ranger_ul"]
@@ -388,7 +352,6 @@ Descricao = "Marco de progressão do caminho Ranger."
 NodeType = 5
 Posicao = Vector2(1294.7, 1010.8)
 Requisitos = PackedStringArray("arq_ranger_skill_1", "arq_ranger_skill_2")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="ranger_ur"]
 script = ExtResource("2_node")
@@ -398,19 +361,17 @@ Descricao = "Marco de progressão do caminho Ranger."
 NodeType = 5
 Posicao = Vector2(1175, 1218.1)
 Requisitos = PackedStringArray("arq_ranger_skill_2", "arq_ranger_skill_3")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="ranger_s4"]
 script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_4"
 Nome = "Chuva de Flechas"
 Descricao = "Flechas caem na área."
-HabilidadeAtiva = ExtResource("sk_14")
-Icone = ExtResource("icon_sk_14")
 NodeType = 1
 Posicao = Vector2(1370.6, 860.6)
+Icone = ExtResource("icon_sk_14")
+HabilidadeAtiva = ExtResource("sk_14")
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_esquerdo")
-CustoPontos = 1
 NivelMinimo = 10
 
 [sub_resource type="Resource" id="ranger_s5"]
@@ -418,12 +379,11 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_5"
 Nome = "Flechas Perfurantes"
 Descricao = "Atravessa inimigos."
-HabilidadeAtiva = ExtResource("sk_15")
-Icone = ExtResource("icon_sk_15")
 NodeType = 1
 Posicao = Vector2(1363.3, 1068.5)
+Icone = ExtResource("icon_sk_15")
+HabilidadeAtiva = ExtResource("sk_15")
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_esquerdo")
-CustoPontos = 1
 NivelMinimo = 15
 
 [sub_resource type="Resource" id="ranger_s6"]
@@ -431,12 +391,11 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_6"
 Nome = "Flecha Explosiva"
 Descricao = "Explode ao atingir."
-HabilidadeAtiva = ExtResource("sk_16")
-Icone = ExtResource("icon_sk_16")
 NodeType = 1
 Posicao = Vector2(1259.3, 1248.7)
+Icone = ExtResource("icon_sk_27")
+HabilidadeAtiva = ExtResource("sk_16")
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_direito")
-CustoPontos = 1
 NivelMinimo = 20
 
 [sub_resource type="Resource" id="ranger_s7"]
@@ -444,12 +403,11 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_7"
 Nome = "Tiro Ricochete"
 Descricao = "Salta entre alvos."
-HabilidadeAtiva = ExtResource("sk_17")
-Icone = ExtResource("icon_sk_17")
 NodeType = 1
 Posicao = Vector2(1082.9, 1359)
+Icone = ExtResource("icon_sk_17")
+HabilidadeAtiva = ExtResource("sk_17")
 Requisitos = PackedStringArray("arq_ranger_desbloqueio_direito")
-CustoPontos = 1
 NivelMinimo = 30
 
 [sub_resource type="Resource" id="ranger_ce1"]
@@ -459,7 +417,6 @@ Nome = "Escolha de atributos — Ranger"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1444.7, 932.7)
 Requisitos = PackedStringArray("arq_ranger_skill_4", "arq_ranger_skill_5")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("DanoCriticoBonus", "Destreza", "Evasao")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -470,7 +427,6 @@ Nome = "Escolha de atributos — Ranger"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1378.7, 1197.5)
 Requisitos = PackedStringArray("arq_ranger_skill_5", "arq_ranger_skill_6")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Agilidade", "Evasao", "Destreza")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -481,7 +437,6 @@ Nome = "Escolha de atributos — Ranger"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(1182.4, 1387.1)
 Requisitos = PackedStringArray("arq_ranger_skill_6", "arq_ranger_skill_7")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Tenacidade")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -490,12 +445,11 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_8"
 Nome = "Disparo em Leque"
 Descricao = "7 flechas em cone."
-HabilidadeAtiva = ExtResource("sk_18")
-Icone = ExtResource("icon_sk_18")
 NodeType = 1
 Posicao = Vector2(1490.9, 805.1)
+Icone = ExtResource("icon_sk_18")
+HabilidadeAtiva = ExtResource("sk_18")
 Requisitos = PackedStringArray("arq_ranger_escolha_externa_1")
-CustoPontos = 1
 NivelMinimo = 40
 
 [sub_resource type="Resource" id="ranger_s9"]
@@ -503,12 +457,11 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_9"
 Nome = "Olho do Falcão"
 Descricao = "Aumenta reflexos."
-HabilidadeAtiva = ExtResource("sk_19")
-Icone = ExtResource("icon_sk_19")
 NodeType = 1
 Posicao = Vector2(1435, 1230)
+Icone = ExtResource("icon_sk_7")
+HabilidadeAtiva = ExtResource("sk_19")
 Requisitos = PackedStringArray("arq_ranger_escolha_externa_2")
-CustoPontos = 1
 NivelMinimo = 50
 
 [sub_resource type="Resource" id="ranger_s10"]
@@ -516,12 +469,11 @@ script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_10"
 Nome = "Postura do Mestre Ranger"
 Descricao = "Estado perfeito."
-HabilidadeAtiva = ExtResource("sk_20")
-Icone = ExtResource("icon_sk_20")
 NodeType = 1
 Posicao = Vector2(1094.9, 1490.9)
+Icone = ExtResource("icon_sk_20")
+HabilidadeAtiva = ExtResource("sk_20")
 Requisitos = PackedStringArray("arq_ranger_escolha_externa_3")
-CustoPontos = 1
 NivelMinimo = 70
 
 [sub_resource type="Resource" id="sniper_rota"]
@@ -532,7 +484,6 @@ Descricao = "Caminho de especialização: Sniper."
 NodeType = 5
 Posicao = Vector2(846.1, 1010)
 Requisitos = PackedStringArray("arq_base")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="sniper_ci1"]
 script = ExtResource("2_node")
@@ -541,7 +492,6 @@ Nome = "Escolha de atributos — Sniper"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(849.3, 1111.1)
 Requisitos = PackedStringArray("arq_sniper_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Mana", "RegeneracaoMana", "Agilidade")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -552,7 +502,6 @@ Nome = "Escolha de atributos — Sniper"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(785.5, 1045)
 Requisitos = PackedStringArray("arq_sniper_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("DanoCriticoBonus", "Destreza", "Evasao")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -563,7 +512,6 @@ Nome = "Escolha de atributos — Sniper"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(760.1, 956.6)
 Requisitos = PackedStringArray("arq_sniper_rota")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Agilidade", "Evasao", "Destreza")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -572,38 +520,33 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_1"
 Nome = "Salto para Trás"
 Descricao = "Salta para trás 3 tiles."
-HabilidadeAtiva = ExtResource("sk_11")
-Icone = ExtResource("icon_sk_11")
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
+Icone = ExtResource("icon_sk_11")
+HabilidadeAtiva = ExtResource("shared_sk_2")
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_1")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="sniper_s2"]
 script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_2"
 Nome = "Tiro Preciso"
 Descricao = "Flecha precisa."
-HabilidadeAtiva = ExtResource("sk_21")
-Icone = ExtResource("icon_sk_21")
 NodeType = 1
 Posicao = Vector2(716.2, 1085)
+Icone = ExtResource("icon_sk_21")
+HabilidadeAtiva = ExtResource("sk_21")
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_2")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="sniper_s3"]
 script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_3"
 Nome = "Mira Apurada"
 Descricao = "Aumenta foco."
-HabilidadeAtiva = ExtResource("sk_22")
-Icone = ExtResource("icon_sk_22")
 NodeType = 1
 Posicao = Vector2(680, 950)
+Icone = ExtResource("icon_sk_7")
+HabilidadeAtiva = ExtResource("sk_22")
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_3")
-CustoPontos = 1
 NivelMinimo = 5
 
 [sub_resource type="Resource" id="sniper_ul"]
@@ -614,7 +557,6 @@ Descricao = "Marco de progressão do caminho Sniper."
 NodeType = 5
 Posicao = Vector2(725, 1218.1)
 Requisitos = PackedStringArray("arq_sniper_skill_1", "arq_sniper_skill_2")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="sniper_ur"]
 script = ExtResource("2_node")
@@ -624,19 +566,17 @@ Descricao = "Marco de progressão do caminho Sniper."
 NodeType = 5
 Posicao = Vector2(605.3, 1010.8)
 Requisitos = PackedStringArray("arq_sniper_skill_2", "arq_sniper_skill_3")
-CustoPontos = 1
 
 [sub_resource type="Resource" id="sniper_s4"]
 script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_4"
 Nome = "Tiro Penetrante"
 Descricao = "Ignora defesa."
-HabilidadeAtiva = ExtResource("sk_23")
-Icone = ExtResource("icon_sk_23")
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
+Icone = ExtResource("icon_sk_23")
+HabilidadeAtiva = ExtResource("sk_23")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
-CustoPontos = 1
 NivelMinimo = 10
 
 [sub_resource type="Resource" id="sniper_s5"]
@@ -644,12 +584,11 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_5"
 Nome = "Tiro Paralisante"
 Descricao = "Atordoa alvo."
-HabilidadeAtiva = ExtResource("sk_24")
-Icone = ExtResource("icon_sk_24")
 NodeType = 1
 Posicao = Vector2(640.7, 1248.7)
+Icone = ExtResource("icon_sk_24")
+HabilidadeAtiva = ExtResource("sk_24")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
-CustoPontos = 1
 NivelMinimo = 15
 
 [sub_resource type="Resource" id="sniper_s6"]
@@ -657,12 +596,11 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_6"
 Nome = "Disparo Crítico"
 Descricao = "Golpe crítico."
-HabilidadeAtiva = ExtResource("sk_25")
-Icone = ExtResource("icon_sk_25")
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
+Icone = ExtResource("icon_sk_25")
+HabilidadeAtiva = ExtResource("sk_25")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
-CustoPontos = 1
 NivelMinimo = 20
 
 [sub_resource type="Resource" id="sniper_s7"]
@@ -670,12 +608,11 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_7"
 Nome = "Marca do Executor"
 Descricao = "Marca alvo."
-HabilidadeAtiva = ExtResource("sk_26")
-Icone = ExtResource("icon_sk_26")
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
+Icone = ExtResource("icon_sk_26")
+HabilidadeAtiva = ExtResource("sk_26")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
-CustoPontos = 1
 NivelMinimo = 30
 
 [sub_resource type="Resource" id="sniper_ce1"]
@@ -685,7 +622,6 @@ Nome = "Escolha de atributos — Sniper"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(717.6, 1387.1)
 Requisitos = PackedStringArray("arq_sniper_skill_4", "arq_sniper_skill_5")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Hp", "RegeneracaoVida", "Tenacidade")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -696,7 +632,6 @@ Nome = "Escolha de atributos — Sniper"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(521.3, 1197.5)
 Requisitos = PackedStringArray("arq_sniper_skill_5", "arq_sniper_skill_6")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("Precisao", "VelocidadeAtaque", "VelocidadeMovimento")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -707,7 +642,6 @@ Nome = "Escolha de atributos — Sniper"
 Descricao = "Escolha um dos três atributos deste grupo."
 Posicao = Vector2(455.3, 932.7)
 Requisitos = PackedStringArray("arq_sniper_skill_6", "arq_sniper_skill_7")
-CustoPontos = 1
 StatOptionIds = PackedStringArray("PenetracaoArmadura", "ChanceCritica", "Precisao")
 StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 
@@ -716,12 +650,11 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_8"
 Nome = "Impacto Repulsor"
 Descricao = "Empurra alvo."
-HabilidadeAtiva = ExtResource("sk_27")
-Icone = ExtResource("icon_sk_27")
 NodeType = 1
 Posicao = Vector2(805.1, 1490.9)
+Icone = ExtResource("icon_sk_27")
+HabilidadeAtiva = ExtResource("sk_27")
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_1")
-CustoPontos = 1
 NivelMinimo = 40
 
 [sub_resource type="Resource" id="sniper_s9"]
@@ -729,12 +662,11 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_9"
 Nome = "Olho da Águia"
 Descricao = "Sentidos aguçados."
-HabilidadeAtiva = ExtResource("sk_28")
-Icone = ExtResource("icon_sk_28")
 NodeType = 1
 Posicao = Vector2(465, 1230)
+Icone = ExtResource("icon_sk_28")
+HabilidadeAtiva = ExtResource("sk_28")
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_2")
-CustoPontos = 1
 NivelMinimo = 50
 
 [sub_resource type="Resource" id="sniper_s10"]
@@ -742,42 +674,37 @@ script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_10"
 Nome = "Tiro da Execução"
 Descricao = "Disparo mortal."
-HabilidadeAtiva = ExtResource("sk_29")
-Icone = ExtResource("icon_sk_29")
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
+Icone = ExtResource("icon_sk_29")
+HabilidadeAtiva = ExtResource("sk_29")
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_3")
-CustoPontos = 1
 NivelMinimo = 70
 
 [sub_resource type="Resource" id="shared_1"]
 script = ExtResource("2_node")
 NodeId = "arqshared1"
-Nome = "Segundo F?lego"
-Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
-HabilidadeAtiva = ExtResource("shared_sk_1")
+Nome = "Segundo Fôlego"
+Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
 NodeType = 1
-Posicao = Vector2(835, 1045)
+Posicao = Vector2(835, 865)
+HabilidadeAtiva = ExtResource("shared_sk_1")
 Requisitos = PackedStringArray("arq_base")
-CustoPontos = 1
-NivelMinimo = 1
 
 [sub_resource type="Resource" id="shared_2"]
 script = ExtResource("2_node")
 NodeId = "arqshared2"
-Nome = "Salto para Tr?s"
-Descricao = "Habilidade compartilhada posicionada perto do n?cleo central da ?rvore, sem alterar as rotas existentes."
-HabilidadeAtiva = ExtResource("shared_sk_2")
+Nome = "Salto para Trás"
+Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
 NodeType = 1
-Posicao = Vector2(1065, 1085)
+Posicao = Vector2(1065, 865)
+HabilidadeAtiva = ExtResource("shared_sk_2")
 Requisitos = PackedStringArray("arq_base")
-CustoPontos = 1
-NivelMinimo = 1
 
 [resource]
 script = ExtResource("1_tree")
 NomeArvore = "Árvore do Arqueiro"
-Nodes = Array[Resource]([SubResource("base"), SubResource("cacador_rota"), SubResource("cacador_ci1"), SubResource("cacador_ci2"), SubResource("cacador_ci3"), SubResource("cacador_s1"), SubResource("cacador_s2"), SubResource("cacador_s3"), SubResource("cacador_ul"), SubResource("cacador_ur"), SubResource("cacador_s4"), SubResource("cacador_s5"), SubResource("cacador_s6"), SubResource("cacador_s7"), SubResource("cacador_ce1"), SubResource("cacador_ce2"), SubResource("cacador_ce3"), SubResource("cacador_s8"), SubResource("cacador_s9"), SubResource("cacador_s10"), SubResource("ranger_rota"), SubResource("ranger_ci1"), SubResource("ranger_ci2"), SubResource("ranger_ci3"), SubResource("ranger_s1"), SubResource("ranger_s2"), SubResource("ranger_s3"), SubResource("ranger_ul"), SubResource("ranger_ur"), SubResource("ranger_s4"), SubResource("ranger_s5"), SubResource("ranger_s6"), SubResource("ranger_s7"), SubResource("ranger_ce1"), SubResource("ranger_ce2"), SubResource("ranger_ce3"), SubResource("ranger_s8"), SubResource("ranger_s9"), SubResource("ranger_s10"), SubResource("sniper_rota"), SubResource("sniper_ci1"), SubResource("sniper_ci2"), SubResource("sniper_ci3"), SubResource("sniper_s1"), SubResource("sniper_s2"), SubResource("sniper_s3"), SubResource("sniper_ul"), SubResource("sniper_ur"), SubResource("sniper_s4"), SubResource("sniper_s5"), SubResource("sniper_s6"), SubResource("sniper_s7"), SubResource("sniper_ce1"), SubResource("sniper_ce2"), SubResource("sniper_ce3"), SubResource("sniper_s8"), SubResource("sniper_s9"), SubResource("sniper_s10"), SubResource("shared_1"), SubResource("shared_2")])
+Nodes = [SubResource("base"), SubResource("cacador_rota"), SubResource("cacador_ci1"), SubResource("cacador_ci2"), SubResource("cacador_ci3"), SubResource("cacador_s1"), SubResource("cacador_s2"), SubResource("cacador_s3"), SubResource("cacador_ul"), SubResource("cacador_ur"), SubResource("cacador_s4"), SubResource("cacador_s5"), SubResource("cacador_s6"), SubResource("cacador_s7"), SubResource("cacador_ce1"), SubResource("cacador_ce2"), SubResource("cacador_ce3"), SubResource("cacador_s8"), SubResource("cacador_s9"), SubResource("cacador_s10"), SubResource("ranger_rota"), SubResource("ranger_ci1"), SubResource("ranger_ci2"), SubResource("ranger_ci3"), SubResource("ranger_s1"), SubResource("ranger_s2"), SubResource("ranger_s3"), SubResource("ranger_ul"), SubResource("ranger_ur"), SubResource("ranger_s4"), SubResource("ranger_s5"), SubResource("ranger_s6"), SubResource("ranger_s7"), SubResource("ranger_ce1"), SubResource("ranger_ce2"), SubResource("ranger_ce3"), SubResource("ranger_s8"), SubResource("ranger_s9"), SubResource("ranger_s10"), SubResource("sniper_rota"), SubResource("sniper_ci1"), SubResource("sniper_ci2"), SubResource("sniper_ci3"), SubResource("sniper_s1"), SubResource("sniper_s2"), SubResource("sniper_s3"), SubResource("sniper_ul"), SubResource("sniper_ur"), SubResource("sniper_s4"), SubResource("sniper_s5"), SubResource("sniper_s6"), SubResource("sniper_s7"), SubResource("sniper_ce1"), SubResource("sniper_ce2"), SubResource("sniper_ce3"), SubResource("sniper_s8"), SubResource("sniper_s9"), SubResource("sniper_s10"), SubResource("shared_1"), SubResource("shared_2")]
 RootNodeIds = PackedStringArray("arq_base")
 UsaLayoutPersonalizado = true
 BoardSize = Vector2(1900, 1900)

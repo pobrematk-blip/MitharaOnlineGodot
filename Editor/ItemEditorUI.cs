@@ -228,6 +228,7 @@ public partial class ItemEditorUI : Control
             _tipoDropdown.AddItem(tipo);
         AtualizarSubcategorias();
 
+        _categoriaPesoDropdown.AddItem("Nenhum");
         _categoriaPesoDropdown.AddItem("Leve");
         _categoriaPesoDropdown.AddItem("Medio");
         _categoriaPesoDropdown.AddItem("Pesado");
@@ -309,7 +310,7 @@ public partial class ItemEditorUI : Control
             else if (f is LineEdit le) le.TextChanged += _ => OnFormDirty();
             else if (f is CheckBox cb) cb.Toggled += _ => OnFormDirty();
         }
-        _tipoDropdown.ItemSelected += _ => { AtualizarSubcategorias(); OnFormDirty(); };
+        _tipoDropdown.ItemSelected += _ => { AtualizarSubcategorias(); AtualizarEstadoCategoriaPeso(); OnFormDirty(); };
         _categoriaPesoDropdown.ItemSelected += _ => OnFormDirty();
         _tipoItemDropdown.ItemSelected += _ => OnFormDirty();
         _raridadeDropdown.ItemSelected += _ => OnFormDirty();
@@ -545,7 +546,8 @@ public partial class ItemEditorUI : Control
         string currentFolder = _currentItemPath?.Replace(ItensDir, "").Replace('\\', '/') ?? "";
         var parts = currentFolder.Split('/', StringSplitOptions.RemoveEmptyEntries);
         AtualizarSubcategorias(parts.Length >= 3 ? parts[1] : null);
-        _categoriaPesoDropdown.Select((int)_currentItem.CategoriaPeso);
+        SelecionarPeso(_currentItem.CategoriaPeso);
+        AtualizarEstadoCategoriaPeso();
         _tipoItemDropdown.Select((int)_currentItem.TipoItem);
         AtualizarRaridades();
         _raridadeDropdown.Select((int)_currentItem.Raridade);
@@ -648,7 +650,8 @@ public partial class ItemEditorUI : Control
         _ehBolsaCheck.ButtonPressed = false;
         _slotsAdicionaisSpin.Value = 10;
         _tipoDropdown.Select(0);
-        _categoriaPesoDropdown.Select(1); // default Medio
+        SelecionarPeso(PesoItem.Nenhum);
+        AtualizarEstadoCategoriaPeso();
         _tipoItemDropdown.Select(0);
         AtualizarRaridades();
         _raridadeDropdown.Select(0);
@@ -755,7 +758,9 @@ public partial class ItemEditorUI : Control
         _currentItem.EhBolsa = _ehBolsaCheck.ButtonPressed;
         _currentItem.SlotsAdicionais = (int)_slotsAdicionaisSpin.Value;
         _currentItem.Tipo = (TipoEquipamento)_tipoDropdown.Selected;
-        _currentItem.CategoriaPeso = (PesoItem)_categoriaPesoDropdown.Selected;
+        _currentItem.CategoriaPeso = TipoUsaCategoriaPeso(_currentItem.Tipo)
+            ? ObterPesoSelecionado()
+            : PesoItem.Nenhum;
         _currentItem.TipoItem = (TipoItem)_tipoItemDropdown.Selected;
         _currentItem.Raridade = (Raridade)_raridadeDropdown.Selected;
         _currentItem.NivelRequerido = (int)_nivelReqSpin.Value;
@@ -918,6 +923,51 @@ public partial class ItemEditorUI : Control
         };
     }
 
+    private static bool TipoUsaCategoriaPeso(TipoEquipamento tipo)
+    {
+        return tipo is TipoEquipamento.Capacete or TipoEquipamento.Peitoral
+            or TipoEquipamento.Cinto or TipoEquipamento.Luvas
+            or TipoEquipamento.Calca or TipoEquipamento.Botas;
+    }
+
+    private PesoItem ObterPesoSelecionado()
+    {
+        return _categoriaPesoDropdown.Selected switch
+        {
+            1 => PesoItem.Leve,
+            2 => PesoItem.Medio,
+            3 => PesoItem.Pesado,
+            _ => PesoItem.Nenhum,
+        };
+    }
+
+    private void SelecionarPeso(PesoItem peso)
+    {
+        int index = peso switch
+        {
+            PesoItem.Leve => 1,
+            PesoItem.Medio => 2,
+            PesoItem.Pesado => 3,
+            _ => 0,
+        };
+        _categoriaPesoDropdown.Select(index);
+    }
+
+    private void AtualizarEstadoCategoriaPeso(bool ajustarSelecao = true)
+    {
+        if (_categoriaPesoDropdown == null || _tipoDropdown == null) return;
+
+        bool usaPeso = TipoUsaCategoriaPeso((TipoEquipamento)_tipoDropdown.Selected);
+        _categoriaPesoDropdown.Disabled = !usaPeso;
+
+        if (!ajustarSelecao) return;
+
+        if (!usaPeso)
+            SelecionarPeso(PesoItem.Nenhum);
+        else if (ObterPesoSelecionado() == PesoItem.Nenhum)
+            SelecionarPeso(PesoItem.Medio);
+    }
+
     private void AtualizarSubcategorias(string selecionar = null)
     {
         if (_subcategoriaDropdown == null || _tipoDropdown == null) return;
@@ -945,6 +995,17 @@ public partial class ItemEditorUI : Control
         item.Nome = "Item Novo";
 
         var tipoAtual = (TipoEquipamento)_tipoDropdown.Selected;
+        item.Tipo = tipoAtual;
+        if (TipoUsaCategoriaPeso(tipoAtual))
+        {
+            item.CategoriaPeso = ObterPesoSelecionado();
+            if (item.CategoriaPeso == PesoItem.Nenhum)
+                item.CategoriaPeso = PesoItem.Medio;
+        }
+        else
+        {
+            item.CategoriaPeso = PesoItem.Nenhum;
+        }
         string pasta = ObterPastaPorTipo(tipoAtual);
         string subcategoria = _subcategoriaDropdown.GetItemText(_subcategoriaDropdown.Selected);
         string dirPasta;
@@ -953,11 +1014,14 @@ public partial class ItemEditorUI : Control
             dirPasta = ItensDir + selectedMetadata[7..].Trim('/') + "/";
         else
         {
-            bool armorSlot = tipoAtual is TipoEquipamento.Capacete or TipoEquipamento.Peitoral
-                or TipoEquipamento.Cinto or TipoEquipamento.Luvas or TipoEquipamento.Calca or TipoEquipamento.Botas;
+            bool armorSlot = TipoUsaCategoriaPeso(tipoAtual);
             if (armorSlot)
             {
-                string peso = ((PesoItem)_categoriaPesoDropdown.Selected) switch
+                PesoItem pesoSelecionado = ObterPesoSelecionado();
+                if (pesoSelecionado == PesoItem.Nenhum)
+                    pesoSelecionado = PesoItem.Medio;
+
+                string peso = pesoSelecionado switch
                 {
                     PesoItem.Leve => "Leves",
                     PesoItem.Pesado => "Pesadas",
@@ -1100,6 +1164,7 @@ public partial class ItemEditorUI : Control
         var rng = new Random();
         int rarityIndex = _raridadeDropdown.Selected;
         string tipoStr = _tipoDropdown.Text;
+        bool isArmor = TipoUsaCategoriaPeso((TipoEquipamento)_tipoDropdown.Selected);
         string classes = _currentItem.ClassesPermitidas ?? "";
 
         var (mainMin, mainMax, bonusChance) = rarityIndex switch
@@ -1115,8 +1180,12 @@ public partial class ItemEditorUI : Control
 
         ResetAllStatSpins();
 
-        // --- Fixed base stats (always present) — weighted by CategoriaPeso ---
-        PesoItem peso = (PesoItem)_categoriaPesoDropdown.Selected;
+        // --- Fixed base stats (always present) weighted by armor category only ---
+        PesoItem peso = isArmor ? ObterPesoSelecionado() : PesoItem.Nenhum;
+        if (isArmor && peso == PesoItem.Nenhum)
+            peso = PesoItem.Medio;
+        if (!isArmor)
+            _currentItem.CategoriaPeso = PesoItem.Nenhum;
         int hpBase, manaBase, staminaBase, defFisicaBase, defMagicaBase;
         if (peso == PesoItem.Pesado)
         {
@@ -1160,7 +1229,6 @@ public partial class ItemEditorUI : Control
         _currentItem.DefesaMagica = rng.Next(defMagicaMin, defMagicaMax + 1);
 
         // --- Determine item type ---
-        bool isArmor = tipoStr is "Capacete" or "Peitoral" or "Cinto" or "Calca" or "Botas" or "Luvas";
         bool isBootGloveHelm = tipoStr is "Capacete" or "Botas" or "Luvas";
         bool isArcherAssassin = classes.Contains("Arqueiro") || classes.Contains("Ladino");
 
