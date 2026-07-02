@@ -50,7 +50,7 @@ public partial class PetNode : Node2D
     private float _ultimoAtaque;
     private Node2D _alvoInimigo;
     private Vector2 _posicaoGuarda;
-    private Timer _coletaTimer;
+    private Godot.Timer _coletaTimer;
     private Area2D _areaColeta;
     private Area2D _areaAtaque;
 
@@ -100,7 +100,7 @@ public partial class PetNode : Node2D
         _areaAtaque.CollisionLayer = 0;
         _areaAtaque.CollisionMask = 0;
 
-        _coletaTimer = new Timer();
+        _coletaTimer = new Godot.Timer();
         _coletaTimer.WaitTime = 2.0f;
         _coletaTimer.OneShot = false;
         _coletaTimer.Timeout += OnColetaTimer;

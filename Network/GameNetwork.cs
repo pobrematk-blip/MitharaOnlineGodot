@@ -9,6 +9,9 @@ using System.Text.Json;
 
 public partial class GameNetwork : Node
 {
+    private const string DefaultServerHost = "maintenance-aid.gl.at.ply.gg";
+    private const int DefaultServerPort = 49027;
+
     public static bool AutoLogin = false;
 
     private NetClient? _client;
@@ -67,6 +70,9 @@ public partial class GameNetwork : Node
     public int? PendingTalentPoints { get; private set; }
     public Godot.Collections.Array<string>? PendingTalentNodes { get; private set; }
     public Godot.Collections.Array<int>? PendingSkillBarData { get; private set; }
+    public bool PendingTradeActive { get; private set; }
+    public ulong PendingTradePartnerId { get; private set; }
+    public string PendingTradePartnerName { get; private set; } = "";
 
     [Signal] public delegate void OnConnectedEventHandler();
     [Signal] public delegate void OnDisconnectedEventHandler();
@@ -303,11 +309,11 @@ public partial class GameNetwork : Node
                 .Length > 0;
             host = localServerRunning
                 ? "127.0.0.1"
-                : ProjectSettings.GetSetting("network/server_host", "127.0.0.1").AsString();
+                : ProjectSettings.GetSetting("network/server_host", DefaultServerHost).AsString();
         }
 
         if (port <= 0)
-            port = ProjectSettings.GetSetting("network/server_port", 7777).AsInt32();
+            port = ProjectSettings.GetSetting("network/server_port", DefaultServerPort).AsInt32();
     }
 
     private static void TryReadExternalEndpoint(ref string host, ref int port)
@@ -650,6 +656,7 @@ public partial class GameNetwork : Node
         PendingTalentPoints = null;
         PendingTalentNodes = null;
         PendingSkillBarData = null;
+        ClearPendingTrade();
 
         PendingPartyId = 0;
         PendingPartyMembers.Clear();
@@ -661,6 +668,13 @@ public partial class GameNetwork : Node
         IsGuildLeader = false;
 
         ResetPendingInventoryApplyLog();
+    }
+
+    public void ClearPendingTrade()
+    {
+        PendingTradeActive = false;
+        PendingTradePartnerId = 0;
+        PendingTradePartnerName = "";
     }
 
     public ItemDatabase? ItemDB { get; private set; }

@@ -42,11 +42,11 @@
 [ext_resource type="Script" uid="uid://c2ttbd581nstj" path="res://Itens/Recursos/RecursoNode.cs" id="39_recurso"]
 [ext_resource type="Resource" uid="uid://bwuj47o31au6c" path="res://Itens/Recursos/Arvore.tres" id="40_arvore"]
 [ext_resource type="Resource" uid="uid://bxjdbux1qp6lw" path="res://Itens/Recursos/Palmeira.tres" id="41_palmeira"]
-[ext_resource type="PackedScene" path="res://scenes/tools/NoMobZoneArea.tscn" id="42_nomobzone"]
+[ext_resource type="PackedScene" uid="uid://bhmusx8456am8" path="res://scenes/tools/NoMobZoneArea.tscn" id="42_nomobzone"]
 [ext_resource type="Script" uid="uid://bwvijovnrw5it" path="res://ui/BossHPBar.cs" id="43_bossbar"]
 [ext_resource type="Shader" uid="uid://jcbe483v8cpc" path="res://shaders/dark_fantasy_grade.gdshader" id="44_darkfantasy"]
 [ext_resource type="PackedScene" path="res://scenes/tools/TeleportPairMarker.tscn" id="45_tpair"]
-[ext_resource type="Script" path="res://ui/InvitePopupUI.cs" id="46_invitepopup"]
+[ext_resource type="Script" uid="uid://63h876161l7i" path="res://ui/InvitePopupUI.cs" id="46_invitepopup"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8b871"]
 texture = ExtResource("1_cmqll")
@@ -78308,10 +78308,9 @@ tile_map_data = PackedByteArray("AADA/wMAAQAzAAQAAADA/wQAAQAzAAUAAADA/wAAAQAzAAQ
 tile_set = SubResource("TileSet_cmqll")
 
 [node name="TileMarker" parent="World/Mapas" instance=ExtResource("18_vua0o")]
-editor_description = "[Teleporte] -> Alfaiataria (657,680)"
-position = Vector2(3256, 36)
-Type = 1
-TargetScene = "Alfaiataria"
+editor_description = "[NPC Void]"
+position = Vector2(1200, 189)
+Type = 2
 TargetX = 657.0
 TargetY = 680.0
 
@@ -78595,33 +78594,37 @@ position = Vector2(129, -5277)
 
 [node name="NpcSpawn_Banqueiro" type="Marker2D" parent="World"]
 editor_description = "Spawn visual de NPC do servidor: PrefabId=banqueiro. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
-position = Vector2(1109, 957)
+position = Vector2(1077, 778)
 
 [node name="NpcSpawn_GuardaSolareth" type="Marker2D" parent="World"]
 editor_description = "Spawn visual de NPC do servidor: PrefabId=guarda_solareth. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
-position = Vector2(1098, 1177)
+position = Vector2(1557, 762)
 
 [node name="NpcSpawn_MercadorGeral" type="Marker2D" parent="World"]
 editor_description = "Spawn visual de NPC do servidor: PrefabId=general_merchant. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
-position = Vector2(1130, 1040)
+position = Vector2(710, 780)
 
 [node name="NpcSpawn_Refinador" type="Marker2D" parent="World"]
 editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
-position = Vector2(1070, 1025)
+position = Vector2(1287, 775)
 
 [node name="NpcSpawn_Leiloeiro" type="Marker2D" parent="World"]
 editor_description = "Spawn visual de NPC do servidor: PrefabId=merchant_auctioneer. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
-position = Vector2(1145, 1040)
+position = Vector2(901, 779)
 
 [node name="TeleportPair_Alfaiataria_1" parent="World" instance=ExtResource("45_tpair")]
 position = Vector2(3321, -35)
 
 [node name="NoMobZone_CidadeInicial3" parent="World" instance=ExtResource("42_nomobzone")]
-position = Vector2(776, 1513)
+position = Vector2(1492.9996, -5010.0005)
 scale = Vector2(3.28125, 3.6458333)
 
 [node name="NoMobZone_CidadeInicial4" parent="World" instance=ExtResource("42_nomobzone")]
-position = Vector2(-583, -1994)
+position = Vector2(-1240.9999, -5064)
+scale = Vector2(3.28125, 3.6458333)
+
+[node name="NoMobZone_CidadeInicial5" parent="World" instance=ExtResource("42_nomobzone")]
+position = Vector2(-230.00003, -5186)
 scale = Vector2(3.28125, 3.6458333)
 
 [node name="Player" parent="World" instance=ExtResource("1_rvslj")]

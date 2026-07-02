@@ -1277,6 +1277,12 @@ public partial class Player : CharacterBody2D
 
         PlayerSpriteAnimationProfile perfilAnimacao = CarregarPerfilAnimacao(profile);
         Func<string, bool> filtroAtaque = CriarFiltroAtlasModeloAtaque(profile);
+        foreach (string dir in direcoes)
+        {
+            foreach (string prefixoWalk in ObterPrefixosModeloWalkArmado(profile))
+                CopiarAnimacaoModeloComAtlas(destino, modelo, $"{prefixoWalk}_{dir}", sheetBase, filtroAtaque);
+        }
+
         prefixoAtaque = string.IsNullOrWhiteSpace(prefixoAtaque) ? ObterPrefixoAtaqueDoPerfil(profile) : prefixoAtaque.Trim().ToLowerInvariant();
         foreach (string dir in direcoes)
         {
@@ -1287,6 +1293,31 @@ public partial class Player : CharacterBody2D
                 if (CopiarAnimacaoModeloComAtlas(destino, modelo, animModelo, animDestino, sheetAcao, filtroAtaque, perfilAnimacao))
                     break;
             }
+        }
+    }
+
+    private static IEnumerable<string> ObterPrefixosModeloWalkArmado(HumanFullSpriteProfile profile)
+    {
+        switch (profile?.Nome)
+        {
+            case "Arco":
+                yield return "walk_arco";
+                break;
+            case "Adaga":
+                yield return "walk_adaga";
+                break;
+            case "Machado Duas Maos":
+                yield return "walk_machadoguerra";
+                break;
+            case "Espada e Escudo":
+                yield return "walk_espadaescudo";
+                break;
+            case "Maca e Escudo":
+                yield return "walk_macaescudo";
+                break;
+            case "Cajado":
+                yield return "walk_cajado";
+                break;
         }
     }
 
@@ -1647,7 +1678,7 @@ public partial class Player : CharacterBody2D
             }
             else
             {
-                AnimatedSprite.Play($"walk_{cardinal}");
+                AnimatedSprite.Play(ObterAnimacaoWalkAtual(cardinal));
                 AnimatedSprite.SpeedScale = (velocity.Length() / MaxSpeed) * 1.5f;
             }
         }
@@ -1822,7 +1853,7 @@ public partial class Player : CharacterBody2D
         {
             string cardinalMovimento = DirectionUtil.DirectionToCardinal(DirectionUtil.VectorToDirectionString(velocity));
             string runAnim = $"run_{cardinalMovimento}";
-            string walkAnim = $"walk_{cardinalMovimento}";
+            string walkAnim = ObterAnimacaoWalkAtual(cardinalMovimento);
             string anim = IsSprinting && AnimatedSprite.SpriteFrames?.HasAnimation(runAnim) == true ? runAnim : walkAnim;
             if (AnimatedSprite.SpriteFrames?.HasAnimation(anim) == true)
                 AnimatedSprite.Play(anim);
@@ -1833,6 +1864,50 @@ public partial class Player : CharacterBody2D
         string idleAnim = $"idle_{cardinal}";
         if (AnimatedSprite.SpriteFrames?.HasAnimation(idleAnim) == true)
             AnimatedSprite.Play(idleAnim);
+    }
+
+    private string ObterAnimacaoWalkAtual(string cardinal)
+    {
+        string walkAnim = $"walk_{cardinal}";
+        if (AnimatedSprite?.SpriteFrames == null)
+            return walkAnim;
+
+        foreach (string prefixo in ObterPrefixosWalkArmadoAtual())
+        {
+            string armedWalk = $"{prefixo}_{cardinal}";
+            if (AnimatedSprite.SpriteFrames.HasAnimation(armedWalk))
+                return armedWalk;
+        }
+
+        return walkAnim;
+    }
+
+    private IEnumerable<string> ObterPrefixosWalkArmadoAtual()
+    {
+        if (string.IsNullOrWhiteSpace(_spriteCorpoAtual) || _spriteCorpoAtual == HumanUnarmedProfile.Nome)
+            yield break;
+
+        switch (_spriteCorpoAtual)
+        {
+            case "Arco":
+                yield return "walk_arco";
+                break;
+            case "Adaga":
+                yield return "walk_adaga";
+                break;
+            case "Machado Duas Maos":
+                yield return "walk_machadoguerra";
+                break;
+            case "Espada e Escudo":
+                yield return "walk_espadaescudo";
+                break;
+            case "Maca e Escudo":
+                yield return "walk_macaescudo";
+                break;
+            case "Cajado":
+                yield return "walk_cajado";
+                break;
+        }
     }
 
     private void DispararProjetil()

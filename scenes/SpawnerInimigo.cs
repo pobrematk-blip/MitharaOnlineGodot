@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class SpawnerInimigo : Timer
+public partial class SpawnerInimigo : Godot.Timer
 {
     [Export] public PackedScene CenaDoInim;
     [Export] public int MaxEnemies = 5;

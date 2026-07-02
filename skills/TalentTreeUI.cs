@@ -22,6 +22,7 @@ public partial class TalentTreeUI : Control
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
     private bool _draggingBoard;
+    private bool _updateRetryScheduled;
     private Vector2 _boardDragOrigin;
     private Vector2 _boardOriginalPosition;
 
@@ -345,11 +346,22 @@ public partial class TalentTreeUI : Control
     private void UpdateTreeView()
     {
         var player = GetTree().CurrentScene.FindChild("Player", true, false) as Player;
-        if (player == null) { _pointsLabel.Text = "Sem jogador"; return; }
+        if (player == null)
+        {
+            _pointsLabel.Text = "Sem jogador";
+            ScheduleTreeUpdateRetry();
+            return;
+        }
         _playerNivel = ObterNivelOnline(player);
 
         _talentTreeComponent = player.GetNodeOrNull<TalentTreeComponent>("TalentTreeComponent");
-        if (_talentTreeComponent?.TalentTree == null) { _pointsLabel.Text = "Sem árvore"; return; }
+        if (_talentTreeComponent?.TalentTree == null)
+        {
+            _pointsLabel.Text = "Sem árvore";
+            ScheduleTreeUpdateRetry();
+            return;
+        }
+        _updateRetryScheduled = false;
         ConectarAtualizacaoDaArvore(_talentTreeComponent);
 
         UpdatePointsLabel();
@@ -684,6 +696,21 @@ public partial class TalentTreeUI : Control
             return;
 
         UpdateTreeView();
+    }
+
+    private void ScheduleTreeUpdateRetry()
+    {
+        if (_updateRetryScheduled || !IsInsideTree() || _bgPanel == null || !_bgPanel.Visible)
+            return;
+
+        _updateRetryScheduled = true;
+        var timer = GetTree().CreateTimer(0.25);
+        timer.Timeout += () =>
+        {
+            _updateRetryScheduled = false;
+            if (IsInsideTree() && _bgPanel != null && _bgPanel.Visible)
+                UpdateTreeView();
+        };
     }
 
     private int ObterNivelOnline(Player player)

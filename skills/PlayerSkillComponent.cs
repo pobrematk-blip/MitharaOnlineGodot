@@ -52,7 +52,33 @@ public partial class PlayerSkillComponent : Node
 
     public SkillResource ObterSkillPorId(int skillId)
     {
-        return _skillCatalog.TryGetValue(skillId, out var skill) ? skill : null;
+        if (_skillCatalog.TryGetValue(skillId, out var skill))
+            return skill;
+
+        skill = ObterSkillDaArvorePorId(skillId);
+        if (skill != null)
+            _skillCatalog[skillId] = skill;
+        return skill;
+    }
+
+    private SkillResource ObterSkillDaArvorePorId(int skillId)
+    {
+        if (skillId <= 0)
+            return null;
+
+        var talentTree = _player?.FindChild("TalentTreeComponent", true, false) as TalentTreeComponent;
+        var nodes = talentTree?.TalentTree?.Nodes;
+        if (nodes == null)
+            return null;
+
+        foreach (var node in nodes)
+        {
+            var skill = node?.HabilidadeAtiva;
+            if (skill != null && skill.SkillId == skillId)
+                return skill;
+        }
+
+        return null;
     }
 
     public void AplicarBarraServidor(Godot.Collections.Array<int> skillIds)

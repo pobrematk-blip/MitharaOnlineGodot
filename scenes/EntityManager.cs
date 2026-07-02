@@ -1848,10 +1848,28 @@ public partial class EntityManager : Node
                 continue;
 
             if (shouldBeVisible)
-                sprite.Play();
+                PlaySpriteSafely(sprite);
             else
                 sprite.Stop();
         }
+    }
+
+    private static void PlaySpriteSafely(AnimatedSprite2D sprite)
+    {
+        SpriteFrames frames = sprite.SpriteFrames;
+        if (frames == null)
+            return;
+
+        string current = sprite.Animation.ToString();
+        if (!string.IsNullOrWhiteSpace(current) && frames.HasAnimation(current))
+        {
+            sprite.Play(current);
+            return;
+        }
+
+        var names = frames.GetAnimationNames();
+        if (names.Length > 0)
+            sprite.Play(names[0]);
     }
 
     public void ClearAll()

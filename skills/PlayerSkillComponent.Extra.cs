@@ -184,7 +184,7 @@ public partial class PlayerSkillComponent
         }
     }
 
-    private Timer _skillTimer;
+    private Godot.Timer _skillTimer;
 
     private class ActiveBuff
     {
@@ -201,7 +201,7 @@ public partial class PlayerSkillComponent
     {
         if (_skillTimer != null && _skillTimer.IsInsideTree()) return;
 
-        _skillTimer = new Timer();
+        _skillTimer = new Godot.Timer();
         _skillTimer.WaitTime = 0.5f;
         _skillTimer.OneShot = false;
         _skillTimer.Autostart = true;

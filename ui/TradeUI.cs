@@ -137,6 +137,17 @@ public partial class TradeUI : Control
         }
 
         Visible = false;
+
+        if (_net != null && _net.PendingTradeActive)
+            CallDeferred(nameof(OpenPendingTrade));
+    }
+
+    private void OpenPendingTrade()
+    {
+        if (_net == null || !_net.PendingTradeActive)
+            return;
+
+        OnTradeStart(_net.PendingTradePartnerId, _net.PendingTradePartnerName);
     }
 
     private Panel CriarLado(bool isMine)
@@ -305,6 +316,7 @@ public partial class TradeUI : Control
     private void OnTradeEnd(bool success)
     {
         Visible = false;
+        _net?.ClearPendingTrade();
         if (success)
         {
             var popup = new AcceptDialog();
@@ -393,6 +405,7 @@ public partial class TradeUI : Control
     private void CancelTrade()
     {
         Visible = false;
+        _net?.ClearPendingTrade();
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         net?.SendTradeCancel();
     }

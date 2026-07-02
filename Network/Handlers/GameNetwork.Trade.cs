@@ -55,6 +55,9 @@ partial class GameNetwork
     {
         ulong partnerId = r.GetULong();
         string partnerName = r.GetString();
+        PendingTradeActive = true;
+        PendingTradePartnerId = partnerId;
+        PendingTradePartnerName = partnerName;
         Log($"[TRADE] Trade started with {partnerName}");
         EmitSignal(SignalName.OnTradeStart, partnerId, partnerName);
     }
@@ -90,6 +93,7 @@ partial class GameNetwork
     private void HandleTradeEnd(NetDataReader r)
     {
         bool success = r.GetBool();
+        ClearPendingTrade();
         Log(success ? "[TRADE] Trade completed successfully!" : "[TRADE] Trade ended.");
         EmitSignal(SignalName.OnTradeEnd, success);
     }

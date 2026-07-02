@@ -15,7 +15,7 @@ public partial class RecursoNode : StaticBody2D
     private int _faseAtual = 5;
     private Sprite2D _sprite;
     private CollisionShape2D _colisao;
-    private Timer _timerCrescimento;
+    private Godot.Timer _timerCrescimento;
     private Label _prompt;
     private bool _playerPerto;
     public int FaseAtual
@@ -39,7 +39,7 @@ public partial class RecursoNode : StaticBody2D
         _colisao.Position = new Vector2(0, ColisaoBaseOffsetY);
         AddChild(_colisao);
 
-        _timerCrescimento = new Timer();
+        _timerCrescimento = new Godot.Timer();
         _timerCrescimento.Name = "TimerCrescimento";
         _timerCrescimento.OneShot = true;
         _timerCrescimento.Timeout += AvancarFase;

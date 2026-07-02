@@ -73,18 +73,20 @@ partial class GameServer
         _activeTrades[inviterId] = session;
         _activeTrades[player.Id] = session;
 
-        var w = PacketSerializer.WritePacket(PacketId.S2C_TradeStart);
-        w.Put(player.Id);
-        w.Put(player.Name);
-        inviterPeer.Send(w, DeliveryMethod.ReliableOrdered);
-
-        w = PacketSerializer.WritePacket(PacketId.S2C_TradeStart);
-        w.Put(inviter.Id);
-        w.Put(inviter.Name);
-        peer.Send(w, DeliveryMethod.ReliableOrdered);
+        SendTradeStart(inviterPeer, player.Id, player.Name, inviter.Name);
+        SendTradeStart(peer, inviter.Id, inviter.Name, player.Name);
 
         SendSystemMessage(inviterPeer, $"{player.Name} aceitou a troca!");
         SendSystemMessage(peer, $"Troca com {inviter.Name} iniciada!");
+    }
+
+    private void SendTradeStart(NetPeer peer, ulong partnerId, string partnerName, string receiverName)
+    {
+        var w = PacketSerializer.WritePacket(PacketId.S2C_TradeStart);
+        w.Put(partnerId);
+        w.Put(partnerName);
+        peer.Send(w, DeliveryMethod.ReliableOrdered);
+        Logger.Info($"TradeStart enviado para {receiverName}: parceiro={partnerName} ({partnerId}).");
     }
 
     private void HandleTradeDeclinePacket(NetPeer peer, NetDataReader reader)
