@@ -48,7 +48,7 @@ public partial class TalentTreeUI : Control
     private static readonly Color CorDisponivel = new(0.35f, 0.2f, 0.45f);
     private static readonly Color CorNormal = new(0.08f, 0.08f, 0.12f);
     private static readonly Color CorDesbloqueado = new(0.35f, 0.5f, 0.9f);
-    private static readonly Dictionary<string, SkillResource> SkillCatalogByName = new();
+    private static readonly Dictionary<string, List<SkillResource>> SkillCatalogByName = new();
     private static readonly Dictionary<string, Dictionary<string, string>> TreeIconPathCache = new();
     private static readonly Dictionary<string, string> SkillIconPathCache = new();
     private static bool _skillCatalogLoaded;
@@ -1132,8 +1132,14 @@ public partial class TalentTreeUI : Control
                 continue;
 
             string key = NormalizarChave(skill.Nome);
-            if (!SkillCatalogByName.ContainsKey(key))
-                SkillCatalogByName[key] = skill;
+            if (!SkillCatalogByName.TryGetValue(key, out var skills))
+            {
+                skills = new List<SkillResource>();
+                SkillCatalogByName[key] = skills;
+            }
+
+            if (!skills.Any(s => s != null && s.SkillId == skill.SkillId))
+                skills.Add(skill);
         }
         dir.ListDirEnd();
     }
@@ -1147,10 +1153,82 @@ public partial class TalentTreeUI : Control
 
         EnsureSkillCatalogLoaded();
         string key = NormalizarChave(node.Nome);
-        if (SkillCatalogByName.TryGetValue(key, out var skill))
-            return skill;
+        if (SkillCatalogByName.TryGetValue(key, out var skills) && skills.Count > 0)
+            return EscolherMelhorSkillParaNo(node, skills);
 
         return null;
+    }
+
+    private static SkillResource EscolherMelhorSkillParaNo(TalentNodeResource node, IReadOnlyList<SkillResource> skills)
+    {
+        string classeDoNo = ObterClasseDoNo(node?.NodeId ?? "");
+        return skills
+            .Where(s => s != null)
+            .OrderByDescending(s => PontuarSkillParaNo(s, classeDoNo))
+            .ThenByDescending(s => s.SkillId)
+            .FirstOrDefault();
+    }
+
+    private static int PontuarSkillParaNo(SkillResource skill, string classeDoNo)
+    {
+        int score = 0;
+        string classeSkill = NormalizarChave(skill.ClasseRestrita);
+        string classeNo = NormalizarChave(classeDoNo);
+
+        if (!string.IsNullOrWhiteSpace(classeNo) && ClasseCombina(classeNo, classeSkill))
+            score += 1000;
+        if (classeSkill == "todas")
+            score += 200;
+        if (skill.ResourcePath.Contains($"/{classeDoNo}/", StringComparison.OrdinalIgnoreCase))
+            score += 500;
+        if (skill.SkillId >= 10000)
+            score += 100;
+        if (skill.Cooldown > 0)
+            score += 10;
+        if (skill.CustoMana > 0)
+            score += 5;
+        return score;
+    }
+
+    private static bool ClasseCombina(string classeNo, string classeSkill)
+    {
+        if (string.IsNullOrWhiteSpace(classeSkill) || classeSkill == "todas")
+            return true;
+        if (classeNo == classeSkill)
+            return true;
+        if (classeNo == "berseker" && classeSkill == "berserker")
+            return true;
+        if (classeNo == "berserker" && classeSkill == "berseker")
+            return true;
+        if (classeNo == "prist" && classeSkill == "clerigo")
+            return true;
+        if (classeNo == "clerigo" && classeSkill == "prist")
+            return true;
+        if (classeNo == "ladino" && classeSkill == "assassino")
+            return true;
+        if (classeNo == "assassino" && classeSkill == "ladino")
+            return true;
+        return false;
+    }
+
+    private static string ObterClasseDoNo(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId))
+            return "";
+
+        string prefix = nodeId.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault() ?? "";
+
+        return prefix.ToLowerInvariant() switch
+        {
+            "arq" => "Arqueiro",
+            "ber" or "berserk" or "berserker" => "Berserker",
+            "guard" or "gua" => "Guardião",
+            "lad" => "Ladino",
+            "mag" or "mago" => "Mago",
+            "pri" or "prist" or "sac" => "Clérigo",
+            _ => "",
+        };
     }
 
     private static string NormalizarChave(string value)
