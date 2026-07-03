@@ -23,6 +23,11 @@ public partial class WorldMapUI : Control
     private const float MinZoom = 0.08f;
     private const float MaxZoom = 4.0f;
     private const float ZoomStep = 0.15f;
+    private static readonly Color CorParty = new(0.35f, 0.85f, 1.0f, 0.95f);
+    private static readonly Color CorGuild = new(0.35f, 1.0f, 0.35f, 0.95f);
+    private static readonly Color CorFaccaoInimiga = new(0.78f, 0.28f, 1.0f, 0.95f);
+    private static readonly Color CorPlayerNormal = new(1.0f, 1.0f, 1.0f, 0.95f);
+    private static readonly Color CorBoss = new(1.0f, 0.48f, 0.08f, 0.95f);
 
     private struct MapMarker
     {
@@ -157,6 +162,7 @@ public partial class WorldMapUI : Control
         }
         if (!_draggingMap)
             _mapCamera.GlobalPosition = _player.GlobalPosition;
+        _markersOverlay.QueueRedraw();
     }
 
     public override void _Input(InputEvent @event)
@@ -301,6 +307,8 @@ public partial class WorldMapUI : Control
         var font = ThemeDB.FallbackFont;
         int fontSize = ThemeDB.FallbackFontSize;
 
+        DrawDynamicEntityMarkers(font, fontSize);
+
         foreach (var marker in _markers)
         {
             Vector2 screenPos = WorldToScreen(marker.WorldPos);
@@ -316,5 +324,147 @@ public partial class WorldMapUI : Control
             var textPos = new Vector2(screenPos.X - textSize.X / 2f, screenPos.Y - 14f);
             _markersOverlay.DrawString(font, textPos, text, HorizontalAlignment.Left, -1, fontSize, new Color(1, 1, 1, 0.9f));
         }
+    }
+
+    private void DrawDynamicEntityMarkers(Font font, int fontSize)
+    {
+        foreach (var node in GetTree().GetNodesInGroup("Bosses"))
+        {
+            if (node is not Node2D boss || !GodotObject.IsInstanceValid(boss))
+                continue;
+
+            Vector2 screenPos = WorldToScreen(boss.GlobalPosition);
+            if (!EstaVisivelNoMapa(screenPos))
+                continue;
+
+            _markersOverlay.DrawCircle(screenPos, 8f, CorBoss);
+            _markersOverlay.DrawCircle(screenPos, 4f, new Color(1f, 0.9f, 0.55f, 0.95f));
+        }
+
+        foreach (var node in GetTree().GetNodesInGroup("player"))
+        {
+            if (node == _player || node is not Node2D playerNode || !GodotObject.IsInstanceValid(playerNode))
+                continue;
+
+            string factionId = node is Player player ? player.FaccaoAtiva?.IdFaccao ?? "" : ObterMetaString(node, "faction_id");
+            DrawPlayerMarker(playerNode, CalcularCorPlayer(node, factionId), font, fontSize);
+        }
+
+        foreach (var node in GetTree().GetNodesInGroup("RemotePlayers"))
+        {
+            if (node is not Node2D remote || !GodotObject.IsInstanceValid(remote))
+                continue;
+
+            DrawPlayerMarker(remote, CalcularCorPlayer(remote, ObterMetaString(remote, "faction_id")), font, fontSize);
+        }
+    }
+
+    private void DrawPlayerMarker(Node2D playerNode, Color color, Font font, int fontSize)
+    {
+        Vector2 screenPos = WorldToScreen(playerNode.GlobalPosition);
+        if (!EstaVisivelNoMapa(screenPos))
+            return;
+
+        _markersOverlay.DrawCircle(screenPos, 6f, color);
+        _markersOverlay.DrawCircle(screenPos, 2.8f, new Color(1, 1, 1, 0.92f));
+
+        string name = ObterMetaString(playerNode, "player_name");
+        if (string.IsNullOrWhiteSpace(name) && playerNode is Player player)
+            name = player.Name;
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        var textSize = font.GetStringSize(name, HorizontalAlignment.Left, -1, fontSize);
+        var textPos = new Vector2(screenPos.X - textSize.X / 2f, screenPos.Y - 12f);
+        _markersOverlay.DrawString(font, textPos, name, HorizontalAlignment.Left, -1, fontSize, color);
+    }
+
+    private bool EstaVisivelNoMapa(Vector2 screenPos)
+    {
+        return screenPos.X >= -50
+            && screenPos.X <= _markersOverlay.Size.X + 50
+            && screenPos.Y >= -50
+            && screenPos.Y <= _markersOverlay.Size.Y + 50;
+    }
+
+    private Color CalcularCorPlayer(Node node, string factionId)
+    {
+        ulong entityId = ObterEntityId(node);
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+
+        if (entityId != 0 && net != null && EstaNaParty(net, entityId))
+            return CorParty;
+
+        if (net != null && EstaNaGuild(net, entityId, ObterMetaString(node, "guild_name")))
+            return CorGuild;
+
+        string localFactionId = ObterFaccaoLocalId();
+        if (!string.IsNullOrWhiteSpace(localFactionId)
+            && !string.IsNullOrWhiteSpace(factionId)
+            && !localFactionId.Equals(factionId.Trim(), System.StringComparison.OrdinalIgnoreCase))
+            return CorFaccaoInimiga;
+
+        return CorPlayerNormal;
+    }
+
+    private string ObterFaccaoLocalId()
+    {
+        if (_player is Player player && !string.IsNullOrWhiteSpace(player.FaccaoAtiva?.IdFaccao))
+            return player.FaccaoAtiva.IdFaccao.Trim();
+
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        return escolhido?.Faccao?.IdFaccao?.Trim() ?? "";
+    }
+
+    private static bool EstaNaParty(GameNetwork net, ulong entityId)
+    {
+        if (!net.HasPendingPartyData)
+            return false;
+
+        foreach (var member in net.PendingPartyMembers)
+        {
+            if (member.ContainsKey("entity_id") && ConverterEntityId(member["entity_id"]) == entityId)
+                return true;
+        }
+        return false;
+    }
+
+    private static bool EstaNaGuild(GameNetwork net, ulong entityId, string guildName)
+    {
+        if (net.GuildId < 0)
+            return false;
+
+        foreach (var member in net.CachedGuildMembers)
+        {
+            if (member.ContainsKey("entity_id") && ConverterEntityId(member["entity_id"]) == entityId)
+                return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(net.GuildName)
+            && !string.IsNullOrWhiteSpace(guildName)
+            && net.GuildName.Equals(guildName, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ulong ObterEntityId(Node node)
+    {
+        if (!node.HasMeta("network_id"))
+            return 0;
+        return ConverterEntityId(node.GetMeta("network_id"));
+    }
+
+    private static string ObterMetaString(Node node, string key)
+    {
+        return node.HasMeta(key) ? node.GetMeta(key).AsString() : "";
+    }
+
+    private static ulong ConverterEntityId(Variant value)
+    {
+        return value.VariantType switch
+        {
+            Variant.Type.Int => (ulong)value.AsInt64(),
+            Variant.Type.Float => (ulong)value.AsDouble(),
+            Variant.Type.String => ulong.TryParse(value.AsString(), out var parsed) ? parsed : 0UL,
+            _ => 0UL,
+        };
     }
 }

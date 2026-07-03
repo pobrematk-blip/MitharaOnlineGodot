@@ -183,17 +183,12 @@ partial class GameServer
     private bool CheckTeleportTile(NetPeer peer, PlayerSession session, Channel channel, Entity entity, float x, float y)
     {
         if (_gameTime - session.LastTeleportTime < 1.0) return false;
-        string sceneName = session.CurrentMap;
-        if (!_tileData.TryGetValue(sceneName, out var tiles)) return false;
+        string sceneName = string.IsNullOrWhiteSpace(session.CurrentMap)
+            ? "main"
+            : session.CurrentMap.Trim().ToLowerInvariant();
 
-        int tileX = (int)MathF.Floor(x / 32f);
-        int tileY = (int)MathF.Floor(y / 32f);
-
-        if (!tiles.TryGetValue((tileX, tileY), out byte type)) return false;
-        if (type != 1) return false;
-
-        if (!_teleportTargets.TryGetValue(sceneName, out var teleports)) return false;
-        if (!teleports.TryGetValue((tileX, tileY), out var info)) return false;
+        if (!TryFindTeleportAtPosition(sceneName, x, y, out int tileX, out int tileY, out var info))
+            return false;
 
         session.LastTeleportTime = _gameTime;
         session.IsTransitioning = true;
@@ -212,6 +207,60 @@ partial class GameServer
         channel.MoveEntity(entity.Id, info.TargetX, info.TargetY);
         SendSceneChange(peer, info.TargetScene, info.TargetX, info.TargetY);
         Logger.Info($"[TELEPORT] {entity.Name} tile ({tileX},{tileY}) -> {info.TargetScene} ({info.TargetX:F1},{info.TargetY:F1})");
+        return true;
+    }
+
+    private static bool TryFindTeleportAtPosition(string sceneName, float x, float y, out int tileX, out int tileY, out TeleportTileInfo info)
+    {
+        tileX = (int)MathF.Floor(x / 32f);
+        tileY = (int)MathF.Floor(y / 32f);
+        info = null!;
+
+        if (!_teleportTargets.TryGetValue(sceneName, out var teleports))
+            return false;
+
+        if (teleports.TryGetValue((tileX, tileY), out info!))
+            return true;
+
+        const float activationRadius = 46f;
+        float bestDistanceSq = activationRadius * activationRadius;
+        int bestTileX = tileX;
+        int bestTileY = tileY;
+        TeleportTileInfo? bestInfo = null;
+
+        for (int ox = -1; ox <= 1; ox++)
+        {
+            for (int oy = -1; oy <= 1; oy++)
+            {
+                if (ox == 0 && oy == 0)
+                    continue;
+
+                int checkX = tileX + ox;
+                int checkY = tileY + oy;
+                if (!teleports.TryGetValue((checkX, checkY), out var candidate))
+                    continue;
+
+                float centerX = checkX * 32f + 16f;
+                float centerY = checkY * 32f + 16f;
+                float dx = x - centerX;
+                float dy = y - centerY;
+                float distSq = dx * dx + dy * dy;
+                if (distSq > bestDistanceSq)
+                    continue;
+
+                bestDistanceSq = distSq;
+                bestTileX = checkX;
+                bestTileY = checkY;
+                bestInfo = candidate;
+            }
+        }
+
+        if (bestInfo == null)
+            return false;
+
+        tileX = bestTileX;
+        tileY = bestTileY;
+        info = bestInfo;
         return true;
     }
 

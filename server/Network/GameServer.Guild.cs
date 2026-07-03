@@ -371,6 +371,14 @@ partial class GameServer
             return;
         }
 
+        if (!SameFaction(player, target))
+        {
+            SendSystemMessage(peer, "Você não pode convidar jogador de facção inimiga para a guilda.");
+            if (targetPeer != null)
+                SendSystemMessage(targetPeer, $"{player.Name} tentou convidar você, mas facções inimigas não podem entrar na mesma guilda.");
+            return;
+        }
+
         _guildInvites[target.Id] = sender.Id;
         SendSystemMessage(peer, $"Convidei {target.Name} para a guilda.");
 
@@ -394,6 +402,12 @@ partial class GameServer
         if (leader is not PlayerEntity leaderPlayer || leaderPlayer.GuildId < 0)
         {
             SendSystemMessage(peer, "O convite expirou.");
+            return;
+        }
+
+        if (!SameFaction(player, leaderPlayer))
+        {
+            SendSystemMessage(peer, "Você não pode entrar em guilda de facção inimiga.");
             return;
         }
 

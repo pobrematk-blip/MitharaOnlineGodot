@@ -48,6 +48,10 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _lojinhaNodes = new();
     private ulong _lojinhaInteracaoAtual;
     private Node2D? _worldNode;
+    private static readonly Color NomeCorNormal = Colors.White;
+    private static readonly Color NomeCorParty = new(0.45f, 0.9f, 1.0f);
+    private static readonly Color NomeCorGuild = new(0.45f, 1.0f, 0.35f);
+    private static readonly Color NomeCorFaccaoInimiga = new(1.0f, 0.22f, 0.18f);
 
     private static readonly Dictionary<Raridade, Color> RarityColors = new()
     {
@@ -200,6 +204,11 @@ public partial class EntityManager : Node
         _gameNet.OnStatUpdate += OnStatUpdate;
         _gameNet.OnProjectileSpawn += OnProjectileSpawn;
         _gameNet.OnItemUseResult += OnItemUseResult;
+        _gameNet.OnPartyData += OnPartyDataChanged;
+        _gameNet.OnPartyMemberUpdate += OnPartyMemberChanged;
+        _gameNet.OnGuildData += OnGuildDataChanged;
+        _gameNet.OnGuildMemberUpdate += OnGuildMemberChanged;
+        _gameNet.OnGuildCleared += OnGuildClearedHandler;
 
         CriarUI();
         CriarNavegacaoMundo();
@@ -581,6 +590,7 @@ public partial class EntityManager : Node
         PrepararEntidadeYSort(root);
         root.SetMeta("network_id", entityId);
         root.SetMeta("player_name", name);
+        root.AddToGroup("RemotePlayers");
 
         string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(characterClass);
         root.SetMeta(MetaAnimPrefix, animPrefix);
@@ -626,15 +636,19 @@ public partial class EntityManager : Node
         string guildName = "";
         string guildTag = "";
         int guildEmblem = -1;
+        string factionId = "";
         if (!string.IsNullOrWhiteSpace(overheadData))
         {
             var data = Json.ParseString(overheadData).AsGodotDictionary();
+            factionId = (string)data.GetValueOrDefault("faction_id", "");
             xp = (long)data.GetValueOrDefault("xp", 0L);
             xpMax = (long)data.GetValueOrDefault("xp_max", 1L);
             guildName = (string)data.GetValueOrDefault("guild_name", "");
             guildTag = (string)data.GetValueOrDefault("guild_tag", "");
             guildEmblem = (int)data.GetValueOrDefault("guild_emblem", -1);
         }
+        root.SetMeta("faction_id", factionId);
+        root.SetMeta("guild_name", guildName);
 
         var overhead = new OverheadUI
         {
@@ -644,6 +658,7 @@ public partial class EntityManager : Node
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
         overhead.ConfigurarRemoto(name, guildName, guildTag, guildEmblem, xp, xpMax);
+        overhead.DefinirCorNome(CalcularCorNomeRemoto(entityId, factionId, guildName));
         root.AddChild(overhead);
 
         var parent = ObterMundo();
@@ -660,7 +675,7 @@ public partial class EntityManager : Node
         return root;
     }
 
-    public void AtualizarOverheadRemoto(ulong entityId, string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
+    public void AtualizarOverheadRemoto(ulong entityId, string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax, string factionId = "")
     {
         if (!_networkNodes.TryGetValue(entityId, out var node)) return;
         if (node == null || !IsInstanceValid(node) || node.IsQueuedForDeletion())
@@ -673,7 +688,133 @@ public partial class EntityManager : Node
         if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
             return;
 
-        overhead?.AtualizarDadosRemotos(nome, guildName, guildTag, guildEmblem, xp, xpMax);
+        if (!string.IsNullOrWhiteSpace(factionId))
+            node.SetMeta("faction_id", factionId);
+        node.SetMeta("guild_name", guildName);
+
+        overhead.AtualizarDadosRemotos(nome, guildName, guildTag, guildEmblem, xp, xpMax);
+        overhead.DefinirCorNome(CalcularCorNomeRemoto(entityId, ObterMetaString(node, "faction_id"), guildName));
+    }
+
+    private void OnPartyDataChanged(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members)
+    {
+        AtualizarCoresNomesRemotos();
+    }
+
+    private void OnPartyMemberChanged(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
+    {
+        AtualizarCoresNomesRemotos();
+    }
+
+    private void OnGuildDataChanged(int guildId, string guildName, string guildTag, int guildEmblem, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills)
+    {
+        AtualizarCoresNomesRemotos();
+    }
+
+    private void OnGuildMemberChanged(ulong entityId, string name, int rank, bool joined)
+    {
+        AtualizarCoresNomesRemotos();
+    }
+
+    private void OnGuildClearedHandler()
+    {
+        AtualizarCoresNomesRemotos();
+    }
+
+    private void AtualizarCoresNomesRemotos()
+    {
+        foreach (var kvp in _networkNodes)
+        {
+            var node = kvp.Value;
+            if (node == null || !IsInstanceValid(node) || node.IsQueuedForDeletion())
+                continue;
+            if (!node.HasMeta("player_name"))
+                continue;
+
+            var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
+            if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
+                continue;
+
+            string factionId = ObterMetaString(node, "faction_id");
+            string guildName = ObterMetaString(node, "guild_name");
+            overhead.DefinirCorNome(CalcularCorNomeRemoto(kvp.Key, factionId, guildName));
+        }
+    }
+
+    private Color CalcularCorNomeRemoto(ulong entityId, string remoteFactionId, string remoteGuildName)
+    {
+        if (EstaNaMinhaParty(entityId))
+            return NomeCorParty;
+
+        if (EstaNaMinhaGuild(entityId, remoteGuildName))
+            return NomeCorGuild;
+
+        string localFactionId = ObterFaccaoLocalId();
+        if (!string.IsNullOrWhiteSpace(localFactionId)
+            && !string.IsNullOrWhiteSpace(remoteFactionId)
+            && !localFactionId.Equals(remoteFactionId, System.StringComparison.OrdinalIgnoreCase))
+            return NomeCorFaccaoInimiga;
+
+        return NomeCorNormal;
+    }
+
+    private bool EstaNaMinhaParty(ulong entityId)
+    {
+        if (_gameNet == null || !_gameNet.HasPendingPartyData)
+            return false;
+
+        foreach (var member in _gameNet.PendingPartyMembers)
+        {
+            if (!member.ContainsKey("entity_id"))
+                continue;
+            if (ConverterEntityId(member["entity_id"]) == entityId)
+                return true;
+        }
+        return false;
+    }
+
+    private bool EstaNaMinhaGuild(ulong entityId, string remoteGuildName)
+    {
+        if (_gameNet == null || _gameNet.GuildId < 0)
+            return false;
+
+        foreach (var member in _gameNet.CachedGuildMembers)
+        {
+            if (!member.ContainsKey("entity_id"))
+                continue;
+            if (ConverterEntityId(member["entity_id"]) == entityId)
+                return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(_gameNet.GuildName)
+            && !string.IsNullOrWhiteSpace(remoteGuildName)
+            && _gameNet.GuildName.Equals(remoteGuildName, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string ObterFaccaoLocalId()
+    {
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        if (!string.IsNullOrWhiteSpace(player?.FaccaoAtiva?.IdFaccao))
+            return player.FaccaoAtiva.IdFaccao.Trim();
+
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        return escolhido?.Faccao?.IdFaccao?.Trim() ?? "";
+    }
+
+    private static string ObterMetaString(Node node, string key)
+    {
+        return node.HasMeta(key) ? node.GetMeta(key).AsString() : "";
+    }
+
+    private static ulong ConverterEntityId(Variant value)
+    {
+        return value.VariantType switch
+        {
+            Variant.Type.Int => (ulong)value.AsInt64(),
+            Variant.Type.Float => (ulong)value.AsDouble(),
+            Variant.Type.String => ulong.TryParse(value.AsString(), out var parsed) ? parsed : 0UL,
+            _ => 0UL,
+        };
     }
 
     private void CarregarCenasMob()
@@ -757,6 +898,8 @@ public partial class EntityManager : Node
         placeholder.Position = new Vector2(x, y);
         placeholder.Name = $"Monster_{entityId}";
         PrepararEntidadeYSort(placeholder);
+        if (isBoss)
+            placeholder.AddToGroup("Bosses");
 
         var icon = new Label
         {
@@ -1960,6 +2103,11 @@ public partial class EntityManager : Node
             _gameNet.OnStatUpdate -= OnStatUpdate;
             _gameNet.OnProjectileSpawn -= OnProjectileSpawn;
             _gameNet.OnItemUseResult -= OnItemUseResult;
+            _gameNet.OnPartyData -= OnPartyDataChanged;
+            _gameNet.OnPartyMemberUpdate -= OnPartyMemberChanged;
+            _gameNet.OnGuildData -= OnGuildDataChanged;
+            _gameNet.OnGuildMemberUpdate -= OnGuildMemberChanged;
+            _gameNet.OnGuildCleared -= OnGuildClearedHandler;
         }
     }
 

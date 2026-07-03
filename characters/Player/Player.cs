@@ -214,6 +214,7 @@ public partial class Player : CharacterBody2D
     private float _attackCooldownRemaining;
     private bool _wasFPressed = false;
     private bool _projetilDisparado = false;
+    private bool _attackIsSkillVisual = false;
     private float _promptUpdateTimer;
     private Sprite2D _shadowSprite;
     private ulong? _selectedTargetId;
@@ -1765,7 +1766,12 @@ public partial class Player : CharacterBody2D
         else if (string.Equals(NomeDaClasse, "arqueiro", StringComparison.OrdinalIgnoreCase))
         {
             if (ProjetilScene != null)
-                _projetilDisparado = false;
+            {
+                if (IsAttacking)
+                    _projetilDisparado = false;
+                else
+                    DispararProjetil();
+            }
             else
                 GD.PrintErr("[PLAYER] Erro: ProjetilScene não configurada!");
         }
@@ -1797,9 +1803,8 @@ public partial class Player : CharacterBody2D
         if (!usaProjetil)
             return;
 
-        if (ClasseEhArqueiro() && !TemArcoEquipado())
+        if (_attackIsSkillVisual)
         {
-            GD.Print("[PLAYER] Arqueiro sem arco equipado, projetil não disparado.");
             _projetilDisparado = true;
             return;
         }
@@ -1812,7 +1817,9 @@ public partial class Player : CharacterBody2D
     {
         IsAttacking = false;
         _attackTimeoutCounter = 0f;
-        IniciarCooldownAtaqueBasico();
+        if (!_attackIsSkillVisual)
+            IniciarCooldownAtaqueBasico();
+        _attackIsSkillVisual = false;
 
         if (AnimatedSprite != null)
         {
@@ -1991,6 +1998,44 @@ public partial class Player : CharacterBody2D
         if (equip == null) return false;
         var slotArma = equip.ObterSlot(TipoEquipamento.Arma);
         return slotArma?.Item != null && slotArma.Item.Nome.Contains("arco", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void TocarAnimacaoSkillArqueiro(Vector2 targetPosition)
+    {
+        if (!ClasseEhArqueiro() || AnimatedSprite == null || AnimatedSprite.SpriteFrames == null)
+            return;
+        if (IsAttacking)
+            return;
+
+        Vector2 dirToTarget = targetPosition - GlobalPosition;
+        if (dirToTarget.LengthSquared() > 0.001f)
+            CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget.Normalized());
+
+        string prefixoAtaque = ObterPrefixoAtaqueAtual();
+        string animacaoDeAtaque = $"{prefixoAtaque}_attack_{CurrentDirection}";
+        if (!AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
+        {
+            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+            animacaoDeAtaque = $"{prefixoAtaque}_attack_{cardinal}";
+        }
+
+        if (!AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
+        {
+            GD.Print($"[PLAYER] Animação de skill do arqueiro não encontrada: {animacaoDeAtaque}");
+            return;
+        }
+
+        IsAttacking = true;
+        _attackIsSkillVisual = true;
+        _projetilDisparado = true;
+        _attackTimeoutCounter = 0f;
+        AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoDeAtaque, false);
+        AnimatedSprite.Play(animacaoDeAtaque);
+        AnimatedSprite.SpeedScale = AttackAnimationSpeedScale;
+        SincronizarOverlays();
+
+        if (_network != null && _network.IsConnected)
+            _network.SendPlayerAction(1, DirectionUtil.DirectionToVector(CurrentDirection));
     }
 
     private void ExecutarAtaqueMelee()

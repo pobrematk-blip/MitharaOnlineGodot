@@ -11,6 +11,14 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private enum PvpAreaKind
+    {
+        Normal,
+        Safe,
+        Arena,
+        Dungeon,
+    }
+
     private const double DefaultBasicAttackCooldown = 1.2;
     private const double BerserkerBasicAttackCooldown = 1.5;
     private const double RangedBasicAttackCooldown = 1.1;
@@ -34,6 +42,149 @@ partial class GameServer
             "arqueiro" or "mago" => RangedBasicAttackCooldown,
             _ => DefaultBasicAttackCooldown,
         };
+    }
+
+    private bool CanDamageEntity(Entity attacker, Entity target, out string reason)
+    {
+        reason = "";
+
+        if (attacker.Id == target.Id)
+        {
+            reason = "Você não pode atacar a si mesmo.";
+            return false;
+        }
+
+        if (attacker.Health <= 0 || target.Health <= 0)
+            return false;
+
+        if (attacker is PlayerEntity attackerPlayer && target is PlayerEntity targetPlayer)
+            return CanPlayerDamagePlayer(attackerPlayer, targetPlayer, out reason);
+
+        if (attacker is PlayerEntity playerAttacker && target is MonsterEntity mobTarget)
+        {
+            if (!string.IsNullOrWhiteSpace(mobTarget.FactionId)
+                && string.Equals(mobTarget.FactionId, playerAttacker.FactionId, StringComparison.OrdinalIgnoreCase))
+            {
+                reason = "Alvo aliado.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool CanPlayerDamagePlayer(PlayerEntity attacker, PlayerEntity target, out string reason)
+    {
+        reason = "";
+        var area = ResolvePvpArea(attacker, target);
+
+        if (area == PvpAreaKind.Safe)
+        {
+            reason = "Área segura: PvP desativado.";
+            return false;
+        }
+
+        if (ArePlayersInSameParty(attacker, target))
+        {
+            reason = "Você não pode atacar jogadores do seu grupo.";
+            return false;
+        }
+
+        if (area == PvpAreaKind.Arena)
+            return true;
+
+        if (area == PvpAreaKind.Dungeon)
+            return true;
+
+        if (SameFaction(attacker, target))
+        {
+            reason = "Você não pode atacar jogadores da sua facção nesta área.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private PvpAreaKind ResolvePvpArea(PlayerEntity attacker, PlayerEntity target)
+    {
+        string attackerMap = GetPlayerCurrentMap(attacker.Id);
+        string targetMap = GetPlayerCurrentMap(target.Id);
+        var attackerArea = ResolvePvpArea(attackerMap, attacker.X, attacker.Y);
+        var targetArea = ResolvePvpArea(targetMap, target.X, target.Y);
+
+        if (attackerArea == PvpAreaKind.Safe || targetArea == PvpAreaKind.Safe)
+            return PvpAreaKind.Safe;
+        if (attackerArea == PvpAreaKind.Arena && targetArea == PvpAreaKind.Arena)
+            return PvpAreaKind.Arena;
+        if (attackerArea == PvpAreaKind.Dungeon && targetArea == PvpAreaKind.Dungeon)
+            return PvpAreaKind.Dungeon;
+        return PvpAreaKind.Normal;
+    }
+
+    private PvpAreaKind ResolvePvpArea(string mapName, float x, float y)
+    {
+        if (_config.PvpZones.Count > 0)
+        {
+            foreach (var priority in new[] { PvpZoneType.Safe, PvpZoneType.Arena, PvpZoneType.Dungeon, PvpZoneType.Normal })
+            {
+                foreach (var zone in _config.PvpZones)
+                {
+                    if (zone.Type == priority && zone.Contains(mapName, x, y))
+                        return priority switch
+                        {
+                            PvpZoneType.Safe => PvpAreaKind.Safe,
+                            PvpZoneType.Arena => PvpAreaKind.Arena,
+                            PvpZoneType.Dungeon => PvpAreaKind.Dungeon,
+                            _ => PvpAreaKind.Normal,
+                        };
+                }
+            }
+        }
+
+        return ResolvePvpAreaFromMapName(mapName);
+    }
+
+    private static PvpAreaKind ResolvePvpAreaFromMapName(string mapName)
+    {
+        string map = (mapName ?? "").Trim().ToLowerInvariant();
+        if (map.Contains("safe") || map.Contains("cidade") || map.Contains("town") || map.Contains("vila"))
+            return PvpAreaKind.Safe;
+        if (map.Contains("arena") || map.Contains("gvg") || map.Contains("pvp"))
+            return PvpAreaKind.Arena;
+        if (map.Contains("dungeon") || map.Contains("calabouco") || map.Contains("masmorra"))
+            return PvpAreaKind.Dungeon;
+        return PvpAreaKind.Normal;
+    }
+
+    private string GetPlayerCurrentMap(ulong entityId)
+    {
+        foreach (var session in _sessions.Values)
+        {
+            if (session.EntityId == entityId)
+                return session.CurrentMap;
+        }
+        return MainSceneName;
+    }
+
+    private static bool SameFaction(PlayerEntity a, PlayerEntity b)
+    {
+        if (string.IsNullOrWhiteSpace(a.FactionId) || string.IsNullOrWhiteSpace(b.FactionId))
+            return false;
+        return string.Equals(a.FactionId, b.FactionId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool SameFaction(Entity a, Entity b)
+    {
+        if (string.IsNullOrWhiteSpace(a.FactionId) || string.IsNullOrWhiteSpace(b.FactionId))
+            return false;
+        return string.Equals(a.FactionId, b.FactionId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool ArePlayersInSameParty(PlayerEntity a, PlayerEntity b)
+    {
+        if (a.PartyId < 0 || b.PartyId < 0)
+            return false;
+        return a.PartyId == b.PartyId;
     }
 
     private bool HandleMonsterAIAttack(Channel channel, MonsterEntity mob, Entity target, double gameTime)
@@ -339,7 +490,7 @@ partial class GameServer
         var targets = channel.GetEntitiesInAoi(caster.X, caster.Y)
             .Select(id => channel.GetEntity(id))
             .Where(e => e != null && e.Health > 0 && e.Id != caster.Id)
-            .Where(e => e is MonsterEntity mob && mob.FactionId != caster.FactionId || e is PlayerEntity p && p.FactionId != caster.FactionId)
+            .Where(e => CanDamageEntity(caster, e!, out _))
             .Select(e => e!)
             .Where(e =>
             {
@@ -500,6 +651,30 @@ partial class GameServer
         return true;
     }
 
+    private void FireBasicProjectile(Channel channel, PlayerEntity attacker, PlayerSession session, float originX, float originY, float dirX, float dirY, byte projectileType)
+    {
+        const float projectileRange = 760f;
+        const float projectileRadius = 34f;
+        const float projectileSpeed = 450f;
+
+        BroadcastProjectileSpawn(channel, attacker.Id, originX, originY, dirX, dirY, projectileType, includeCaster: false);
+
+        var target = FindFirstProjectileHit(channel, attacker, originX, originY, dirX, dirY, projectileRange, projectileRadius);
+        if (target == null)
+            return;
+
+        float along = ProjectileHitDistance(originX, originY, dirX, dirY, target.X, target.Y, projectileRange).Along;
+        double impactAt = _gameTime + Math.Clamp(along / projectileSpeed, 0.05f, 1.8f);
+        _pendingProjectileHits.Add(new PendingProjectileHit
+        {
+            ImpactAt = impactAt,
+            ChannelId = session.ChannelId,
+            CasterId = attacker.Id,
+            TargetId = target.Id,
+            Skill = null,
+        });
+    }
+
     private void ProcessPendingProjectileHits()
     {
         for (int i = _pendingProjectileHits.Count - 1; i >= 0; i--)
@@ -518,12 +693,17 @@ partial class GameServer
             var target = channel.GetEntity(pending.TargetId);
             if (target == null || target.Health <= 0)
                 continue;
+            if (!CanDamageEntity(caster, target, out _))
+                continue;
 
             var session = _sessions.Values.FirstOrDefault(s => s.EntityId == pending.CasterId);
             if (session == null || session.SelectedCharacter == null)
                 continue;
 
-            int damage = CalculateSkillDamage(caster, target, pending.Skill, out bool isCrit);
+            bool isCrit;
+            int damage = pending.Skill != null
+                ? CalculateSkillDamage(caster, target, pending.Skill, out isCrit)
+                : CalculateBasicDamage(caster, target, out isCrit);
             target.Health = Math.Max(0, target.Health - damage);
             if (target is PlayerEntity playerTarget)
             {
@@ -534,7 +714,8 @@ partial class GameServer
                 hitMob.TargetEntityId = caster.Id;
 
             BroadcastCombatResult(channel, caster.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, caster.X, caster.Y);
-            ApplySkillDebuff(target, pending.Skill);
+            if (pending.Skill != null)
+                ApplySkillDebuff(target, pending.Skill);
 
             if (target is MonsterEntity killedMob && target.Health <= 0)
                 HandleMonsterDeath(channel, killedMob, caster, session, target.Id);
@@ -546,7 +727,7 @@ partial class GameServer
         return channel.GetEntitiesInAoi(caster.X, caster.Y)
             .Select(id => channel.GetEntity(id))
             .Where(e => e != null && e.Health > 0 && e.Id != caster.Id)
-            .Where(e => e is MonsterEntity mob && mob.FactionId != caster.FactionId || e is PlayerEntity p && p.FactionId != caster.FactionId)
+            .Where(e => CanDamageEntity(caster, e!, out _))
             .Select(e => new { Entity = e!, Hit = ProjectileHitDistance(originX, originY, dirX, dirY, e!.X, e.Y, range) })
             .Where(x => x.Hit.Along >= 0f && x.Hit.Along <= range && x.Hit.Perpendicular <= radius)
             .OrderBy(x => x.Hit.Along)
@@ -653,6 +834,11 @@ partial class GameServer
         return true;
     }
 
+    private int CalculateBasicDamage(PlayerEntity caster, Entity target, out bool isCrit)
+    {
+        return CalculateDamageAgainstTarget(caster, target, caster.CalculateAttackDamage(), out isCrit);
+    }
+
     private int CalculateSkillDamage(PlayerEntity caster, Entity target, ServerSkillDefinition skill, out bool isCrit)
     {
         int baseDamage = caster.CalculateAttackDamage();
@@ -666,6 +852,11 @@ partial class GameServer
         if (multiplier <= 0f)
             multiplier = 1f;
         int rawDamage = Math.Max(1, (int)(baseDamage * multiplier) + skill.FlatPower);
+        return CalculateDamageAgainstTarget(caster, target, rawDamage, out isCrit);
+    }
+
+    private int CalculateDamageAgainstTarget(PlayerEntity caster, Entity target, int rawDamage, out bool isCrit)
+    {
         int targetDefense = target switch
         {
             PlayerEntity p => p.CalculateDefense(),
@@ -754,7 +945,12 @@ partial class GameServer
 
         if (dist > attackRange) return;
 
-        if (target is MonsterEntity mob && mob.FactionId == attacker.FactionId) return;
+        if (!CanDamageEntity(attacker, target, out string denyReason))
+        {
+            if (!string.IsNullOrWhiteSpace(denyReason) && !isPetAttack)
+                SendSystemMessage(peer, denyReason);
+            return;
+        }
         if (isPetAttack && target is not MonsterEntity) return;
 
         if (isPetAttack)
@@ -1226,7 +1422,7 @@ internal sealed class PendingProjectileHit
     public int ChannelId { get; init; }
     public ulong CasterId { get; init; }
     public ulong TargetId { get; init; }
-    public ServerSkillDefinition Skill { get; init; } = null!;
+    public ServerSkillDefinition? Skill { get; init; }
 }
 
 internal static class ServerSkillCatalog

@@ -26,6 +26,9 @@ public class ServerConfig
     // No-mob zones: rectangular areas where monsters cannot enter/spawn
     public List<NoMobZone> NoMobZones { get; set; } = new();
 
+    // PvP zones: server-authoritative polygons for Normal, Safe, Arena and Dungeon rules.
+    public List<PvpZone> PvpZones { get; set; } = new();
+
     // Server-authoritative monster spawn points.
     public List<SpawnPoint> SpawnPoints { get; set; } = new();
 

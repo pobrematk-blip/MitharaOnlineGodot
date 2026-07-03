@@ -37,6 +37,11 @@ public partial class MiniMapa : Control
     private const float MinSize = 150f;
     private const string SettingsPath = "user://settings.cfg";
     private const string SectionUI = "UI";
+    private static readonly Color CorParty = new(0.35f, 0.85f, 1.0f, 0.95f);
+    private static readonly Color CorGuild = new(0.35f, 1.0f, 0.35f, 0.95f);
+    private static readonly Color CorFaccaoInimiga = new(0.78f, 0.28f, 1.0f, 0.95f);
+    private static readonly Color CorPlayerNormal = new(1.0f, 1.0f, 1.0f, 0.95f);
+    private static readonly Color CorBoss = new(1.0f, 0.48f, 0.08f, 0.95f);
 
     public override void _Ready()
     {
@@ -411,6 +416,8 @@ public partial class MiniMapa : Control
     private void OnDotsDraw()
     {
         if (_player == null) return;
+        if (_playerFaction == null && _player is Player localPlayer)
+            _playerFaction = localPlayer.FaccaoAtiva;
 
         float circleRadius = Mathf.Min(_dotsOverlay.Size.X, _dotsOverlay.Size.Y) / 2f - 2f;
         Vector2 overlayCenter = _dotsOverlay.Size / 2f;
@@ -424,7 +431,7 @@ public partial class MiniMapa : Control
                 if (pos.DistanceTo(overlayCenter) > circleRadius) continue;
 
                 float radius = inimigo.IsBoss ? BossDotRadius : EnemyDotRadius;
-                _dotsOverlay.DrawCircle(pos, radius, new Color(1, 0, 0, 0.9f));
+                _dotsOverlay.DrawCircle(pos, radius, inimigo.IsBoss ? CorBoss : new Color(1, 0, 0, 0.9f));
             }
         }
 
@@ -450,17 +457,93 @@ public partial class MiniMapa : Control
                 Vector2 pos = WorldToMinimap(otherPlayer.GlobalPosition);
                 if (pos.DistanceTo(overlayCenter) > circleRadius) continue;
 
-                bool sameFaction = _playerFaction != null &&
-                    otherPlayer.FaccaoAtiva != null &&
-                    _playerFaction.MesmaFaccao(otherPlayer.FaccaoAtiva);
-
-                Color dotColor = sameFaction
-                    ? new Color(0, 1, 0, 0.9f)
-                    : new Color(0.5f, 0, 0.5f, 0.9f);
-
-                _dotsOverlay.DrawCircle(pos, PlayerDotRadius, dotColor);
+                _dotsOverlay.DrawCircle(pos, PlayerDotRadius, CalcularCorPlayer(node, otherPlayer.FaccaoAtiva?.IdFaccao ?? ""));
             }
         }
+
+        var remotePlayers = GetTree().GetNodesInGroup("RemotePlayers");
+        foreach (var node in remotePlayers)
+        {
+            if (node is not Node2D remote || !GodotObject.IsInstanceValid(remote)) continue;
+
+            Vector2 pos = WorldToMinimap(remote.GlobalPosition);
+            if (pos.DistanceTo(overlayCenter) > circleRadius) continue;
+
+            string factionId = ObterMetaString(remote, "faction_id");
+            _dotsOverlay.DrawCircle(pos, PlayerDotRadius, CalcularCorPlayer(remote, factionId));
+        }
+    }
+
+    private Color CalcularCorPlayer(Node node, string factionId)
+    {
+        ulong entityId = ObterEntityId(node);
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+
+        if (entityId != 0 && net != null && EstaNaParty(net, entityId))
+            return CorParty;
+
+        if (net != null && EstaNaGuild(net, entityId, ObterMetaString(node, "guild_name")))
+            return CorGuild;
+
+        string localFactionId = _playerFaction?.IdFaccao?.Trim() ?? "";
+        if (!string.IsNullOrWhiteSpace(localFactionId)
+            && !string.IsNullOrWhiteSpace(factionId)
+            && !localFactionId.Equals(factionId.Trim(), System.StringComparison.OrdinalIgnoreCase))
+            return CorFaccaoInimiga;
+
+        return CorPlayerNormal;
+    }
+
+    private static bool EstaNaParty(GameNetwork net, ulong entityId)
+    {
+        if (!net.HasPendingPartyData)
+            return false;
+
+        foreach (var member in net.PendingPartyMembers)
+        {
+            if (member.ContainsKey("entity_id") && ConverterEntityId(member["entity_id"]) == entityId)
+                return true;
+        }
+        return false;
+    }
+
+    private static bool EstaNaGuild(GameNetwork net, ulong entityId, string guildName)
+    {
+        if (net.GuildId < 0)
+            return false;
+
+        foreach (var member in net.CachedGuildMembers)
+        {
+            if (member.ContainsKey("entity_id") && ConverterEntityId(member["entity_id"]) == entityId)
+                return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(net.GuildName)
+            && !string.IsNullOrWhiteSpace(guildName)
+            && net.GuildName.Equals(guildName, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ulong ObterEntityId(Node node)
+    {
+        if (!node.HasMeta("network_id"))
+            return 0;
+        return ConverterEntityId(node.GetMeta("network_id"));
+    }
+
+    private static string ObterMetaString(Node node, string key)
+    {
+        return node.HasMeta(key) ? node.GetMeta(key).AsString() : "";
+    }
+
+    private static ulong ConverterEntityId(Variant value)
+    {
+        return value.VariantType switch
+        {
+            Variant.Type.Int => (ulong)value.AsInt64(),
+            Variant.Type.Float => (ulong)value.AsDouble(),
+            Variant.Type.String => ulong.TryParse(value.AsString(), out var parsed) ? parsed : 0UL,
+            _ => 0UL,
+        };
     }
 
     public override void _ExitTree()

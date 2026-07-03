@@ -86,6 +86,14 @@ partial class GameServer
             return;
         }
 
+        if (!SameFaction(player, target))
+        {
+            SendSystemMessage(peer, "Você não pode convidar jogador de facção inimiga para grupo.");
+            if (targetPeer != null)
+                SendSystemMessage(targetPeer, $"{player.Name} tentou convidar você, mas facções inimigas não podem formar grupo.");
+            return;
+        }
+
         _partyInvites[target.Id] = sender.Id;
         SendSystemMessage(peer, $"Convidei {target.Name} para o grupo.");
 
@@ -109,6 +117,12 @@ partial class GameServer
         if (leader == null)
         {
             SendSystemMessage(peer, "O convite expirou (jogador offline).");
+            return;
+        }
+
+        if (leader is not PlayerEntity leaderPlayerForFaction || !SameFaction(player, leaderPlayerForFaction))
+        {
+            SendSystemMessage(peer, "Você não pode entrar em grupo de facção inimiga.");
             return;
         }
 

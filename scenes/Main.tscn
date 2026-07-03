@@ -30,7 +30,7 @@
 [ext_resource type="PackedScene" uid="uid://guildui" path="res://ui/GuildUI.tscn" id="18_guild"]
 [ext_resource type="PackedScene" path="res://scenes/tools/TileMarker.tscn" id="18_vua0o"]
 [ext_resource type="PackedScene" uid="uid://partyui" path="res://ui/PartyUI.tscn" id="19_party"]
-[ext_resource type="PackedScene" path="res://ui/TradeUI.tscn" id="19_tradeui"]
+[ext_resource type="PackedScene" uid="uid://bfu2nqvh067sw" path="res://ui/TradeUI.tscn" id="19_tradeui"]
 [ext_resource type="PackedScene" uid="uid://questui" path="res://ui/QuestUI.tscn" id="20_quest"]
 [ext_resource type="PackedScene" uid="uid://partyhud" path="res://ui/PartyHUD.tscn" id="21_partyhud"]
 [ext_resource type="PackedScene" uid="uid://dialogui" path="res://ui/DialogUI.tscn" id="22_dialog"]
@@ -78614,6 +78614,11 @@ position = Vector2(901, 779)
 
 [node name="TeleportPair_Alfaiataria_1" parent="World" instance=ExtResource("45_tpair")]
 position = Vector2(3321, -35)
+
+[node name="TeleportPair_Alfaiataria_2" parent="World" instance=ExtResource("45_tpair")]
+editor_description = "[Teleporte Casal] PairId=2"
+position = Vector2(4079, -8)
+PairId = 2
 
 [node name="NoMobZone_CidadeInicial3" parent="World" instance=ExtResource("42_nomobzone")]
 position = Vector2(1492.9996, -5010.0005)

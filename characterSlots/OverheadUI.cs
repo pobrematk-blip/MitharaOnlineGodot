@@ -80,6 +80,7 @@ public partial class OverheadUI : Control
     private int _guildEmblemIdx = -1;
     private TextureRect _emblemaIcon;
     private bool _remoteMode;
+    private Color _nomeCor = Colors.White;
     private long _xpAtual;
     private long _xpMaximo = 1;
 
@@ -178,7 +179,7 @@ public partial class OverheadUI : Control
         _nomeLabel.Size = new Vector2(120, 20);
         _nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _nomeLabel.AddThemeFontSizeOverride("font_size", 14);
-        _nomeLabel.AddThemeColorOverride("font_color", Colors.White);
+        _nomeLabel.AddThemeColorOverride("font_color", _nomeCor);
         _nomeLabel.AddThemeConstantOverride("outline_size", 3);
         _nomeLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
         _nomeLabel.Visible = MostrarNome;
@@ -260,6 +261,13 @@ public partial class OverheadUI : Control
         if (_nomeLabel != null)
             AtualizarNomeCompleto();
         AtualizarXp();
+    }
+
+    public void DefinirCorNome(Color cor)
+    {
+        _nomeCor = cor;
+        if (_nomeLabel != null)
+            _nomeLabel.AddThemeColorOverride("font_color", _nomeCor);
     }
 
     private void ConectarProgressaoLocal()

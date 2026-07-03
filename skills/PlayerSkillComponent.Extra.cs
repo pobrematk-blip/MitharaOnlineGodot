@@ -64,6 +64,7 @@ public partial class PlayerSkillComponent
         if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
             targetPosition = selectedTargetPosition;
 
+        _player.TocarAnimacaoSkillArqueiro(targetPosition);
         gameNet.SendSkillUse(slotIndex, skill.SkillId, targetPosition);
         bool localSkillEffectsEnabled = false;
         if (!localSkillEffectsEnabled)

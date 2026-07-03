@@ -5,8 +5,8 @@ using System.Linq;
 
 public partial class TradeUI : Control
 {
-    private static readonly Vector2 TradeWindowSize = new(400, 262);
-    private static readonly Vector2 TradeSlotSize = new(42, 42);
+    private static readonly Vector2 TradeWindowSize = new(384, 292);
+    private static readonly Vector2 TradeSlotSize = new(46, 46);
     private Panel _window;
     private Label _titleLabel;
     private Label _myStatus;
@@ -48,15 +48,15 @@ public partial class TradeUI : Control
         _window.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
         var winMargin = new MarginContainer();
-        winMargin.AddThemeConstantOverride("margin_left", 8);
+        winMargin.AddThemeConstantOverride("margin_left", 10);
         winMargin.AddThemeConstantOverride("margin_top", 8);
-        winMargin.AddThemeConstantOverride("margin_right", 8);
-        winMargin.AddThemeConstantOverride("margin_bottom", 8);
+        winMargin.AddThemeConstantOverride("margin_right", 10);
+        winMargin.AddThemeConstantOverride("margin_bottom", 10);
         winMargin.SetAnchorsPreset(LayoutPreset.FullRect);
         _window.AddChild(winMargin);
 
         var winVbox = new VBoxContainer();
-        winVbox.AddThemeConstantOverride("separation", 6);
+        winVbox.AddThemeConstantOverride("separation", 7);
         winMargin.AddChild(winVbox);
 
         var titleBar = new HBoxContainer();
@@ -66,13 +66,13 @@ public partial class TradeUI : Control
         _titleLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         titleBar.AddChild(_titleLabel);
 
-        var closeBtn = new Button { Text = "X", Flat = true };
+        var closeBtn = new Button { Text = "X", Flat = true, CustomMinimumSize = new Vector2(28, 24) };
         closeBtn.Pressed += () => CancelTrade();
         titleBar.AddChild(closeBtn);
         winVbox.AddChild(titleBar);
 
         var content = new HBoxContainer();
-        content.AddThemeConstantOverride("separation", 8);
+        content.AddThemeConstantOverride("separation", 10);
         content.SizeFlagsVertical = SizeFlags.ExpandFill;
 
         content.AddChild(CriarLado(true));
@@ -84,7 +84,7 @@ public partial class TradeUI : Control
         bottom.Alignment = BoxContainer.AlignmentMode.End;
         bottom.AddThemeConstantOverride("separation", 8);
 
-        _confirmBtn = new Button { Text = "Confirmar Troca", CustomMinimumSize = new Vector2(132, 30) };
+        _confirmBtn = new Button { Text = "Confirmar Troca", CustomMinimumSize = new Vector2(138, 30) };
         _confirmBtn.Pressed += () => ConfirmTrade();
         bottom.AddChild(_confirmBtn);
 
@@ -97,7 +97,7 @@ public partial class TradeUI : Control
         AddChild(_window);
 
         _itemPopup = new Panel();
-        _itemPopup.CustomMinimumSize = new Vector2(240, 180);
+        _itemPopup.CustomMinimumSize = new Vector2(260, 196);
         _itemPopup.Visible = false;
         _itemPopup.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
 
@@ -155,12 +155,12 @@ public partial class TradeUI : Control
         var panel = new Panel();
         panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         panel.SizeFlagsVertical = SizeFlags.ExpandFill;
-        panel.CustomMinimumSize = new Vector2(174, 0);
+        panel.CustomMinimumSize = new Vector2(168, 0);
 
         panel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.68f));
 
         var vbox = new VBoxContainer();
-        vbox.AddThemeConstantOverride("separation", 4);
+        vbox.AddThemeConstantOverride("separation", 5);
         panel.AddChild(vbox);
 
         var header = new Label();
@@ -170,8 +170,9 @@ public partial class TradeUI : Control
 
         var grid = new GridContainer();
         grid.Columns = 3;
-        grid.AddThemeConstantOverride("h_separation", 4);
-        grid.AddThemeConstantOverride("v_separation", 4);
+        grid.AddThemeConstantOverride("h_separation", 5);
+        grid.AddThemeConstantOverride("v_separation", 5);
+        grid.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 
         var slots = isMine ? _mySlots : _partnerSlots;
         var labels = isMine ? _mySlotLabels : _partnerSlotLabels;
@@ -179,8 +180,9 @@ public partial class TradeUI : Control
         for (int i = 0; i < 9; i++)
         {
             int slotIdx = i;
-            var slotPanel = new Panel();
+            var slotPanel = isMine ? new TradeDropSlot { TradeSlot = slotIdx } : new Panel();
             slotPanel.CustomMinimumSize = TradeSlotSize;
+            slotPanel.Size = TradeSlotSize;
             slotPanel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
 
             var slotLabel = new Label();
@@ -195,7 +197,10 @@ public partial class TradeUI : Control
 
             if (isMine)
             {
-                slotPanel.MouseFilter = MouseFilterEnum.Pass;
+                slotPanel.MouseFilter = MouseFilterEnum.Stop;
+                if (slotPanel is TradeDropSlot dropSlot)
+                    dropSlot.OnTradeItemDropped += OnTradeItemDropped;
+
                 slotPanel.GuiInput += (InputEvent ev) =>
                 {
                     if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
@@ -216,11 +221,12 @@ public partial class TradeUI : Control
 
         if (isMine)
         {
-            header.Text = "Seus Itens";
+            header.Text = "Seus itens";
             _myStatus = statusLabel;
         }
         else
         {
+            header.Text = "Itens do parceiro";
             _partnerStatus = statusLabel;
         }
 
@@ -245,6 +251,8 @@ public partial class TradeUI : Control
             _partnerSlotLabels[i].Text = "";
             AtualizarEstiloSlot(_mySlots[i], false);
             AtualizarEstiloSlot(_partnerSlots[i], false);
+            if (_mySlots[i] is TradeDropSlot dropSlot)
+                dropSlot.Locked = false;
         }
 
         _myStatus.Text = "Aguardando...";
@@ -386,9 +394,20 @@ public partial class TradeUI : Control
 
         _itemPopup.Visible = true;
         _itemPopup.Position = new Vector2(
-            (GetViewportRect().Size.X - 240) / 2,
-            (GetViewportRect().Size.Y - 180) / 2);
+            (GetViewportRect().Size.X - 260) / 2,
+            (GetViewportRect().Size.Y - 196) / 2);
         _itemPopup.MoveToFront();
+    }
+
+    private void OnTradeItemDropped(int tradeSlot, int inventorySlot, int quantity)
+    {
+        if (_myConfirmed)
+            return;
+
+        if (_myOffers.ContainsKey(tradeSlot))
+            _net?.SendTradeRemoveOffer(tradeSlot);
+
+        _net?.SendTradeUpdateOffer(inventorySlot, 1);
     }
 
     private void ConfirmTrade()
@@ -413,6 +432,8 @@ public partial class TradeUI : Control
     private void AtualizarEstiloSlot(Panel slot, bool occupied)
     {
         slot.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot(occupied));
+        if (slot is TradeDropSlot dropSlot)
+            dropSlot.Locked = _myConfirmed;
     }
 
     private void CentralizarJanela()

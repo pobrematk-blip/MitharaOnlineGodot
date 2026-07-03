@@ -627,8 +627,9 @@ public partial class GameServer : INetEventListener
         var entity = channel.GetEntity(session.EntityId) as PlayerEntity;
         if (entity == null || entity.Health <= 0) return;
         if (!ClassePodeUsarProjetilBasico(entity.CharacterClass)) return;
+        if (_gameTime < entity.NextBasicAttackTime) return;
+        entity.NextBasicAttackTime = _gameTime + GetBasicAttackCooldown(entity);
 
-        ulong entityId = entity.Id;
         float originX = reader.GetFloat();
         float originY = reader.GetFloat();
         float dirX = reader.GetFloat();
@@ -642,7 +643,7 @@ public partial class GameServer : INetEventListener
             dirY /= length;
         }
 
-        BroadcastProjectileSpawn(channel, entityId, originX, originY, dirX, dirY, projectileType, includeCaster: false);
+        FireBasicProjectile(channel, entity, session, originX, originY, dirX, dirY, projectileType);
     }
 
     private static bool ClassePodeUsarProjetilBasico(string? classe)

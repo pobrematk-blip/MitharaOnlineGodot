@@ -82,6 +82,7 @@ partial class GameNetwork
                 extra2 = r.GetString(); // Race
                 extra3 = Json.Stringify(new Godot.Collections.Dictionary
                 {
+                    ["faction_id"] = factionId,
                     ["xp"] = r.GetLong(),
                     ["xp_max"] = r.GetLong(),
                     ["guild_name"] = r.GetString(),
@@ -181,7 +182,7 @@ partial class GameNetwork
 
 			if (entityId != LocalPlayerId)
 				em?.PushRemotePosition(entityId, new Vector2(x, y), new Vector2(dirX, dirY), moving, sprinting, aiState);
-			em?.AtualizarOverheadRemoto(entityId, name, guildName, guildTag, guildEmblem, xp, xpMax);
+			em?.AtualizarOverheadRemoto(entityId, name, guildName, guildTag, guildEmblem, xp, xpMax, factionId);
 			EmitSignal(SignalName.OnEntityHealthUpdate, entityId, health, maxHealth);
 			EmitSignal(SignalName.OnEntityManaUpdate, entityId, mana, maxMana);
         }
