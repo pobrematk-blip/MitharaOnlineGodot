@@ -20,5 +20,8 @@ public class ForumCategory
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public int TopicCount { get; set; }
+
     public List<ForumTopic> Topics { get; set; } = new();
 }

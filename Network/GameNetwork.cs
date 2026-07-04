@@ -85,7 +85,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnEnterWorldEventHandler();
     [Signal] public delegate void OnEntitySpawnedEventHandler(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3);
     [Signal] public delegate void OnChatMessageEventHandler(byte channel, string senderName, string message, string language);
-    [Signal] public delegate void OnCombatResultEventHandler(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth);
+    [Signal] public delegate void OnCombatResultEventHandler(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth, int skillId);
     [Signal] public delegate void OnEntityDiedEventHandler(ulong entityId, ulong killerId);
     [Signal] public delegate void OnGainExpEventHandler(ulong entityId, int amount, long totalExp);
     [Signal] public delegate void OnLevelUpEventHandler(ulong entityId, int newLevel, int remainingXp);
@@ -120,7 +120,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnDuelRequestedEventHandler(string senderName);
     [Signal] public delegate void OnPartyInviteReceivedEventHandler(string senderName);
     [Signal] public delegate void OnGuildInviteReceivedEventHandler(string senderName);
-    [Signal] public delegate void OnItemUseResultEventHandler(int health, int maxHealth, int mana, int maxMana);
+    [Signal] public delegate void OnItemUseResultEventHandler(int health, int maxHealth, int mana, int maxMana, int itemId, float cooldownSeconds);
     [Signal] public delegate void OnSceneChangeEventHandler(string sceneName, float x, float y);
     [Signal] public delegate void OnTradeRequestedEventHandler(string senderName);
     [Signal] public delegate void OnTradeStartEventHandler(ulong partnerId, string partnerName);

@@ -12,13 +12,11 @@ public partial class WikiService
 {
     private readonly WebDbContext _db;
     private readonly string _gameConnStr;
+    private readonly string _itensBaseDir;
 
     private static readonly ConcurrentDictionary<int, string> _itemIconCache = new();
     private static bool _iconCacheBuilt = false;
     private static readonly object _iconCacheLock = new();
-
-    private static readonly string _itensDir = Path.GetFullPath(
-        Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Itens", "Incones"));
 
     private static readonly Dictionary<string, string> _manualIcons = new()
     {
@@ -39,6 +37,7 @@ public partial class WikiService
     {
         _db = db;
         _gameConnStr = gameConnStr;
+        _itensBaseDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..");
     }
 
     private void EnsureIconCacheBuilt()
@@ -54,9 +53,10 @@ public partial class WikiService
 
     private void BuildIconCache()
     {
-        var tresFiles = Directory.EnumerateFiles(
-            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Itens")),
-            "*.tres", SearchOption.AllDirectories);
+        var itensDir = Path.GetFullPath(Path.Combine(_itensBaseDir, "Itens"));
+        if (!Directory.Exists(itensDir)) return;
+
+        var tresFiles = Directory.EnumerateFiles(itensDir, "*.tres", SearchOption.AllDirectories);
 
         foreach (var file in tresFiles)
         {
@@ -88,7 +88,7 @@ public partial class WikiService
         }
     }
 
-    private static string GetItemIconUrl(int itemId, string itemName)
+    private string GetItemIconUrl(int itemId, string itemName)
     {
         if (_itemIconCache.TryGetValue(itemId, out var iconFile))
             return $"/images/items/{Uri.EscapeDataString(iconFile)}";
@@ -99,8 +99,7 @@ public partial class WikiService
 
         // Fallback: try to find by name (remove special chars, match file)
         var normalizedName = RemoveDiacritics(itemName).Replace(" ", "").ToLowerInvariant();
-        var iconsDir = Path.GetFullPath(
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Mithara.Web", "wwwroot", "images", "items"));
+        var iconsDir = Path.GetFullPath(Path.Combine(_itensBaseDir, "Mithara.Web", "wwwroot", "images", "items"));
         if (Directory.Exists(iconsDir))
         {
             var match = Directory.EnumerateFiles(iconsDir, "*.png")

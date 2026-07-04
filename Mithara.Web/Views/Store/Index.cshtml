@@ -13,8 +13,8 @@
 <section class="content-section">
     <div class="container">
         <div class="store-tabs">
-            <button class="tab-btn active" onclick="switchTab('founder')">Pacotes Fundador</button>
-            <button class="tab-btn" onclick="switchTab('cash')">Moedas de Cash</button>
+            <button class="tab-btn active" data-tab="founder">Pacotes Fundador</button>
+            <button class="tab-btn" data-tab="cash">Moedas de Cash</button>
         </div>
 
         <div id="tab-founder" class="tab-content active">
@@ -63,11 +63,4 @@
     </div>
 </section>
 
-<script>
-function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector(`.tab-btn[onclick*="'${tab}'"]`).classList.add('active');
-    document.getElementById(`tab-${tab}`).classList.add('active');
-}
-</script>
+

@@ -51,7 +51,8 @@ partial class GameNetwork
         bool isCrit = r.GetBool();
         int targetHealth = r.GetInt();
         int targetMaxHealth = r.GetInt();
-        EmitSignal(SignalName.OnCombatResult, attackerId, targetId, damage, isCrit, targetHealth, targetMaxHealth);
+        int skillId = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        EmitSignal(SignalName.OnCombatResult, attackerId, targetId, damage, isCrit, targetHealth, targetMaxHealth, skillId);
     }
 
     private void HandleEntityDied(NetDataReader r)

@@ -29,6 +29,8 @@ public partial class TradeUI : Control
     private Panel[] _partnerSlots = new Panel[9];
     private Label[] _mySlotLabels = new Label[9];
     private Label[] _partnerSlotLabels = new Label[9];
+    private bool _arrastandoJanela;
+    private Vector2 _pontoCliqueOriginal;
 
     private Godot.Collections.Array<Godot.Collections.Dictionary> _cachedInventory = new();
 
@@ -60,10 +62,13 @@ public partial class TradeUI : Control
         winMargin.AddChild(winVbox);
 
         var titleBar = new HBoxContainer();
+        titleBar.MouseFilter = MouseFilterEnum.Stop;
+        titleBar.GuiInput += OnTitleBarGuiInput;
         _titleLabel = new Label();
         _titleLabel.AddThemeFontSizeOverride("font_size", 13);
         _titleLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         _titleLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _titleLabel.MouseFilter = MouseFilterEnum.Ignore;
         titleBar.AddChild(_titleLabel);
 
         var closeBtn = new Button { Text = "X", Flat = true, CustomMinimumSize = new Vector2(28, 24) };
@@ -193,6 +198,7 @@ public partial class TradeUI : Control
             slotLabel.ClipText = true;
             slotLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
             slotLabel.SetAnchorsPreset(LayoutPreset.FullRect);
+            slotLabel.MouseFilter = MouseFilterEnum.Ignore;
             slotPanel.AddChild(slotLabel);
 
             if (isMine)
@@ -442,6 +448,25 @@ public partial class TradeUI : Control
         _window.Position = new Vector2(
             (vp.Size.X - TradeWindowSize.X) / 2,
             (vp.Size.Y - TradeWindowSize.Y) / 2);
+    }
+
+    private void OnTitleBarGuiInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
+        {
+            _arrastandoJanela = mouseEvent.Pressed;
+            if (mouseEvent.Pressed)
+            {
+                _pontoCliqueOriginal = mouseEvent.Position;
+                MoveToFront();
+                _window.MoveToFront();
+            }
+        }
+        else if (@event is InputEventMouseMotion mouseMotion && _arrastandoJanela)
+        {
+            _window.Position += mouseMotion.Position - _pontoCliqueOriginal;
+            ResponsiveUI.ClampInsideViewport(_window, 4f);
+        }
     }
 
     private static string ObterNomeItem(int itemId)

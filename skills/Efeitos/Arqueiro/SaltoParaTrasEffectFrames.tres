@@ -1,0 +1,34 @@
+[gd_resource type="SpriteFrames" load_steps=7 format=3 uid="uid://c0i0ait8b6bpy"]
+
+[ext_resource type="Texture2D" uid="uid://dcvdh4y4n5yc3" path="res://resources/Projetil/Flecha de Raio/effect1.png" id="1_arrow1"]
+[ext_resource type="Texture2D" uid="uid://cmt4g6bf25m8o" path="res://resources/Projetil/Flecha de Raio/effect2.png" id="2_arrow2"]
+[ext_resource type="Texture2D" uid="uid://db2s8gjeu32ct" path="res://resources/Projetil/Flecha de Raio/effect3.png" id="3_arrow3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_arrow1"]
+atlas = ExtResource("1_arrow1")
+region = Rect2(4, 6, 192, 73)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_arrow2"]
+atlas = ExtResource("2_arrow2")
+region = Rect2(5, 6, 194, 60)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_arrow3"]
+atlas = ExtResource("3_arrow3")
+region = Rect2(4, 5, 211, 67)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_arrow1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_arrow2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_arrow3")
+}],
+"loop": false,
+"name": &"default",
+"speed": 14.0
+}]

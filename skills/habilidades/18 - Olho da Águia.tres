@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 18
-Nome = "Olho da Águia"
-Descricao = "Os sentidos do Sniper atingem seu auge, aumentando Precisão, Chance Crítica e Penetração de Armadura."
+Nome = "Surto de Velocidade"
+Descricao = "Acelera os reflexos por 15 segundos. Aumenta Velocidade de Ataque."
 Icone = ExtResource("2_icon")
-Valor = 10
+Valor = 25
 CustoMana = 40
 ClasseRestrita = "Arqueiro"
 Cooldown = 60.0

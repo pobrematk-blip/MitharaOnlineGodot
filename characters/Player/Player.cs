@@ -8,9 +8,12 @@ public partial class Player : CharacterBody2D
     private const float NpcInteractionRange = 180f;
     private const float MeleeTargetFallbackRadius = 24f;
     private const float MeleeTargetContactPadding = 10f;
-    private const float IdleTransitionDelay = 5f;
+    private const float IdleTransitionDelay = 40f;
     private const float AttackAnimationSpeedScale = 4.0f;
     private const string PlayerAnimationModelScenePath = "res://characters/Player/player.tscn";
+    private const byte PlayerActionAttack = 1;
+    private const byte PlayerActionBackJump = 2;
+    private const int SheriganPetId = 10101;
     private static SpriteFrames _modeloAnimacaoPlayer;
     [Signal] public delegate void StatusAtualizadoEventHandler();
 
@@ -209,6 +212,7 @@ public partial class Player : CharacterBody2D
     }
     public string CurrentDirection { get; protected set; } = "down";
     protected bool IsAttacking = false;
+    private bool _chargingTiroPreciso;
     private float _attackTimeoutCounter = 0f;
     private float _maxAttackDuration = 0.8f;
     private float _attackCooldownRemaining;
@@ -304,6 +308,13 @@ public partial class Player : CharacterBody2D
 
     public void SummonPet(string scenePath)
     {
+        if (!string.IsNullOrWhiteSpace(scenePath)
+            && scenePath.Contains("Sherigan", StringComparison.OrdinalIgnoreCase))
+        {
+            SummonSheriganPet();
+            return;
+        }
+
         if (string.IsNullOrEmpty(scenePath)) return;
         var res = GD.Load<PackedScene>(scenePath);
         if (res == null) return;
@@ -312,6 +323,20 @@ public partial class Player : CharacterBody2D
         inst.GlobalPosition = GlobalPosition;
         GetParent().AddChild(inst);
         GD.Print($"[PLAYER] Summoned pet from {scenePath}");
+    }
+
+    public void SummonSheriganPet()
+    {
+        var petController = GetNodeOrNull<PetController>("PetController");
+        if (petController == null)
+        {
+            GD.PrintErr("[PLAYER] PetController nao encontrado para invocar Sherigan.");
+            return;
+        }
+
+        petController.InvocarPet(SheriganPetId, "Sherigan");
+        petController.DefinirModo(PetMode.Atacar);
+        GD.Print("[PLAYER] Sherigan invocado pelo servidor.");
     }
 
     public void AttemptRevive(Node target)
@@ -657,6 +682,7 @@ public partial class Player : CharacterBody2D
         string scenePath = sceneName switch
         {
             SceneConstants.SCENE_ALFAIATARIA => SceneConstants.ALFAIATARIA,
+            SceneConstants.SCENE_FERRARIA_E_ARTESAO => SceneConstants.FERRARIA_E_ARTESAO,
             _ => "",
         };
 
@@ -822,6 +848,11 @@ public partial class Player : CharacterBody2D
         if (IsAttacking)
         {
             _attackTimeoutCounter += (float)delta;
+            if (_chargingTiroPreciso)
+            {
+                ManterTiroPrecisoCarregadoNoUltimoFrame();
+            }
+            else
             if (_attackTimeoutCounter >= _maxAttackDuration)
             {
                 TentarDispararProjetilNoFinalDaAnimacao();
@@ -1262,6 +1293,8 @@ public partial class Player : CharacterBody2D
         {
             CopiarAnimacaoModeloComAtlas(destino, modelo, $"idle_{dir}", sheetBase, EhAtlasDesarmado);
             CopiarAnimacaoModeloComAtlas(destino, modelo, $"walk_{dir}", sheetBase, EhAtlasDesarmado);
+            CopiarAnimacaoModeloComAtlas(destino, modelo, $"salto_tras_{dir}", sheetBase, EhAtlasDesarmado);
+            CopiarAnimacaoModeloComAtlas(destino, modelo, $"salta_tras_{dir}", sheetBase, EhAtlasDesarmado);
             string runOrigem = dir switch
             {
                 "left" => "right",
@@ -1531,6 +1564,8 @@ public partial class Player : CharacterBody2D
             CopiarAnimacao(destino, origem, $"idle_{dir}");
             CopiarAnimacao(destino, origem, $"walk_{dir}");
             CopiarAnimacao(destino, origem, $"run_{dir}");
+            CopiarAnimacao(destino, origem, $"salto_tras_{dir}");
+            CopiarAnimacao(destino, origem, $"salta_tras_{dir}");
         }
 
         CopiarAnimacao(destino, origem, "death");
@@ -1660,7 +1695,7 @@ public partial class Player : CharacterBody2D
 
         string currentAnim = AnimatedSprite.Animation.ToString();
 
-        if (IsAttacking && currentAnim.Contains("attack"))
+        if (IsAttacking && (currentAnim.Contains("attack") || EhAnimacaoSaltoParaTras(currentAnim)))
             return;
 
         if (velocity.Length() > 10.0f)
@@ -1787,7 +1822,7 @@ public partial class Player : CharacterBody2D
             return false;
 
         string anim = AnimatedSprite.Animation.ToString();
-        if (!anim.Contains("attack", StringComparison.OrdinalIgnoreCase))
+        if (!anim.Contains("attack", StringComparison.OrdinalIgnoreCase) && !EhAnimacaoSaltoParaTras(anim))
             return false;
 
         int frameCount = AnimatedSprite.SpriteFrames.GetFrameCount(anim);
@@ -1839,12 +1874,17 @@ public partial class Player : CharacterBody2D
     private float ObterCooldownAtaqueBasico()
     {
         string classe = NomeDaClasse?.Trim().ToLowerInvariant() ?? "";
-        return classe switch
+        float baseCooldown = classe switch
         {
             "berseker" or "berserker" or "barbaro" or "bárbaro" => 1.5f,
             "arqueiro" or "mago" => 1.1f,
             _ => BasicAttackCooldown,
         };
+
+        var equipamento = GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")
+            ?? FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
+        float velocidadeAtaque = equipamento?.VelocidadeAtaque ?? 1f;
+        return baseCooldown / Mathf.Max(0.25f, velocidadeAtaque);
     }
 
     private void RetomarAnimacaoAposAtaque()
@@ -1950,14 +1990,14 @@ public partial class Player : CharacterBody2D
             var equip = GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent");
             if (string.Equals(NomeDaClasse, "mago", StringComparison.OrdinalIgnoreCase))
             {
-                proj.Speed = 200.0f;
+                proj.Speed = 520.0f;
                 proj.DanoMin = equip?.DanoMagicoMin ?? 20;
                 proj.DanoMax = equip?.DanoMagicoMax ?? 30;
                 proj.EhDanoMagico = true;
             }
             else if (string.Equals(NomeDaClasse, "arqueiro", StringComparison.OrdinalIgnoreCase))
             {
-                proj.Speed = 450.0f;
+                proj.Speed = 680.0f;
                 proj.DanoMin = equip?.DanoFisicoMin ?? 10;
                 proj.DanoMax = equip?.DanoFisicoMax ?? 16;
                 proj.EhDanoMagico = false;
@@ -2011,15 +2051,8 @@ public partial class Player : CharacterBody2D
         if (dirToTarget.LengthSquared() > 0.001f)
             CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget.Normalized());
 
-        string prefixoAtaque = ObterPrefixoAtaqueAtual();
-        string animacaoDeAtaque = $"{prefixoAtaque}_attack_{CurrentDirection}";
-        if (!AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
-        {
-            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
-            animacaoDeAtaque = $"{prefixoAtaque}_attack_{cardinal}";
-        }
-
-        if (!AnimatedSprite.SpriteFrames.HasAnimation(animacaoDeAtaque))
+        string animacaoDeAtaque = ResolverAnimacaoAtaqueAtual();
+        if (string.IsNullOrEmpty(animacaoDeAtaque))
         {
             GD.Print($"[PLAYER] Animação de skill do arqueiro não encontrada: {animacaoDeAtaque}");
             return;
@@ -2035,7 +2068,152 @@ public partial class Player : CharacterBody2D
         SincronizarOverlays();
 
         if (_network != null && _network.IsConnected)
-            _network.SendPlayerAction(1, DirectionUtil.DirectionToVector(CurrentDirection));
+            _network.SendPlayerAction(PlayerActionAttack, DirectionUtil.DirectionToVector(CurrentDirection));
+    }
+
+    public void IniciarCarregamentoTiroPreciso(Vector2 targetPosition)
+    {
+        if (!ClasseEhArqueiro() || AnimatedSprite == null || AnimatedSprite.SpriteFrames == null)
+            return;
+        if (IsAttacking && !_chargingTiroPreciso)
+            return;
+
+        Vector2 dirToTarget = targetPosition - GlobalPosition;
+        if (dirToTarget.LengthSquared() > 0.001f)
+            CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget.Normalized());
+
+        string animacaoDeAtaque = ResolverAnimacaoAtaqueAtual();
+        if (string.IsNullOrEmpty(animacaoDeAtaque))
+        {
+            GD.Print($"[PLAYER] Animação de carregamento do Tiro Preciso não encontrada para direção {CurrentDirection}.");
+            return;
+        }
+
+        IsAttacking = true;
+        _chargingTiroPreciso = true;
+        _attackIsSkillVisual = true;
+        _projetilDisparado = true;
+        _attackTimeoutCounter = 0f;
+        AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoDeAtaque, false);
+        AnimatedSprite.Play(animacaoDeAtaque);
+        AnimatedSprite.SpeedScale = 0.9f;
+        SincronizarOverlays();
+
+        if (_network != null && _network.IsConnected)
+            _network.SendPlayerAction(PlayerActionAttack, DirectionUtil.DirectionToVector(CurrentDirection));
+    }
+
+    private string ResolverAnimacaoAtaqueAtual()
+    {
+        if (AnimatedSprite?.SpriteFrames == null)
+            return "";
+
+        string prefixoAtaque = ObterPrefixoAtaqueAtual();
+        string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+        string[] candidatos =
+        {
+            $"{prefixoAtaque}_attack_{CurrentDirection}",
+            $"{prefixoAtaque}_attack_{cardinal}",
+            $"attack_{CurrentDirection}",
+            $"attack_{cardinal}",
+        };
+
+        foreach (string animacao in candidatos)
+        {
+            if (!string.IsNullOrWhiteSpace(animacao) && AnimatedSprite.SpriteFrames.HasAnimation(animacao))
+                return animacao;
+        }
+
+        return "";
+    }
+
+    public void FinalizarCarregamentoTiroPreciso(Vector2 targetPosition)
+    {
+        if (!_chargingTiroPreciso)
+        {
+            TocarAnimacaoSkillArqueiro(targetPosition);
+            return;
+        }
+
+        _chargingTiroPreciso = false;
+        if (AnimatedSprite != null)
+        {
+            AnimatedSprite.SpeedScale = AttackAnimationSpeedScale;
+            SincronizarOverlays();
+        }
+
+        var timer = GetTree()?.CreateTimer(0.12);
+        if (timer != null)
+            timer.Timeout += () =>
+            {
+                if (IsInstanceValid(this) && IsAttacking)
+                    FinalizarAtaqueAtual("[PLAYER] Tiro Preciso carregado finalizado.");
+            };
+    }
+
+    public void CancelarCarregamentoTiroPreciso()
+    {
+        if (!_chargingTiroPreciso)
+            return;
+
+        _chargingTiroPreciso = false;
+        if (IsAttacking)
+            FinalizarAtaqueAtual("[PLAYER] Tiro Preciso cancelado.");
+    }
+
+    private void ManterTiroPrecisoCarregadoNoUltimoFrame()
+    {
+        if (AnimatedSprite?.SpriteFrames == null)
+            return;
+
+        string anim = AnimatedSprite.Animation.ToString();
+        if (!anim.Contains("attack", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        int frameCount = AnimatedSprite.SpriteFrames.GetFrameCount(anim);
+        if (frameCount <= 0)
+            return;
+
+        if (AnimatedSprite.Frame >= frameCount - 1)
+        {
+            AnimatedSprite.Frame = frameCount - 1;
+            AnimatedSprite.SpeedScale = 0f;
+            SincronizarOverlays();
+        }
+    }
+
+    public bool TocarAnimacaoSaltoParaTrasArqueiro(Vector2 targetPosition)
+    {
+        if (!ClasseEhArqueiro() || AnimatedSprite == null || AnimatedSprite.SpriteFrames == null)
+            return false;
+        if (IsAttacking)
+            return false;
+
+        Vector2 dirToTarget = targetPosition - GlobalPosition;
+        if (dirToTarget.LengthSquared() > 0.001f)
+            CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget.Normalized());
+
+        string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+        string animacaoSalto = ResolverAnimacaoSaltoParaTras(cardinal);
+        if (string.IsNullOrWhiteSpace(animacaoSalto))
+        {
+            GD.Print($"[PLAYER] Animacao de Salto para Tras nao encontrada: salto_tras_{cardinal} ou salta_tras_{cardinal}");
+            return false;
+        }
+
+        IsAttacking = true;
+        _attackIsSkillVisual = true;
+        _projetilDisparado = true;
+        _attackTimeoutCounter = 0f;
+        AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoSalto, false);
+        AnimatedSprite.Play(animacaoSalto);
+        AnimatedSprite.SpeedScale = 1.0f;
+        SincronizarOverlays();
+
+        if (_network != null && _network.IsConnected)
+            _network.SendPlayerAction(PlayerActionBackJump, DirectionUtil.DirectionToVector(CurrentDirection));
+
+        return true;
     }
 
     private void ExecutarAtaqueMelee()
@@ -2635,12 +2813,38 @@ public partial class Player : CharacterBody2D
 
         string anim = AnimatedSprite.Animation.ToString();
 
-        if (anim.Contains("attack"))
+        if (anim.Contains("attack") || EhAnimacaoSaltoParaTras(anim))
         {
             TentarDispararProjetilNoFinalDaAnimacao();
-            FinalizarAtaqueAtual($"[PLAYER] ✅ Animação de ataque '{anim}' terminou. Liberando IsAttacking.");
+            FinalizarAtaqueAtual($"[PLAYER] Animacao '{anim}' terminou. Liberando IsAttacking.");
         }
         // death handled by AoTerminarMorte
+    }
+
+    private string ResolverAnimacaoSaltoParaTras(string cardinal)
+    {
+        if (AnimatedSprite?.SpriteFrames == null)
+            return "";
+
+        string[] nomes =
+        {
+            $"salto_tras_{cardinal}",
+            $"salta_tras_{cardinal}",
+        };
+
+        foreach (string nome in nomes)
+        {
+            if (AnimatedSprite.SpriteFrames.HasAnimation(nome))
+                return nome;
+        }
+
+        return "";
+    }
+
+    private static bool EhAnimacaoSaltoParaTras(string anim)
+    {
+        return anim.StartsWith("salto_tras_", StringComparison.OrdinalIgnoreCase)
+            || anim.StartsWith("salta_tras_", StringComparison.OrdinalIgnoreCase);
     }
 
     private void CriarSombra()

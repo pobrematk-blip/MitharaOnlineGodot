@@ -1,0 +1,12 @@
+[
+    {
+        "tileX":  3,
+        "tileY":  8,
+        "type":  1,
+        "targetScene":  "main",
+        "targetX":  4079,
+        "targetY":  24,
+        "pairId":  2,
+        "source":  "teleport_pair"
+    }
+]

@@ -28,6 +28,7 @@ public partial class EquipamentoComponent : Node
     private int _bonusMana;
     private float _bonusVelocidadeMovimento;
     private float _bonusVelocidadeAtaque;
+    private float _bonusTemporarioVelocidadeAtaque;
     private float _bonusChanceCritica;
     private float _bonusTemporarioChanceCritica;
     private float _bonusEvasao;
@@ -100,7 +101,8 @@ public partial class EquipamentoComponent : Node
     
     // Velocidades (por Agilidade + bônus de itens)
     public float VelocidadeMovimento => MathF.Min(1.3f, 1.0f + (Agilidade * 0.05f) + _bonusVelocidadeMovimento);
-    public float VelocidadeAtaque => MathF.Min(2.0f, 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque);
+    private float VelocidadeAtaqueBase => MathF.Min(2.0f, 1.0f + (Agilidade * 0.03f) + _bonusVelocidadeAtaque);
+    public float VelocidadeAtaque => MathF.Min(2.5f, VelocidadeAtaqueBase * (1.0f + _bonusTemporarioVelocidadeAtaque));
     
     // Defesas
     public int DefesaFisica => (Agilidade / 2) + _bonusDefesaFisica;
@@ -337,6 +339,12 @@ public partial class EquipamentoComponent : Node
     {
         _bonusTemporarioPrecisao = MathF.Max(0f, precisao);
         _bonusTemporarioChanceCritica = MathF.Max(0f, chanceCritica);
+        EmitSignal(SignalName.EquipamentoAtualizado);
+    }
+
+    public void SetBonusTemporarioVelocidadeAtaque(float velocidadeAtaque)
+    {
+        _bonusTemporarioVelocidadeAtaque = MathF.Max(0f, velocidadeAtaque);
         EmitSignal(SignalName.EquipamentoAtualizado);
     }
 

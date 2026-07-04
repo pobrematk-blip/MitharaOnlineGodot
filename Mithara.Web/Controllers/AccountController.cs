@@ -24,6 +24,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
@@ -48,6 +49,8 @@ public class AccountController : Controller
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
             new AuthenticationProperties { IsPersistent = model.RememberMe });
 
+        _gameDb.UpdateLastSeen(id.Value);
+
         return RedirectToAction("Index", "Home");
     }
 
@@ -59,6 +62,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -82,6 +86,8 @@ public class AccountController : Controller
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
             new AuthenticationProperties { IsPersistent = false });
+
+        _gameDb.UpdateLastSeen(id.Value);
 
         TempData["Success"] = "Conta criada com sucesso! Bem-vindo ao Mithara Online.";
         return RedirectToAction("Index", "Home");

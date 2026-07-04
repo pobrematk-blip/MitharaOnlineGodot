@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=118 format=3 uid="uid://c565vi013bfxu"]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=124 format=3 uid="uid://c565vi013bfxu"]
 
 [ext_resource type="Script" uid="uid://cgvivuu5r3dpv" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" uid="uid://wkx02komrwdx" path="res://skills/TalentNodeResource.cs" id="2_node"]
@@ -57,7 +57,12 @@
 [ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/007 - Impacto Repulsor.tres" id="sk_27"]
 [ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/008 - Olho da Águia.tres" id="sk_28"]
 [ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/009 - Tiro da Execução.tres" id="sk_29"]
-
+[ext_resource type="Resource" path="res://skills/habilidades/Arqueiro/Sniper/010 - Tiro Triplo.tres" id="sk_30"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/1.png" id="icon_sniper_plus_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/6.png" id="icon_sniper_plus_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/12.png" id="icon_sniper_plus_12"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/47.png" id="icon_sniper_plus_47"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/48.png" id="icon_sniper_plus_48"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "arq_base"
@@ -314,7 +319,7 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 script = ExtResource("2_node")
 NodeId = "arq_ranger_skill_1"
 Nome = "Salto para Trás"
-Descricao = "Salta para trás 3 tiles."
+Descricao = "Salta para trás 6 tiles e dispara uma flecha durante o recuo."
 NodeType = 1
 Posicao = Vector2(1220, 950)
 Icone = ExtResource("icon_sk_11")
@@ -518,12 +523,12 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 [sub_resource type="Resource" id="sniper_s1"]
 script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_1"
-Nome = "Salto para Trás"
-Descricao = "Salta para trás 3 tiles."
+Nome = "Tiro Triplo"
+Descricao = "Dispara tres flechas seguidas no alvo."
 NodeType = 1
 Posicao = Vector2(815, 1183.8)
-Icone = ExtResource("icon_sk_11")
-HabilidadeAtiva = ExtResource("shared_sk_2")
+Icone = ExtResource("icon_sniper_plus_12")
+HabilidadeAtiva = ExtResource("sk_30")
 Requisitos = PackedStringArray("arq_sniper_escolha_interna_1")
 
 [sub_resource type="Resource" id="sniper_s2"]
@@ -574,7 +579,7 @@ Nome = "Tiro Penetrante"
 Descricao = "Ignora defesa."
 NodeType = 1
 Posicao = Vector2(817.1, 1359)
-Icone = ExtResource("icon_sk_23")
+Icone = ExtResource("icon_sniper_plus_1")
 HabilidadeAtiva = ExtResource("sk_23")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_esquerdo")
 NivelMinimo = 10
@@ -598,7 +603,7 @@ Nome = "Disparo Crítico"
 Descricao = "Golpe crítico."
 NodeType = 1
 Posicao = Vector2(536.7, 1068.5)
-Icone = ExtResource("icon_sk_25")
+Icone = ExtResource("icon_sniper_plus_6")
 HabilidadeAtiva = ExtResource("sk_25")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
 NivelMinimo = 20
@@ -610,7 +615,7 @@ Nome = "Marca do Executor"
 Descricao = "Marca alvo."
 NodeType = 1
 Posicao = Vector2(529.4, 860.6)
-Icone = ExtResource("icon_sk_26")
+Icone = ExtResource("icon_sniper_plus_48")
 HabilidadeAtiva = ExtResource("sk_26")
 Requisitos = PackedStringArray("arq_sniper_desbloqueio_direito")
 NivelMinimo = 30
@@ -660,11 +665,11 @@ NivelMinimo = 40
 [sub_resource type="Resource" id="sniper_s9"]
 script = ExtResource("2_node")
 NodeId = "arq_sniper_skill_9"
-Nome = "Olho da Águia"
-Descricao = "Sentidos aguçados."
+Nome = "Surto de Velocidade"
+Descricao = "Acelera seus ataques por 15 segundos."
 NodeType = 1
 Posicao = Vector2(465, 1230)
-Icone = ExtResource("icon_sk_28")
+Icone = ExtResource("icon_sniper_plus_47")
 HabilidadeAtiva = ExtResource("sk_28")
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_2")
 NivelMinimo = 50
@@ -676,7 +681,7 @@ Nome = "Tiro da Execução"
 Descricao = "Disparo mortal."
 NodeType = 1
 Posicao = Vector2(409.1, 805.1)
-Icone = ExtResource("icon_sk_29")
+Icone = ExtResource("icon_sniper_plus_1")
 HabilidadeAtiva = ExtResource("sk_29")
 Requisitos = PackedStringArray("arq_sniper_escolha_externa_3")
 NivelMinimo = 70

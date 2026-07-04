@@ -6,6 +6,13 @@ public partial class SkillBarUI : Control
 {
     private const int SLOT_COUNT = 10;
     private const int SLOT_SIZE = 42;
+    private const int TiroPrecisoSkillId = 10201;
+    private const int TiroPenetranteSkillId = 10203;
+    private const int DisparoCriticoSkillId = 10205;
+    private const float SkillChargeMaxSeconds = 2.0f;
+    private const string MiraApuradaEffectPath = "res://skills/Efeitos/Arqueiro/MiraApuradaEffect.tscn";
+    private const string DisparoCriticoEffectPath = "res://skills/Efeitos/Arqueiro/DisparoCriticoEffect.tscn";
+    private const string SegundoFolegoEffectPath = "res://skills/Efeitos/SegundoFolegoEffect.tscn";
 
     private SkillBarSlotUI[,] _slots = new SkillBarSlotUI[2, SLOT_COUNT];
 
@@ -25,6 +32,15 @@ public partial class SkillBarUI : Control
     private readonly Dictionary<int, BuffIconUI> _activeBuffIcons = new();
     private VipIconUI _vipIcon;
     private PartyXpIconUI _partyXpIcon;
+    private PanelContainer _chargePanel;
+    private ProgressBar _chargeBar;
+    private Label _chargeLabel;
+    private bool _chargingSkill;
+    private string _chargeSkillName = "Skill";
+    private int _chargeRow = -1;
+    private int _chargeCol = -1;
+    private int _chargeSlotIndex = -1;
+    private double _chargeStartedAt;
 
     private static readonly string[] NumKeys = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
     private static readonly string[] FuncKeys = { "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10" };
@@ -35,6 +51,7 @@ public partial class SkillBarUI : Control
         RegisterInputActions();
         CallDeferred(nameof(ConnectXpBar));
         CallDeferred(nameof(ConnectVipStatus));
+        CallDeferred(nameof(ConnectItemUseResult));
         GetTree().Root.SizeChanged += CenterBar;
     }
 
@@ -55,6 +72,33 @@ public partial class SkillBarUI : Control
             net.OnVipStatus -= OnVipStatus;
             net.OnPartyData -= OnPartyData;
             net.OnPartyMemberUpdate -= OnPartyMemberUpdate;
+            net.OnItemUseResult -= OnItemUseResult;
+        }
+    }
+
+    private void ConnectItemUseResult()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null)
+            return;
+
+        net.OnItemUseResult -= OnItemUseResult;
+        net.OnItemUseResult += OnItemUseResult;
+    }
+
+    private void OnItemUseResult(int health, int maxHealth, int mana, int maxMana, int itemId, float cooldownSeconds)
+    {
+        if (cooldownSeconds <= 0f || itemId <= 0)
+            return;
+
+        for (int row = 0; row < _slots.GetLength(0); row++)
+        {
+            for (int col = 0; col < _slots.GetLength(1); col++)
+            {
+                var slot = _slots[row, col];
+                if (slot?.AssignedItem?.ItemID == itemId)
+                    slot.StartCooldown(cooldownSeconds);
+            }
         }
     }
 
@@ -76,6 +120,7 @@ public partial class SkillBarUI : Control
         BuildTitleBar(vbox);
         BuildXpSection(vbox);
         BuildSlotRows(vbox);
+        BuildChargePanel();
 
         CallDeferred(nameof(CenterBar));
     }
@@ -184,6 +229,43 @@ public partial class SkillBarUI : Control
         }
         UpdateXpBar();
         GD.Print("[SKILL BAR] Barra de XP conectada ao Player.");
+    }
+
+    private void BuildChargePanel()
+    {
+        _chargePanel = new PanelContainer
+        {
+            Visible = false,
+            CustomMinimumSize = new Vector2(220, 34),
+            ZIndex = 240,
+        };
+        _chargePanel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.9f));
+        AddChild(_chargePanel);
+
+        var vbox = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 2);
+        _chargePanel.AddChild(vbox);
+
+        _chargeLabel = new Label
+        {
+            Text = "Tiro Preciso",
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        _chargeLabel.AddThemeFontSizeOverride("font_size", 10);
+        _chargeLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
+        vbox.AddChild(_chargeLabel);
+
+        _chargeBar = new ProgressBar
+        {
+            MinValue = 0,
+            MaxValue = 1,
+            Value = 0,
+            ShowPercentage = false,
+            CustomMinimumSize = new Vector2(210, 10),
+        };
+        _chargeBar.AddThemeStyleboxOverride("background", MitharaUiTheme.BarBackground(new Color(0.02f, 0.02f, 0.03f, 0.95f)));
+        _chargeBar.AddThemeStyleboxOverride("fill", MitharaUiTheme.Fill(new Color(1.0f, 0.82f, 0.25f), 3));
+        vbox.AddChild(_chargeBar);
     }
 
     private void ScheduleConnectRetry()
@@ -447,33 +529,281 @@ public partial class SkillBarUI : Control
             {
                 int slotIndex = row * SLOT_COUNT + col;
                 comp.ActivateSlotIndex(slotIndex);
-                var skill = slot.AssignedSkill;
+                var skill = ObterSkillDoSlot(row, col);
+                if (skill == null && comp.SkillSlots != null && slotIndex >= 0 && slotIndex < comp.SkillSlots.Length)
+                    skill = comp.SkillSlots[slotIndex];
+
                 if (skill != null)
                 {
+                    GD.Print($"[SKILL BAR] Skill visual slot={slotIndex} id={skill.SkillId} nome={skill.Nome}");
                     slot.StartCooldown(skill.Cooldown);
                     MostrarBuffSeNecessario(skill);
-                    AplicarBonusVisualMiraApurada(player, skill);
+                    AplicarBonusVisualBuffArqueiro(player, skill);
+                    TocarEfeitoSegundoFolego(player as Node2D, skill);
                 }
             }
         }
     }
 
-    private void AplicarBonusVisualMiraApurada(Node player, SkillResource skill)
+    private bool IniciarCargaSeForSkillCarregavel(int row, int col)
     {
-        if (skill.SkillId != 10202)
+        var slot = _slots[row, col];
+        int slotIndex = row * SLOT_COUNT + col;
+        var skill = ObterSkillDoSlot(row, col);
+        if (slot == null || slot.IsCoolingDown || !EhSkillCarregavel(skill))
+            return false;
+
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        if (player == null)
+            return false;
+
+        Vector2 targetPosition = player.GlobalPosition + DirectionUtil.DirectionToVector(player.CurrentDirection ?? "down") * 50f;
+        if (player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
+            targetPosition = selectedTargetPosition;
+
+        _chargingSkill = true;
+        _chargeSkillName = skill.Nome ?? "Skill";
+        _chargeRow = row;
+        _chargeCol = col;
+        _chargeSlotIndex = slotIndex;
+        _chargeStartedAt = Time.GetTicksMsec() / 1000.0;
+        player.IniciarCarregamentoTiroPreciso(targetPosition);
+        AtualizarChargeVisual(0f);
+        SetProcess(true);
+        return true;
+    }
+
+    private void SoltarCargaSkill()
+    {
+        if (!_chargingSkill)
             return;
+
+        float charge = ObterCargaAtual();
+        int row = _chargeRow;
+        int col = _chargeCol;
+        int slotIndex = _chargeSlotIndex;
+        _chargingSkill = false;
+        _chargePanel.Visible = false;
+        _chargeRow = _chargeCol = _chargeSlotIndex = -1;
+
+        var slot = row >= 0 && row < 2 && col >= 0 && col < SLOT_COUNT ? _slots[row, col] : null;
+        var skill = row >= 0 && row < 2 && col >= 0 && col < SLOT_COUNT ? ObterSkillDoSlot(row, col) : null;
+        if (slot == null || !EhSkillCarregavel(skill) || slot.IsCoolingDown)
+        {
+            (GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player)?.CancelarCarregamentoTiroPreciso();
+            return;
+        }
+
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        var comp = player?.FindChild("PlayerSkillComponent", true, false) as PlayerSkillComponent;
+        if (comp == null)
+            return;
+
+        comp.ActivateSlotIndex(slotIndex, charge);
+        slot.StartCooldown(skill.Cooldown);
+    }
+
+    private SkillResource ObterSkillDoSlot(int row, int col)
+    {
+        var slot = _slots[row, col];
+        if (slot?.AssignedSkill != null)
+            return slot.AssignedSkill;
+
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        var comp = player?.FindChild("PlayerSkillComponent", true, false) as PlayerSkillComponent;
+        int idx = row * SLOT_COUNT + col;
+        if (comp?.SkillSlots != null && idx >= 0 && idx < comp.SkillSlots.Length)
+            return comp.SkillSlots[idx];
+
+        return null;
+    }
+
+    private static bool EhSkillCarregavel(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        return skill.SkillId == TiroPrecisoSkillId
+            || skill.SkillId == TiroPenetranteSkillId
+            || skill.SkillId == 10206
+            || skill.SkillId == 16
+            || string.Equals(skill.Nome?.Trim(), "Tiro Preciso", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(skill.Nome?.Trim(), "Tiro Penetrante", StringComparison.OrdinalIgnoreCase)
+            || EhMarcaExecutor(skill);
+    }
+
+    private float ObterCargaAtual()
+    {
+        if (!_chargingSkill)
+            return 0f;
+
+        double elapsed = Time.GetTicksMsec() / 1000.0 - _chargeStartedAt;
+        return Mathf.Clamp((float)(elapsed / SkillChargeMaxSeconds), 0f, 1f);
+    }
+
+    private void AtualizarChargeVisual(float charge)
+    {
+        if (_chargePanel == null || _chargeBar == null || _chargeLabel == null)
+            return;
+
+        _chargePanel.Visible = true;
+        _chargeBar.Value = charge;
+        _chargeLabel.Text = $"{_chargeSkillName} {Mathf.RoundToInt((1.2f + charge) * 100f)}%";
+
+        var viewportSize = GetViewportRect().Size;
+        _chargePanel.Position = new Vector2(
+            (viewportSize.X - _chargePanel.CustomMinimumSize.X) * 0.5f,
+            viewportSize.Y * 0.58f
+        );
+    }
+
+    private void AplicarBonusVisualBuffArqueiro(Node player, SkillResource skill)
+    {
+        if (skill.SkillId != 10202 && skill.SkillId != 10208 && skill.SkillId != 18)
+            return;
+
+        TocarEfeitoMiraApurada(player as Node2D);
 
         var equipamento = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (equipamento == null)
             return;
 
-        equipamento.SetBonusTemporarioMiraApurada(15f, 15f);
+        if (skill.SkillId == 10202)
+            equipamento.SetBonusTemporarioMiraApurada(15f, 15f);
+        else
+            equipamento.SetBonusTemporarioVelocidadeAtaque(0.25f);
+
         var timer = GetTree().CreateTimer(Mathf.Max(0.1f, skill.Duracao));
         timer.Timeout += () =>
         {
             if (IsInstanceValid(equipamento))
-                equipamento.SetBonusTemporarioMiraApurada(0f, 0f);
+            {
+                if (skill.SkillId == 10202)
+                    equipamento.SetBonusTemporarioMiraApurada(0f, 0f);
+                else
+                    equipamento.SetBonusTemporarioVelocidadeAtaque(0f);
+            }
         };
+    }
+
+    private void TocarEfeitoMiraApurada(Node2D player)
+    {
+        if (player == null || !ResourceLoader.Exists(MiraApuradaEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(MiraApuradaEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.ZIndex = 80;
+        effect.ZAsRelative = false;
+
+        var world = player.GetParent();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            player.AddChild(effect);
+
+        effect.GlobalPosition = player.GlobalPosition;
+    }
+
+    private void TocarEfeitoDisparoCritico(Node2D player, SkillResource skill)
+    {
+        if (player == null || !EhDisparoCritico(skill))
+            return;
+        if (!ResourceLoader.Exists(DisparoCriticoEffectPath))
+        {
+            GD.PrintErr($"[DISPARO CRITICO] Cena de efeito nao encontrada: {DisparoCriticoEffectPath}");
+            return;
+        }
+
+        var scene = ResourceLoader.Load<PackedScene>(DisparoCriticoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+        {
+            GD.PrintErr("[DISPARO CRITICO] Falha ao instanciar efeito.");
+            return;
+        }
+
+        effect.ZIndex = 80;
+        effect.ZAsRelative = false;
+
+        var world = player.GetParent();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            player.AddChild(effect);
+
+        effect.GlobalPosition = player.GlobalPosition;
+
+        GD.Print($"[DISPARO CRITICO] Efeito tocando id={skill.SkillId} nome={skill.Nome}");
+    }
+
+    private void TocarEfeitoSegundoFolego(Node2D player, SkillResource skill)
+    {
+        if (player == null || !EhSegundoFolego(skill))
+            return;
+        if (!ResourceLoader.Exists(SegundoFolegoEffectPath))
+        {
+            GD.PrintErr($"[SEGUNDO FOLEGO] Cena de efeito nao encontrada: {SegundoFolegoEffectPath}");
+            return;
+        }
+
+        var scene = ResourceLoader.Load<PackedScene>(SegundoFolegoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+        {
+            GD.PrintErr("[SEGUNDO FOLEGO] Falha ao instanciar efeito.");
+            return;
+        }
+
+        effect.ZIndex = 80;
+        effect.ZAsRelative = false;
+
+        var world = player.GetParent();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            player.AddChild(effect);
+
+        effect.GlobalPosition = player.GlobalPosition;
+        GD.Print($"[SEGUNDO FOLEGO] Efeito tocando id={skill.SkillId} nome={skill.Nome}");
+    }
+
+    private static bool EhDisparoCritico(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == DisparoCriticoSkillId
+            || skill.SkillId == 15
+            || (nome.Contains("Disparo", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("tico", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool EhSegundoFolego(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == 1
+            || (nome.Contains("Segundo", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("lego", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool EhMarcaExecutor(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == 10206
+            || skill.SkillId == 16
+            || (nome.Contains("Marca", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("Executor", StringComparison.OrdinalIgnoreCase));
     }
 
     // Assign a skill to a slot (called by slot UI on drop)
@@ -608,8 +938,19 @@ public partial class SkillBarUI : Control
         for (int i = 0; i < SLOT_COUNT; i++)
         {
             string actionName = i < 9 ? $"skill_{i + 1}" : "skill_0";
+            if (@event.IsActionReleased(actionName, false))
+            {
+                SoltarCargaSkill();
+                GetViewport().SetInputAsHandled();
+                return;
+            }
             if (@event.IsActionPressed(actionName, false))
             {
+                if (IniciarCargaSeForSkillCarregavel(1, i))
+                {
+                    GetViewport().SetInputAsHandled();
+                    return;
+                }
                 AtivarSkill(1, i);
                 GetViewport().SetInputAsHandled();
                 return;
@@ -619,13 +960,32 @@ public partial class SkillBarUI : Control
         for (int i = 0; i < SLOT_COUNT; i++)
         {
             string actionName = $"skill_f{i + 1}";
+            if (@event.IsActionReleased(actionName, false))
+            {
+                SoltarCargaSkill();
+                GetViewport().SetInputAsHandled();
+                return;
+            }
             if (@event.IsActionPressed(actionName, false))
             {
+                if (IniciarCargaSeForSkillCarregavel(0, i))
+                {
+                    GetViewport().SetInputAsHandled();
+                    return;
+                }
                 AtivarSkill(0, i);
                 GetViewport().SetInputAsHandled();
                 return;
             }
         }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_chargingSkill)
+            return;
+
+        AtualizarChargeVisual(ObterCargaAtual());
     }
 
     private void MostrarBuffSeNecessario(SkillResource skill)

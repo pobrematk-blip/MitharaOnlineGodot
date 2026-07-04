@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/Efeitos/SkillEffectVisual.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Arqueiro/MiraApuradaEffectFrames.tres" id="2_frames"]
+
+[node name="MiraApuradaEffect" type="Node2D"]
+z_index = 12
+z_as_relative = true
+script = ExtResource("1_script")
+LifetimeSeconds = 2.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, 2)
+scale = Vector2(0.9, 0.9)
+z_index = 12
+z_as_relative = true
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true

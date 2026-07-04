@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 15
 Nome = "Disparo Crítico"
-Descricao = "Prepara um disparo mortal buscando o ponto mais vulnerável, causando 180% do dano da arma."
+Descricao = "Dispara uma flecha precisa que sempre causa dano critico ao acertar o alvo."
 Icone = ExtResource("2_icon")
 Valor = 180
 CustoMana = 25

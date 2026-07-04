@@ -37,7 +37,7 @@ partial class GameNetwork
         });
     }
 
-    public void SendSkillUse(int skillSlot, int skillId, Vector2 targetPosition)
+    public void SendSkillUse(int skillSlot, int skillId, Vector2 targetPosition, float chargePercent = 1f)
     {
         _client?.SendPacket(PacketId.C2S_SkillUse, w =>
         {
@@ -45,6 +45,7 @@ partial class GameNetwork
             w.Put(skillId);
             w.Put(targetPosition.X);
             w.Put(targetPosition.Y);
+            w.Put(Mathf.Clamp(chargePercent, 0f, 1f));
         });
     }
 
@@ -112,7 +113,14 @@ partial class GameNetwork
         }
 
         GD.Print($"[GAME] Spawn {typeLabel}: {name} em ({x:F1}, {y:F1}) [HP={health}/{maxHealth}]");
-        EmitSignal(SignalName.OnEntitySpawned, entityId, typeLabel, name, x, y, level, health, maxHealth, extra1, extra2, extra3);
+        try
+        {
+            EmitSignal(SignalName.OnEntitySpawned, entityId, typeLabel, name, x, y, level, health, maxHealth, extra1, extra2, extra3);
+        }
+        catch (System.Exception ex)
+        {
+            LogError($"Erro emitindo spawn {typeLabel} '{name}' ({entityId})", ex.ToString());
+        }
     }
 
     private void HandleDespawnEntity(NetDataReader r)
@@ -149,7 +157,7 @@ partial class GameNetwork
         byte actionType = r.GetByte();
         var direction = new Vector2(r.GetFloat(), r.GetFloat());
 
-        if (entityId == LocalPlayerId) return;
+        if (entityId == LocalPlayerId && actionType != 3) return;
         GetNodeOrNull<EntityManager>("EntityManager")?.HandleRemoteAction(entityId, actionType, direction);
     }
 

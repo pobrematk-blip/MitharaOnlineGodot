@@ -337,15 +337,40 @@ public partial class OverheadUI : Control
         if (_guildLabel != null)
         {
             bool mostrarEmblema = _emblemaIcon != null && _emblemaIcon.Visible;
-            _guildLabel.Position = mostrarEmblema ? new Vector2(38, 0) : new Vector2(0, 0);
-            _guildLabel.Size = mostrarEmblema ? new Vector2(82, 18) : new Vector2(120, 18);
-            _guildLabel.HorizontalAlignment = mostrarEmblema ? HorizontalAlignment.Left : HorizontalAlignment.Center;
             _guildLabel.Text = _mostrarTagGuild && !string.IsNullOrEmpty(_guildTag)
                 ? $"[{_guildTag}] {_guildName}"
                 : (_mostrarTagGuild ? _guildName : "");
             _guildLabel.Visible = !string.IsNullOrWhiteSpace(_guildLabel.Text);
+
             if (_emblemaIcon != null)
                 _emblemaIcon.Visible = mostrarEmblema && _guildLabel.Visible;
+
+            if (!_guildLabel.Visible)
+                return;
+
+            if (mostrarEmblema && _emblemaIcon != null && _emblemaIcon.Visible)
+            {
+                const float iconSize = 18f;
+                const float gap = 4f;
+                var font = _guildLabel.GetThemeFont("font");
+                int fontSize = _guildLabel.GetThemeFontSize("font_size");
+                float measuredTextWidth = font?.GetStringSize(_guildLabel.Text, HorizontalAlignment.Left, -1, fontSize).X ?? _guildLabel.GetMinimumSize().X;
+                float textWidth = Mathf.Clamp(measuredTextWidth + 2f, 1f, LarguraLayout - iconSize - gap);
+                float totalWidth = iconSize + gap + textWidth;
+                float startX = (LarguraLayout - totalWidth) * 0.5f;
+
+                _emblemaIcon.Position = new Vector2(startX, -1);
+                _emblemaIcon.Size = new Vector2(iconSize, iconSize);
+                _guildLabel.Position = new Vector2(startX + iconSize + gap, 0);
+                _guildLabel.Size = new Vector2(textWidth, 18);
+                _guildLabel.HorizontalAlignment = HorizontalAlignment.Left;
+            }
+            else
+            {
+                _guildLabel.Position = new Vector2(0, 0);
+                _guildLabel.Size = new Vector2(LarguraLayout, 18);
+                _guildLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            }
         }
     }
 

@@ -1,0 +1,32 @@
+[gd_resource type="SpriteFrames" load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/acertodeflecha.png" id="1_hit"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hit1"]
+atlas = ExtResource("1_hit")
+region = Rect2(0, 0, 50, 50)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hit2"]
+atlas = ExtResource("1_hit")
+region = Rect2(50, 0, 50, 50)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hit3"]
+atlas = ExtResource("1_hit")
+region = Rect2(100, 0, 50, 50)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hit1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hit2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hit3")
+}],
+"loop": false,
+"name": &"default",
+"speed": 14.0
+}]

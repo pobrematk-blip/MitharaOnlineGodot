@@ -17,19 +17,20 @@ public class ForumService
 
     public async Task<List<ForumCategory>> GetCategoriesAsync()
     {
-        return await _db.ForumCategories
+        var categories = await _db.ForumCategories
             .Where(c => c.IsActive)
             .OrderBy(c => c.SortOrder)
-            .Select(c => new ForumCategory
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description,
-                SortOrder = c.SortOrder,
-                CreatedAt = c.CreatedAt,
-                Topics = c.Topics.OrderByDescending(t => t.IsPinned).ThenByDescending(t => t.LastPostAt ?? t.CreatedAt).Take(1).ToList(),
-            })
             .ToListAsync();
+
+        var topicCounts = await _db.ForumTopics
+            .GroupBy(t => t.CategoryId)
+            .Select(g => new { CategoryId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.CategoryId, g => g.Count);
+
+        foreach (var cat in categories)
+            cat.TopicCount = topicCounts.GetValueOrDefault(cat.Id);
+
+        return categories;
     }
 
     public async Task<ForumCategory?> GetCategoryAsync(int categoryId)

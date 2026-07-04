@@ -239,8 +239,51 @@ public class GameDbService
     {
         using var conn = CreateConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT COUNT(*) FROM accounts WHERE id = @i AND (username LIKE 'admin%' OR email = 'admin@mithara.local')";
+        cmd.CommandText = "SELECT is_admin FROM accounts WHERE id = @i";
         cmd.Parameters.AddWithValue("@i", accountId);
-        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+        var result = cmd.ExecuteScalar();
+        return result != null && (bool)result;
+    }
+
+    public void EnsureAdminColumn()
+    {
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'accounts' AND column_name = 'is_admin'
+                ) THEN
+                    ALTER TABLE accounts ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE;
+                    UPDATE accounts SET is_admin = TRUE WHERE username LIKE 'admin%' OR email = 'admin@mithara.local';
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'accounts' AND column_name = 'last_seen'
+                ) THEN
+                    ALTER TABLE accounts ADD COLUMN last_seen TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00';
+                END IF;
+            END $$;
+            """;
+        cmd.ExecuteNonQuery();
+    }
+
+    public void UpdateLastSeen(int accountId)
+    {
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE accounts SET last_seen = NOW() WHERE id = @i";
+        cmd.Parameters.AddWithValue("@i", accountId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public int GetOnlinePlayerCount()
+    {
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM accounts WHERE last_seen > NOW() - INTERVAL '5 minutes'";
+        return Convert.ToInt32(cmd.ExecuteScalar());
     }
 }

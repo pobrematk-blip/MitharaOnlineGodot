@@ -1,10 +1,20 @@
 ﻿using Godot;
 using System;
 
+public enum ProjectileSoundType
+{
+    None,
+    Arrow,
+    Fireball,
+}
+
 public partial class Projetil : Area2D
 {
+    [Export] public ProjectileSoundType SomDisparo { get; set; } = ProjectileSoundType.None;
+    [Export] public float VolumeDisparoDb { get; set; } = -2f;
+
     // Valores padrão (serão alterados pelo Player.cs dependendo da classe)
-    public float Speed = 250.0f; 
+    public float Speed = 600.0f; 
     public int DanoMin = 8;              // Dano mínimo
     public int DanoMax = 12;             // Dano máximo
     public bool EhDanoMagico = false;    // Se for true, usa DanoMagico, se false usa DanoFisico
@@ -20,6 +30,7 @@ public partial class Projetil : Area2D
         _animatedSprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")
             ?? FindChild("AnimatedSprite2D", true, false) as AnimatedSprite2D;
         ReiniciarAnimacaoVisual();
+        TocarSomDisparo();
 
         // Conecta o sinal para saber quando o projétil bateu em algo
         BodyEntered += OnBodyEntered;
@@ -130,5 +141,72 @@ public partial class Projetil : Area2D
         }
 
         QueueFree();
+    }
+
+    private void TocarSomDisparo()
+    {
+        if (SomDisparo == ProjectileSoundType.None)
+            return;
+
+        var stream = CarregarSomDisparo(SomDisparo);
+        if (stream == null)
+        {
+            GD.PrintErr($"[PROJETIL] Som de disparo nao encontrado: {SomDisparo}");
+            return;
+        }
+
+        var audio = new AudioStreamPlayer2D
+        {
+            Name = $"SomProjetil_{SomDisparo}",
+            Stream = stream,
+            VolumeDb = VolumeDisparoDb,
+            MaxDistance = 850f,
+            Attenuation = 0.35f,
+            GlobalPosition = GlobalPosition,
+        };
+
+        audio.Finished += () =>
+        {
+            if (IsInstanceValid(audio))
+                audio.QueueFree();
+        };
+
+        var parent = GetParent();
+        if (parent != null)
+            parent.AddChild(audio);
+        else
+            AddChild(audio);
+
+        audio.Play();
+    }
+
+    private static AudioStream CarregarSomDisparo(ProjectileSoundType tipo)
+    {
+        string[] paths = tipo switch
+        {
+            ProjectileSoundType.Arrow => new[]
+            {
+                "res://audio/Ataque_do_Arco.wav",
+                "res://Audio/Ataque_do_Arco.wav",
+                "res://audio/Ataque de Arco.wav",
+                "res://Audio/Ataque de Arco.wav",
+                "res://audio/ataque de arco.wav",
+                "res://Audio/ataque de arco.wav",
+            },
+            ProjectileSoundType.Fireball => new[]
+            {
+                "res://audio/Ataque_bola_fogo.wav",
+                "res://Audio/Ataque_bola_fogo.wav",
+            },
+            _ => Array.Empty<string>(),
+        };
+
+        foreach (string path in paths)
+        {
+            if (ResourceLoader.Exists(path))
+                return ResourceLoader.Load<AudioStream>(path);
+        }
+
+        return null;
     }
 }

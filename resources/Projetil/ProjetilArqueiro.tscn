@@ -9,10 +9,11 @@ radius = 12.369317
 [node name="Projetil" type="Area2D"]
 collision_mask = 6
 script = ExtResource("1_mdcmk")
+SomDisparo = 1
+VolumeDisparoDb = -3.0
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-rotation = 3.14159
-scale = Vector2(0.34, 0.34)
+scale = Vector2(0.035, 0.035)
 sprite_frames = ExtResource("2_arq_frames")
 animation = &"default"
 playing = true

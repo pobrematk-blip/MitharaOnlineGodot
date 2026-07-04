@@ -25,6 +25,7 @@
 
         <div id="newTopicForm" class="topic-form" style="display:none;">
             <form asp-action="CreateTopic" asp-controller="Forum" method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" name="CategoryId" value="@Model.Category.Id" />
                 <div class="form-group">
                     <label>Título</label>

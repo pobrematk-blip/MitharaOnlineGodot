@@ -29,6 +29,7 @@ public static class SceneConstants
 
     // Interiores (carregados como filhos do World)
     public const string ALFAIATARIA = "res://scenes/Interiors/Alfaiataria.tscn";
+    public const string FERRARIA_E_ARTESAO = "res://scenes/Interiors/FerrariaEArtesao.tscn";
 
     // Prefabs de Entidades
     public const string PLAYER = "res://characters/Player/player.tscn";
@@ -37,6 +38,7 @@ public static class SceneConstants
     // Nomes das cenas (usados nos pacotes de rede)
     public const string SCENE_MAIN = "main";
     public const string SCENE_ALFAIATARIA = "alfaiataria";
+    public const string SCENE_FERRARIA_E_ARTESAO = "ferrariaeartesao";
 
     // IDs de teleporte predefinidos
     public const string TELEPORT_ALFAIATARIA_ENTRAR = "alfaiataria_entrar";

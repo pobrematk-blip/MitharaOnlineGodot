@@ -1,29 +1,29 @@
 [gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/39.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/6.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10205
 Nome = "Disparo Crítico"
-Descricao = "Golpe crítico."
+Descricao = "Dispara uma flecha precisa que sempre causa dano critico ao acertar o alvo."
 Icone = ExtResource("2_icon")
 Valor = 180
 CustoMana = 25
 ClasseRestrita = "Arqueiro"
 Cooldown = 10
 Duracao = 0
-TargetType = 0
-EffectType = 3
+TargetType = 2
+EffectType = 7
 Especializacao = "Sniper"
 NivelRequerido = 20
 Ordem = 5
 Escopo = "Especialização"
 Tipo = "Dano"
-EfeitoPrincipal = "Crítico aumentado"
+EfeitoPrincipal = "Critico garantido"
 DanoEscala = "180%-320%"
-BuffDebuff = "+20% crit"
+BuffDebuff = "Sempre critico ao acertar"
 DuracaoTexto = ""
 Progressao = ""
 Observacoes = ""

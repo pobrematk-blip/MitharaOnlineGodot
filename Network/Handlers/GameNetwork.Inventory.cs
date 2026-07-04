@@ -186,9 +186,11 @@ partial class GameNetwork
         int maxHealth = r.GetInt();
         int mana = r.GetInt();
         int maxMana = r.GetInt();
+        int itemId = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        float cooldownSeconds = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
         var player = GetTree().CurrentScene?.FindChild("Player", true, false) as Player;
         player?.SetHealthFromServer(health, maxHealth);
         player?.SetManaFromServer(mana, maxMana);
-        EmitSignal(SignalName.OnItemUseResult, health, maxHealth, mana, maxMana);
+        EmitSignal(SignalName.OnItemUseResult, health, maxHealth, mana, maxMana, itemId, cooldownSeconds);
     }
 }

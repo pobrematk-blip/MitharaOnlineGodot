@@ -1,0 +1,30 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v1/50 Animated Effects v1/18/effect1.png" id="1_frame"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v1/50 Animated Effects v1/18/effect2.png" id="2_frame"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v1/50 Animated Effects v1/18/effect3.png" id="3_frame"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v1/50 Animated Effects v1/18/effect4.png" id="4_frame"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v1/50 Animated Effects v1/18/effect5.png" id="5_frame"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_frame")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_frame")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_frame")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_frame")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_frame")
+}],
+"loop": false,
+"name": &"default",
+"speed": 9.0
+}]

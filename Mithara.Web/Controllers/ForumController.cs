@@ -61,6 +61,7 @@ public class ForumController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateTopic(CreateTopicViewModel model)
     {
         if (User.Identity?.IsAuthenticated != true)
@@ -77,6 +78,7 @@ public class ForumController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreatePost(int topicId, CreatePostViewModel model)
     {
         if (User.Identity?.IsAuthenticated != true)

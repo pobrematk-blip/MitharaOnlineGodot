@@ -8,6 +8,11 @@ public partial class PlayerSkillComponent
     // Public activation entrypoint used by the UI.
     public void ActivateSlotIndex(int slotIndex)
     {
+        ActivateSlotIndex(slotIndex, 1f);
+    }
+
+    public void ActivateSlotIndex(int slotIndex, float chargePercent)
+    {
         if (SkillSlots == null)
         {
             GD.Print("[SKILLCOMP] Nenhuma tabela de skills definida.");
@@ -64,8 +69,22 @@ public partial class PlayerSkillComponent
         if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
             targetPosition = selectedTargetPosition;
 
-        _player.TocarAnimacaoSkillArqueiro(targetPosition);
-        gameNet.SendSkillUse(slotIndex, skill.SkillId, targetPosition);
+        if (skill.SkillId == 10002)
+        {
+            bool tocouSalto = _player.TocarAnimacaoSaltoParaTrasArqueiro(targetPosition);
+            if (!tocouSalto)
+                _player.TocarAnimacaoSkillArqueiro(targetPosition);
+        }
+        else if (skill.SkillId == 10201 || skill.SkillId == 10203 || skill.SkillId == 10206 || skill.SkillId == 16)
+        {
+            _player.FinalizarCarregamentoTiroPreciso(targetPosition);
+        }
+        else
+        {
+            _player.TocarAnimacaoSkillArqueiro(targetPosition);
+        }
+
+        gameNet.SendSkillUse(slotIndex, skill.SkillId, targetPosition, chargePercent);
         bool localSkillEffectsEnabled = false;
         if (!localSkillEffectsEnabled)
             return;

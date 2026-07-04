@@ -22,7 +22,7 @@ partial class GameServer
         byte actionType = reader.GetByte();
         float dirX = reader.GetFloat();
         float dirY = reader.GetFloat();
-        if (actionType != 1) return;
+        if (actionType != 1 && actionType != 2) return;
         if (_gameTime - session.LastActionTime < 0.10) return;
         session.LastActionTime = _gameTime;
 
@@ -35,10 +35,15 @@ partial class GameServer
             entity.DirY = dirY;
         }
 
+        BroadcastPlayerAction(channel, entity, actionType, dirX, dirY, includeSelf: false);
+    }
+
+    private void BroadcastPlayerAction(Channel channel, PlayerEntity entity, byte actionType, float dirX, float dirY, bool includeSelf)
+    {
         var nearby = channel.GetEntitiesInAoi(entity.X, entity.Y);
         foreach (var entityId in nearby)
         {
-            if (entityId == entity.Id) continue;
+            if (!includeSelf && entityId == entity.Id) continue;
             var targetPeer = channel.GetPlayerPeer(entityId);
             if (targetPeer == null) continue;
 

@@ -1,15 +1,15 @@
 [gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/24.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/47.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10208
-Nome = "Olho da Águia"
-Descricao = "Sentidos aguçados."
+Nome = "Surto de Velocidade"
+Descricao = "Acelera os reflexos por 15 segundos. Aumenta Velocidade de Ataque."
 Icone = ExtResource("2_icon")
-Valor = 0
+Valor = 25
 CustoMana = 40
 ClasseRestrita = "Arqueiro"
 Cooldown = 60
@@ -21,9 +21,9 @@ NivelRequerido = 50
 Ordem = 8
 Escopo = "Especialização"
 Tipo = "Buff"
-EfeitoPrincipal = "Precisão/Crítico"
+EfeitoPrincipal = "Aumenta Velocidade de Ataque"
 DanoEscala = ""
-BuffDebuff = "+10%-25%"
+BuffDebuff = "+25% Velocidade de Ataque"
 DuracaoTexto = "15s"
 Progressao = ""
 Observacoes = ""

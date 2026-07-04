@@ -57770,5 +57770,15 @@
         "tileY":  150,
         "type":  0,
         "source":  "godot_collision"
+    },
+    {
+        "tileX":  127,
+        "tileY":  -1,
+        "type":  1,
+        "targetScene":  "ferrariaeartesao",
+        "targetX":  119,
+        "targetY":  301,
+        "pairId":  2,
+        "source":  "teleport_pair"
     }
 ]

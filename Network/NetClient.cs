@@ -50,7 +50,17 @@ public partial class NetClient : Node
             if (reader.AvailableBytes < 2) return;
             var packetId = (PacketId)reader.GetUShort();
             byte[] data = reader.GetRemainingBytes();
-            _pendingActions.Enqueue(() => PacketReceived?.Invoke(packetId, new NetDataReader(data)));
+            _pendingActions.Enqueue(() =>
+            {
+                try
+                {
+                    PacketReceived?.Invoke(packetId, new NetDataReader(data));
+                }
+                catch (System.Exception ex)
+                {
+                    GD.PrintErr($"[NetClient] Erro processando pacote {packetId}: {ex.GetType().Name}: {ex.Message}\n{ex}");
+                }
+            });
         };
     }
 

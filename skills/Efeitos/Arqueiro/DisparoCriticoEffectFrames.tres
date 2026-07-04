@@ -1,0 +1,151 @@
+[gd_resource type="SpriteFrames" load_steps=22 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/disparo_critico.png" id="1_crit"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_01"]
+atlas = ExtResource("1_crit")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_02"]
+atlas = ExtResource("1_crit")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_03"]
+atlas = ExtResource("1_crit")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_04"]
+atlas = ExtResource("1_crit")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_05"]
+atlas = ExtResource("1_crit")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_06"]
+atlas = ExtResource("1_crit")
+region = Rect2(0, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_07"]
+atlas = ExtResource("1_crit")
+region = Rect2(192, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_08"]
+atlas = ExtResource("1_crit")
+region = Rect2(384, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_09"]
+atlas = ExtResource("1_crit")
+region = Rect2(576, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_10"]
+atlas = ExtResource("1_crit")
+region = Rect2(768, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_11"]
+atlas = ExtResource("1_crit")
+region = Rect2(0, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_12"]
+atlas = ExtResource("1_crit")
+region = Rect2(192, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_13"]
+atlas = ExtResource("1_crit")
+region = Rect2(384, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_14"]
+atlas = ExtResource("1_crit")
+region = Rect2(576, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_15"]
+atlas = ExtResource("1_crit")
+region = Rect2(768, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_16"]
+atlas = ExtResource("1_crit")
+region = Rect2(0, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_17"]
+atlas = ExtResource("1_crit")
+region = Rect2(192, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_18"]
+atlas = ExtResource("1_crit")
+region = Rect2(384, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_19"]
+atlas = ExtResource("1_crit")
+region = Rect2(576, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crit_20"]
+atlas = ExtResource("1_crit")
+region = Rect2(768, 576, 192, 192)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_01")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_02")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_03")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_04")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_05")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_06")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_07")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_08")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_09")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_10")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_11")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_12")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_13")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_15")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_16")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_17")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_18")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_19")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_crit_20")
+}],
+"loop": false,
+"name": &"default",
+"speed": 10.0
+}]

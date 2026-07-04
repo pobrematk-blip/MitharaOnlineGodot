@@ -57,7 +57,9 @@ using (var scope = app.Services.CreateScope())
     await forumService.EnsureDefaultCategoriesAsync();
     await storeService.EnsureDefaultProductsAsync();
     await wikiService.EnsureDefaultDataAsync();
+    var gameDb = app.Services.GetRequiredService<GameDbService>();
+    gameDb.EnsureAdminColumn();
 }
 
-Console.WriteLine("Mithara Online - Site rodando em http://localhost:5000");
+Console.WriteLine($"Mithara Online - Site rodando em {app.Urls.FirstOrDefault() ?? "http://localhost:5000"}");
 app.Run();

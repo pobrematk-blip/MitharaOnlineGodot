@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/17.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/48.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
@@ -9,20 +9,20 @@ SkillId = 10206
 Nome = "Marca do Executor"
 Descricao = "Marca alvo."
 Icone = ExtResource("2_icon")
-Valor = 0
+Valor = 25
 CustoMana = 20
 ClasseRestrita = "Arqueiro"
 Cooldown = 15
 Duracao = 12
-TargetType = 0
-EffectType = 3
+TargetType = 2
+EffectType = 24
 Especializacao = "Sniper"
 NivelRequerido = 30
 Ordem = 6
 Escopo = "Especialização"
 Tipo = "Debuff"
 EfeitoPrincipal = "Recebe mais dano"
-DanoEscala = ""
+DanoEscala = "10%-25%"
 BuffDebuff = "+10%-25%"
 DuracaoTexto = "12s"
 Progressao = ""

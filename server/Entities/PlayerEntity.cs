@@ -36,6 +36,7 @@ public class PlayerEntity : Entity
     public Dictionary<string, double> ActiveServerBuffs { get; } = new();
     public float TemporaryPrecisionBonus { get; set; }
     public float TemporaryCritChanceBonus { get; set; }
+    public float TemporaryAttackSpeedBonus { get; set; }
     public double HealthRegenAccumulator { get; set; }
     public double ManaRegenAccumulator { get; set; }
     public HashSet<string> UnlockedTalents { get; set; } = new();

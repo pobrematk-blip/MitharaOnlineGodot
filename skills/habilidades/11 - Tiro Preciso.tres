@@ -12,6 +12,6 @@ Icone = ExtResource("2_icon")
 Valor = 120
 CustoMana = 10
 ClasseRestrita = "Arqueiro"
-Cooldown = 4.0
+Cooldown = 8.0
 TargetType = 2
 EffectType = 7

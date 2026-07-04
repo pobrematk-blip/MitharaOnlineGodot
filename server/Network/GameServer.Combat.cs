@@ -33,15 +33,19 @@ partial class GameServer
         return 600L + level * 260L + level * level * 90L;
     }
 
-    private static double GetBasicAttackCooldown(PlayerEntity player)
+    private double GetBasicAttackCooldown(PlayerEntity player)
     {
+        PruneExpiredServerBuffs(player);
         string classe = player.CharacterClass?.Trim().ToLowerInvariant() ?? "";
-        return classe switch
+        double baseCooldown = classe switch
         {
             "berseker" or "berserker" or "bárbaro" or "barbaro" => BerserkerBasicAttackCooldown,
             "arqueiro" or "mago" => RangedBasicAttackCooldown,
             _ => DefaultBasicAttackCooldown,
         };
+        double baseAttackSpeed = Math.Clamp(1.0 + player.Agilidade * 0.03, 0.25, 2.0);
+        double attackSpeed = Math.Clamp(baseAttackSpeed * (1.0 + player.TemporaryAttackSpeedBonus), 0.25, 2.5);
+        return baseCooldown / attackSpeed;
     }
 
     private bool CanDamageEntity(Entity attacker, Entity target, out string reason)
@@ -404,6 +408,7 @@ partial class GameServer
         int skillId = reader.AvailableBytes >= 12 ? reader.GetInt() : 0;
         float targetX = reader.GetFloat();
         float targetY = reader.GetFloat();
+        float chargePercent = reader.AvailableBytes >= 4 ? Math.Clamp(reader.GetFloat(), 0f, 1f) : 1f;
 
         if (skillId <= 0)
         {
@@ -454,7 +459,7 @@ partial class GameServer
             return;
         }
 
-        bool applied = ApplyServerSkill(peer, channel, caster, session, skill, targetX, targetY);
+        bool applied = ApplyServerSkill(peer, channel, caster, session, skill, targetX, targetY, chargePercent);
         if (!applied) return;
 
         if (skill.Cooldown > 0)
@@ -465,7 +470,7 @@ partial class GameServer
         SendSystemMessage(peer, $"{skill.Nome} usada.");
     }
 
-    private bool ApplyServerSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float targetX, float targetY)
+    private bool ApplyServerSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float targetX, float targetY, float chargePercent)
     {
         int effect = skill.EffectType;
         bool supportSkill = effect is 1 or 3 or 10;
@@ -473,9 +478,11 @@ partial class GameServer
             return ApplySupportSkill(peer, channel, caster, skill, targetX, targetY);
         if (effect == 2)
             return ApplyDashSkill(peer, channel, caster, session, skill, targetX, targetY);
+        if (effect == 5)
+            return ApplySummonSkill(peer, channel, caster, skill);
 
         if (IsProjectileSkill(caster, skill))
-            return ApplyProjectileSkill(peer, channel, caster, session, skill, targetX, targetY);
+            return ApplyProjectileSkill(peer, channel, caster, session, skill, targetX, targetY, chargePercent);
 
         float range = skill.TargetType == 0 ? 0f : 720f;
         float dxTarget = targetX - caster.X;
@@ -535,6 +542,19 @@ partial class GameServer
         return true;
     }
 
+    private bool ApplySummonSkill(NetPeer peer, Channel channel, PlayerEntity caster, ServerSkillDefinition skill)
+    {
+        if (skill.SkillId != 10101)
+        {
+            SendSystemMessage(peer, "Esta invocação ainda não está implementada no servidor.");
+            return false;
+        }
+
+        const byte summonSheriganAction = 3;
+        BroadcastPlayerAction(channel, caster, summonSheriganAction, caster.DirX, caster.DirY, includeSelf: true);
+        return true;
+    }
+
     private bool ApplyDashSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float targetX, float targetY)
     {
         float dirX = caster.DirX;
@@ -557,7 +577,7 @@ partial class GameServer
         dirY /= len;
 
         const float tileSize = 32f;
-        float distance = skill.SkillId == 10002 ? tileSize * 5f : MathF.Max(tileSize * 2f, skill.Valor);
+        float distance = skill.SkillId == 10002 ? tileSize * 6f : MathF.Max(tileSize * 2f, skill.Valor);
         float originX = caster.X + dirX * 42f;
         float originY = caster.Y + dirY * 42f;
 
@@ -594,7 +614,7 @@ partial class GameServer
         }
     }
 
-    private bool ApplyProjectileSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float targetX, float targetY)
+    private bool ApplyProjectileSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float targetX, float targetY, float chargePercent)
     {
         float dirX = targetX - caster.X;
         float dirY = targetY - caster.Y;
@@ -618,14 +638,83 @@ partial class GameServer
         float originX = caster.X + dirX * originOffset;
         float originY = caster.Y + dirY * originOffset;
 
-        return FireSkillProjectile(channel, caster, session, skill, originX, originY, dirX, dirY, notifyMiss: true, peer: peer);
+        if (IsTripleShotSkill(skill))
+        {
+            ScheduleTripleShotProjectiles(peer, channel, caster, session, skill, originX, originY, dirX, dirY);
+            return true;
+        }
+
+        return FireSkillProjectile(channel, caster, session, skill, originX, originY, dirX, dirY, notifyMiss: true, peer: peer, chargePercent: chargePercent);
     }
 
-    private bool FireSkillProjectile(Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float originX, float originY, float dirX, float dirY, bool notifyMiss, NetPeer? peer)
+    private static bool IsTripleShotSkill(ServerSkillDefinition skill)
+    {
+        return skill.SkillId == 10210
+            || string.Equals(skill.Nome, "Tiro Triplo", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ScheduleTripleShotProjectiles(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float originX, float originY, float dirX, float dirY)
+    {
+        const double shotDelay = 0.18;
+        for (int i = 0; i < 3; i++)
+        {
+            _pendingProjectileFires.Add(new PendingProjectileFire
+            {
+                FireAt = _gameTime + i * shotDelay,
+                ChannelId = session.ChannelId,
+                CasterId = caster.Id,
+                OriginX = originX,
+                OriginY = originY,
+                DirX = dirX,
+                DirY = dirY,
+                Skill = skill,
+                NotifyMiss = i == 0,
+                Peer = peer,
+            });
+        }
+
+        BroadcastPlayerAction(channel, caster, 1, dirX, dirY, includeSelf: true);
+    }
+
+    private void ProcessPendingProjectileFires()
+    {
+        for (int i = _pendingProjectileFires.Count - 1; i >= 0; i--)
+        {
+            var pending = _pendingProjectileFires[i];
+            if (pending.FireAt > _gameTime)
+                continue;
+
+            _pendingProjectileFires.RemoveAt(i);
+            var channel = _world.GetChannel(pending.ChannelId);
+            if (channel == null)
+                continue;
+
+            if (channel.GetEntity(pending.CasterId) is not PlayerEntity caster || caster.Health <= 0)
+                continue;
+
+            var session = _sessions.Values.FirstOrDefault(s => s.EntityId == pending.CasterId);
+            if (session == null)
+                continue;
+
+            FireSkillProjectile(
+                channel,
+                caster,
+                session,
+                pending.Skill,
+                pending.OriginX,
+                pending.OriginY,
+                pending.DirX,
+                pending.DirY,
+                pending.NotifyMiss,
+                pending.Peer);
+        }
+    }
+
+    private bool FireSkillProjectile(Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill, float originX, float originY, float dirX, float dirY, bool notifyMiss, NetPeer? peer, float chargePercent = 1f)
     {
         const float projectileRange = 760f;
         const float projectileRadius = 34f;
-        const float projectileSpeed = 450f;
+        const float projectileSpeed = 900f;
 
         BroadcastProjectileSpawn(channel, caster.Id, originX, originY, dirX, dirY, ProjectileTypeForSkill(caster, skill), includeCaster: true);
 
@@ -646,6 +735,7 @@ partial class GameServer
             CasterId = caster.Id,
             TargetId = target.Id,
             Skill = skill,
+            ChargePercent = skill.SkillId is 10201 or 10203 or 10206 or 16 ? Math.Clamp(chargePercent, 0f, 1f) : 1f,
         });
 
         return true;
@@ -655,7 +745,7 @@ partial class GameServer
     {
         const float projectileRange = 760f;
         const float projectileRadius = 34f;
-        const float projectileSpeed = 450f;
+        const float projectileSpeed = 700f;
 
         BroadcastProjectileSpawn(channel, attacker.Id, originX, originY, dirX, dirY, projectileType, includeCaster: false);
 
@@ -702,7 +792,7 @@ partial class GameServer
 
             bool isCrit;
             int damage = pending.Skill != null
-                ? CalculateSkillDamage(caster, target, pending.Skill, out isCrit)
+                ? CalculateSkillDamage(caster, target, pending.Skill, out isCrit, pending.ChargePercent)
                 : CalculateBasicDamage(caster, target, out isCrit);
             target.Health = Math.Max(0, target.Health - damage);
             if (target is PlayerEntity playerTarget)
@@ -713,7 +803,7 @@ partial class GameServer
             if (target is MonsterEntity hitMob)
                 hitMob.TargetEntityId = caster.Id;
 
-            BroadcastCombatResult(channel, caster.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, caster.X, caster.Y);
+            BroadcastCombatResult(channel, caster.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, caster.X, caster.Y, pending.Skill?.SkillId ?? 0);
             if (pending.Skill != null)
                 ApplySkillDebuff(target, pending.Skill);
 
@@ -823,6 +913,10 @@ partial class GameServer
             target.TemporaryPrecisionBonus = 15f;
             target.TemporaryCritChanceBonus = 15f;
         }
+        else if (skill.SkillId == 10208 || skill.SkillId == 18)
+        {
+            target.TemporaryAttackSpeedBonus = 0.25f;
+        }
 
         if (skill.EffectType == 10)
         {
@@ -839,7 +933,7 @@ partial class GameServer
         return CalculateDamageAgainstTarget(caster, target, caster.CalculateAttackDamage(), out isCrit);
     }
 
-    private int CalculateSkillDamage(PlayerEntity caster, Entity target, ServerSkillDefinition skill, out bool isCrit)
+    private int CalculateSkillDamage(PlayerEntity caster, Entity target, ServerSkillDefinition skill, out bool isCrit, float chargePercent = 1f)
     {
         int baseDamage = caster.CalculateAttackDamage();
         float minMultiplier = skill.DamageMultiplierMin > 0 ? skill.DamageMultiplierMin : skill.DamageMultiplier;
@@ -849,25 +943,54 @@ partial class GameServer
         float multiplier = maxMultiplier > minMultiplier
             ? minMultiplier + (float)Random.Shared.NextDouble() * (maxMultiplier - minMultiplier)
             : minMultiplier;
+        if (skill.SkillId is 10201 or 10203 or 10206 or 16)
+            multiplier = minMultiplier + (maxMultiplier - minMultiplier) * Math.Clamp(chargePercent, 0f, 1f);
         if (multiplier <= 0f)
             multiplier = 1f;
         int rawDamage = Math.Max(1, (int)(baseDamage * multiplier) + skill.FlatPower);
-        return CalculateDamageAgainstTarget(caster, target, rawDamage, out isCrit);
+        if (skill.SkillId is 10209 or 19 && target.MaxHealth > 0 && target.Health <= target.MaxHealth * 0.30f)
+            rawDamage = Math.Max(1, (int)MathF.Round(rawDamage * 1.5f));
+
+        bool ignoreDefense = skill.SkillId == 10203
+            || string.Equals(skill.Nome, "Tiro Penetrante", StringComparison.OrdinalIgnoreCase)
+            || (!string.IsNullOrWhiteSpace(skill.EfeitoPrincipal)
+                && skill.EfeitoPrincipal.Contains("Penetra", StringComparison.OrdinalIgnoreCase));
+        return CalculateDamageAgainstTarget(caster, target, rawDamage, out isCrit, ignoreDefense, IsGuaranteedCriticalSkill(skill));
     }
 
-    private int CalculateDamageAgainstTarget(PlayerEntity caster, Entity target, int rawDamage, out bool isCrit)
+    private int CalculateDamageAgainstTarget(PlayerEntity caster, Entity target, int rawDamage, out bool isCrit, bool ignoreDefense = false, bool forceCrit = false)
     {
-        int targetDefense = target switch
+        int targetDefense = ignoreDefense ? 0 : target switch
         {
             PlayerEntity p => p.CalculateDefense(),
             MonsterEntity m => m.CalculateDefense(),
             _ => 0,
         };
         float defReduction = MathF.Min(0.80f, targetDefense / (targetDefense + 400f));
-        isCrit = Random.Shared.NextDouble() * 100.0 < GetCritChance(caster);
+        isCrit = forceCrit || Random.Shared.NextDouble() * 100.0 < GetCritChance(caster);
+        if (HasActiveDebuff(target, "mark_executor"))
+            rawDamage = Math.Max(1, (int)MathF.Round(rawDamage * 1.25f));
+
         int damage = Math.Max(1, (int)(rawDamage * (1f - defReduction)));
         if (isCrit) damage = (int)(damage * 1.5f);
         return damage;
+    }
+
+    private static bool IsGuaranteedCriticalSkill(ServerSkillDefinition skill)
+    {
+        return skill.SkillId is 10205 or 15
+            || string.Equals(skill.Nome, "Disparo Crítico", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(skill.Nome, "Disparo Critico", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool HasActiveDebuff(Entity target, string debuff)
+    {
+        return target switch
+        {
+            PlayerEntity p => p.ActiveServerBuffs.TryGetValue(debuff, out double until) && until > _gameTime,
+            MonsterEntity m => m.ActiveServerBuffs.TryGetValue(debuff, out double until) && until > _gameTime,
+            _ => false,
+        };
     }
 
     private void ApplySkillDebuff(Entity target, ServerSkillDefinition skill)
@@ -883,7 +1006,7 @@ partial class GameServer
             16 => "freeze",
             19 => "sleep",
             20 => "prison",
-            24 => "poison",
+            24 => skill.SkillId is 10206 or 16 ? "mark_executor" : "poison",
             25 => "curse",
             _ => "",
         };
@@ -896,7 +1019,7 @@ partial class GameServer
             mobTarget.ActiveServerBuffs[debuff] = _gameTime + skill.Duracao;
     }
 
-    private void BroadcastCombatResult(Channel channel, ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth, float x, float y)
+    private void BroadcastCombatResult(Channel channel, ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth, float x, float y, int skillId = 0)
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
         writer.Put(attackerId);
@@ -905,6 +1028,7 @@ partial class GameServer
         writer.Put(isCrit);
         writer.Put(targetHealth);
         writer.Put(targetMaxHealth);
+        writer.Put(skillId);
 
         var aoi = channel.GetEntitiesInAoi(x, y);
         foreach (var eid in aoi)
@@ -919,6 +1043,7 @@ partial class GameServer
             writer.Put(isCrit);
             writer.Put(targetHealth);
             writer.Put(targetMaxHealth);
+            writer.Put(skillId);
         }
     }
 
@@ -1038,14 +1163,19 @@ partial class GameServer
 
     private void PruneExpiredServerBuffs(PlayerEntity player)
     {
-        if (player.ActiveServerBuffs.TryGetValue("skill:10202", out double miraApuradaUntil) && miraApuradaUntil > _gameTime)
-            return;
+        bool miraApuradaAtiva = player.ActiveServerBuffs.TryGetValue("skill:10202", out double miraApuradaUntil) && miraApuradaUntil > _gameTime;
+        bool velocidadeAguiaAtiva =
+            (player.ActiveServerBuffs.TryGetValue("skill:10208", out double velocidadeAguiaUntil) && velocidadeAguiaUntil > _gameTime)
+            || (player.ActiveServerBuffs.TryGetValue("skill:18", out double velocidadeAguiaLegacyUntil) && velocidadeAguiaLegacyUntil > _gameTime);
 
-        if (player.TemporaryPrecisionBonus != 0f || player.TemporaryCritChanceBonus != 0f)
+        if (!miraApuradaAtiva && (player.TemporaryPrecisionBonus != 0f || player.TemporaryCritChanceBonus != 0f))
         {
             player.TemporaryPrecisionBonus = 0f;
             player.TemporaryCritChanceBonus = 0f;
         }
+
+        if (!velocidadeAguiaAtiva && player.TemporaryAttackSpeedBonus != 0f)
+            player.TemporaryAttackSpeedBonus = 0f;
     }
 
     private void HandleMonsterDeath(Channel channel, MonsterEntity mob, PlayerEntity killer, PlayerSession killerSession, ulong mobId)
@@ -1423,6 +1553,21 @@ internal sealed class PendingProjectileHit
     public ulong CasterId { get; init; }
     public ulong TargetId { get; init; }
     public ServerSkillDefinition? Skill { get; init; }
+    public float ChargePercent { get; init; } = 1f;
+}
+
+internal sealed class PendingProjectileFire
+{
+    public double FireAt { get; init; }
+    public int ChannelId { get; init; }
+    public ulong CasterId { get; init; }
+    public float OriginX { get; init; }
+    public float OriginY { get; init; }
+    public float DirX { get; init; }
+    public float DirY { get; init; }
+    public ServerSkillDefinition Skill { get; init; } = null!;
+    public bool NotifyMiss { get; init; }
+    public NetPeer? Peer { get; init; }
 }
 
 internal static class ServerSkillCatalog

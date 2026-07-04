@@ -35,6 +35,7 @@ public partial class GameServer : INetEventListener
     internal readonly Dictionary<ulong, ulong> _tradeInvites = new();
     internal readonly Dictionary<ulong, TradeSession> _activeTrades = new();
     internal readonly List<PendingProjectileHit> _pendingProjectileHits = new();
+    internal readonly List<PendingProjectileFire> _pendingProjectileFires = new();
     internal int _nextTradeId = 1;
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
@@ -148,6 +149,7 @@ public partial class GameServer : INetEventListener
     {
         _gameTime += dt;
         _world.UpdateAll(dt, _gameTime);
+        ProcessPendingProjectileFires();
         ProcessPendingProjectileHits();
 
         foreach (var ch in _world.GetAllChannels())

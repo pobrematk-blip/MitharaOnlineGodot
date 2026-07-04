@@ -98,8 +98,8 @@ public class SpawnerManager
             GoldMax = 6,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.05 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.05 },
             },
         });
 
@@ -122,8 +122,8 @@ public class SpawnerManager
             EliteDropChance = 0.25,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.05 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.05 },
             },
         });
 
@@ -227,8 +227,8 @@ public class SpawnerManager
             GoldMax = 14,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.05 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.05 },
             },
         });
 
@@ -254,8 +254,8 @@ public class SpawnerManager
             EliteDropChance = 0.25,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.20 },
-                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.20 },
+                new() { ItemId = ItemDefinitions.PocaoVida, DropChance = 0.05 },
+                new() { ItemId = ItemDefinitions.PocaoMana, DropChance = 0.05 },
             },
         });
 
@@ -325,8 +325,8 @@ public class SpawnerManager
             EliteDropChance = 0.0,
             LootTable = new List<LootEntry>
             {
-                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
-                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.75 },
+                new() { ItemId = ItemDefinitions.PocaoVida, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.05 },
+                new() { ItemId = ItemDefinitions.PocaoMana, MinQuantity = 2, MaxQuantity = 4, DropChance = 0.05 },
             },
         });
     }

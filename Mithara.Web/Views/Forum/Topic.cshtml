@@ -58,6 +58,7 @@
             <div class="reply-form">
                 <h3>Responder</h3>
                 <form asp-action="CreatePost" asp-controller="Forum" method="post">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="TopicId" value="@Model.Topic.Id" />
                     <div class="form-group">
                         <textarea name="Content" class="form-control" required rows="6" placeholder="Escreva sua resposta..."></textarea>

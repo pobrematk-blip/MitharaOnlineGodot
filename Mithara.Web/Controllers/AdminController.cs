@@ -40,6 +40,7 @@ public class AdminController : Controller
             TotalGuilds = _gameDb.GetTotalGuilds(),
             TotalForumTopics = _webDb.ForumTopics.Count(),
             TotalForumPosts = _webDb.ForumPosts.Count(),
+            OnlinePlayers = _gameDb.GetOnlinePlayerCount(),
             RecentLogs = _webDb.AdminLogs.OrderByDescending(l => l.CreatedAt).Take(20).ToList(),
         };
 
@@ -73,6 +74,7 @@ public class AdminController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteTopic(int topicId)
     {
         if (!IsAdminUser())
@@ -90,6 +92,7 @@ public class AdminController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleTopicLock(int topicId)
     {
         if (!IsAdminUser())

@@ -1,0 +1,151 @@
+[gd_resource type="SpriteFrames" load_steps=22 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/mira_apurada.png" id="1_mira"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_01"]
+atlas = ExtResource("1_mira")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_02"]
+atlas = ExtResource("1_mira")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_03"]
+atlas = ExtResource("1_mira")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_04"]
+atlas = ExtResource("1_mira")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_05"]
+atlas = ExtResource("1_mira")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_06"]
+atlas = ExtResource("1_mira")
+region = Rect2(0, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_07"]
+atlas = ExtResource("1_mira")
+region = Rect2(192, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_08"]
+atlas = ExtResource("1_mira")
+region = Rect2(384, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_09"]
+atlas = ExtResource("1_mira")
+region = Rect2(576, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_10"]
+atlas = ExtResource("1_mira")
+region = Rect2(768, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_11"]
+atlas = ExtResource("1_mira")
+region = Rect2(0, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_12"]
+atlas = ExtResource("1_mira")
+region = Rect2(192, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_13"]
+atlas = ExtResource("1_mira")
+region = Rect2(384, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_14"]
+atlas = ExtResource("1_mira")
+region = Rect2(576, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_15"]
+atlas = ExtResource("1_mira")
+region = Rect2(768, 384, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_16"]
+atlas = ExtResource("1_mira")
+region = Rect2(0, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_17"]
+atlas = ExtResource("1_mira")
+region = Rect2(192, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_18"]
+atlas = ExtResource("1_mira")
+region = Rect2(384, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_19"]
+atlas = ExtResource("1_mira")
+region = Rect2(576, 576, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mira_20"]
+atlas = ExtResource("1_mira")
+region = Rect2(768, 576, 192, 192)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_01")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_02")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_03")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_04")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_05")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_06")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_07")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_08")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_09")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_10")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_11")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_12")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_13")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_15")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_16")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_17")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_18")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_19")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mira_20")
+}],
+"loop": false,
+"name": &"default",
+"speed": 18.0
+}]

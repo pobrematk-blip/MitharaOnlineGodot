@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/12.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 10210
+Nome = "Tiro Triplo"
+Descricao = "Dispara tres flechas seguidas no alvo."
+Icone = ExtResource("2_icon")
+Valor = 0
+CustoMana = 25
+ClasseRestrita = "Arqueiro"
+Cooldown = 10
+Duracao = 0
+TargetType = 2
+EffectType = 7
+Especializacao = "Sniper"
+NivelRequerido = 1
+Ordem = 10
+Escopo = "Especializacao"
+Tipo = "Dano"
+EfeitoPrincipal = "Tres projeteis sequenciais"
+DanoEscala = "55%-75% por flecha"
+BuffDebuff = ""
+DuracaoTexto = ""
+Progressao = "Cada flecha calcula dano individualmente ao acertar."
+Observacoes = "Substitui o Salto para Tras duplicado da rota Sniper."

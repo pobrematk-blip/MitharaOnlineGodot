@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/Efeitos/SkillEffectVisual.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Arqueiro/TiroParalisanteEffectFrames.tres" id="2_frames"]
+
+[node name="TiroParalisanteEffect" type="Node2D"]
+z_index = 4
+script = ExtResource("1_script")
+FreeOnAnimationFinished = false
+LifetimeSeconds = 2.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -72)
+scale = Vector2(0.85, 0.85)
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true

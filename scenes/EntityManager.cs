@@ -5,6 +5,9 @@ using Mithara.Network;
 
 public partial class EntityManager : Node
 {
+    private const byte PlayerActionAttack = 1;
+    private const byte PlayerActionBackJump = 2;
+    private const byte PlayerActionSummonSherigan = 3;
     private GameNetwork? _gameNet;
     private PackedScene? _inimigoScene;
     private readonly Dictionary<string, PackedScene?> _mobScenes = new();
@@ -46,6 +49,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _networkNodes = new();
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
     private readonly Dictionary<ulong, Node2D> _lojinhaNodes = new();
+    private readonly Dictionary<ulong, Node2D> _remoteSheriganPets = new();
     private ulong _lojinhaInteracaoAtual;
     private Node2D? _worldNode;
     private static readonly Color NomeCorNormal = Colors.White;
@@ -162,8 +166,13 @@ public partial class EntityManager : Node
 
     private const string MetaAnimPrefix = "anim_prefix";
     private const string MetaSpritePath = "sprite_path";
+    private const string FlechaImpactoEffectPath = "res://skills/Efeitos/Arqueiro/FlechaImpactoEffect.tscn";
+    private const string TiroParalisanteEffectPath = "res://skills/Efeitos/Arqueiro/TiroParalisanteEffect.tscn";
+    private const string TiroExecucaoEffectPath = "res://skills/Efeitos/Arqueiro/TiroExecucaoEffect.tscn";
+    private const string SheriganScenePath = "res://characters/Inimigos/SpriteInimigo/Sherigan.tscn";
 
     private bool _sceneReady;
+    private bool _isExitingTree;
     private readonly List<SpawnEvent> _pendingSpawns = new();
     private int _flushRetryCount;
     private int _serverDataApplyRetryCount;
@@ -329,6 +338,9 @@ public partial class EntityManager : Node
 
     private void OnEnterWorldHandler()
     {
+        if (!IsInsideTree() || _isExitingTree)
+            return;
+
         _flushRetryCount = 0;
         _serverDataApplyRetryCount = 0;
         _sceneReady = false;
@@ -347,6 +359,9 @@ public partial class EntityManager : Node
 
     private void ApplyServerDataAfterEnterWorld()
     {
+        if (!IsInsideTree() || _isExitingTree)
+            return;
+
         if (_gameNet == null) return;
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null)
@@ -386,6 +401,9 @@ public partial class EntityManager : Node
 
     private void RetryApplyServerDataAfterEnterWorld()
     {
+        if (!IsInsideTree() || _isExitingTree)
+            return;
+
         if (_serverDataApplyRetryCount++ >= 20)
             return;
 
@@ -394,6 +412,9 @@ public partial class EntityManager : Node
 
     private void FlushPendingSpawns()
     {
+        if (!IsInsideTree() || _isExitingTree)
+            return;
+
         if (_flushRetryCount >= 10)
         {
             GameNetwork.LogError("FlushPendingSpawns: limite de retentativas atingido, abandonando");
@@ -410,6 +431,13 @@ public partial class EntityManager : Node
                     CallDeferred(nameof(FlushPendingSpawns));
                 else
                     GameNetwork.LogError("FlushPendingSpawns: World real n?o encontrado ap?s esperar a Main.tscn");
+                return;
+            }
+
+            if (GetTree()?.CurrentScene?.FindChild("Player", true, false) == null)
+            {
+                _flushRetryCount++;
+                CallDeferred(nameof(FlushPendingSpawns));
                 return;
             }
 
@@ -504,6 +532,9 @@ public partial class EntityManager : Node
 
     private void ProcessPendingSpawnBatch()
     {
+        if (!IsInsideTree() || _isExitingTree)
+            return;
+
         int processed = 0;
         while (_pendingSpawns.Count > 0 && processed < PendingMonsterSpawnBatchSize)
         {
@@ -551,7 +582,14 @@ public partial class EntityManager : Node
         }
 
         GameNetwork.Log($"Processando spawn {entityType} '{name}' ({entityId}) em tempo real");
-        ProcessSpawn(entityId, entityType, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3);
+        try
+        {
+            ProcessSpawn(entityId, entityType, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3);
+        }
+        catch (System.Exception ex)
+        {
+            GameNetwork.LogError($"OnEntitySpawned falhou para {entityType} '{name}' ({entityId})", ex.ToString());
+        }
     }
 
     private void ProcessSpawn(ulong entityId, string entityType, string name, float x, float y, int level, int health, int maxHealth, string extraData1, string extraData2, string extraData3)
@@ -821,7 +859,7 @@ public partial class EntityManager : Node
     {
         _inimigoScene = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Inimigo.tscn");
         _mobScenes["goblin"] = _inimigoScene;
-        _mobScenes["lobo"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Lobo.tscn");
+        _mobScenes["lobo"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Sherigan.tscn");
         _mobScenes["porco"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Porco.tscn");
         _mobScenes["minotauro"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Minotauro.tscn");
         _mobScenes["slime"] = GD.Load<PackedScene>("res://characters/Inimigos/SpriteInimigo/Slime.tscn");
@@ -854,6 +892,11 @@ public partial class EntityManager : Node
         if (scene != null)
         {
             var inimigo = scene.Instantiate<Inimigo>();
+            if (inimigo == null)
+            {
+                GameNetwork.LogError($"Cena de mob invalida para '{name}' ({entityId}) prefab='{prefabId}' tipo='{mobType}'. Usando placeholder.");
+                return CreateMonsterPlaceholder(entityId, name, x, y, level, isBoss);
+            }
             inimigo.Position = new Vector2(x, y);
             inimigo.Name = $"Monster_{entityId}";
             PrepararEntidadeYSort(inimigo);
@@ -894,6 +937,11 @@ public partial class EntityManager : Node
             return inimigo;
         }
 
+        return CreateMonsterPlaceholder(entityId, name, x, y, level, isBoss);
+    }
+
+    private Node2D CreateMonsterPlaceholder(ulong entityId, string name, float x, float y, int level, bool isBoss)
+    {
         var placeholder = new Node2D();
         placeholder.Position = new Vector2(x, y);
         placeholder.Name = $"Monster_{entityId}";
@@ -1114,9 +1162,9 @@ public partial class EntityManager : Node
         }
     }
 
-    private void OnCombatResult(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth)
+    private void OnCombatResult(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth, int skillId)
     {
-        GameNetwork.Log($"[COMBAT] OnCombatResult: attacker={attackerId} target={targetId} damage={damage} isCrit={isCrit} targetHP={targetHealth}/{targetMaxHealth}");
+        GameNetwork.Log($"[COMBAT] OnCombatResult: attacker={attackerId} target={targetId} damage={damage} isCrit={isCrit} targetHP={targetHealth}/{targetMaxHealth} skill={skillId}");
 
         if (attackerId == _gameNet?.LocalPlayerId)
         {
@@ -1156,6 +1204,15 @@ public partial class EntityManager : Node
 
         if (targetNode != null && IsInstanceValid(targetNode))
         {
+            if (damage > 0 && EhAtaqueDeArqueiro(attackerId))
+            {
+                TocarImpactoFlecha(targetNode, skillId == 10203 ? 1.65f : 1f);
+                if (skillId == 10204)
+                    TocarEfeitoTiroParalisante(targetNode);
+                if (skillId == 10209 || skillId == 19)
+                    TocarEfeitoTiroExecucao(targetNode);
+            }
+
             if (targetNode is Inimigo inimigo)
                 inimigo.SetVidaAtual(targetHealth, targetMaxHealth);
             else if (targetNode is Player player)
@@ -1199,6 +1256,82 @@ public partial class EntityManager : Node
             }));
             tween.Play();
         }
+    }
+
+    private bool EhAtaqueDeArqueiro(ulong attackerId)
+    {
+        if (attackerId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            string classeLocal = localPlayer?.NomeDaClasse ?? "";
+            return classeLocal.ToLowerInvariant().Contains("arqueiro");
+        }
+
+        if (!_networkNodes.TryGetValue(attackerId, out var attackerNode) || !IsInstanceValid(attackerNode))
+            return false;
+
+        if (attackerNode.HasMeta(MetaAnimPrefix))
+        {
+            string prefixo = attackerNode.GetMeta(MetaAnimPrefix).AsString().ToLowerInvariant();
+            if (prefixo.Contains("arqueiro") || prefixo.Contains("arco"))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void TocarImpactoFlecha(Node2D targetNode, float escala = 1f)
+    {
+        if (!ResourceLoader.Exists(FlechaImpactoEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(FlechaImpactoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.GlobalPosition = targetNode.GlobalPosition;
+        effect.Scale = Vector2.One * Mathf.Max(0.1f, escala);
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            targetNode.GetParent()?.AddChild(effect);
+    }
+
+    private void TocarEfeitoTiroParalisante(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(TiroParalisanteEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(TiroParalisanteEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.GlobalPosition = targetNode.GlobalPosition;
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            targetNode.GetParent()?.AddChild(effect);
+    }
+
+    private void TocarEfeitoTiroExecucao(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(TiroExecucaoEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(TiroExecucaoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Position = Vector2.Zero;
+        effect.ZIndex = 90;
+        effect.ZAsRelative = false;
+        targetNode.AddChild(effect);
     }
 
     private void OnEntityDied(ulong entityId, ulong killerId)
@@ -1291,10 +1424,12 @@ public partial class EntityManager : Node
         const string animName = "level_up";
         const string basePath = "res://skills/Animacao/Animacao de Mapa/Level up/effect";
 
+        TocarSomLevelUp(player);
+
         var frames = new SpriteFrames();
         frames.AddAnimation(animName);
         frames.SetAnimationLoop(animName, false);
-        frames.SetAnimationSpeed(animName, 18f);
+        frames.SetAnimationSpeed(animName, 10f);
 
         for (int i = 1; i <= 17; i++)
         {
@@ -1329,6 +1464,51 @@ public partial class EntityManager : Node
         effect.Play(animName);
     }
 
+    private void TocarSomLevelUp(Player player)
+    {
+        var stream = CarregarAudioLevelUp();
+        if (stream == null)
+        {
+            GD.PrintErr("[LEVEL UP FX] Audio Level_up nao encontrado.");
+            return;
+        }
+
+        var audio = new AudioStreamPlayer2D
+        {
+            Name = "LevelUpAudio",
+            Stream = stream,
+            VolumeDb = -1.5f,
+            MaxDistance = 900f,
+            Attenuation = 0.25f,
+        };
+
+        audio.Finished += () =>
+        {
+            if (IsInstanceValid(audio))
+                audio.QueueFree();
+        };
+
+        player.AddChild(audio);
+        audio.Play();
+    }
+
+    private static AudioStream? CarregarAudioLevelUp()
+    {
+        string[] paths =
+        {
+            "res://audio/Level_up.wav",
+            "res://Audio/Level_up.wav",
+        };
+
+        foreach (string path in paths)
+        {
+            if (ResourceLoader.Exists(path))
+                return ResourceLoader.Load<AudioStream>(path);
+        }
+
+        return null;
+    }
+
     private static Texture2D? CarregarTexturaLevelUp(string path)
     {
         if (ResourceLoader.Exists(path))
@@ -1356,7 +1536,7 @@ public partial class EntityManager : Node
             equip.ImportarEstado(baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints);
     }
 
-    private void OnItemUseResult(int health, int maxHealth, int mana, int maxMana)
+    private void OnItemUseResult(int health, int maxHealth, int mana, int maxMana, int itemId, float cooldownSeconds)
     {
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null) return;
@@ -1427,9 +1607,49 @@ public partial class EntityManager : Node
         }
     }
 
+    private static void TriggerRemotePlayerBackJump(Node2D entity, Vector2 direction)
+    {
+        var sprite = entity.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        if (sprite?.SpriteFrames == null) return;
+
+        string dirName = DirectionUtil.VectorToCardinal(direction);
+        string animation = ResolverAnimacaoBackJump(sprite.SpriteFrames, dirName);
+        if (string.IsNullOrWhiteSpace(animation))
+            return;
+
+        sprite.SpriteFrames.SetAnimationLoop(animation, false);
+        sprite.SpeedScale = 1.0f;
+        sprite.Play(animation);
+        if (!sprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => sprite.SpeedScale = 1.0f)))
+            sprite.AnimationFinished += () => sprite.SpeedScale = 1.0f;
+    }
+
+    private static string ResolverAnimacaoBackJump(SpriteFrames frames, string dirName)
+    {
+        string[] nomes =
+        {
+            $"salto_tras_{dirName}",
+            $"salta_tras_{dirName}",
+        };
+
+        foreach (string nome in nomes)
+        {
+            if (frames.HasAnimation(nome))
+                return nome;
+        }
+
+        return "";
+    }
+
     public void HandleRemoteAction(ulong entityId, byte actionType, Vector2 direction)
     {
-        if (actionType != 1) return;
+        if (actionType == PlayerActionSummonSherigan)
+        {
+            HandleSummonSheriganAction(entityId);
+            return;
+        }
+
+        if (actionType != PlayerActionAttack && actionType != PlayerActionBackJump) return;
         if (!_networkNodes.TryGetValue(entityId, out var entity) || !IsInstanceValid(entity)) return;
 
         if (direction.LengthSquared() < 0.001f && _lastDirections.TryGetValue(entityId, out var lastDirection))
@@ -1437,7 +1657,98 @@ public partial class EntityManager : Node
         if (direction.LengthSquared() < 0.001f)
             direction = Vector2.Down;
 
-        TriggerRemotePlayerAttack(entity, direction.Normalized());
+        if (actionType == PlayerActionBackJump)
+            TriggerRemotePlayerBackJump(entity, direction.Normalized());
+        else
+            TriggerRemotePlayerAttack(entity, direction.Normalized());
+    }
+
+    private void HandleSummonSheriganAction(ulong entityId)
+    {
+        if (entityId != _gameNet?.LocalPlayerId)
+        {
+            SpawnRemoteSherigan(entityId);
+            return;
+        }
+
+        var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        if (localPlayer == null || !IsInstanceValid(localPlayer))
+        {
+            GameNetwork.Log("[PET] Summon Sherigan recebido, mas Player local nao foi encontrado.");
+            return;
+        }
+
+        localPlayer.SummonSheriganPet();
+    }
+
+    private void SpawnRemoteSherigan(ulong ownerId)
+    {
+        if (!_networkNodes.TryGetValue(ownerId, out var owner) || !IsInstanceValid(owner))
+        {
+            GameNetwork.Log($"[PET] Summon Sherigan remoto recebido, mas dono {ownerId} ainda nao existe.");
+            return;
+        }
+
+        if (_remoteSheriganPets.TryGetValue(ownerId, out var oldPet) && IsInstanceValid(oldPet))
+        {
+            oldPet.GlobalPosition = owner.GlobalPosition + new Vector2(-48, 32);
+            return;
+        }
+
+        var pet = new Node2D
+        {
+            Name = $"SheriganRemote_{ownerId}",
+            Scale = new Vector2(1.4f, 1.4f),
+            ZIndex = 0,
+            ZAsRelative = true,
+            YSortEnabled = false,
+        };
+
+        var sprite = new AnimatedSprite2D
+        {
+            Name = "AnimatedSprite2D",
+            SpriteFrames = CarregarSheriganFrames(),
+            Scale = Vector2.One * 1.1f,
+        };
+        pet.AddChild(sprite);
+        TocarAnimacaoSherigan(sprite, "idle_down");
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(pet);
+        else
+            AddChild(pet);
+
+        pet.GlobalPosition = owner.GlobalPosition + new Vector2(-48, 32);
+        _remoteSheriganPets[ownerId] = pet;
+    }
+
+    private static SpriteFrames? CarregarSheriganFrames()
+    {
+        if (!ResourceLoader.Exists(SheriganScenePath))
+            return null;
+
+        var scene = ResourceLoader.Load<PackedScene>(SheriganScenePath);
+        var temp = scene?.Instantiate();
+        var sprite = temp?.FindChild("AnimatedSprite2D", true, false) as AnimatedSprite2D;
+        var frames = sprite?.SpriteFrames?.Duplicate(true) as SpriteFrames ?? sprite?.SpriteFrames;
+        temp?.QueueFree();
+        return frames;
+    }
+
+    private static void TocarAnimacaoSherigan(AnimatedSprite2D sprite, string anim)
+    {
+        if (sprite.SpriteFrames == null)
+            return;
+
+        string fallback = anim.ToLowerInvariant().Contains("walk")
+            ? anim.Replace("walk_", "Walk_")
+            : anim;
+
+        if (sprite.SpriteFrames.HasAnimation(anim))
+            sprite.Play(anim);
+        else if (sprite.SpriteFrames.HasAnimation(fallback))
+            sprite.Play(fallback);
     }
 
     private void OnProjectileSpawn(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType)
@@ -1468,6 +1779,12 @@ public partial class EntityManager : Node
         if (projetil is Projetil proj)
         {
             proj.VisualOnlyOnline = true;
+            proj.Speed = projectileType switch
+            {
+                0 => 780.0f,
+                1 => 700.0f,
+                _ => 680.0f,
+            };
             proj.DefinirDirecao(new Vector2(dirX, dirY));
         }
     }
@@ -1833,10 +2150,35 @@ public partial class EntityManager : Node
                 float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
                 UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
+                UpdateRemoteSheriganPet(kvp.Key, node, animDir, cur.Moving, delta);
             }
         }
 
         UpdateVisibilityCulling(delta);
+    }
+
+    private void UpdateRemoteSheriganPet(ulong ownerId, Node2D owner, Vector2 ownerDirection, bool ownerMoving, double delta)
+    {
+        if (!_remoteSheriganPets.TryGetValue(ownerId, out var pet) || !IsInstanceValid(pet))
+            return;
+
+        Vector2 offset = ownerDirection.LengthSquared() > 0.001f
+            ? -ownerDirection.Normalized() * 54f + new Vector2(0, 18)
+            : new Vector2(-48, 32);
+        Vector2 desired = owner.GlobalPosition + offset;
+        float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * 12f);
+        pet.GlobalPosition = pet.GlobalPosition.Lerp(desired, lerpWeight);
+
+        var sprite = pet.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+        if (sprite == null)
+            return;
+
+        string dir = ownerDirection.LengthSquared() > 0.001f
+            ? DirectionUtil.VectorToCardinal(ownerDirection)
+            : "down";
+        string anim = ownerMoving ? $"walk_{dir}" : $"idle_{dir}";
+        if (sprite.Animation.ToString() != anim && sprite.Animation.ToString() != anim.Replace("walk_", "Walk_"))
+            TocarAnimacaoSherigan(sprite, anim);
     }
 
     private void AtualizarInteracaoLojinha()
@@ -2030,6 +2372,14 @@ public partial class EntityManager : Node
                 kvp.Value.QueueFree();
         }
         _lootNodes.Clear();
+
+        foreach (var kvp in _remoteSheriganPets)
+        {
+            if (IsInstanceValid(kvp.Value))
+                kvp.Value.QueueFree();
+        }
+        _remoteSheriganPets.Clear();
+
         _remoteStates.Clear();
         _lastDirections.Clear();
         _previousPositions.Clear();
@@ -2075,6 +2425,9 @@ public partial class EntityManager : Node
         _lastDirections.Remove(entityId);
         _previousPositions.Remove(entityId);
         _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
+        if (_remoteSheriganPets.TryGetValue(entityId, out var pet) && IsInstanceValid(pet))
+            pet.QueueFree();
+        _remoteSheriganPets.Remove(entityId);
     }
 
     private static bool EstaMorrendoVisualmente(Node node)
@@ -2084,6 +2437,7 @@ public partial class EntityManager : Node
 
     public override void _ExitTree()
     {
+        _isExitingTree = true;
         ClearAll();
         if (_gameNet != null)
         {

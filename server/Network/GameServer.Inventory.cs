@@ -10,7 +10,7 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private const int InventorySlotCount = 30;
-    private const double PotionUseCooldownSeconds = 30.0;
+    private const double PotionUseCooldownSeconds = 40.0;
 
     private void HandleAdminUpdateItemDefinition(NetPeer peer, NetDataReader reader)
     {
@@ -726,6 +726,8 @@ partial class GameServer
         result.Put(player.MaxHealth);
         result.Put(player.Mana);
         result.Put(player.MaxMana);
+        result.Put(item.ItemId);
+        result.Put((float)PotionUseCooldownSeconds);
         peer.Send(result, DeliveryMethod.ReliableOrdered);
     }
 
