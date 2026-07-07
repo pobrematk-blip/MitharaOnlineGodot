@@ -286,21 +286,22 @@ public partial class EquipamentoComponent : Node
                 _ => 1.0,
             };
 
-            _bonusForca += (int)(item.Forca * refineMult);
-            _bonusAgilidade += (int)(item.Agilidade * refineMult);
-            _bonusDestreza += (int)(item.Destreza * refineMult);
-            _bonusInteligencia += (int)(item.Inteligencia * refineMult);
-            _bonusDanoFisico += (int)(item.DanoFisico * refineMult);
-            _bonusDanoFisicoMin += (int)(item.DanoFisicoMin * refineMult);
-            _bonusDanoFisicoMax += (int)(item.DanoFisicoMax * refineMult);
-            _bonusDanoMagico += (int)(item.DanoMagico * refineMult);
-            _bonusDanoMagicoMin += (int)(item.DanoMagicoMin * refineMult);
-            _bonusDanoMagicoMax += (int)(item.DanoMagicoMax * refineMult);
-            _bonusDefesaFisica += (int)(item.DefesaFisica * refineMult);
-            _bonusDefesaMagica += (int)(item.DefesaMagica * refineMult);
-            _bonusHp += (int)(item.Hp * refineMult);
-            _bonusMana += (int)(item.Mana * refineMult);
-            _bonusStamina += (int)(item.Stamina * refineMult);
+            int refineLevel = kv.Value.RefinoNivel;
+            _bonusForca += RefinedInt(item.Forca, refineLevel, refineMult);
+            _bonusAgilidade += RefinedInt(item.Agilidade, refineLevel, refineMult);
+            _bonusDestreza += RefinedInt(item.Destreza, refineLevel, refineMult);
+            _bonusInteligencia += RefinedInt(item.Inteligencia, refineLevel, refineMult);
+            _bonusDanoFisico += RefinedInt(item.DanoFisico, refineLevel, refineMult);
+            _bonusDanoFisicoMin += RefinedInt(item.DanoFisicoMin, refineLevel, refineMult);
+            _bonusDanoFisicoMax += RefinedInt(item.DanoFisicoMax, refineLevel, refineMult);
+            _bonusDanoMagico += RefinedInt(item.DanoMagico, refineLevel, refineMult);
+            _bonusDanoMagicoMin += RefinedInt(item.DanoMagicoMin, refineLevel, refineMult);
+            _bonusDanoMagicoMax += RefinedInt(item.DanoMagicoMax, refineLevel, refineMult);
+            _bonusDefesaFisica += RefinedInt(item.DefesaFisica, refineLevel, refineMult);
+            _bonusDefesaMagica += RefinedInt(item.DefesaMagica, refineLevel, refineMult);
+            _bonusHp += RefinedInt(item.Hp, refineLevel, refineMult);
+            _bonusMana += RefinedInt(item.Mana, refineLevel, refineMult);
+            _bonusStamina += RefinedInt(item.Stamina, refineLevel, refineMult);
             _bonusVelocidadeMovimento += (float)(item.VelocidadeMovimento * refineMult);
             _bonusVelocidadeAtaque += (float)(item.VelocidadeAtaque * refineMult);
             _bonusChanceCritica += (float)(item.ChanceCritica * refineMult);
@@ -308,18 +309,30 @@ public partial class EquipamentoComponent : Node
             _bonusDanoCritico += (float)(item.DanoCriticoBonus * refineMult);
             _bonusPrecisao += (float)(item.Precisao * refineMult);
             _bonusTenacidade += (float)(item.Tenacidade * refineMult);
-            _bonusDanoPvp += (int)(item.DanoPvp * refineMult);
-            _bonusDefesaPvp += (int)(item.DefesaPvp * refineMult);
-            _bonusPenetracaoArmadura += (int)(item.PenetracaoArmadura * refineMult);
+            _bonusDanoPvp += RefinedInt(item.DanoPvp, refineLevel, refineMult);
+            _bonusDefesaPvp += RefinedInt(item.DefesaPvp, refineLevel, refineMult);
+            _bonusPenetracaoArmadura += RefinedInt(item.PenetracaoArmadura, refineLevel, refineMult);
             _bonusRegeneracaoVida += (float)(item.RegeneracaoVida * refineMult);
             _bonusRegeneracaoMana += (float)(item.RegeneracaoMana * refineMult);
             _bonusRouboVida += (float)(item.RouboVida * refineMult);
             _bonusRouboMana += (float)(item.RouboMana * refineMult);
             _bonusReducaoCooldown += (float)(item.ReducaoCooldown * refineMult);
             _bonusBonusExperiencia += (float)(item.BonusExperiencia * refineMult);
-            _bonusReflexaoDano += (int)(item.ReflexaoDano * refineMult);
+            _bonusReflexaoDano += RefinedInt(item.ReflexaoDano, refineLevel, refineMult);
             _bonusResistenciaControle += (float)(item.ResistenciaControle * refineMult);
         }
+    }
+
+    private static int RefinedInt(int value, int refineLevel, double multiplier)
+    {
+        if (value <= 0)
+            return 0;
+
+        int refinedValue = (int)System.Math.Round(value * multiplier);
+        if (refineLevel <= 0)
+            return refinedValue;
+
+        return System.Math.Max(refinedValue, value + refineLevel);
     }
 
     public void AdicionarBonusDanoCritico(float bonusPercentual)

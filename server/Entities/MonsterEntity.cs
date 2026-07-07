@@ -24,6 +24,13 @@ public class MonsterEntity : Entity
     public float AttackCooldown { get; set; } = 1.5f;
     public double LastAttackTime { get; set; }
     public ulong? TargetEntityId { get; set; }
+    public double LastBossSpeedBuffTime { get; set; } = -9999;
+    public double LastBossJumpTime { get; set; } = -9999;
+    public double LastBossSlowTime { get; set; } = -9999;
+    public double LastBossTornadoTime { get; set; } = -9999;
+    public string BossPendingSkill { get; set; } = "";
+    public ulong BossPendingTargetId { get; set; }
+    public double BossPendingCompleteTime { get; set; }
 
     // Patrol
     public float SpawnX { get; set; }

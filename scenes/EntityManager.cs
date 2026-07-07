@@ -169,6 +169,8 @@ public partial class EntityManager : Node
     private const string FlechaImpactoEffectPath = "res://skills/Efeitos/Arqueiro/FlechaImpactoEffect.tscn";
     private const string TiroParalisanteEffectPath = "res://skills/Efeitos/Arqueiro/TiroParalisanteEffect.tscn";
     private const string TiroExecucaoEffectPath = "res://skills/Efeitos/Arqueiro/TiroExecucaoEffect.tscn";
+    private const string MarcaExecutorPoisonEffectPath = "res://skills/Efeitos/Arqueiro/MarcaExecutorPoisonEffect.tscn";
+    private const string BossSlimeSlowEffectPath = "res://skills/Efeitos/Bosses/SlimeSlowEffect.tscn";
     private const string SheriganScenePath = "res://characters/Inimigos/SpriteInimigo/Sherigan.tscn";
 
     private bool _sceneReady;
@@ -218,6 +220,8 @@ public partial class EntityManager : Node
         _gameNet.OnGuildData += OnGuildDataChanged;
         _gameNet.OnGuildMemberUpdate += OnGuildMemberChanged;
         _gameNet.OnGuildCleared += OnGuildClearedHandler;
+        _gameNet.OnStatusEffect += OnStatusEffect;
+        _gameNet.OnBossCast += OnBossCast;
 
         CriarUI();
         CriarNavegacaoMundo();
@@ -263,9 +267,13 @@ public partial class EntityManager : Node
         _invitePopup.Name = "InvitePopupUI";
         _uiOverlay.AddChild(_invitePopup);
 
-        _bossHPBar = new BossHPBar();
-        _bossHPBar.Name = "BossHPBar";
-        _uiOverlay.AddChild(_bossHPBar);
+        _bossHPBar = GetTree()?.Root?.FindChild("BossHPBar", true, false) as BossHPBar;
+        if (_bossHPBar == null || !IsInstanceValid(_bossHPBar))
+        {
+            _bossHPBar = new BossHPBar();
+            _bossHPBar.Name = "BossHPBar";
+            _uiOverlay.AddChild(_bossHPBar);
+        }
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -600,7 +608,7 @@ public partial class EntityManager : Node
         Node2D? node = entityType switch
         {
             "player" => CreatePlayerEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3),
-            "monster" or "boss" => CreateMonsterEntity(entityId, name, x, y, level, health, maxHealth, extraData1, entityType == "boss"),
+            "monster" or "boss" => CreateMonsterEntity(entityId, name, x, y, level, health, maxHealth, extraData1, entityType == "boss" || EhPrefabBoss(extraData1, name)),
             "npc" => CreateNpcEntity(entityId, name, x, y, extraData1, extraData2, extraData3),
             _ => null,
         };
@@ -940,6 +948,12 @@ public partial class EntityManager : Node
         return CreateMonsterPlaceholder(entityId, name, x, y, level, isBoss);
     }
 
+    private static bool EhPrefabBoss(string prefabId, string name)
+    {
+        return prefabId.Contains("boss", System.StringComparison.OrdinalIgnoreCase)
+            || name.Contains("boss", System.StringComparison.OrdinalIgnoreCase);
+    }
+
     private Node2D CreateMonsterPlaceholder(ulong entityId, string name, float x, float y, int level, bool isBoss)
     {
         var placeholder = new Node2D();
@@ -1204,11 +1218,13 @@ public partial class EntityManager : Node
 
         if (targetNode != null && IsInstanceValid(targetNode))
         {
-            if (damage > 0 && EhAtaqueDeArqueiro(attackerId))
+            if (damage > 0 && (EhAtaqueDeArqueiro(attackerId) || skillId is 10206 or 16))
             {
                 TocarImpactoFlecha(targetNode, skillId == 10203 ? 1.65f : 1f);
                 if (skillId == 10204)
                     TocarEfeitoTiroParalisante(targetNode);
+                if (skillId == 10206 || skillId == 16)
+                    TocarEfeitoMarcaExecutorPoison(targetNode);
                 if (skillId == 10209 || skillId == 19)
                     TocarEfeitoTiroExecucao(targetNode);
             }
@@ -1332,6 +1348,81 @@ public partial class EntityManager : Node
         effect.ZIndex = 90;
         effect.ZAsRelative = false;
         targetNode.AddChild(effect);
+    }
+
+    private void TocarEfeitoMarcaExecutorPoison(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(MarcaExecutorPoisonEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(MarcaExecutorPoisonEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Position = Vector2.Zero;
+        effect.ZIndex = 95;
+        effect.ZAsRelative = false;
+        targetNode.AddChild(effect);
+    }
+
+    private void OnStatusEffect(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath)
+    {
+        if (effectId != "boss_slime_slow")
+            return;
+
+        var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+        if (localPlayer != null && IsInstanceValid(localPlayer))
+            TocarEfeitoBossSlimeSlow(localPlayer);
+    }
+
+    private void OnBossCast(ulong bossId, string effectId, string skillName, float castSeconds, float effectDuration, bool isBuff)
+    {
+        if (castSeconds > 0f)
+        {
+            _bossHPBar?.StartCast(skillName, castSeconds);
+
+            if (_networkNodes.TryGetValue(bossId, out var bossNode) && IsInstanceValid(bossNode))
+                TocarBarraCastAcimaDoBoss(bossNode, skillName, castSeconds);
+        }
+
+        if (effectDuration > 0f && castSeconds <= 0f)
+            _bossHPBar?.AddBossStatus(effectId, skillName, isBuff, effectDuration);
+    }
+
+    private void TocarEfeitoBossSlimeSlow(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(BossSlimeSlowEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(BossSlimeSlowEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Position = Vector2.Zero;
+        effect.ZIndex = 95;
+        effect.ZAsRelative = false;
+        targetNode.AddChild(effect);
+    }
+
+    private static void TocarBarraCastAcimaDoBoss(Node2D bossNode, string skillName, float castSeconds)
+    {
+        if (castSeconds <= 0f)
+            return;
+
+        var antiga = bossNode.GetNodeOrNull<Node>("BossCastBarAcima");
+        if (antiga != null && IsInstanceValid(antiga))
+            antiga.QueueFree();
+
+        var barra = new BossCastBarAcima(skillName, castSeconds)
+        {
+            Name = "BossCastBarAcima",
+            Position = new Vector2(-60, -128),
+            ZIndex = 80,
+            ZAsRelative = false,
+        };
+        bossNode.AddChild(barra);
     }
 
     private void OnEntityDied(ulong entityId, ulong killerId)
@@ -1754,12 +1845,13 @@ public partial class EntityManager : Node
     private void OnProjectileSpawn(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType)
     {
         if (_gameNet == null) return;
-        if (entityId != _gameNet.LocalPlayerId && !_networkNodes.TryGetValue(entityId, out var _)) return;
+        if (projectileType != 2 && entityId != _gameNet.LocalPlayerId && !_networkNodes.TryGetValue(entityId, out var _)) return;
 
         string scenePath = projectileType switch
         {
             0 => "res://resources/Projetil/ProjetilArqueiro.tscn",
             1 => "res://resources/Projetil/ProjetilMage.tscn",
+            2 => "res://resources/Projetil/ProjetilBossSlime.tscn",
             _ => "res://resources/Projetil/Projetil.tscn",
         };
 
@@ -1783,6 +1875,7 @@ public partial class EntityManager : Node
             {
                 0 => 780.0f,
                 1 => 700.0f,
+                2 => 620.0f,
                 _ => 680.0f,
             };
             proj.DefinirDirecao(new Vector2(dirX, dirY));
@@ -2462,6 +2555,8 @@ public partial class EntityManager : Node
             _gameNet.OnGuildData -= OnGuildDataChanged;
             _gameNet.OnGuildMemberUpdate -= OnGuildMemberChanged;
             _gameNet.OnGuildCleared -= OnGuildClearedHandler;
+            _gameNet.OnStatusEffect -= OnStatusEffect;
+            _gameNet.OnBossCast -= OnBossCast;
         }
     }
 
@@ -2482,5 +2577,90 @@ public partial class EntityManager : Node
             _boldFont = ThemeDB.GetProjectTheme().DefaultFont;
         }
         return _boldFont;
+    }
+
+    private sealed partial class BossCastBarAcima : Panel
+    {
+        private readonly string _skillName;
+        private readonly float _total;
+        private float _elapsed;
+        private ProgressBar? _bar;
+
+        public BossCastBarAcima(string skillName, float castSeconds)
+        {
+            _skillName = string.IsNullOrWhiteSpace(skillName) ? "Preparando" : skillName;
+            _total = Mathf.Max(0.05f, castSeconds);
+            CustomMinimumSize = new Vector2(120, 16);
+            Size = new Vector2(120, 16);
+            MouseFilter = MouseFilterEnum.Ignore;
+        }
+
+        public override void _Ready()
+        {
+            AddThemeStyleboxOverride("panel", new StyleBoxFlat
+            {
+                BgColor = new Color(0.02f, 0.025f, 0.035f, 0.88f),
+                BorderColor = new Color(0.1f, 0.55f, 0.95f, 0.95f),
+                BorderWidthBottom = 1,
+                BorderWidthLeft = 1,
+                BorderWidthRight = 1,
+                BorderWidthTop = 1,
+                CornerRadiusBottomLeft = 4,
+                CornerRadiusBottomRight = 4,
+                CornerRadiusTopLeft = 4,
+                CornerRadiusTopRight = 4,
+            });
+
+            _bar = new ProgressBar
+            {
+                MaxValue = _total,
+                Value = 0,
+                ShowPercentage = false,
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            _bar.SetAnchorsPreset(LayoutPreset.FullRect);
+            _bar.AddThemeStyleboxOverride("fill", new StyleBoxFlat
+            {
+                BgColor = new Color(0.35f, 0.72f, 1f, 0.95f),
+                CornerRadiusBottomLeft = 4,
+                CornerRadiusBottomRight = 4,
+                CornerRadiusTopLeft = 4,
+                CornerRadiusTopRight = 4,
+            });
+            _bar.AddThemeStyleboxOverride("background", new StyleBoxFlat
+            {
+                BgColor = new Color(0.05f, 0.055f, 0.075f, 0.9f),
+                CornerRadiusBottomLeft = 4,
+                CornerRadiusBottomRight = 4,
+                CornerRadiusTopLeft = 4,
+                CornerRadiusTopRight = 4,
+            });
+            AddChild(_bar);
+
+            var label = new Label
+            {
+                Text = _skillName,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                MouseFilter = MouseFilterEnum.Ignore,
+                ZIndex = 2,
+            };
+            label.SetAnchorsPreset(LayoutPreset.FullRect);
+            label.AddThemeFontSizeOverride("font_size", 8);
+            label.AddThemeColorOverride("font_color", Colors.White);
+            label.AddThemeColorOverride("font_outline_color", Colors.Black);
+            label.AddThemeConstantOverride("outline_size", 2);
+            AddChild(label);
+        }
+
+        public override void _Process(double delta)
+        {
+            _elapsed = Mathf.Min(_total, _elapsed + (float)delta);
+            if (_bar != null)
+                _bar.Value = _elapsed;
+
+            if (_elapsed >= _total)
+                QueueFree();
+        }
     }
 }

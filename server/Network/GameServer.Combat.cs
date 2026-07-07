@@ -1,4 +1,4 @@
-using LiteNetLib;
+﻿using LiteNetLib;
 using LiteNetLib.Utils;
 using Mithara.Server.Entities;
 using Mithara.Server.Packets;
@@ -26,6 +26,17 @@ partial class GameServer
     private const float BasicAttackRange = 640f;
     private const float PetOwnerCommandRange = 32f * 12f;
     private const double PetAttackCooldown = 0.8;
+    private const int BossSlimeJumpSkillId = -201;
+    private const double BossSlimeSpeedBuffCooldown = 60.0;
+    private const double BossSlimeSpeedBuffDuration = 20.0;
+    private const double BossSlimeJumpCooldown = 24.0;
+    private const double BossSlimeSlowCooldown = 28.0;
+    private const double BossSlimeTornadoCooldown = 42.0;
+    private const double BossSlimeSlowDuration = 6.0;
+    private const int BossSlimeSlowPercent = 40;
+    private const float BossSlimeCastSeconds = 0.85f;
+    private const float BossSlimeTornadoCastSeconds = 1.25f;
+    private const int BossSlimeTornadoSkillId = -202;
 
     private static long XpForNextLevel(int level)
     {
@@ -39,7 +50,7 @@ partial class GameServer
         string classe = player.CharacterClass?.Trim().ToLowerInvariant() ?? "";
         double baseCooldown = classe switch
         {
-            "berseker" or "berserker" or "bárbaro" or "barbaro" => BerserkerBasicAttackCooldown,
+            "berseker" or "berserker" or "bÃ¡rbaro" or "barbaro" => BerserkerBasicAttackCooldown,
             "arqueiro" or "mago" => RangedBasicAttackCooldown,
             _ => DefaultBasicAttackCooldown,
         };
@@ -54,7 +65,7 @@ partial class GameServer
 
         if (attacker.Id == target.Id)
         {
-            reason = "Você não pode atacar a si mesmo.";
+            reason = "VocÃª nÃ£o pode atacar a si mesmo.";
             return false;
         }
 
@@ -84,13 +95,13 @@ partial class GameServer
 
         if (area == PvpAreaKind.Safe)
         {
-            reason = "Área segura: PvP desativado.";
+            reason = "Ãrea segura: PvP desativado.";
             return false;
         }
 
         if (ArePlayersInSameParty(attacker, target))
         {
-            reason = "Você não pode atacar jogadores do seu grupo.";
+            reason = "VocÃª nÃ£o pode atacar jogadores do seu grupo.";
             return false;
         }
 
@@ -102,7 +113,7 @@ partial class GameServer
 
         if (SameFaction(attacker, target))
         {
-            reason = "Você não pode atacar jogadores da sua facção nesta área.";
+            reason = "VocÃª nÃ£o pode atacar jogadores da sua facÃ§Ã£o nesta Ã¡rea.";
             return false;
         }
 
@@ -193,6 +204,11 @@ partial class GameServer
 
     private bool HandleMonsterAIAttack(Channel channel, MonsterEntity mob, Entity target, double gameTime)
     {
+        return DealMonsterDamage(channel, mob, target, gameTime, 1f, 0);
+    }
+
+    private bool DealMonsterDamage(Channel channel, MonsterEntity mob, Entity target, double gameTime, float damageMultiplier, int skillId)
+    {
         int targetDefense = target switch
         {
             PlayerEntity p => p.CalculateDefense(),
@@ -205,7 +221,7 @@ partial class GameServer
         float defReduction = MathF.Min(0.80f, targetDefense / (targetDefense + 400f));
         bool isCrit = Random.Shared.Next(100) < mob.Destreza / 4;
         int rawDamage = mob.CalculateAttackDamage();
-        int damage = Math.Max(1, (int)(rawDamage * (1f - defReduction)));
+        int damage = Math.Max(1, (int)(rawDamage * damageMultiplier * (1f - defReduction)));
         if (isCrit) damage = (int)(damage * 1.5f);
 
         target.Health -= damage;
@@ -224,6 +240,7 @@ partial class GameServer
         writer.Put(isCrit);
         writer.Put(target.Health);
         writer.Put(target.MaxHealth);
+        writer.Put(skillId);
 
         var aoi = channel.GetEntitiesInAoi(mob.X, mob.Y);
         foreach (var eid in aoi)
@@ -239,6 +256,7 @@ partial class GameServer
                 writer.Put(isCrit);
                 writer.Put(target.Health);
                 writer.Put(target.MaxHealth);
+                writer.Put(skillId);
             }
         }
 
@@ -246,10 +264,310 @@ partial class GameServer
         {
             var session = _sessions.Values.FirstOrDefault(s => s.EntityId == target.Id);
             if (session != null)
-                SendSystemMessage(session.Peer, "Você morreu!");
+                SendSystemMessage(session.Peer, "VocÃª morreu!");
         }
 
         return target.Health <= 0;
+    }
+
+    private bool HandleMonsterSpecial(Channel channel, MonsterEntity mob, Entity target, double gameTime)
+    {
+        if (!mob.IsBoss || !string.Equals(mob.PrefabId, "slimeBoss", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (!string.IsNullOrWhiteSpace(mob.BossPendingSkill))
+            return ProcessBossSlimePendingSkill(channel, mob, target, gameTime);
+
+        float dx = target.X - mob.X;
+        float dy = target.Y - mob.Y;
+        float dist = MathF.Sqrt(dx * dx + dy * dy);
+
+        if (TryStartBossSlimeTornadoStar(channel, mob, target, gameTime))
+            return true;
+
+        if (TryStartBossSlimeSpeedBuff(channel, mob, gameTime))
+            return true;
+
+        if (target is PlayerEntity playerTarget)
+        {
+            if (TryStartBossSlimeSlow(channel, mob, playerTarget, gameTime, dist))
+                return true;
+        }
+
+        if (dist > mob.AttackRange + 36f && dist <= 520f && gameTime - mob.LastBossJumpTime >= BossSlimeJumpCooldown)
+        {
+            mob.LastBossJumpTime = gameTime;
+            StartBossSlimeCast(channel, mob, target.Id, "jump", "Salto Esmagador", BossSlimeCastSeconds, 0f, false);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool ProcessBossSlimePendingSkill(Channel channel, MonsterEntity mob, Entity target, double gameTime)
+    {
+        mob.Moving = false;
+        mob.AIState = MonsterAIState.Attack;
+        if (gameTime < mob.BossPendingCompleteTime)
+            return true;
+
+        string pendingSkill = mob.BossPendingSkill;
+        ulong pendingTargetId = mob.BossPendingTargetId;
+        mob.BossPendingSkill = "";
+        mob.BossPendingTargetId = 0;
+        mob.BossPendingCompleteTime = 0;
+
+        if (pendingSkill == "speed")
+        {
+            mob.ActiveServerBuffs["boss_speed"] = gameTime + BossSlimeSpeedBuffDuration;
+            SendBossSlimeNotice(channel, mob, "Boss Slime ficou mais rÃ¡pido!");
+            SendBossCast(channel, mob, "speed_buff", "AceleraÃ§Ã£o Viscosa", 0f, (float)BossSlimeSpeedBuffDuration, true);
+            return true;
+        }
+
+        var castTarget = channel.GetEntity(pendingTargetId);
+        if (castTarget == null || castTarget.Health <= 0)
+            castTarget = target;
+
+        if (pendingSkill == "tornado_star")
+        {
+            FireBossSlimeTornadoStar(channel, mob, castTarget);
+            SendBossSlimeNotice(channel, mob, "Boss Slime lancou 5 tornados!");
+            return true;
+        }
+
+        if (pendingSkill == "slow" && castTarget is PlayerEntity playerTarget)
+        {
+            playerTarget.ActiveServerBuffs["slow:boss_slime"] = gameTime + BossSlimeSlowDuration;
+            SendStatusEffectToPlayer(channel, playerTarget.Id, "boss_slime_slow", "LentidÃ£o do Slime", true, (float)BossSlimeSlowDuration, BossSlimeSlowPercent, "res://skills/Incone Skills/Debuffs/1.png");
+            SendBossSlimeNotice(channel, mob, "Boss Slime deixou o alvo lento!");
+            DealMonsterDamage(channel, mob, playerTarget, gameTime, 0.35f, 0);
+            return true;
+        }
+
+        if (pendingSkill == "jump")
+        {
+            float dx = castTarget.X - mob.X;
+            float dy = castTarget.Y - mob.Y;
+            float dist = MathF.Sqrt(dx * dx + dy * dy);
+            float len = MathF.Max(1f, dist);
+            float fromTargetX = -dx / len;
+            float fromTargetY = -dy / len;
+            float landingX = castTarget.X + fromTargetX * 52f;
+            float landingY = castTarget.Y + fromTargetY * 52f;
+
+            channel.MoveEntity(mob.Id, landingX, landingY);
+            mob.X = landingX;
+            mob.Y = landingY;
+            mob.DirX = dx / len;
+            mob.DirY = dy / len;
+            mob.Moving = false;
+            mob.AIState = MonsterAIState.Attack;
+            mob.LastAttackTime = gameTime;
+            BroadcastSingleEntityUpdate(channel, mob);
+
+            bool targetDied = DealMonsterDamage(channel, mob, castTarget, gameTime, 1.35f, BossSlimeJumpSkillId);
+            if (targetDied)
+                mob.TargetEntityId = null;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryStartBossSlimeSpeedBuff(Channel channel, MonsterEntity mob, double gameTime)
+    {
+        if (mob.ActiveServerBuffs.TryGetValue("boss_speed", out double activeUntil) && activeUntil > gameTime)
+            return false;
+        if (gameTime - mob.LastBossSpeedBuffTime < BossSlimeSpeedBuffCooldown)
+            return false;
+
+        mob.LastBossSpeedBuffTime = gameTime;
+        StartBossSlimeCast(channel, mob, 0, "speed", "AceleraÃ§Ã£o Viscosa", BossSlimeCastSeconds, BossSlimeSpeedBuffDuration, true);
+        return true;
+    }
+
+    private bool TryStartBossSlimeSlow(Channel channel, MonsterEntity mob, PlayerEntity target, double gameTime, float dist)
+    {
+        if (dist > 360f || gameTime - mob.LastBossSlowTime < BossSlimeSlowCooldown)
+            return false;
+
+        mob.LastBossSlowTime = gameTime;
+        StartBossSlimeCast(channel, mob, target.Id, "slow", "Lodo Pegajoso", BossSlimeCastSeconds, 0f, false);
+        return true;
+    }
+
+    private bool TryStartBossSlimeTornadoStar(Channel channel, MonsterEntity mob, Entity target, double gameTime)
+    {
+        if (gameTime - mob.LastBossTornadoTime < BossSlimeTornadoCooldown)
+            return false;
+
+        float dx = target.X - mob.X;
+        float dy = target.Y - mob.Y;
+        float distSq = dx * dx + dy * dy;
+        if (distSq > 900f * 900f)
+            return false;
+
+        mob.LastBossTornadoTime = gameTime;
+        StartBossSlimeCast(channel, mob, target.Id, "tornado_star", "Rajada de Tornados", BossSlimeTornadoCastSeconds, 0f, false);
+        return true;
+    }
+
+    private void FireBossSlimeTornadoStar(Channel channel, MonsterEntity mob, Entity target)
+    {
+        float baseDirX = target.X - mob.X;
+        float baseDirY = target.Y - mob.Y;
+        float len = MathF.Sqrt(baseDirX * baseDirX + baseDirY * baseDirY);
+        if (len <= 0.01f)
+        {
+            baseDirX = 1f;
+            baseDirY = 0f;
+        }
+        else
+        {
+            baseDirX /= len;
+            baseDirY /= len;
+        }
+
+        const float projectileRange = 680f;
+        const float projectileRadius = 46f;
+        const float projectileSpeed = 620f;
+        const byte slimeTornadoProjectileType = 2;
+        int[] angles = { 0, 72, -72, 144, -144 };
+
+        foreach (int angleDegrees in angles)
+        {
+            var dir = Rotate(baseDirX, baseDirY, angleDegrees * MathF.PI / 180f);
+            float originX = mob.X + dir.X * 28f;
+            float originY = mob.Y + dir.Y * 28f;
+
+            BroadcastProjectileSpawn(channel, mob.Id, originX, originY, dir.X, dir.Y, slimeTornadoProjectileType, includeCaster: true);
+            var hit = FindFirstBossProjectileHit(channel, mob, originX, originY, dir.X, dir.Y, projectileRange, projectileRadius);
+            if (hit == null)
+                continue;
+
+            float along = ProjectileHitDistance(originX, originY, dir.X, dir.Y, hit.X, hit.Y, projectileRange).Along;
+            _pendingMonsterProjectileHits.Add(new PendingMonsterProjectileHit
+            {
+                ImpactAt = _gameTime + Math.Clamp(along / projectileSpeed, 0.08f, 1.8f),
+                ChannelId = channel.Id,
+                CasterId = mob.Id,
+                TargetId = hit.Id,
+                DamageMultiplier = 0.75f,
+                SkillId = BossSlimeTornadoSkillId,
+                AppliesSlow = true,
+            });
+        }
+    }
+
+    private static (float X, float Y) Rotate(float x, float y, float radians)
+    {
+        float cos = MathF.Cos(radians);
+        float sin = MathF.Sin(radians);
+        return (x * cos - y * sin, x * sin + y * cos);
+    }
+
+    private Entity? FindFirstBossProjectileHit(Channel channel, MonsterEntity mob, float originX, float originY, float dirX, float dirY, float range, float radius)
+    {
+        return channel.GetEntitiesInAoi(mob.X, mob.Y)
+            .Select(id => channel.GetEntity(id))
+            .Where(e => e is PlayerEntity { Health: > 0 })
+            .Select(e => new { Entity = e!, Hit = ProjectileHitDistance(originX, originY, dirX, dirY, e!.X, e.Y, range) })
+            .Where(x => x.Hit.Along >= 0f && x.Hit.Along <= range && x.Hit.Perpendicular <= radius)
+            .OrderBy(x => x.Hit.Along)
+            .Select(x => x.Entity)
+            .FirstOrDefault();
+    }
+
+    private void ProcessPendingMonsterProjectileHits()
+    {
+        for (int i = _pendingMonsterProjectileHits.Count - 1; i >= 0; i--)
+        {
+            var pending = _pendingMonsterProjectileHits[i];
+            if (pending.ImpactAt > _gameTime)
+                continue;
+
+            _pendingMonsterProjectileHits.RemoveAt(i);
+            var channel = _world.GetChannel(pending.ChannelId);
+            if (channel == null)
+                continue;
+
+            if (channel.GetEntity(pending.CasterId) is not MonsterEntity mob || mob.Health <= 0)
+                continue;
+            var target = channel.GetEntity(pending.TargetId);
+            if (target is not PlayerEntity playerTarget || playerTarget.Health <= 0)
+                continue;
+
+            bool died = DealMonsterDamage(channel, mob, playerTarget, _gameTime, pending.DamageMultiplier, pending.SkillId);
+            if (pending.AppliesSlow && !died)
+            {
+                playerTarget.ActiveServerBuffs["slow:boss_slime"] = _gameTime + BossSlimeSlowDuration;
+                SendStatusEffectToPlayer(channel, playerTarget.Id, "boss_slime_slow", "LentidÃƒÂ£o do Slime", true, (float)BossSlimeSlowDuration, BossSlimeSlowPercent, "res://skills/Incone Skills/Debuffs/1.png");
+            }
+        }
+    }
+
+    private void StartBossSlimeCast(Channel channel, MonsterEntity mob, ulong targetId, string skillKey, string skillName, float castSeconds, double effectDuration, bool isBuff)
+    {
+        mob.BossPendingSkill = skillKey;
+        mob.BossPendingTargetId = targetId;
+        mob.BossPendingCompleteTime = _gameTime + Math.Max(0.1f, castSeconds);
+        mob.Moving = false;
+        mob.AIState = MonsterAIState.Attack;
+        SendBossCast(channel, mob, skillKey, skillName, castSeconds, (float)effectDuration, isBuff);
+    }
+
+    private void SendBossCast(Channel channel, MonsterEntity mob, string effectId, string skillName, float castSeconds, float effectDuration, bool isBuff)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_BossCast);
+        writer.Put(mob.Id);
+        writer.Put(effectId);
+        writer.Put(skillName);
+        writer.Put(castSeconds);
+        writer.Put(effectDuration);
+        writer.Put(isBuff);
+
+        var aoi = channel.GetEntitiesInAoi(mob.X, mob.Y);
+        foreach (var eid in aoi)
+        {
+            var peer = channel.GetPlayerPeer(eid);
+            if (peer == null) continue;
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+            writer = PacketSerializer.WritePacket(PacketId.S2C_BossCast);
+            writer.Put(mob.Id);
+            writer.Put(effectId);
+            writer.Put(skillName);
+            writer.Put(castSeconds);
+            writer.Put(effectDuration);
+            writer.Put(isBuff);
+        }
+    }
+
+    private void SendBossSlimeNotice(Channel channel, MonsterEntity mob, string message)
+    {
+        var aoi = channel.GetEntitiesInAoi(mob.X, mob.Y);
+        foreach (var eid in aoi)
+        {
+            var peer = channel.GetPlayerPeer(eid);
+            if (peer != null)
+                SendSystemMessage(peer, message);
+        }
+    }
+
+    private void SendStatusEffectToPlayer(Channel channel, ulong playerId, string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath)
+    {
+        var peer = channel.GetPlayerPeer(playerId);
+        if (peer == null)
+            return;
+
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_StatusEffect);
+        writer.Put(effectId);
+        writer.Put(displayName);
+        writer.Put(isDebuff);
+        writer.Put(duration);
+        writer.Put(power);
+        writer.Put(iconPath);
+        peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
     private void HandleRespawn(NetPeer peer)
@@ -412,38 +730,38 @@ partial class GameServer
 
         if (skillId <= 0)
         {
-            SendSystemMessage(peer, "Habilidade inválida. Reatribua a skill na barra.");
+            SendSystemMessage(peer, "Habilidade invÃ¡lida. Reatribua a skill na barra.");
             return;
         }
 
         if (skillSlot < 0 || skillSlot >= caster.SkillBarSlots.Length || caster.SkillBarSlots[skillSlot] != skillId)
         {
-            SendSystemMessage(peer, "Esta habilidade nÃ£o estÃ¡ autorizada neste slot da barra.");
+            SendSystemMessage(peer, "Esta habilidade nÃƒÂ£o estÃƒÂ¡ autorizada neste slot da barra.");
             return;
         }
 
         var skill = ServerSkillCatalog.Get(skillId);
         if (skill == null)
         {
-            SendSystemMessage(peer, $"Skill {skillId} não encontrada no catálogo do servidor.");
+            SendSystemMessage(peer, $"Skill {skillId} nÃ£o encontrada no catÃ¡logo do servidor.");
             return;
         }
 
         if (!ServerSkillCatalog.ClassMatches(caster.CharacterClass, skill.ClasseRestrita))
         {
-            SendSystemMessage(peer, "Esta habilidade não pertence à sua classe.");
+            SendSystemMessage(peer, "Esta habilidade nÃ£o pertence Ã  sua classe.");
             return;
         }
 
         if (caster.Level < skill.NivelRequerido)
         {
-            SendSystemMessage(peer, $"Nível {skill.NivelRequerido} necessário para usar {skill.Nome}.");
+            SendSystemMessage(peer, $"NÃ­vel {skill.NivelRequerido} necessÃ¡rio para usar {skill.Nome}.");
             return;
         }
 
         if (!ServerTalentCatalog.IsSkillUnlockedForPlayer(caster.CharacterClass, caster.UnlockedTalents, skill.SkillId))
         {
-            SendSystemMessage(peer, "Esta habilidade ainda nÃ£o foi desbloqueada na Ã¡rvore de talentos.");
+            SendSystemMessage(peer, "Esta habilidade ainda nÃƒÂ£o foi desbloqueada na ÃƒÂ¡rvore de talentos.");
             return;
         }
 
@@ -516,7 +834,7 @@ partial class GameServer
 
         if (targets.Count == 0)
         {
-            SendSystemMessage(peer, "Nenhum alvo válido para a habilidade.");
+            SendSystemMessage(peer, "Nenhum alvo vÃ¡lido para a habilidade.");
             return false;
         }
 
@@ -546,7 +864,7 @@ partial class GameServer
     {
         if (skill.SkillId != 10101)
         {
-            SendSystemMessage(peer, "Esta invocação ainda não está implementada no servidor.");
+            SendSystemMessage(peer, "Esta invocaÃ§Ã£o ainda nÃ£o estÃ¡ implementada no servidor.");
             return false;
         }
 
@@ -794,6 +1112,13 @@ partial class GameServer
             int damage = pending.Skill != null
                 ? CalculateSkillDamage(caster, target, pending.Skill, out isCrit, pending.ChargePercent)
                 : CalculateBasicDamage(caster, target, out isCrit);
+            if (pending.Skill != null && IsMarcaExecutorSkill(pending.Skill))
+            {
+                ApplySkillDebuff(target, pending.Skill);
+                ScheduleMarcaExecutorPoison(channel, caster, target, session, damage);
+                continue;
+            }
+
             target.Health = Math.Max(0, target.Health - damage);
             if (target is PlayerEntity playerTarget)
             {
@@ -806,6 +1131,78 @@ partial class GameServer
             BroadcastCombatResult(channel, caster.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, caster.X, caster.Y, pending.Skill?.SkillId ?? 0);
             if (pending.Skill != null)
                 ApplySkillDebuff(target, pending.Skill);
+
+            if (target is MonsterEntity killedMob && target.Health <= 0)
+                HandleMonsterDeath(channel, killedMob, caster, session, target.Id);
+        }
+    }
+
+    private static bool IsMarcaExecutorSkill(ServerSkillDefinition skill)
+    {
+        return skill.SkillId is 10206 or 16
+            || string.Equals(skill.Nome, "Marca do Executor", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ScheduleMarcaExecutorPoison(Channel channel, PlayerEntity caster, Entity target, PlayerSession session, int totalDamage)
+    {
+        const int tickCount = 3;
+        int safeTotal = Math.Max(1, totalDamage);
+        int baseTick = Math.Max(1, safeTotal / tickCount);
+        int remainder = Math.Max(0, safeTotal - baseTick * tickCount);
+
+        for (int i = 0; i < tickCount; i++)
+        {
+            _pendingDotTicks.Add(new PendingDotTick
+            {
+                TickAt = _gameTime + i + 1,
+                ChannelId = channel.Id,
+                CasterId = caster.Id,
+                TargetId = target.Id,
+                SkillId = 10206,
+                Damage = baseTick + (i == tickCount - 1 ? remainder : 0),
+                IsCrit = false,
+            });
+        }
+
+        SendSystemMessage(session.Peer, "Marca do Executor: veneno aplicado.");
+    }
+
+    private void ProcessPendingDotTicks()
+    {
+        for (int i = _pendingDotTicks.Count - 1; i >= 0; i--)
+        {
+            var pending = _pendingDotTicks[i];
+            if (pending.TickAt > _gameTime)
+                continue;
+
+            _pendingDotTicks.RemoveAt(i);
+            var channel = _world.GetChannel(pending.ChannelId);
+            if (channel == null)
+                continue;
+
+            if (channel.GetEntity(pending.CasterId) is not PlayerEntity caster || caster.Health <= 0)
+                continue;
+            var target = channel.GetEntity(pending.TargetId);
+            if (target == null || target.Health <= 0)
+                continue;
+            if (!CanDamageEntity(caster, target, out _))
+                continue;
+
+            var session = _sessions.Values.FirstOrDefault(s => s.EntityId == pending.CasterId);
+            if (session == null || session.SelectedCharacter == null)
+                continue;
+
+            int damage = Math.Max(1, Math.Min(pending.Damage, target.Health));
+            target.Health = Math.Max(0, target.Health - damage);
+            if (target is PlayerEntity playerTarget)
+            {
+                playerTarget.LastCombatTime = _gameTime;
+                BroadcastPartyMemberUpdateForEntity(playerTarget.Id);
+            }
+            if (target is MonsterEntity hitMob)
+                hitMob.TargetEntityId = caster.Id;
+
+            BroadcastCombatResult(channel, caster.Id, target.Id, damage, pending.IsCrit, target.Health, target.MaxHealth, caster.X, caster.Y, pending.SkillId);
 
             if (target is MonsterEntity killedMob && target.Health <= 0)
                 HandleMonsterDeath(channel, killedMob, caster, session, target.Id);
@@ -979,7 +1376,7 @@ partial class GameServer
     private static bool IsGuaranteedCriticalSkill(ServerSkillDefinition skill)
     {
         return skill.SkillId is 10205 or 15
-            || string.Equals(skill.Nome, "Disparo Crítico", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(skill.Nome, "Disparo CrÃ­tico", StringComparison.OrdinalIgnoreCase)
             || string.Equals(skill.Nome, "Disparo Critico", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -1254,7 +1651,7 @@ partial class GameServer
             var peer = channel.GetPlayerPeer(killer.Id);
             if (peer != null)
             {
-                SendSystemMessage(peer, $"Parabéns! Você alcançou o nível {killer.Level}!");
+                SendSystemMessage(peer, $"ParabÃ©ns! VocÃª alcanÃ§ou o nÃ­vel {killer.Level}!");
                 SendStatUpdate(peer, killer);
                 SendTalentData(peer, killer);
             }
@@ -1281,7 +1678,7 @@ partial class GameServer
         {
             SendGlobalChat(
                 "Sistema",
-                $"{killer.Name} derrotou o Boss Slime! Ele nascerá novamente em 1 hora.");
+                $"{killer.Name} derrotou o Boss Slime! Ele nascerÃ¡ novamente em 1 hora.");
         }
 
     }
@@ -1449,7 +1846,7 @@ partial class GameServer
             }
             else if (false)
             {
-                SendSystemMessage(peer, "Inventário cheio!");
+                SendSystemMessage(peer, "InventÃ¡rio cheio!");
                 return;
             }
             */
@@ -1514,7 +1911,7 @@ partial class GameServer
             w.Put(loot.Quantity);
         }
 
-        SendSystemMessage(peer, "Poção de vida spawnada! Aproxime e aperte F para pegar.");
+        SendSystemMessage(peer, "PoÃ§Ã£o de vida spawnada! Aproxime e aperte F para pegar.");
     }
 }
 
@@ -1570,6 +1967,28 @@ internal sealed class PendingProjectileFire
     public NetPeer? Peer { get; init; }
 }
 
+internal sealed class PendingMonsterProjectileHit
+{
+    public double ImpactAt { get; init; }
+    public int ChannelId { get; init; }
+    public ulong CasterId { get; init; }
+    public ulong TargetId { get; init; }
+    public float DamageMultiplier { get; init; } = 1f;
+    public int SkillId { get; init; }
+    public bool AppliesSlow { get; init; }
+}
+
+internal sealed class PendingDotTick
+{
+    public double TickAt { get; init; }
+    public int ChannelId { get; init; }
+    public ulong CasterId { get; init; }
+    public ulong TargetId { get; init; }
+    public int SkillId { get; init; }
+    public int Damage { get; init; }
+    public bool IsCrit { get; init; }
+}
+
 internal static class ServerSkillCatalog
 {
     private static readonly Lazy<Dictionary<int, ServerSkillDefinition>> Skills = new(LoadAll);
@@ -1614,14 +2033,14 @@ internal static class ServerSkillCatalog
         string? root = FindProjectRoot();
         if (root == null)
         {
-            Logger.Info("SkillCatalog: raiz do projeto não encontrada; catálogo vazio.");
+            Logger.Info("SkillCatalog: raiz do projeto nÃ£o encontrada; catÃ¡logo vazio.");
             return result;
         }
 
         string skillsDir = Path.Combine(root, "skills", "habilidades");
         if (!Directory.Exists(skillsDir))
         {
-            Logger.Info($"SkillCatalog: pasta não encontrada: {skillsDir}");
+            Logger.Info($"SkillCatalog: pasta nÃ£o encontrada: {skillsDir}");
             return result;
         }
 
@@ -1810,13 +2229,13 @@ internal static class ServerSkillCatalog
     private static bool IsAreaSkill(string escopo, string tipo, string efeito)
     {
         string text = $"{escopo} {tipo} {efeito}".ToLowerInvariant();
-        return text.Contains("Ã¡rea") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
+        return text.Contains("ÃƒÂ¡rea") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
     }
 
     private static bool IsAreaSkill(string tipo, string efeito)
     {
         string text = $"{tipo} {efeito}".ToLowerInvariant();
-        return text.Contains("área") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
+        return text.Contains("Ã¡rea") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
     }
 
     private static int CountFromText(string text)

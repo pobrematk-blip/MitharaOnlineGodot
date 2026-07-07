@@ -36,6 +36,8 @@ public partial class GameServer : INetEventListener
     internal readonly Dictionary<ulong, TradeSession> _activeTrades = new();
     internal readonly List<PendingProjectileHit> _pendingProjectileHits = new();
     internal readonly List<PendingProjectileFire> _pendingProjectileFires = new();
+    internal readonly List<PendingMonsterProjectileHit> _pendingMonsterProjectileHits = new();
+    internal readonly List<PendingDotTick> _pendingDotTicks = new();
     internal int _nextTradeId = 1;
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
@@ -85,6 +87,7 @@ public partial class GameServer : INetEventListener
         foreach (var ch in _world.GetAllChannels())
         {
             ch.OnMonsterAttack += HandleMonsterAIAttack;
+            ch.OnMonsterSpecial += HandleMonsterSpecial;
             ch.NoMobZones = _config.NoMobZones;
             if (_config.SpawnPoints.Count > 0)
                 ch.Spawner.ConfigureSpawnPoints(_config.SpawnPoints);
@@ -151,6 +154,8 @@ public partial class GameServer : INetEventListener
         _world.UpdateAll(dt, _gameTime);
         ProcessPendingProjectileFires();
         ProcessPendingProjectileHits();
+        ProcessPendingMonsterProjectileHits();
+        ProcessPendingDotTicks();
 
         foreach (var ch in _world.GetAllChannels())
         {

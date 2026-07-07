@@ -622,6 +622,52 @@ public partial class Player : CharacterBody2D
         return TryGetSelectedTarget(net, out targetNode, out _);
     }
 
+    public bool TryEnsureSelectedEnemyTarget(float maxDistance, out Node2D targetNode, out Vector2 targetPosition)
+    {
+        targetNode = null;
+        targetPosition = Vector2.Zero;
+
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null || !net.IsConnected)
+            return false;
+
+        if (TryGetSelectedTarget(net, out var selectedNode, out _) && selectedNode is Inimigo)
+        {
+            targetNode = selectedNode;
+            targetPosition = selectedNode.GlobalPosition;
+            return true;
+        }
+
+        ulong? nearestId = null;
+        Node2D nearestNode = null;
+        float maxDistanceSquared = maxDistance * maxDistance;
+        float nearestDistanceSquared = maxDistanceSquared;
+
+        foreach (var entry in net.GetAllEntities())
+        {
+            if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value))
+                continue;
+            if (entry.Value is not Inimigo inimigo || (inimigo.HasMeta("dying") && inimigo.GetMeta("dying").AsBool()))
+                continue;
+
+            float distanceSquared = GlobalPosition.DistanceSquaredTo(inimigo.GlobalPosition);
+            if (distanceSquared >= nearestDistanceSquared)
+                continue;
+
+            nearestDistanceSquared = distanceSquared;
+            nearestId = entry.Key;
+            nearestNode = inimigo;
+        }
+
+        if (!nearestId.HasValue || nearestNode == null)
+            return false;
+
+        AplicarTarget(nearestId.Value, nearestNode);
+        targetNode = nearestNode;
+        targetPosition = nearestNode.GlobalPosition;
+        return true;
+    }
+
     public void ApplyServerPosition(float x, float y, bool animated = false)
     {
         var target = new Vector2(x, y);

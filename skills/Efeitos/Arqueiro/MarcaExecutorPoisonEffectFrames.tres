@@ -1,0 +1,74 @@
+[gd_resource type="SpriteFrames" load_steps=11 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/EDIT _ toxic gas.png" id="1_toxic"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_01"]
+atlas = ExtResource("1_toxic")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_02"]
+atlas = ExtResource("1_toxic")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_03"]
+atlas = ExtResource("1_toxic")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_04"]
+atlas = ExtResource("1_toxic")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_05"]
+atlas = ExtResource("1_toxic")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_06"]
+atlas = ExtResource("1_toxic")
+region = Rect2(320, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_07"]
+atlas = ExtResource("1_toxic")
+region = Rect2(384, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_08"]
+atlas = ExtResource("1_toxic")
+region = Rect2(448, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_toxic_09"]
+atlas = ExtResource("1_toxic")
+region = Rect2(512, 0, 64, 64)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_01")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_02")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_03")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_04")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_05")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_06")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_07")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_08")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_toxic_09")
+}],
+"loop": false,
+"name": &"default",
+"speed": 9.0
+}]

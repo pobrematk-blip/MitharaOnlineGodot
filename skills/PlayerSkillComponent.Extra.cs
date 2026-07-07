@@ -66,8 +66,16 @@ public partial class PlayerSkillComponent
         string dir = _player.CurrentDirection ?? "down";
         Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
         Vector2 targetPosition = _player.GlobalPosition + dirVec * 50f;
-        if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
+        bool isTiroExecucao = skill.SkillId == 10209 || skill.SkillId == 19 || string.Equals(skill.Nome?.Trim(), "Tiro da Execução", StringComparison.OrdinalIgnoreCase);
+        if (isTiroExecucao)
+        {
+            if (!_player.TryEnsureSelectedEnemyTarget(900f, out _, out targetPosition))
+                GD.Print("[SKILLCOMP] Tiro da Execucao sem alvo: nenhum inimigo proximo encontrado.");
+        }
+        else if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
+        {
             targetPosition = selectedTargetPosition;
+        }
 
         if (skill.SkillId == 10002)
         {
@@ -75,7 +83,7 @@ public partial class PlayerSkillComponent
             if (!tocouSalto)
                 _player.TocarAnimacaoSkillArqueiro(targetPosition);
         }
-        else if (skill.SkillId == 10201 || skill.SkillId == 10203 || skill.SkillId == 10206 || skill.SkillId == 16)
+        else if (skill.SkillId == 10201 || skill.SkillId == 10203 || skill.SkillId == 10206 || skill.SkillId == 16 || skill.SkillId == 10209 || skill.SkillId == 19)
         {
             _player.FinalizarCarregamentoTiroPreciso(targetPosition);
         }

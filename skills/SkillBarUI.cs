@@ -9,10 +9,12 @@ public partial class SkillBarUI : Control
     private const int TiroPrecisoSkillId = 10201;
     private const int TiroPenetranteSkillId = 10203;
     private const int DisparoCriticoSkillId = 10205;
+    private const int TiroExecucaoSkillId = 10209;
     private const float SkillChargeMaxSeconds = 2.0f;
     private const string MiraApuradaEffectPath = "res://skills/Efeitos/Arqueiro/MiraApuradaEffect.tscn";
     private const string DisparoCriticoEffectPath = "res://skills/Efeitos/Arqueiro/DisparoCriticoEffect.tscn";
     private const string SegundoFolegoEffectPath = "res://skills/Efeitos/SegundoFolegoEffect.tscn";
+    private const string TiroExecucaoEffectPath = "res://skills/Efeitos/Arqueiro/TiroExecucaoEffect.tscn";
 
     private SkillBarSlotUI[,] _slots = new SkillBarSlotUI[2, SLOT_COUNT];
 
@@ -30,6 +32,7 @@ public partial class SkillBarUI : Control
     private bool _connectRetryScheduled;
     private HBoxContainer _buffContainer;
     private readonly Dictionary<int, BuffIconUI> _activeBuffIcons = new();
+    private readonly Dictionary<string, StatusEffectIconUI> _activeStatusIcons = new();
     private VipIconUI _vipIcon;
     private PartyXpIconUI _partyXpIcon;
     private PanelContainer _chargePanel;
@@ -72,6 +75,7 @@ public partial class SkillBarUI : Control
             net.OnVipStatus -= OnVipStatus;
             net.OnPartyData -= OnPartyData;
             net.OnPartyMemberUpdate -= OnPartyMemberUpdate;
+            net.OnStatusEffect -= OnStatusEffect;
             net.OnItemUseResult -= OnItemUseResult;
         }
     }
@@ -295,9 +299,37 @@ public partial class SkillBarUI : Control
         net.OnPartyData += OnPartyData;
         net.OnPartyMemberUpdate -= OnPartyMemberUpdate;
         net.OnPartyMemberUpdate += OnPartyMemberUpdate;
+        net.OnStatusEffect -= OnStatusEffect;
+        net.OnStatusEffect += OnStatusEffect;
         if (net.VipExpiryBinary != 0)
             OnVipStatus(net.VipExpiryBinary);
         AtualizarBuffParty(net.PartyXpBonusPercent);
+    }
+
+    private void OnStatusEffect(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath)
+    {
+        if (string.IsNullOrWhiteSpace(effectId) || duration <= 0f)
+            return;
+
+        EnsureBuffContainer();
+        if (_buffContainer == null)
+            return;
+
+        if (_activeStatusIcons.TryGetValue(effectId, out var existing) && IsInstanceValid(existing))
+        {
+            existing.Restart(duration);
+            return;
+        }
+
+        var icon = new StatusEffectIconUI(effectId, displayName, isDebuff, duration, power, iconPath);
+        icon.Expired += () =>
+        {
+            _activeStatusIcons.Remove(effectId);
+            if (IsInstanceValid(icon))
+                icon.QueueFree();
+        };
+        _activeStatusIcons[effectId] = icon;
+        _buffContainer.AddChild(icon);
     }
 
     private void OnVipStatus(long expiryBinary)
@@ -540,6 +572,7 @@ public partial class SkillBarUI : Control
                     MostrarBuffSeNecessario(skill);
                     AplicarBonusVisualBuffArqueiro(player, skill);
                     TocarEfeitoSegundoFolego(player as Node2D, skill);
+                    TocarEfeitoTiroExecucaoAoUsar(player as Player, skill);
                 }
             }
         }
@@ -558,8 +591,15 @@ public partial class SkillBarUI : Control
             return false;
 
         Vector2 targetPosition = player.GlobalPosition + DirectionUtil.DirectionToVector(player.CurrentDirection ?? "down") * 50f;
-        if (player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
+        if (EhTiroExecucao(skill) && player.TryEnsureSelectedEnemyTarget(900f, out var targetNode, out var ensuredTargetPosition))
+        {
+            targetPosition = ensuredTargetPosition;
+            TocarEfeitoTiroExecucao(targetNode);
+        }
+        else if (player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
+        {
             targetPosition = selectedTargetPosition;
+        }
 
         _chargingSkill = true;
         _chargeSkillName = skill.Nome ?? "Skill";
@@ -625,10 +665,13 @@ public partial class SkillBarUI : Control
 
         return skill.SkillId == TiroPrecisoSkillId
             || skill.SkillId == TiroPenetranteSkillId
+            || skill.SkillId == TiroExecucaoSkillId
+            || skill.SkillId == 19
             || skill.SkillId == 10206
             || skill.SkillId == 16
             || string.Equals(skill.Nome?.Trim(), "Tiro Preciso", StringComparison.OrdinalIgnoreCase)
             || string.Equals(skill.Nome?.Trim(), "Tiro Penetrante", StringComparison.OrdinalIgnoreCase)
+            || EhTiroExecucao(skill)
             || EhMarcaExecutor(skill);
     }
 
@@ -771,6 +814,45 @@ public partial class SkillBarUI : Control
         GD.Print($"[SEGUNDO FOLEGO] Efeito tocando id={skill.SkillId} nome={skill.Nome}");
     }
 
+    private void TocarEfeitoTiroExecucaoAoUsar(Player player, SkillResource skill)
+    {
+        if (player == null || !EhTiroExecucao(skill))
+            return;
+
+        if (!player.TryEnsureSelectedEnemyTarget(900f, out var targetNode, out _))
+        {
+            GD.Print("[TIRO EXECUCAO] Nenhum inimigo proximo para marcar.");
+            return;
+        }
+
+        TocarEfeitoTiroExecucao(targetNode);
+    }
+
+    private void TocarEfeitoTiroExecucao(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+        if (!ResourceLoader.Exists(TiroExecucaoEffectPath))
+        {
+            GD.PrintErr($"[TIRO EXECUCAO] Cena de efeito nao encontrada: {TiroExecucaoEffectPath}");
+            return;
+        }
+
+        var scene = ResourceLoader.Load<PackedScene>(TiroExecucaoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+        {
+            GD.PrintErr("[TIRO EXECUCAO] Falha ao instanciar efeito.");
+            return;
+        }
+
+        effect.Position = Vector2.Zero;
+        effect.ZIndex = 90;
+        effect.ZAsRelative = false;
+        targetNode.AddChild(effect);
+        GD.Print($"[TIRO EXECUCAO] Alvo marcado em {targetNode.Name}.");
+    }
+
     private static bool EhDisparoCritico(SkillResource skill)
     {
         if (skill == null)
@@ -804,6 +886,18 @@ public partial class SkillBarUI : Control
             || skill.SkillId == 16
             || (nome.Contains("Marca", StringComparison.OrdinalIgnoreCase)
                 && nome.Contains("Executor", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool EhTiroExecucao(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == TiroExecucaoSkillId
+            || skill.SkillId == 19
+            || (nome.Contains("Tiro", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("Execu", StringComparison.OrdinalIgnoreCase));
     }
 
     // Assign a skill to a slot (called by slot UI on drop)
@@ -1251,6 +1345,129 @@ public partial class VipIconUI : Panel
         if (remaining.TotalHours >= 1)
             return $"{(int)remaining.TotalHours}h {remaining.Minutes}m";
         return $"{remaining.Minutes}m {remaining.Seconds}s";
+    }
+}
+
+public partial class StatusEffectIconUI : Panel
+{
+    public event Action Expired;
+
+    private readonly string _effectId;
+    private readonly string _displayName;
+    private readonly bool _isDebuff;
+    private readonly int _power;
+    private readonly string _iconPath;
+    private float _remaining;
+    private Label _label;
+
+    public StatusEffectIconUI(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath)
+    {
+        _effectId = effectId;
+        _displayName = string.IsNullOrWhiteSpace(displayName) ? effectId : displayName;
+        _isDebuff = isDebuff;
+        _remaining = duration;
+        _power = power;
+        _iconPath = iconPath ?? "";
+        CustomMinimumSize = new Vector2(34, 34);
+        Size = new Vector2(34, 34);
+        MouseFilter = MouseFilterEnum.Ignore;
+    }
+
+    public override void _Ready()
+    {
+        Color border = _isDebuff
+            ? new Color(1f, 0.22f, 0.20f, 0.95f)
+            : new Color(0.35f, 0.95f, 0.6f, 0.95f);
+        Color bg = _isDebuff
+            ? new Color(0.12f, 0.025f, 0.035f, 0.9f)
+            : new Color(0.025f, 0.06f, 0.045f, 0.88f);
+
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = bg,
+            BorderColor = border,
+            BorderWidthBottom = 1,
+            BorderWidthLeft = 1,
+            BorderWidthRight = 1,
+            BorderWidthTop = 1,
+            CornerRadiusBottomLeft = 4,
+            CornerRadiusBottomRight = 4,
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+        });
+
+        Texture2D texture = null;
+        if (!string.IsNullOrWhiteSpace(_iconPath) && ResourceLoader.Exists(_iconPath))
+            texture = ResourceLoader.Load<Texture2D>(_iconPath);
+
+        var icon = new TextureRect
+        {
+            Texture = texture,
+            MouseFilter = MouseFilterEnum.Ignore,
+            ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+            Position = new Vector2(3, 3),
+            Size = new Vector2(28, 28),
+        };
+        AddChild(icon);
+
+        if (texture == null)
+        {
+            var fallback = new Label
+            {
+                Text = _isDebuff ? "!" : "+",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                MouseFilter = MouseFilterEnum.Ignore,
+            };
+            fallback.SetAnchorsPreset(LayoutPreset.FullRect);
+            fallback.AddThemeFontSizeOverride("font_size", 18);
+            fallback.AddThemeColorOverride("font_color", border);
+            AddChild(fallback);
+        }
+
+        _label = new Label
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            ZIndex = 2,
+        };
+        _label.SetAnchorsPreset(LayoutPreset.FullRect);
+        _label.AddThemeFontSizeOverride("font_size", 10);
+        _label.AddThemeColorOverride("font_color", Colors.White);
+        _label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.9f));
+        _label.AddThemeConstantOverride("shadow_offset_x", 1);
+        _label.AddThemeConstantOverride("shadow_offset_y", 1);
+        AddChild(_label);
+
+        TooltipText = $"{(_isDebuff ? "Debuff" : "Buff")}: {_displayName}\nEfeito: {_power}%\nDuração restante";
+        AtualizarLabel();
+        SetProcess(true);
+    }
+
+    public void Restart(float duration)
+    {
+        _remaining = duration;
+        AtualizarLabel();
+        SetProcess(true);
+    }
+
+    public override void _Process(double delta)
+    {
+        _remaining = Mathf.Max(0f, _remaining - (float)delta);
+        AtualizarLabel();
+        if (_remaining <= 0f)
+        {
+            SetProcess(false);
+            Expired?.Invoke();
+        }
+    }
+
+    private void AtualizarLabel()
+    {
+        if (_label != null)
+            _label.Text = Mathf.CeilToInt(_remaining).ToString();
     }
 }
 

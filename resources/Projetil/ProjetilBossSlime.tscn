@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/Projetil/Projetil.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Bosses/SlimeSlowEffectFrames.tres" id="2_frames"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_slime"]
+radius = 18.0
+
+[node name="ProjetilBossSlime" type="Area2D"]
+collision_mask = 6
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, 2)
+scale = Vector2(0.42, 0.42)
+z_index = 60
+z_as_relative = false
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_slime")

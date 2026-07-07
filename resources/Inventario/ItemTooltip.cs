@@ -77,7 +77,7 @@ public partial class ItemTooltip : Panel
 		AddHeader(item, cor);
 		AddRefino(refinoNivel);
 		AddSeparator();
-		AddStatus(item);
+		AddStatus(item, refinoNivel);
 		if (!string.IsNullOrEmpty(item.Descricao))
 			AddDescricao(item);
 		AddSeparator();
@@ -208,6 +208,18 @@ public partial class ItemTooltip : Panel
 			10 => 1.30,
 			_ => 1.0,
 		};
+	}
+
+	private static int RefinedInt(int value, int refinoNivel, double multiplier)
+	{
+		if (value <= 0)
+			return 0;
+
+		int refinedValue = (int)System.Math.Round(value * multiplier);
+		if (refinoNivel <= 0)
+			return refinedValue;
+
+		return System.Math.Max(refinedValue, value + refinoNivel);
 	}
 
 	private void AddCompareHeader(string rotulo, ItemResource item, Color cor, int refinoNivel)
@@ -516,21 +528,22 @@ public partial class ItemTooltip : Panel
 		_container.AddChild(margin);
 	}
 
-	private void AddStatus(ItemResource item)
+	private void AddStatus(ItemResource item, int refinoNivel = 0)
 	{
 		AddSecaoTitulo("ESTATÍSTICAS");
 
 		bool temAlgo = false;
+		double refineMult = GetRefineMultiplier(refinoNivel);
 
-		temAlgo |= AddStat(item.Forca, "Força", "+{0}", new Color(0.9f, 0.6f, 0.3f));
-		temAlgo |= AddStat(item.Agilidade, "Agilidade", "+{0}", new Color(0.3f, 0.8f, 0.3f));
-		temAlgo |= AddStat(item.Destreza, "Destreza", "+{0}", new Color(0.3f, 0.6f, 0.9f));
-		temAlgo |= AddStat(item.Inteligencia, "Inteligência", "+{0}", new Color(0.5f, 0.4f, 1.0f));
+		temAlgo |= AddStat(RefinedInt(item.Forca, refinoNivel, refineMult), "Força", "+{0}", new Color(0.9f, 0.6f, 0.3f));
+		temAlgo |= AddStat(RefinedInt(item.Agilidade, refinoNivel, refineMult), "Agilidade", "+{0}", new Color(0.3f, 0.8f, 0.3f));
+		temAlgo |= AddStat(RefinedInt(item.Destreza, refinoNivel, refineMult), "Destreza", "+{0}", new Color(0.3f, 0.6f, 0.9f));
+		temAlgo |= AddStat(RefinedInt(item.Inteligencia, refinoNivel, refineMult), "Inteligência", "+{0}", new Color(0.5f, 0.4f, 1.0f));
 
-		temAlgo |= AddStat(item.DefesaFisica, "Proteção", "+{0}", new Color(0.6f, 0.9f, 0.6f));
-		temAlgo |= AddStat(item.DefesaMagica, "Resist. Mágica", "+{0}", new Color(0.4f, 0.6f, 1.0f));
-		temAlgo |= AddStat(item.DanoFisico, "Dano Físico", "+{0}", new Color(1.0f, 0.4f, 0.4f));
-		temAlgo |= AddStat(item.DanoMagico, "Dano Mágico", "+{0}", new Color(0.4f, 0.4f, 1.0f));
+		temAlgo |= AddStat(RefinedInt(item.DefesaFisica, refinoNivel, refineMult), "Proteção", "+{0}", new Color(0.6f, 0.9f, 0.6f));
+		temAlgo |= AddStat(RefinedInt(item.DefesaMagica, refinoNivel, refineMult), "Resist. Mágica", "+{0}", new Color(0.4f, 0.6f, 1.0f));
+		temAlgo |= AddStat(RefinedInt(item.DanoFisico, refinoNivel, refineMult), "Dano Físico", "+{0}", new Color(1.0f, 0.4f, 0.4f));
+		temAlgo |= AddStat(RefinedInt(item.DanoMagico, refinoNivel, refineMult), "Dano Mágico", "+{0}", new Color(0.4f, 0.4f, 1.0f));
 
 		temAlgo |= AddStatF(item.ChanceCritica, "Crítico", "+{0:F1}", new Color(1.0f, 0.5f, 0.2f));
 		temAlgo |= AddStatF(item.Evasao, "Evasão", "+{0:F1}", new Color(0.3f, 0.9f, 0.6f));
@@ -539,16 +552,16 @@ public partial class ItemTooltip : Panel
 		temAlgo |= AddStatF(item.RouboMana, "Roubo de Mana", "+{0:F1}%", new Color(0.3f, 0.3f, 1.0f));
 		temAlgo |= AddStatF(item.RegeneracaoVida, "Regen. Vida", "+{0:F1}/s", new Color(0.4f, 1.0f, 0.4f));
 		temAlgo |= AddStatF(item.RegeneracaoMana, "Regen. Mana", "+{0:F1}/s", new Color(0.4f, 0.4f, 1.0f));
-		temAlgo |= AddStat(item.Hp, "Vida", "+{0}", new Color(0.5f, 1.0f, 0.5f));
-		temAlgo |= AddStat(item.Mana, "Mana", "+{0}", new Color(0.4f, 0.4f, 1.0f));
-		temAlgo |= AddStat(item.Stamina, "Stamina", "+{0}", new Color(0.6f, 1.0f, 0.6f));
+		temAlgo |= AddStat(RefinedInt(item.Hp, refinoNivel, refineMult), "Vida", "+{0}", new Color(0.5f, 1.0f, 0.5f));
+		temAlgo |= AddStat(RefinedInt(item.Mana, refinoNivel, refineMult), "Mana", "+{0}", new Color(0.4f, 0.4f, 1.0f));
+		temAlgo |= AddStat(RefinedInt(item.Stamina, refinoNivel, refineMult), "Stamina", "+{0}", new Color(0.6f, 1.0f, 0.6f));
 		temAlgo |= AddStatF(item.VelocidadeMovimento, "Vel. Movimento", "x{0:F2}", new Color(0.5f, 1.0f, 0.5f));
 		temAlgo |= AddStatF(item.VelocidadeAtaque, "Vel. Ataque", "x{0:F2}", new Color(1.0f, 0.5f, 0.5f));
 		temAlgo |= AddStatF(item.Precisao, "Precisão", "+{0:F1}", new Color(0.5f, 0.8f, 1.0f));
 		temAlgo |= AddStatF(item.Tenacidade, "Tenacidade", "+{0:F1}", new Color(0.8f, 0.5f, 1.0f));
-		temAlgo |= AddStat(item.DanoPvp, "Dano PvP", "+{0}", new Color(1.0f, 0.3f, 0.3f));
-		temAlgo |= AddStat(item.DefesaPvp, "Defesa PvP", "+{0}", new Color(0.3f, 0.8f, 0.8f));
-		temAlgo |= AddStat(item.PenetracaoArmadura, "Pen. Armadura", "+{0}", new Color(1.0f, 0.5f, 0.2f));
+		temAlgo |= AddStat(RefinedInt(item.DanoPvp, refinoNivel, refineMult), "Dano PvP", "+{0}", new Color(1.0f, 0.3f, 0.3f));
+		temAlgo |= AddStat(RefinedInt(item.DefesaPvp, refinoNivel, refineMult), "Defesa PvP", "+{0}", new Color(0.3f, 0.8f, 0.8f));
+		temAlgo |= AddStat(RefinedInt(item.PenetracaoArmadura, refinoNivel, refineMult), "Pen. Armadura", "+{0}", new Color(1.0f, 0.5f, 0.2f));
 		temAlgo |= AddStatF(item.ReducaoCooldown, "Red. Cooldown", "+{0:F1}%", new Color(0.4f, 0.7f, 1.0f));
 		temAlgo |= AddStatF(item.BonusExperiencia, "Bônus XP", "+{0:F1}%", new Color(1.0f, 0.85f, 0.3f));
 		temAlgo |= AddStatF(item.ChanceDropAumentada, "Chance Drop", "+{0:F1}%", new Color(1.0f, 0.8f, 0.3f));

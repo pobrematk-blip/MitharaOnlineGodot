@@ -9,6 +9,7 @@ public class Channel
 {
     // Callback for monster attacks: (channel, monster, target, gameTime) -> true if target died
     public Func<Channel, MonsterEntity, Entity, double, bool>? OnMonsterAttack;
+    public Func<Channel, MonsterEntity, Entity, double, bool>? OnMonsterSpecial;
     public int Id { get; }
     public string Name { get; }
 
@@ -476,6 +477,8 @@ public class Channel
     {
         if (HasMovementBlock(mob, gameTime))
             return 0f;
+        if (HasActiveBuff(mob, "boss_speed", gameTime))
+            return mob.Speed * 1.8f;
         if (HasActiveBuff(mob, "slow", gameTime))
             return mob.Speed * 0.5f;
         return mob.Speed;
@@ -529,6 +532,9 @@ public class Channel
                 float dx = target.X - mob.X;
                 float dy = target.Y - mob.Y;
                 float dist = MathF.Sqrt(dx * dx + dy * dy);
+
+                if (!HasHardDisable(mob, gameTime) && (OnMonsterSpecial?.Invoke(this, mob, target, gameTime) ?? false))
+                    continue;
 
                 float effectiveAttackRange = mob.AttackRange + (mob.Moving ? 0f : 8f);
                 if (dist <= effectiveAttackRange)

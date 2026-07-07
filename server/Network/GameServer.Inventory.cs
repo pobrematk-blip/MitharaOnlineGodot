@@ -832,16 +832,16 @@ partial class GameServer
             ItemRoller.EnsureRolled(item);
             var roll = item.Roll;
             double refineMult = GetRefineMultiplier(item.RefineLevel);
-            bonusAtk += Refined(roll.BaseAttack + Affix(roll, "BaseAttack"), refineMult);
-            bonusDef += Refined(roll.Defense + Affix(roll, "DefesaFisica"), refineMult);
-            bonusMagicDef += Refined(roll.MagicDefense + Affix(roll, "DefesaMagica"), refineMult);
-            bonusHp += Refined(roll.Hp + Affix(roll, "Hp"), refineMult);
-            bonusMana += Refined(roll.Mana + Affix(roll, "Mana"), refineMult);
+            bonusAtk += Refined(roll.BaseAttack + Affix(roll, "BaseAttack"), item.RefineLevel, refineMult);
+            bonusDef += Refined(roll.Defense + Affix(roll, "DefesaFisica"), item.RefineLevel, refineMult);
+            bonusMagicDef += Refined(roll.MagicDefense + Affix(roll, "DefesaMagica"), item.RefineLevel, refineMult);
+            bonusHp += Refined(roll.Hp + Affix(roll, "Hp"), item.RefineLevel, refineMult);
+            bonusMana += Refined(roll.Mana + Affix(roll, "Mana"), item.RefineLevel, refineMult);
             bonusEvasion += Math.Min(40f, (float)((roll.Evasion + Affix(roll, "Evasao")) * refineMult));
-            bonusForca += Refined(roll.Forca + Affix(roll, "Forca"), refineMult);
-            bonusAgi += Refined(roll.Agilidade + Affix(roll, "Agilidade"), refineMult);
-            bonusDes += Refined(roll.Destreza + Affix(roll, "Destreza"), refineMult);
-            bonusInt += Refined(roll.Inteligencia + Affix(roll, "Inteligencia"), refineMult);
+            bonusForca += Refined(roll.Forca + Affix(roll, "Forca"), item.RefineLevel, refineMult);
+            bonusAgi += Refined(roll.Agilidade + Affix(roll, "Agilidade"), item.RefineLevel, refineMult);
+            bonusDes += Refined(roll.Destreza + Affix(roll, "Destreza"), item.RefineLevel, refineMult);
+            bonusInt += Refined(roll.Inteligencia + Affix(roll, "Inteligencia"), item.RefineLevel, refineMult);
         }
         int baseAttack = player.CharacterClass.ToLowerInvariant() switch
         {
@@ -870,7 +870,18 @@ partial class GameServer
         player.MaxMana = 30 + player.Inteligencia * 3 + player.Level * 5 + bonusMana;
     }
 
-    private static int Refined(float value, double multiplier) => (int)Math.Round(value * multiplier);
+    private static int Refined(float value, int refineLevel, double multiplier)
+    {
+        if (value <= 0f)
+            return 0;
+
+        int baseValue = (int)Math.Round(value);
+        int refinedValue = (int)Math.Round(value * multiplier);
+        if (refineLevel <= 0)
+            return refinedValue;
+
+        return Math.Max(refinedValue, baseValue + refineLevel);
+    }
 
     private static float Affix(ItemRoll roll, string name)
         => roll.Affixes.TryGetValue(name, out float value) ? value : 0f;

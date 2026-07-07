@@ -9,7 +9,6 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private const float MaxPlayerSpeed = 333f;
-    private const float MaxPlayerSpeedSq = MaxPlayerSpeed * MaxPlayerSpeed;
 
     private void HandlePlayerAction(NetPeer peer, NetDataReader reader)
     {
@@ -84,14 +83,15 @@ partial class GameServer
         float distSq = dx * dx + dy * dy;
 
         float dt = MathF.Max((float)(_gameTime - entity.LastMoveTime), 0.001f);
-        float maxDistSq = MaxPlayerSpeedSq * dt * dt;
+        float effectiveMaxSpeed = GetEffectivePlayerMoveSpeed(entity);
+        float maxDistSq = effectiveMaxSpeed * effectiveMaxSpeed * dt * dt;
 
         if (distSq > maxDistSq * 1.5f && distSq > 100f)
         {
             float scale = MathF.Sqrt(maxDistSq / distSq);
             targetX = entity.X + dx * scale;
             targetY = entity.Y + dy * scale;
-            Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {MaxPlayerSpeed})");
+            Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {effectiveMaxSpeed:F0})");
         }
 
         ResolveMapCollision(session.CurrentMap, entity.X, entity.Y, ref targetX, ref targetY);
@@ -122,6 +122,27 @@ partial class GameServer
             var otherPeer = channel.GetPlayerPeer(eid);
             otherPeer?.Send(writer, DeliveryMethod.Unreliable);
         }
+    }
+
+    private float GetEffectivePlayerMoveSpeed(Entity entity)
+    {
+        if (entity is not PlayerEntity player)
+            return MaxPlayerSpeed;
+
+        float multiplier = 1f;
+        foreach (var kv in player.ActiveServerBuffs.ToList())
+        {
+            if (kv.Value <= _gameTime)
+            {
+                player.ActiveServerBuffs.Remove(kv.Key);
+                continue;
+            }
+
+            if (kv.Key.StartsWith("slow:", StringComparison.OrdinalIgnoreCase))
+                multiplier = MathF.Min(multiplier, 0.60f);
+        }
+
+        return MaxPlayerSpeed * multiplier;
     }
 
     private void HandlePlayerStop(NetPeer peer, NetDataReader reader)

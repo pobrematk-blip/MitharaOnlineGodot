@@ -93,8 +93,8 @@ partial class GameNetwork
                 break;
             case 1:
             case 2:
-                typeLabel = entityType == 2 ? "boss" : "monster";
                 bool isBoss = r.GetBool();
+                typeLabel = entityType == 2 || isBoss ? "boss" : "monster";
                 int expReward = r.GetInt();
                 extra1 = r.GetString(); // PrefabId for scene selection
                 extra2 = name; // Keep original name

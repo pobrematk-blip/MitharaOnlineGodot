@@ -9,8 +9,8 @@ using System.Text.Json;
 
 public partial class GameNetwork : Node
 {
-    private const string DefaultServerHost = "maintenance-aid.gl.at.ply.gg";
-    private const int DefaultServerPort = 49027;
+    private const string DefaultServerHost = "191.54.77.168";
+    private const int DefaultServerPort = 7777;
 
     public static bool AutoLogin = false;
 
@@ -112,6 +112,8 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
     [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana);
     [Signal] public delegate void OnVipStatusEventHandler(long expiryBinary);
+    [Signal] public delegate void OnStatusEffectEventHandler(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath);
+    [Signal] public delegate void OnBossCastEventHandler(ulong bossId, string effectId, string skillName, float castSeconds, float effectDuration, bool isBuff);
     [Signal] public delegate void OnTalentDataEventHandler(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados);
     [Signal] public delegate void OnSkillBarDataEventHandler(Godot.Collections.Array<int> skillIds);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
@@ -600,6 +602,12 @@ public partial class GameNetwork : Node
             case PacketId.S2C_ItemUseResult:
                 HandleItemUseResult(r);
                 break;
+            case PacketId.S2C_StatusEffect:
+                HandleStatusEffect(r);
+                break;
+            case PacketId.S2C_BossCast:
+                HandleBossCast(r);
+                break;
             case PacketId.S2C_MapEditorTileData:
                 HandleMapEditorTileData(r);
                 break;
@@ -934,6 +942,35 @@ public partial class GameNetwork : Node
         var expiry = System.DateTime.FromBinary(binary);
         EmitSignal(SignalName.OnVipStatus, binary);
         GD.Print($"[VIP] Status recebido: expiry={expiry:yyyy-MM-dd HH:mm:ss}, ativo={IsVipActive}");
+    }
+
+    private void HandleStatusEffect(NetDataReader r)
+    {
+        string effectId = r.GetString();
+        string displayName = r.GetString();
+        bool isDebuff = r.GetBool();
+        float duration = r.GetFloat();
+        int power = r.GetInt();
+        string iconPath = r.GetString();
+
+        if (isDebuff && string.Equals(effectId, "boss_slime_slow", StringComparison.OrdinalIgnoreCase))
+        {
+            var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            player?.ApplyTemporaryBuff("slow", duration, power);
+        }
+
+        EmitSignal(SignalName.OnStatusEffect, effectId, displayName, isDebuff, duration, power, iconPath);
+    }
+
+    private void HandleBossCast(NetDataReader r)
+    {
+        ulong bossId = r.GetULong();
+        string effectId = r.GetString();
+        string skillName = r.GetString();
+        float castSeconds = r.GetFloat();
+        float effectDuration = r.GetFloat();
+        bool isBuff = r.GetBool();
+        EmitSignal(SignalName.OnBossCast, bossId, effectId, skillName, castSeconds, effectDuration, isBuff);
     }
 
     public void SendTalentUnlock(string nodeId)
