@@ -9,7 +9,7 @@ using System.Text.Json;
 
 public partial class GameNetwork : Node
 {
-    private const string DefaultServerHost = "191.54.77.168";
+    private const string DefaultServerHost = "mitharaonline.duckdns.org";
     private const int DefaultServerPort = 7777;
 
     public static bool AutoLogin = false;
