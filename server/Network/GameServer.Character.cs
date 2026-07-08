@@ -20,6 +20,7 @@ partial class GameServer
     private const float MainSpawnX = 230f;
     private const float MainSpawnY = 300f;
     private const string MainSceneName = "main";
+    private const int StartingCashBalance = 1000;
 
     private static readonly Dictionary<string, int[]> _classStartingItems = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -38,21 +39,51 @@ partial class GameServer
     private static int[] GetStartingItemsForClass(string className)
     {
         if (string.IsNullOrWhiteSpace(className)) return Array.Empty<int>();
+        var desiredTypes = new[]
+        {
+            ItemType.Weapon,
+            ItemType.Shield,
+            ItemType.Helmet,
+            ItemType.Chestplate,
+            ItemType.Gloves,
+            ItemType.Boots,
+            ItemType.Pants,
+            ItemType.Belt,
+        };
+
         var catalogItems = ItemDefinitions.GetAll()
             .Where(def => !def.IsElite
                 && def.RequiredLevel <= 1
-                && def.Type is ItemType.Weapon or ItemType.Shield
+                && desiredTypes.Contains(def.Type)
                 && IsItemAllowedForStartingClass(def, className))
-            .OrderBy(def => def.Type == ItemType.Weapon ? 0 : 1)
-            .ThenBy(def => def.Id)
+            .GroupBy(def => def.Type)
+            .Select(group => group
+                .OrderBy(def => def.Id)
+                .First())
+            .OrderBy(def => StartingItemTypeOrder(def.Type))
             .Select(def => def.Id)
-            .Take(2)
             .ToArray();
 
         if (catalogItems.Length > 0)
             return catalogItems;
 
         return _classStartingItems.TryGetValue(className, out var items) ? items : Array.Empty<int>();
+    }
+
+    private static int StartingItemTypeOrder(ItemType type)
+    {
+        return type switch
+        {
+            ItemType.Weapon => 0,
+            ItemType.Shield => 1,
+            ItemType.Helmet => 2,
+            ItemType.Chestplate => 3,
+            ItemType.Gloves => 4,
+            ItemType.Boots => 5,
+            ItemType.Pants => 6,
+            ItemType.Belt => 7,
+            _ => 99,
+        };
     }
 
     private static bool IsItemAllowedForStartingClass(ItemDefinition def, string className)
@@ -69,6 +100,9 @@ partial class GameServer
     private static string NormalizeClassAlias(string className)
     {
         string normalized = className.Trim().ToLowerInvariant();
+        if (normalized == "assassino")
+            return "ladino";
+
         return normalized switch
         {
             "berserker" => "berseker",
@@ -117,8 +151,43 @@ partial class GameServer
             _db.SaveItem(characterId, item);
             count++;
         }
+
+        int vipSlot = FindFreeStartingInventorySlot(characterId, invSlot);
+        var vipItem = new ItemInstance
+        {
+            ItemId = ItemDefinitions.PergaminhoVip7Dias,
+            Slot = vipSlot,
+            Quantity = 1,
+        };
+        _db.DeleteItemBySlot(characterId, vipSlot);
+        _db.SaveItem(characterId, vipItem);
+        count++;
+
         if (count > 0)
             Logger.Info($"Itens iniciais dados ao personagem {characterId}: {count} item(ns)");
+    }
+
+    private int FindFreeStartingInventorySlot(int characterId, int preferredSlot)
+    {
+        var used = _db.LoadItems(characterId).Select(item => item.Slot).ToHashSet();
+        for (int slot = Math.Max(0, preferredSlot); slot < 30; slot++)
+        {
+            if (!used.Contains(slot))
+                return slot;
+        }
+
+        return Math.Max(0, preferredSlot);
+    }
+
+    private void EnsureStartingCash(int accountId)
+    {
+        int currentCash = _db.GetCashBalance(accountId);
+        if (currentCash >= StartingCashBalance)
+            return;
+
+        int added = StartingCashBalance - currentCash;
+        _db.AddCash(accountId, added);
+        Logger.Info($"Cash inicial aplicado na conta {accountId}: +{added} (saldo alvo {StartingCashBalance})");
     }
 
     private void HandleCreateCharacter(NetPeer peer, NetDataReader reader)
@@ -155,6 +224,7 @@ partial class GameServer
         }
 
         GiveStartingItems(charId.Value, className);
+        EnsureStartingCash(session.AccountId);
 
         var chars = _db.GetCharacters(session.AccountId);
 
