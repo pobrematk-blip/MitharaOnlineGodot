@@ -105,6 +105,7 @@ public partial class OverheadUI : Control
 
     private static readonly string[] EmblemFiles = CarregarEmblemas();
     private static readonly Dictionary<int, Texture2D> EmblemTextureCache = new();
+    private static Font _boldFont;
 
     private static string[] CarregarEmblemas()
     {
@@ -134,6 +135,27 @@ public partial class OverheadUI : Control
         style.CornerRadiusBottomRight = RaioCanto;
         style.BgColor = bg ? new Color(cor.R, cor.G, cor.B, 0.35f) : cor;
         return style;
+    }
+
+    private static Font GetBoldFont()
+    {
+        if (_boldFont != null)
+            return _boldFont;
+
+        var fnt = ResourceLoader.Load<Font>("res://fonts/Montserrat-Variable.ttf");
+        if (fnt != null)
+        {
+            var variation = new FontVariation();
+            variation.SetBaseFont(fnt);
+            variation.SetVariationEmbolden(1.0f);
+            _boldFont = variation;
+        }
+        else
+        {
+            _boldFont = ThemeDB.GetProjectTheme().DefaultFont;
+        }
+
+        return _boldFont;
     }
 
     private static Panel CriarPainelBarra(Vector2 pos)
@@ -178,6 +200,7 @@ public partial class OverheadUI : Control
         _nomeLabel.Position = new Vector2(0, 18);
         _nomeLabel.Size = new Vector2(120, 20);
         _nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _nomeLabel.AddThemeFontOverride("font", GetBoldFont());
         _nomeLabel.AddThemeFontSizeOverride("font_size", 14);
         _nomeLabel.AddThemeColorOverride("font_color", _nomeCor);
         _nomeLabel.AddThemeConstantOverride("outline_size", 5);
@@ -195,10 +218,14 @@ public partial class OverheadUI : Control
             HorizontalAlignment = HorizontalAlignment.Center,
             MouseFilter = MouseFilterEnum.Ignore,
         };
-        _guildLabel.AddThemeFontSizeOverride("font_size", 13);
-        _guildLabel.AddThemeColorOverride("font_color", new Color(0.45f, 1.0f, 0.35f));
-        _guildLabel.AddThemeConstantOverride("outline_size", 3);
-        _guildLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+        _guildLabel.AddThemeFontOverride("font", GetBoldFont());
+        _guildLabel.AddThemeFontSizeOverride("font_size", 14);
+        _guildLabel.AddThemeColorOverride("font_color", new Color(0.50f, 1.0f, 0.16f, 1f));
+        _guildLabel.AddThemeConstantOverride("outline_size", 5);
+        _guildLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1f));
+        _guildLabel.AddThemeConstantOverride("shadow_offset_x", 1);
+        _guildLabel.AddThemeConstantOverride("shadow_offset_y", 1);
+        _guildLabel.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
         AddChild(_guildLabel);
 
         _emblemaIcon = new TextureRect();
@@ -206,6 +233,8 @@ public partial class OverheadUI : Control
         _emblemaIcon.Size = new Vector2(18, 18);
         _emblemaIcon.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
         _emblemaIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspect;
+        _emblemaIcon.Modulate = Colors.White;
+        _emblemaIcon.SelfModulate = Colors.White;
         _emblemaIcon.Visible = false;
         AddChild(_emblemaIcon);
 
@@ -328,6 +357,8 @@ public partial class OverheadUI : Control
             if (tex != null)
             {
                 _emblemaIcon.Texture = tex;
+                _emblemaIcon.Modulate = Colors.White;
+                _emblemaIcon.SelfModulate = Colors.White;
                 _emblemaIcon.Visible = true;
             }
         }
@@ -354,7 +385,7 @@ public partial class OverheadUI : Control
             if (mostrarEmblema && _emblemaIcon != null && _emblemaIcon.Visible)
             {
                 const float iconSize = 18f;
-                const float gap = 4f;
+                const float gap = 5f;
                 var font = _guildLabel.GetThemeFont("font");
                 int fontSize = _guildLabel.GetThemeFontSize("font_size");
                 float measuredTextWidth = font?.GetStringSize(_guildLabel.Text, HorizontalAlignment.Left, -1, fontSize).X ?? _guildLabel.GetMinimumSize().X;
