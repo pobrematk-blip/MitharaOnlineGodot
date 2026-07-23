@@ -415,6 +415,14 @@ public partial class SelecaoPersonagem : Control
             escolhido.Raca = raca;
             escolhido.NomePersonagem = card.Nome;
             escolhido.SlotAtivo = card.SlotIndex;
+            var characterEntry = _net.Characters.Find(c => c.SlotIndex == card.SlotIndex);
+            if (characterEntry != null)
+            {
+                escolhido.CabeloPath = characterEntry.CabeloPath;
+                escolhido.BarbaPath = characterEntry.BarbaPath;
+                escolhido.CabeloCor = ParseAppearanceColor(characterEntry.CabeloCor);
+                escolhido.BarbaCor = ParseAppearanceColor(characterEntry.BarbaCor);
+            }
             escolhido.ResetarProgressaoSalva();
 
             _net.SendSelectCharacter(card.SlotIndex);
@@ -430,6 +438,21 @@ public partial class SelecaoPersonagem : Control
             GD.PrintErr("[SELECAO] O jogo e 100% online. Conecte ao servidor para entrar no mundo.");
             FecharTelaCarregamento();
             return;
+        }
+    }
+
+    private static Color ParseAppearanceColor(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Colors.White;
+
+        try
+        {
+            return Color.FromHtml(value.StartsWith("#") ? value : "#" + value);
+        }
+        catch
+        {
+            return Colors.White;
         }
     }
 

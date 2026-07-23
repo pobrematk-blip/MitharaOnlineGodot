@@ -3949,15 +3949,6 @@ partial class GameServer
 
     private void HandleMonsterDeath(Channel channel, MonsterEntity mob, PlayerEntity killer, PlayerSession killerSession, ulong mobId)
     {
-        int xpReward = mob.ExperienceReward;
-        if (IsPlayerVip(killer))
-            xpReward *= 2;
-        if (killer.BonusExperience > 0f)
-            xpReward = Math.Max(1, (int)Math.Round(xpReward * (1.0 + killer.BonusExperience / 100.0)));
-        int partyBonusPercent = GetPartyXpBonusPercent(killer);
-        if (partyBonusPercent > 0)
-            xpReward = Math.Max(1, (int)Math.Round(xpReward * (1.0 + partyBonusPercent / 100.0)));
-
         var writerDied = PacketSerializer.WritePacket(PacketId.S2C_EntityDied);
         writerDied.Put(mobId);
         writerDied.Put(killer.Id);
@@ -3975,69 +3966,7 @@ partial class GameServer
             }
         }
 
-        killer.Experience += xpReward;
-        var writerExp = PacketSerializer.WritePacket(PacketId.S2C_GainExp);
-        writerExp.Put(killer.Id);
-        writerExp.Put(xpReward);
-        writerExp.Put(killer.Experience);
-        foreach (var eid in aoi)
-        {
-            var p = channel.GetPlayerPeer(eid);
-            if (p != null)
-            {
-                p.Send(writerExp, DeliveryMethod.ReliableOrdered);
-                writerExp = PacketSerializer.WritePacket(PacketId.S2C_GainExp);
-                writerExp.Put(killer.Id);
-                writerExp.Put(xpReward);
-                writerExp.Put(killer.Experience);
-            }
-        }
-
-        long xpForNextLevel = XpForNextLevel(killer.Level);
-        while (killer.Experience >= xpForNextLevel)
-        {
-            killer.Experience -= xpForNextLevel;
-            killer.Level++;
-            xpForNextLevel = XpForNextLevel(killer.Level);
-
-            RecalculatePlayerStats(killer);
-            killer.Health = killer.MaxHealth;
-            killer.Mana = killer.MaxMana;
-            killer.StatPoints += 5;
-
-            var writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
-            writerLevelUp.Put(killer.Id);
-            writerLevelUp.Put(killer.Level);
-            writerLevelUp.Put((int)Math.Min(int.MaxValue, killer.Experience));
-            foreach (var eid in aoi)
-            {
-                var p = channel.GetPlayerPeer(eid);
-                if (p != null)
-                {
-                    p.Send(writerLevelUp, DeliveryMethod.ReliableOrdered);
-                    writerLevelUp = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
-                    writerLevelUp.Put(killer.Id);
-                    writerLevelUp.Put(killer.Level);
-                    writerLevelUp.Put((int)Math.Min(int.MaxValue, killer.Experience));
-                }
-            }
-
-            var peer = channel.GetPlayerPeer(killer.Id);
-            if (peer != null)
-            {
-                SendSystemMessage(peer, $"ParabÃ©ns! VocÃª alcanÃ§ou o nÃ­vel {killer.Level}!");
-                SendStatUpdate(peer, killer);
-                SendTalentData(peer, killer);
-            }
-            BroadcastSingleEntityUpdate(channel, killer);
-        }
-
-        _db.SaveCharacterXp(killerSession.SelectedCharacter!.Id, killer.Experience);
-        _db.SaveCharacterLevel(killerSession.SelectedCharacter.Id, killer.Level);
-        _db.SaveCharacterStats(killerSession.SelectedCharacter.Id, killer.BaseForca, killer.BaseAgilidade, killer.BaseDestreza, killer.BaseInteligencia, killer.StatPoints);
-        killerSession.SelectedCharacter.Xp = killer.Experience;
-        killerSession.SelectedCharacter.Level = killer.Level;
-        killerSession.SelectedCharacter.StatPoints = killer.StatPoints;
+        AwardMonsterExperience(channel, mob, killer, killerSession, aoi);
 
         UpdateQuestKillProgress(killer, mob.PrefabId);
 
@@ -4055,6 +3984,135 @@ partial class GameServer
                 $"{killer.Name} derrotou o Boss Slime! Ele nascerÃ¡ novamente em 1 hora.");
         }
 
+    }
+
+    private void AwardMonsterExperience(Channel channel, MonsterEntity mob, PlayerEntity killer, PlayerSession killerSession, HashSet<ulong> aoi)
+    {
+        var eligibleMembers = GetEligiblePartyXpMembers(channel, killer);
+        int splitCount = Math.Max(1, eligibleMembers.Count);
+        int partyBonusPercent = Math.Clamp(eligibleMembers.Count * 5, 0, 25);
+        int baseShare = Math.Max(1, (int)Math.Ceiling(mob.ExperienceReward / (double)splitCount));
+
+        foreach (var member in eligibleMembers)
+        {
+            var memberSession = _sessions.Values.FirstOrDefault(s => s.EntityId == member.Id);
+            if (memberSession?.SelectedCharacter == null)
+                continue;
+
+            int xpReward = baseShare;
+            if (IsPlayerVip(member))
+                xpReward *= 2;
+            if (member.BonusExperience > 0f)
+                xpReward = Math.Max(1, (int)Math.Round(xpReward * (1.0 + member.BonusExperience / 100.0)));
+            if (partyBonusPercent > 0)
+                xpReward = Math.Max(1, (int)Math.Round(xpReward * (1.0 + partyBonusPercent / 100.0)));
+
+            ApplyExperienceReward(channel, member, memberSession, xpReward, aoi);
+        }
+    }
+
+    private List<PlayerEntity> GetEligiblePartyXpMembers(Channel channel, PlayerEntity killer)
+    {
+        if (killer.PartyId < 0)
+            return new List<PlayerEntity> { killer };
+
+        var party = _world.Parties.GetParty(killer.PartyId);
+        if (party == null)
+            return new List<PlayerEntity> { killer };
+
+        var eligible = new List<PlayerEntity>();
+        foreach (var memberId in party.Members)
+        {
+            if (channel.GetEntity(memberId) is not PlayerEntity member || member.Health <= 0)
+                continue;
+
+            if (Math.Abs(member.Level - killer.Level) > 20)
+                continue;
+
+            eligible.Add(member);
+        }
+
+        if (!eligible.Contains(killer))
+            eligible.Add(killer);
+
+        return eligible;
+    }
+
+    private void ApplyExperienceReward(Channel channel, PlayerEntity player, PlayerSession session, int xpReward, HashSet<ulong> aoi)
+    {
+        player.Experience += xpReward;
+
+        SendGainExpToAoiAndPlayer(channel, aoi, player.Id, xpReward, player.Experience);
+
+        long xpForNextLevel = XpForNextLevel(player.Level);
+        while (player.Experience >= xpForNextLevel)
+        {
+            player.Experience -= xpForNextLevel;
+            player.Level++;
+            xpForNextLevel = XpForNextLevel(player.Level);
+
+            RecalculatePlayerStats(player);
+            player.Health = player.MaxHealth;
+            player.Mana = player.MaxMana;
+            player.StatPoints += 5;
+
+            SendLevelUpToAoiAndPlayer(channel, aoi, player.Id, player.Level, player.Experience);
+
+            var peer = channel.GetPlayerPeer(player.Id);
+            if (peer != null)
+            {
+                SendSystemMessage(peer, $"Parabens! Voce alcancou o nivel {player.Level}!");
+                SendStatUpdate(peer, player);
+                SendTalentData(peer, player);
+            }
+            BroadcastSingleEntityUpdate(channel, player);
+            BroadcastPartyMemberUpdateForEntity(player.Id);
+        }
+
+        _db.SaveCharacterXp(session.SelectedCharacter!.Id, player.Experience);
+        _db.SaveCharacterLevel(session.SelectedCharacter.Id, player.Level);
+        _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
+        session.SelectedCharacter.Xp = player.Experience;
+        session.SelectedCharacter.Level = player.Level;
+        session.SelectedCharacter.StatPoints = player.StatPoints;
+    }
+
+    private void SendGainExpToAoiAndPlayer(Channel channel, HashSet<ulong> aoi, ulong playerId, int xpReward, long totalExperience)
+    {
+        var recipients = aoi.ToHashSet();
+        recipients.Add(playerId);
+
+        foreach (var eid in recipients)
+        {
+            var peer = channel.GetPlayerPeer(eid);
+            if (peer == null)
+                continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_GainExp);
+            writer.Put(playerId);
+            writer.Put(xpReward);
+            writer.Put(totalExperience);
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+    }
+
+    private void SendLevelUpToAoiAndPlayer(Channel channel, HashSet<ulong> aoi, ulong playerId, int level, long experience)
+    {
+        var recipients = aoi.ToHashSet();
+        recipients.Add(playerId);
+
+        foreach (var eid in recipients)
+        {
+            var peer = channel.GetPlayerPeer(eid);
+            if (peer == null)
+                continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_LevelUp);
+            writer.Put(playerId);
+            writer.Put(level);
+            writer.Put((int)Math.Min(int.MaxValue, experience));
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
     }
 
     private int GetPartyXpBonusPercent(PlayerEntity player)

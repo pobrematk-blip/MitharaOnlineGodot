@@ -39,7 +39,12 @@ partial class GameNetwork
     {
         ulong opponentId = r.GetULong();
         string opponentName = r.GetString();
+        float centerX = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float centerY = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float halfSize = r.AvailableBytes >= 4 ? r.GetFloat() : 1600f;
+        float durationSeconds = r.AvailableBytes >= 4 ? r.GetFloat() : 300f;
         Log($"[DUEL] Duel started vs {opponentName}");
+        DuelArenaOverlay.Show(GetTree(), new Vector2(centerX, centerY), halfSize, durationSeconds, opponentName);
         EmitSignal(SignalName.OnDuelStart, opponentId, opponentName);
     }
 
@@ -47,6 +52,7 @@ partial class GameNetwork
     {
         bool won = r.GetBool();
         Log($"[DUEL] Duel ended: {(won ? "won" : "lost")}");
+        DuelArenaOverlay.Clear(GetTree());
         EmitSignal(SignalName.OnDuelEnd, won);
     }
 }

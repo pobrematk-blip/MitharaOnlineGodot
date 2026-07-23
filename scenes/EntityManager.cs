@@ -62,10 +62,10 @@ public partial class EntityManager : Node
     private readonly Dictionary<string, AnimatedSprite2D> _bastiaoAreaEffects = new();
     private ulong _lojinhaInteracaoAtual;
     private Node2D? _worldNode;
-    private static readonly Color NomeCorNormal = Colors.White;
-    private static readonly Color NomeCorParty = new(0.45f, 0.9f, 1.0f);
-    private static readonly Color NomeCorGuild = new(0.45f, 1.0f, 0.35f);
-    private static readonly Color NomeCorFaccaoInimiga = new(1.0f, 0.22f, 0.18f);
+    private static readonly Color NomeCorNormal = new(1.0f, 1.0f, 1.0f, 1.0f);
+    private static readonly Color NomeCorParty = new(0.15f, 0.95f, 1.0f, 1.0f);
+    private static readonly Color NomeCorGuild = new(0.25f, 1.0f, 0.18f, 1.0f);
+    private static readonly Color NomeCorFaccaoInimiga = new(1.0f, 0.12f, 0.08f, 1.0f);
 
     private static readonly Dictionary<Raridade, Color> RarityColors = new()
     {

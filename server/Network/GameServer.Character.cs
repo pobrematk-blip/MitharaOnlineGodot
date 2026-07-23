@@ -185,6 +185,10 @@ partial class GameServer
         string name = reader.GetString().Trim();
         string className = reader.GetString();
         string race = reader.GetString();
+        string cabeloPath = reader.AvailableBytes > 0 ? SanitizeAppearancePath(reader.GetString(), "Cabelos") : "";
+        string barbaPath = reader.AvailableBytes > 0 ? SanitizeAppearancePath(reader.GetString(), "Barbas") : "";
+        string cabeloCor = reader.AvailableBytes > 0 ? SanitizeAppearanceColor(reader.GetString()) : "ffffff";
+        string barbaCor = reader.AvailableBytes > 0 ? SanitizeAppearanceColor(reader.GetString()) : "ffffff";
 
         if (!_sessions.TryGetValue(peer, out var session)) return;
 
@@ -215,7 +219,7 @@ partial class GameServer
             return;
         }
 
-        int? charId = _db.CreateCharacter(session.AccountId, name, className, race);
+        int? charId = _db.CreateCharacter(session.AccountId, name, className, race, cabeloPath, barbaPath, cabeloCor, barbaCor);
         if (charId == null)
         {
             SendCreateCharacterResult(peer, false, "Já existe um personagem com este nome.");
@@ -259,8 +263,40 @@ partial class GameServer
             writer.Put(ch.Level);
             writer.Put(ch.Class);
             writer.Put(ch.Race);
+            WriteCharacterAppearance(writer, ch);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private static void WriteCharacterAppearance(NetDataWriter writer, CharacterRow ch)
+    {
+        writer.Put(ch.CabeloPath ?? "");
+        writer.Put(ch.BarbaPath ?? "");
+        writer.Put(string.IsNullOrWhiteSpace(ch.CabeloCor) ? "ffffff" : ch.CabeloCor);
+        writer.Put(string.IsNullOrWhiteSpace(ch.BarbaCor) ? "ffffff" : ch.BarbaCor);
+    }
+
+    private static string SanitizeAppearancePath(string path, string expectedFolder)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return "";
+
+        path = path.Trim().Replace('\\', '/');
+        string prefix = $"res://characters/Player/Aparencia/{expectedFolder}/";
+        if (!path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            return "";
+
+        string lower = path.ToLowerInvariant();
+        return lower.EndsWith(".png") || lower.EndsWith(".webp") ? path : "";
+    }
+
+    private static string SanitizeAppearanceColor(string color)
+    {
+        if (string.IsNullOrWhiteSpace(color))
+            return "ffffff";
+
+        color = color.Trim().TrimStart('#');
+        return Regex.IsMatch(color, "^[0-9a-fA-F]{6}$") ? color.ToLowerInvariant() : "ffffff";
     }
 
     private void HandleSelectCharacter(NetPeer peer, NetDataReader reader)
@@ -316,6 +352,7 @@ partial class GameServer
             writer.Put(character.Class);
             writer.Put(character.Race);
             writer.Put(character.Level);
+            WriteCharacterAppearance(writer, character);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -346,6 +383,7 @@ partial class GameServer
             writer.Put(ch.Class);
             writer.Put(ch.Race);
             writer.Put(ch.Level);
+            WriteCharacterAppearance(writer, ch);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
@@ -521,6 +559,10 @@ partial class GameServer
         writer.Put(player.BaseAttack);
         writer.Put(player.Defense);
         writer.Put(player.StatPoints);
+        writer.Put(ch?.CabeloPath ?? "");
+        writer.Put(ch?.BarbaPath ?? "");
+        writer.Put(ch?.CabeloCor ?? "ffffff");
+        writer.Put(ch?.BarbaCor ?? "ffffff");
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
 
         if (restoredGuild != null)

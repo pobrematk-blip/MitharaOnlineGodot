@@ -5,13 +5,24 @@ using Mithara.Network;
 
 partial class GameNetwork
 {
-    public void SendCreateCharacter(string name, string className, string race)
+    public void SendCreateCharacter(
+        string name,
+        string className,
+        string race,
+        string cabeloPath = "",
+        string barbaPath = "",
+        string cabeloCor = "ffffff",
+        string barbaCor = "ffffff")
     {
         _client?.SendPacket(PacketId.C2S_CreateCharacter, w =>
         {
             w.Put(name);
             w.Put(className);
             w.Put(race);
+            w.Put(cabeloPath ?? "");
+            w.Put(barbaPath ?? "");
+            w.Put(string.IsNullOrWhiteSpace(cabeloCor) ? "ffffff" : cabeloCor);
+            w.Put(string.IsNullOrWhiteSpace(barbaCor) ? "ffffff" : barbaCor);
         });
     }
 
@@ -56,14 +67,16 @@ partial class GameNetwork
         Characters.Clear();
         for (int i = 0; i < characterCount; i++)
         {
-            Characters.Add(new CharacterEntry
+            var entry = new CharacterEntry
             {
                 SlotIndex = r.GetInt(),
                 Name = r.GetString(),
                 Class = r.GetString(),
                 Race = r.GetString(),
                 Level = r.GetInt(),
-            });
+            };
+            ReadAppearanceFields(r, entry);
+            Characters.Add(entry);
         }
 
         ClearAllEntities();
@@ -95,24 +108,30 @@ partial class GameNetwork
             int level = r.GetInt();
             string cls = r.GetString();
             string race = r.AvailableBytes > 0 ? r.GetString() : "";
-            Characters.Add(new CharacterEntry
+            var entry = new CharacterEntry
             {
                 SlotIndex = slot,
                 Name = name,
                 Class = cls,
                 Race = race,
                 Level = level,
-            });
+            };
+            ReadAppearanceFields(r, entry);
+            Characters.Add(entry);
 
-            var entry = new Godot.Collections.Dictionary
+            var dict = new Godot.Collections.Dictionary
             {
                 ["slot"] = slot,
                 ["name"] = name,
                 ["level"] = level,
                 ["class_name"] = cls,
                 ["race"] = race,
+                ["cabelo_path"] = entry.CabeloPath,
+                ["barba_path"] = entry.BarbaPath,
+                ["cabelo_cor"] = entry.CabeloCor,
+                ["barba_cor"] = entry.BarbaCor,
             };
-            list.Add(entry);
+            list.Add(dict);
         }
         EmitSignal(SignalName.OnCharacterList, list);
     }
@@ -139,14 +158,16 @@ partial class GameNetwork
             string race = r.GetString();
             int level = r.GetInt();
 
-            Characters.Add(new CharacterEntry
+            var entry = new CharacterEntry
             {
                 SlotIndex = slot,
                 Name = name,
                 Class = cls,
                 Race = race,
                 Level = level,
-            });
+            };
+            ReadAppearanceFields(r, entry);
+            Characters.Add(entry);
 
             list.Add(new Godot.Collections.Dictionary
             {
@@ -155,6 +176,10 @@ partial class GameNetwork
                 ["level"] = level,
                 ["class_name"] = cls,
                 ["race"] = race,
+                ["cabelo_path"] = entry.CabeloPath,
+                ["barba_path"] = entry.BarbaPath,
+                ["cabelo_cor"] = entry.CabeloCor,
+                ["barba_cor"] = entry.BarbaCor,
             });
         }
         Log($"[GAME] Lista de personagens atualizada apos exclusao: {count} restantes");
@@ -183,6 +208,11 @@ partial class GameNetwork
         int baseAttack = r.GetInt();
         int defense = r.GetInt();
         int statPoints = r.GetInt();
+        _pendingCabeloPath = r.AvailableBytes > 0 ? r.GetString() : "";
+        _pendingBarbaPath = r.AvailableBytes > 0 ? r.GetString() : "";
+        _pendingCabeloCor = r.AvailableBytes > 0 ? r.GetString() : "ffffff";
+        _pendingBarbaCor = r.AvailableBytes > 0 ? r.GetString() : "ffffff";
+        AplicarAparenciaPendenteNoPersonagemEscolhido();
 
         _pendingLevel = level;
         _pendingXp = xp;
@@ -195,5 +225,40 @@ partial class GameNetwork
         Log($"Entrando no mundo! ID={LocalPlayerId} Canal={LocalChannelId} Lv={level} Pos=({x:F0},{y:F0})");
         Log("Sinalizando enterWorldPending para _Process fazer a troca de cena");
         _enterWorldPending = true;
+    }
+
+    private static void ReadAppearanceFields(NetDataReader r, CharacterEntry entry)
+    {
+        entry.CabeloPath = r.AvailableBytes > 0 ? r.GetString() : "";
+        entry.BarbaPath = r.AvailableBytes > 0 ? r.GetString() : "";
+        entry.CabeloCor = r.AvailableBytes > 0 ? r.GetString() : "ffffff";
+        entry.BarbaCor = r.AvailableBytes > 0 ? r.GetString() : "ffffff";
+    }
+
+    private void AplicarAparenciaPendenteNoPersonagemEscolhido()
+    {
+        var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
+        if (escolhido == null)
+            return;
+
+        escolhido.CabeloPath = _pendingCabeloPath;
+        escolhido.BarbaPath = _pendingBarbaPath;
+        escolhido.CabeloCor = ParseAppearanceColor(_pendingCabeloCor);
+        escolhido.BarbaCor = ParseAppearanceColor(_pendingBarbaCor);
+    }
+
+    private static Color ParseAppearanceColor(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Colors.White;
+
+        try
+        {
+            return Color.FromHtml(value.StartsWith("#") ? value : "#" + value);
+        }
+        catch
+        {
+            return Colors.White;
+        }
     }
 }

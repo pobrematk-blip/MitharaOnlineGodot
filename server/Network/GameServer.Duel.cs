@@ -113,6 +113,8 @@ partial class GameServer
             CenterX = centerX,
             CenterY = centerY,
             StartedAt = _gameTime,
+            PlayerALastHealth = challenger.Health,
+            PlayerBLastHealth = player.Health,
         };
         _activeDuels[challenger.Id] = duel;
         _activeDuels[player.Id] = duel;
@@ -120,11 +122,19 @@ partial class GameServer
         var w1 = PacketSerializer.WritePacket(PacketId.S2C_DuelStart);
         w1.Put(player.Id);
         w1.Put(player.Name);
+        w1.Put(centerX);
+        w1.Put(centerY);
+        w1.Put(DuelArenaHalfSize);
+        w1.Put((float)DuelMaxDurationSeconds);
         challengerPeer.Send(w1, DeliveryMethod.ReliableOrdered);
 
         var w2 = PacketSerializer.WritePacket(PacketId.S2C_DuelStart);
         w2.Put(challenger.Id);
         w2.Put(challenger.Name);
+        w2.Put(centerX);
+        w2.Put(centerY);
+        w2.Put(DuelArenaHalfSize);
+        w2.Put((float)DuelMaxDurationSeconds);
         peer.Send(w2, DeliveryMethod.ReliableOrdered);
 
         string aposta = invite.GoldWager > 0 ? $" Aposta: {invite.GoldWager} ouro." : "";
@@ -196,16 +206,28 @@ partial class GameServer
                 continue;
             }
 
+            duel.TrackDamage(playerA, playerB);
+
             if (_gameTime - duel.StartedAt > DuelMaxDurationSeconds)
             {
-                EndDuel(duel, null, "Duelo encerrado por tempo limite.");
+                ulong? winnerId = duel.GetWinnerByLeastDamageTaken();
+                string result = winnerId == duel.PlayerA
+                    ? $"{playerA.Name} venceu o duelo por tomar menos dano!"
+                    : winnerId == duel.PlayerB
+                        ? $"{playerB.Name} venceu o duelo por tomar menos dano!"
+                        : "Duelo encerrado por tempo limite: empate por dano recebido.";
+                EndDuel(duel, winnerId, result);
                 continue;
             }
 
             bool playerAInside = duel.IsInside(playerA.Id, GetPlayerCurrentMap(playerA.Id), playerA.X, playerA.Y);
             bool playerBInside = duel.IsInside(playerB.Id, GetPlayerCurrentMap(playerB.Id), playerB.X, playerB.Y);
-            if (!playerAInside || !playerBInside)
-                EndDuel(duel, null, "Duelo encerrado: um jogador saiu da area de 100x100 tiles.");
+            if (!playerAInside && playerBInside)
+                EndDuel(duel, playerB.Id, $"{playerA.Name} saiu da arena. {playerB.Name} venceu o duelo!");
+            else if (!playerBInside && playerAInside)
+                EndDuel(duel, playerA.Id, $"{playerB.Name} saiu da arena. {playerA.Name} venceu o duelo!");
+            else if (!playerAInside && !playerBInside)
+                EndDuel(duel, null, "Duelo encerrado: os dois jogadores sairam da arena.");
         }
     }
 
@@ -275,8 +297,30 @@ partial class GameServer
         public float CenterX { get; set; }
         public float CenterY { get; set; }
         public double StartedAt { get; set; }
+        public int PlayerALastHealth { get; set; }
+        public int PlayerBLastHealth { get; set; }
+        public int PlayerADamageTaken { get; set; }
+        public int PlayerBDamageTaken { get; set; }
 
         public bool Contains(ulong playerId) => playerId == PlayerA || playerId == PlayerB;
+
+        public void TrackDamage(PlayerEntity playerA, PlayerEntity playerB)
+        {
+            if (playerA.Health < PlayerALastHealth)
+                PlayerADamageTaken += PlayerALastHealth - playerA.Health;
+            if (playerB.Health < PlayerBLastHealth)
+                PlayerBDamageTaken += PlayerBLastHealth - playerB.Health;
+
+            PlayerALastHealth = playerA.Health;
+            PlayerBLastHealth = playerB.Health;
+        }
+
+        public ulong? GetWinnerByLeastDamageTaken()
+        {
+            if (PlayerADamageTaken == PlayerBDamageTaken)
+                return null;
+            return PlayerADamageTaken < PlayerBDamageTaken ? PlayerA : PlayerB;
+        }
 
         public bool IsInside(ulong playerId, string mapName, float x, float y)
         {

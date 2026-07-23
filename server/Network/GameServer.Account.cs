@@ -197,6 +197,7 @@ partial class GameServer
             writer.Put(ch.Class);
             writer.Put(ch.Race);
             writer.Put(ch.Level);
+            WriteCharacterAppearance(writer, ch);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
         SendCashBalance(peer, accountId.Value);

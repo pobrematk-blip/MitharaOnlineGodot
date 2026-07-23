@@ -66,6 +66,10 @@ public class DatabaseManager
                 bank_gold INT NOT NULL DEFAULT 0,
                 gold INT NOT NULL DEFAULT 50,
                 stat_points INT NOT NULL DEFAULT 10,
+                cabelo_path TEXT NOT NULL DEFAULT '',
+                barba_path TEXT NOT NULL DEFAULT '',
+                cabelo_cor VARCHAR(16) NOT NULL DEFAULT 'ffffff',
+                barba_cor VARCHAR(16) NOT NULL DEFAULT 'ffffff',
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
             );
@@ -228,6 +232,10 @@ public class DatabaseManager
             ("item_definitions", "definition_data", "TEXT NOT NULL DEFAULT ''"),
             ("accounts", "vip_expiry", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
             ("characters", "current_map", "VARCHAR(64) NOT NULL DEFAULT 'main'"),
+            ("characters", "cabelo_path", "TEXT NOT NULL DEFAULT ''"),
+            ("characters", "barba_path", "TEXT NOT NULL DEFAULT ''"),
+            ("characters", "cabelo_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
+            ("characters", "barba_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
         };
 
         foreach (var (table, column, type) in columns)
@@ -465,7 +473,15 @@ public class DatabaseManager
         return true;
     }
 
-    public int? CreateCharacter(int accountId, string name, string className, string race)
+    public int? CreateCharacter(
+        int accountId,
+        string name,
+        string className,
+        string race,
+        string cabeloPath = "",
+        string barbaPath = "",
+        string cabeloCor = "ffffff",
+        string barbaCor = "ffffff")
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
@@ -494,8 +510,8 @@ public class DatabaseManager
         using var cmd = conn.CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = """
-            INSERT INTO characters (account_id, slot_index, name, class, race, level)
-            VALUES (@a, @s, @n, @c, @r, 1)
+            INSERT INTO characters (account_id, slot_index, name, class, race, level, cabelo_path, barba_path, cabelo_cor, barba_cor)
+            VALUES (@a, @s, @n, @c, @r, 1, @cp, @bp, @cc, @bc)
             RETURNING id
             """;
         cmd.Parameters.AddWithValue("@a", accountId);
@@ -503,6 +519,10 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@n", name);
         cmd.Parameters.AddWithValue("@c", className);
         cmd.Parameters.AddWithValue("@r", race);
+        cmd.Parameters.AddWithValue("@cp", cabeloPath ?? "");
+        cmd.Parameters.AddWithValue("@bp", barbaPath ?? "");
+        cmd.Parameters.AddWithValue("@cc", string.IsNullOrWhiteSpace(cabeloCor) ? "ffffff" : cabeloCor);
+        cmd.Parameters.AddWithValue("@bc", string.IsNullOrWhiteSpace(barbaCor) ? "ffffff" : barbaCor);
         try
         {
             int id = Convert.ToInt32(cmd.ExecuteScalar());
@@ -523,7 +543,7 @@ public class DatabaseManager
         conn.Open();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points, current_map FROM characters WHERE account_id = @a ORDER BY slot_index";
+        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points, current_map, cabelo_path, barba_path, cabelo_cor, barba_cor FROM characters WHERE account_id = @a ORDER BY slot_index";
         cmd.Parameters.AddWithValue("@a", accountId);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -547,6 +567,10 @@ public class DatabaseManager
                 Gold = reader.GetInt32(14),
                 StatPoints = reader.GetInt32(15),
                 CurrentMap = reader.GetString(16),
+                CabeloPath = reader.GetString(17),
+                BarbaPath = reader.GetString(18),
+                CabeloCor = reader.GetString(19),
+                BarbaCor = reader.GetString(20),
             });
         }
         return result;
@@ -2510,6 +2534,10 @@ public class CharacterRow
     public int Gold { get; set; }
     public int StatPoints { get; set; }
     public string CurrentMap { get; set; } = "main";
+    public string CabeloPath { get; set; } = "";
+    public string BarbaPath { get; set; } = "";
+    public string CabeloCor { get; set; } = "ffffff";
+    public string BarbaCor { get; set; } = "ffffff";
 }
 
 

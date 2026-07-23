@@ -80,7 +80,7 @@ public partial class OverheadUI : Control
     private int _guildEmblemIdx = -1;
     private TextureRect _emblemaIcon;
     private bool _remoteMode;
-    private Color _nomeCor = Colors.White;
+    private Color _nomeCor = new Color(1f, 1f, 1f, 1f);
     private long _xpAtual;
     private long _xpMaximo = 1;
 
@@ -180,8 +180,11 @@ public partial class OverheadUI : Control
         _nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _nomeLabel.AddThemeFontSizeOverride("font_size", 14);
         _nomeLabel.AddThemeColorOverride("font_color", _nomeCor);
-        _nomeLabel.AddThemeConstantOverride("outline_size", 3);
-        _nomeLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+        _nomeLabel.AddThemeConstantOverride("outline_size", 5);
+        _nomeLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1f));
+        _nomeLabel.AddThemeConstantOverride("shadow_offset_x", 1);
+        _nomeLabel.AddThemeConstantOverride("shadow_offset_y", 1);
+        _nomeLabel.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.85f));
         _nomeLabel.Visible = MostrarNome;
         AddChild(_nomeLabel);
 
@@ -265,7 +268,7 @@ public partial class OverheadUI : Control
 
     public void DefinirCorNome(Color cor)
     {
-        _nomeCor = cor;
+        _nomeCor = new Color(cor.R, cor.G, cor.B, 1f);
         if (_nomeLabel != null)
             _nomeLabel.AddThemeColorOverride("font_color", _nomeCor);
     }

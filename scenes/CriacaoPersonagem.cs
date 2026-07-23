@@ -6,6 +6,8 @@ public partial class CriacaoPersonagem : Control
     private enum Etapa { Faccao, Raca, Classe }
 
     private const float LarguraOverlay = 340f;
+    private const string PastaCabelos = "res://characters/Player/Aparencia/Cabelos/";
+    private const string PastaBarbas = "res://characters/Player/Aparencia/Barbas/";
 
     private Control _etapaFaccao;
     private Control _etapaRaca;
@@ -39,6 +41,8 @@ public partial class CriacaoPersonagem : Control
     private OptionButton _opcaoBarba;
     private ColorPickerButton _corCabelo;
     private ColorPickerButton _corBarba;
+    private readonly List<string> _cabeloPaths = new();
+    private readonly List<string> _barbaPaths = new();
 
     private Etapa _etapaAtual = Etapa.Faccao;
     private FaccaoResource _faccaoSelecionada;
@@ -97,6 +101,8 @@ public partial class CriacaoPersonagem : Control
         _corBarba = GetNode<ColorPickerButton>("%CorBarba");
         _descricaoSolari = GetNode<Label>("%DescricaoSolari");
         _descricaoNoctori = GetNode<Label>("%DescricaoNoctori");
+
+        CarregarOpcoesAparencia();
 
         GetNode<Button>("%BtnEscolherSolari").Pressed += () => EscolherFaccao(FaccaoUtil.IdSolari);
         GetNode<Button>("%BtnEscolherNoctori").Pressed += () => EscolherFaccao(FaccaoUtil.IdNoctori);
@@ -427,8 +433,67 @@ public partial class CriacaoPersonagem : Control
     {
         if (_personagemPreview.SpriteFrames == null) return;
 
-        AtualizarOverlayPrevisao(_previsoCabelo, _opcaoCabelo.Selected, _corCabelo.Color, "");
-        AtualizarOverlayPrevisao(_previsoBarba, _opcaoBarba.Selected, _corBarba.Color, "");
+        AtualizarOverlayPrevisao(_previsoCabelo, _opcaoCabelo.Selected, _corCabelo.Color, ObterPathSelecionado(_cabeloPaths, _opcaoCabelo.Selected));
+        AtualizarOverlayPrevisao(_previsoBarba, _opcaoBarba.Selected, _corBarba.Color, ObterPathSelecionado(_barbaPaths, _opcaoBarba.Selected));
+    }
+
+    private void CarregarOpcoesAparencia()
+    {
+        CarregarOpcoesAparencia(_opcaoCabelo, _cabeloPaths, PastaCabelos, "cabelo");
+        CarregarOpcoesAparencia(_opcaoBarba, _barbaPaths, PastaBarbas, "barba");
+    }
+
+    private static void CarregarOpcoesAparencia(OptionButton option, List<string> paths, string folder, string label)
+    {
+        option.Clear();
+        paths.Clear();
+        option.AddItem("Nenhum");
+        paths.Add("");
+
+        foreach (string path in ListarSpritesAparencia(folder))
+        {
+            option.AddItem(path.GetFile().GetBaseName());
+            paths.Add(path);
+        }
+
+        option.Selected = 0;
+        if (paths.Count <= 1)
+            GD.Print($"[CRIACAO] Nenhum asset de {label} encontrado em {folder}");
+    }
+
+    private static List<string> ListarSpritesAparencia(string folder)
+    {
+        var result = new List<string>();
+        if (!DirAccess.DirExistsAbsolute(folder))
+            return result;
+
+        using var dir = DirAccess.Open(folder);
+        if (dir == null)
+            return result;
+
+        dir.ListDirBegin();
+        while (true)
+        {
+            string file = dir.GetNext();
+            if (string.IsNullOrEmpty(file))
+                break;
+            if (dir.CurrentIsDir())
+                continue;
+
+            string lower = file.ToLowerInvariant();
+            if (!lower.EndsWith(".png") && !lower.EndsWith(".webp"))
+                continue;
+
+            result.Add(folder + file);
+        }
+        dir.ListDirEnd();
+        result.Sort();
+        return result;
+    }
+
+    private static string ObterPathSelecionado(List<string> paths, int selected)
+    {
+        return selected >= 0 && selected < paths.Count ? paths[selected] : "";
     }
 
     private void AtualizarOverlayPrevisao(AnimatedSprite2D overlay, int selected, Color cor, string path)
@@ -567,8 +632,8 @@ public partial class CriacaoPersonagem : Control
         var escolhido = GetNode<PersonagemEscolhido>("/root/PersonagemEscolhido");
         escolhido.Definir(_classeSelecionada, _racaSelecionada, _nomeEdit.Text);
 
-        string cabeloPath = "";
-        string barbaPath = "";
+        string cabeloPath = ObterPathSelecionado(_cabeloPaths, _opcaoCabelo.Selected);
+        string barbaPath = ObterPathSelecionado(_barbaPaths, _opcaoBarba.Selected);
         escolhido.CabeloPath = _opcaoCabelo.Selected > 0 && ResourceLoader.Exists(cabeloPath) ? cabeloPath : "";
         escolhido.BarbaPath = _opcaoBarba.Selected > 0 && ResourceLoader.Exists(barbaPath) ? barbaPath : "";
         escolhido.CabeloCor = _corCabelo.Color;
@@ -592,7 +657,14 @@ public partial class CriacaoPersonagem : Control
             _aguardandoCriacaoServidor = true;
             _btnEntrarJogo.Disabled = true;
             MostrarTelaCarregamento();
-            net.SendCreateCharacter(escolhido.NomePersonagem, nomeClasse, nomeRaca);
+            net.SendCreateCharacter(
+                escolhido.NomePersonagem,
+                nomeClasse,
+                nomeRaca,
+                escolhido.CabeloPath,
+                escolhido.BarbaPath,
+                escolhido.CabeloCor.ToHtml(false),
+                escolhido.BarbaCor.ToHtml(false));
         }
         else
         {
@@ -664,6 +736,8 @@ public partial class CriacaoPersonagem : Control
             overlay.Play(anim);
         overlay.Frame = _personagemPreview.Frame;
         overlay.SpeedScale = _personagemPreview.SpeedScale;
+        overlay.Position = _personagemPreview.Position;
+        overlay.Scale = _personagemPreview.Scale;
     }
 
     public override void _Notification(int what)

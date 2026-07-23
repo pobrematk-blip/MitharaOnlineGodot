@@ -27,6 +27,10 @@ public partial class GameNetwork : Node
     internal int _pendingBaseInteligencia;
     internal int _pendingLevel;
     internal long _pendingXp;
+    internal string _pendingCabeloPath = "";
+    internal string _pendingBarbaPath = "";
+    internal string _pendingCabeloCor = "ffffff";
+    internal string _pendingBarbaCor = "ffffff";
     private bool _pendingInventoryApplyLogged;
     private int _pendingInventoryApplyRetries;
 
@@ -669,6 +673,10 @@ public partial class GameNetwork : Node
         LocalPlayerId = 0;
         LocalChannelId = 0;
         PendingPlayerSpawn = Vector2.Zero;
+        _pendingCabeloPath = "";
+        _pendingBarbaPath = "";
+        _pendingCabeloCor = "ffffff";
+        _pendingBarbaCor = "ffffff";
 
         PendingInventoryData = null;
         PendingEquipmentData = null;
@@ -1076,4 +1084,8 @@ public class CharacterEntry
     public string Class { get; set; } = "";
     public string Race { get; set; } = "";
     public int Level { get; set; }
+    public string CabeloPath { get; set; } = "";
+    public string BarbaPath { get; set; } = "";
+    public string CabeloCor { get; set; } = "ffffff";
+    public string BarbaCor { get; set; } = "ffffff";
 }

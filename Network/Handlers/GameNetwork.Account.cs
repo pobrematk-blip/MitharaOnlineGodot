@@ -55,14 +55,16 @@ partial class GameNetwork
             Characters.Clear();
             for (int i = 0; i < charCount; i++)
             {
-                Characters.Add(new CharacterEntry
+                var entry = new CharacterEntry
                 {
                     SlotIndex = r.GetInt(),
                     Name = r.GetString(),
                     Class = r.GetString(),
                     Race = r.GetString(),
                     Level = r.GetInt(),
-                });
+                };
+                ReadAppearanceFields(r, entry);
+                Characters.Add(entry);
             }
             LoggedIn = true;
             GD.Print($"[GAME] Login OK! AccountId={AccountId}, chars={charCount}");
