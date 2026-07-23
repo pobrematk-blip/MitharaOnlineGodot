@@ -28,6 +28,28 @@ public partial class InventarioUI : Control
     // Propriedade pública para verificar se o painel do inventário está visível
     public bool PainelVisivel => _panel != null && _panel.Visible;
 
+    public void AbrirPainel()
+    {
+        if (_panel == null)
+            return;
+
+        _panel.Visible = true;
+        _arrastando = false;
+        DesenharInterface();
+        AtualizarMoedas();
+        MoveToFront();
+        _panel.MoveToFront();
+    }
+
+    public void PosicionarPainel(Vector2 position)
+    {
+        if (_panel == null)
+            return;
+
+        _panel.Position = position;
+        ResponsiveUI.ClampInsideViewport(_panel, 4f);
+    }
+
     public override void _Ready()
     {
         _panel = GetNode<Panel>("Panel");

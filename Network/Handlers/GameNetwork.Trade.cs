@@ -34,6 +34,11 @@ partial class GameNetwork
         _client?.SendPacket(PacketId.C2S_TradeRemoveOffer, w => w.Put(tradeSlot));
     }
 
+    public void SendTradeUpdateGold(int gold)
+    {
+        _client?.SendPacket(PacketId.C2S_TradeUpdateGold, w => w.Put(Mathf.Max(0, gold)));
+    }
+
     public void SendTradeConfirm()
     {
         _client?.SendPacket(PacketId.C2S_TradeConfirm, w => { });
@@ -80,7 +85,10 @@ partial class GameNetwork
             };
             offers.Add(entry);
         }
+
+        int gold = r.AvailableBytes >= 4 ? r.GetInt() : 0;
         EmitSignal(SignalName.OnTradeOfferUpdate, playerSide, offers);
+        EmitSignal(SignalName.OnTradeGoldUpdate, playerSide, gold);
     }
 
     private void HandleTradePartnerConfirm(NetDataReader r)

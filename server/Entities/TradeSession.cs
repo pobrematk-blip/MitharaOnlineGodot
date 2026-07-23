@@ -9,6 +9,8 @@ public class TradeSession
     public ulong PlayerB { get; set; }
     public List<TradeOfferItem> PlayerAOffers { get; set; } = new();
     public List<TradeOfferItem> PlayerBOffers { get; set; } = new();
+    public int PlayerAGoldOffer { get; set; }
+    public int PlayerBGoldOffer { get; set; }
     public bool PlayerAConfirmed { get; set; }
     public bool PlayerBConfirmed { get; set; }
 }

@@ -72,6 +72,7 @@ public enum PacketId : ushort
     C2S_TradeConfirm = 0x0149,
     C2S_TradeCancel = 0x014A,
     C2S_TradeRemoveOffer = 0x014B,
+    C2S_TradeUpdateGold = 0x014D,
     C2S_CashShopBuy = 0x014C,
     C2S_RefineItem = 0x0197,
     C2S_LojinhaOpen = 0x0198,

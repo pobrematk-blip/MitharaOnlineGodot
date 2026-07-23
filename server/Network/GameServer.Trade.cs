@@ -148,16 +148,7 @@ partial class GameServer
             trade.PlayerBConfirmed = false;
 
         BroadcastTradeOfferUpdate(trade, player.Id);
-
-        var otherSide = player.Id == trade.PlayerA ? trade.PlayerB : trade.PlayerA;
-        var otherPeer = FindPeerByEntityId(otherSide);
-        if (otherPeer != null)
-        {
-            var wc = PacketSerializer.WritePacket(PacketId.S2C_TradePartnerConfirm);
-            wc.Put(otherSide);
-            wc.Put(false);
-            otherPeer.Send(wc, DeliveryMethod.ReliableOrdered);
-        }
+        NotifyTradeConfirmationReset(trade, player.Id);
     }
 
     private void HandleTradeRemoveOfferPacket(NetPeer peer, NetDataReader reader)
@@ -175,16 +166,36 @@ partial class GameServer
             trade.PlayerBConfirmed = false;
 
         BroadcastTradeOfferUpdate(trade, session.EntityId);
+        NotifyTradeConfirmationReset(trade, session.EntityId);
+    }
 
-        var otherSide = session.EntityId == trade.PlayerA ? trade.PlayerB : trade.PlayerA;
-        var otherPeer = FindPeerByEntityId(otherSide);
-        if (otherPeer != null)
+    private void HandleTradeUpdateGoldPacket(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session)) return;
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel?.GetEntity(session.EntityId) is not PlayerEntity player) return;
+        if (!_activeTrades.TryGetValue(player.Id, out var trade)) return;
+
+        int gold = Math.Max(0, reader.GetInt());
+        if (gold > player.Gold)
         {
-            var wc = PacketSerializer.WritePacket(PacketId.S2C_TradePartnerConfirm);
-            wc.Put(otherSide);
-            wc.Put(false);
-            otherPeer.Send(wc, DeliveryMethod.ReliableOrdered);
+            SendSystemMessage(peer, "Ouro insuficiente para oferecer na troca.");
+            gold = player.Gold;
         }
+
+        if (player.Id == trade.PlayerA)
+        {
+            trade.PlayerAGoldOffer = gold;
+            trade.PlayerAConfirmed = false;
+        }
+        else
+        {
+            trade.PlayerBGoldOffer = gold;
+            trade.PlayerBConfirmed = false;
+        }
+
+        BroadcastTradeOfferUpdate(trade, player.Id);
+        NotifyTradeConfirmationReset(trade, player.Id);
     }
 
     private void HandleTradeConfirmPacket(NetPeer peer, NetDataReader reader)
@@ -249,6 +260,15 @@ partial class GameServer
             { EndTradeSession(trade, false); return; }
         }
 
+        if (trade.PlayerAGoldOffer < 0 || trade.PlayerBGoldOffer < 0 ||
+            playerA.Gold < trade.PlayerAGoldOffer || playerB.Gold < trade.PlayerBGoldOffer)
+        {
+            SendSystemMessage(peerA, "Ouro insuficiente para concluir a troca.");
+            SendSystemMessage(peerB, "Ouro insuficiente para concluir a troca.");
+            EndTradeSession(trade, false);
+            return;
+        }
+
         if (!TemEspacoParaReceber(playerA, trade.PlayerBOffers, trade.PlayerAOffers))
         {
             SendSystemMessage(peerA, "Inventario sem espaco para receber os itens da troca.");
@@ -289,8 +309,18 @@ partial class GameServer
             AdicionarItemRecebido(playerA, charIdA, recebido);
         }
 
+        if (trade.PlayerAGoldOffer > 0 || trade.PlayerBGoldOffer > 0)
+        {
+            playerA.Gold = playerA.Gold - trade.PlayerAGoldOffer + trade.PlayerBGoldOffer;
+            playerB.Gold = playerB.Gold - trade.PlayerBGoldOffer + trade.PlayerAGoldOffer;
+            _db.SaveCharacterGold(charIdA, playerA.Gold);
+            _db.SaveCharacterGold(charIdB, playerB.Gold);
+        }
+
         SendInventoryData(peerA, playerA);
         SendInventoryData(peerB, playerB);
+        SendGoldUpdate(peerA, playerA.Gold);
+        SendGoldUpdate(peerB, playerB.Gold);
         SendSystemMessage(peerA, "Troca realizada com sucesso!");
         SendSystemMessage(peerB, "Troca realizada com sucesso!");
         EndTradeSession(trade, true);
@@ -310,6 +340,7 @@ partial class GameServer
     private void BroadcastTradeOfferUpdate(TradeSession trade, ulong changedPlayerId)
     {
         var offers = changedPlayerId == trade.PlayerA ? trade.PlayerAOffers : trade.PlayerBOffers;
+        int goldOffer = changedPlayerId == trade.PlayerA ? trade.PlayerAGoldOffer : trade.PlayerBGoldOffer;
 
         foreach (var eid in new[] { trade.PlayerA, trade.PlayerB })
         {
@@ -324,8 +355,22 @@ partial class GameServer
                 w.Put(o.ItemId);
                 w.Put(o.Quantity);
             }
+            w.Put(goldOffer);
             peer.Send(w, DeliveryMethod.ReliableOrdered);
         }
+    }
+
+    private void NotifyTradeConfirmationReset(TradeSession trade, ulong changedPlayerId)
+    {
+        var otherSide = changedPlayerId == trade.PlayerA ? trade.PlayerB : trade.PlayerA;
+        var otherPeer = FindPeerByEntityId(otherSide);
+        if (otherPeer == null)
+            return;
+
+        var wc = PacketSerializer.WritePacket(PacketId.S2C_TradePartnerConfirm);
+        wc.Put(changedPlayerId);
+        wc.Put(false);
+        otherPeer.Send(wc, DeliveryMethod.ReliableOrdered);
     }
 
     private void EndTradeSession(TradeSession trade, bool success)

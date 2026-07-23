@@ -131,6 +131,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnTradeRequestedEventHandler(string senderName);
     [Signal] public delegate void OnTradeStartEventHandler(ulong partnerId, string partnerName);
     [Signal] public delegate void OnTradeOfferUpdateEventHandler(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers);
+    [Signal] public delegate void OnTradeGoldUpdateEventHandler(ulong playerSide, int gold);
     [Signal] public delegate void OnTradePartnerConfirmEventHandler(ulong playerSide, bool confirmed);
     [Signal] public delegate void OnTradeEndEventHandler(bool success);
     [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);

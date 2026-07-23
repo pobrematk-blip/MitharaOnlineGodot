@@ -5,7 +5,7 @@ using System.Linq;
 
 public partial class TradeUI : Control
 {
-    private static readonly Vector2 TradeWindowSize = new(384, 292);
+    private static readonly Vector2 TradeWindowSize = new(430, 352);
     private static readonly Vector2 TradeSlotSize = new(46, 46);
     private Panel _window;
     private Label _titleLabel;
@@ -13,6 +13,9 @@ public partial class TradeUI : Control
     private Label _partnerStatus;
     private Button _confirmBtn;
     private Button _cancelBtn;
+    private SpinBox _myGoldSpin;
+    private Label _myGoldOfferLabel;
+    private Label _partnerGoldOfferLabel;
     private Panel _itemPopup;
     private VBoxContainer _itemPopupList;
 
@@ -24,6 +27,8 @@ public partial class TradeUI : Control
     private Godot.Collections.Dictionary _partnerOffers = new();
     private bool _myConfirmed;
     private bool _partnerConfirmed;
+    private int _myGoldOffer;
+    private int _partnerGoldOffer;
 
     private Panel[] _mySlots = new Panel[9];
     private Panel[] _partnerSlots = new Panel[9];
@@ -37,12 +42,6 @@ public partial class TradeUI : Control
     public override void _Ready()
     {
         MouseFilter = MouseFilterEnum.Ignore;
-
-        var overlay = new ColorRect();
-        overlay.Color = new Color(0, 0, 0, 0.5f);
-        overlay.SetAnchorsPreset(LayoutPreset.FullRect);
-        overlay.MouseFilter = MouseFilterEnum.Pass;
-        AddChild(overlay);
 
         _window = new Panel();
         _window.CustomMinimumSize = TradeWindowSize;
@@ -134,9 +133,11 @@ public partial class TradeUI : Control
         {
             _net.OnTradeStart += OnTradeStart;
             _net.OnTradeOfferUpdate += OnTradeOfferUpdate;
+            _net.OnTradeGoldUpdate += OnTradeGoldUpdate;
             _net.OnTradePartnerConfirm += OnTradePartnerConfirm;
             _net.OnTradeEnd += OnTradeEnd;
             _net.OnInventoryData += OnInventoryData;
+            _net.OnGoldUpdate += OnGoldUpdate;
             if (_net.PendingInventoryData != null)
                 _cachedInventory = _net.PendingInventoryData;
         }
@@ -225,6 +226,60 @@ public partial class TradeUI : Control
         statusLabel.AddThemeFontSizeOverride("font_size", 9);
         vbox.AddChild(statusLabel);
 
+        var goldBox = new VBoxContainer();
+        goldBox.AddThemeConstantOverride("separation", 3);
+        var goldTitle = new Label
+        {
+            Text = "Ouro",
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        goldTitle.AddThemeFontSizeOverride("font_size", 10);
+        goldTitle.AddThemeColorOverride("font_color", Color.FromHtml("#f5d76e"));
+        goldBox.AddChild(goldTitle);
+
+        if (isMine)
+        {
+            var row = new HBoxContainer();
+            row.AddThemeConstantOverride("separation", 4);
+            _myGoldSpin = new SpinBox
+            {
+                MinValue = 0,
+                MaxValue = _net?.Gold ?? 0,
+                Step = 1,
+                Rounded = true,
+                CustomMinimumSize = new Vector2(96, 28),
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
+            row.AddChild(_myGoldSpin);
+
+            var setGoldBtn = new Button { Text = "OK", CustomMinimumSize = new Vector2(42, 28) };
+            setGoldBtn.Pressed += SendGoldOfferFromUi;
+            row.AddChild(setGoldBtn);
+            goldBox.AddChild(row);
+
+            _myGoldOfferLabel = new Label
+            {
+                Text = "Ofertado: 0",
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            _myGoldOfferLabel.AddThemeFontSizeOverride("font_size", 9);
+            _myGoldOfferLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
+            goldBox.AddChild(_myGoldOfferLabel);
+        }
+        else
+        {
+            _partnerGoldOfferLabel = new Label
+            {
+                Text = "Ofertado: 0",
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            _partnerGoldOfferLabel.AddThemeFontSizeOverride("font_size", 10);
+            _partnerGoldOfferLabel.AddThemeColorOverride("font_color", Color.FromHtml("#f5d76e"));
+            goldBox.AddChild(_partnerGoldOfferLabel);
+        }
+
+        vbox.AddChild(goldBox);
+
         if (isMine)
         {
             header.Text = "Seus itens";
@@ -247,6 +302,8 @@ public partial class TradeUI : Control
         _partnerOffers.Clear();
         _myConfirmed = false;
         _partnerConfirmed = false;
+        _myGoldOffer = 0;
+        _partnerGoldOffer = 0;
         _net?.SendInventoryRequest();
 
         _titleLabel.Text = $"Troca com {partnerName}";
@@ -265,11 +322,13 @@ public partial class TradeUI : Control
         _partnerStatus.Text = "Aguardando...";
         _confirmBtn.Disabled = false;
         _confirmBtn.Text = "Confirmar Troca";
+        AtualizarGoldUi();
 
         CentralizarJanela();
         Visible = true;
         MoveToFront();
         _window.MoveToFront();
+        CallDeferred(nameof(AbrirInventarioParaTroca));
     }
 
     private void OnTradeOfferUpdate(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers)
@@ -312,6 +371,32 @@ public partial class TradeUI : Control
         }
     }
 
+    private void OnTradeGoldUpdate(ulong playerSide, int gold)
+    {
+        bool isMySide = playerSide == (_net?.LocalPlayerId ?? 0);
+        if (isMySide)
+        {
+            _myGoldOffer = Mathf.Max(0, gold);
+            if (_myConfirmed)
+            {
+                _myConfirmed = false;
+                _myStatus.Text = "Aguardando...";
+            }
+        }
+        else
+        {
+            _partnerGoldOffer = Mathf.Max(0, gold);
+        }
+
+        AtualizarGoldUi();
+    }
+
+    private void OnGoldUpdate(int gold)
+    {
+        if (_myGoldSpin != null)
+            _myGoldSpin.MaxValue = Mathf.Max(0, gold);
+    }
+
     private void OnTradePartnerConfirm(ulong playerSide, bool confirmed)
     {
         bool isMySide = playerSide == (_net?.LocalPlayerId ?? 0);
@@ -344,6 +429,15 @@ public partial class TradeUI : Control
     private void OnInventoryData(Godot.Collections.Array<Godot.Collections.Dictionary> items, Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
     {
         _cachedInventory = items;
+    }
+
+    public bool TryOfferInventorySlot(int inventorySlot, int quantity = 1)
+    {
+        if (!Visible || _myConfirmed || inventorySlot < 0)
+            return false;
+
+        _net?.SendTradeUpdateOffer(inventorySlot, Mathf.Max(1, quantity));
+        return true;
     }
 
     private void OnMySlotClicked(int slotIdx)
@@ -391,8 +485,7 @@ public partial class TradeUI : Control
                 btn.Pressed += () =>
                 {
                     _itemPopup.Visible = false;
-                    var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-                    net?.SendTradeUpdateOffer(capturedSlot, 1);
+                    TryOfferInventorySlot(capturedSlot, 1);
                 };
                 _itemPopupList.AddChild(btn);
             }
@@ -416,6 +509,30 @@ public partial class TradeUI : Control
         _net?.SendTradeUpdateOffer(inventorySlot, 1);
     }
 
+    private void SendGoldOfferFromUi()
+    {
+        if (_myConfirmed || _myGoldSpin == null)
+            return;
+
+        int gold = Mathf.Max(0, (int)_myGoldSpin.Value);
+        _net?.SendTradeUpdateGold(gold);
+    }
+
+    private void AtualizarGoldUi()
+    {
+        if (_myGoldSpin != null)
+        {
+            _myGoldSpin.MaxValue = Mathf.Max(0, _net?.Gold ?? 0);
+            _myGoldSpin.Value = Mathf.Min(_myGoldOffer, (int)_myGoldSpin.MaxValue);
+            _myGoldSpin.Editable = !_myConfirmed;
+        }
+
+        if (_myGoldOfferLabel != null)
+            _myGoldOfferLabel.Text = $"Ofertado: {_myGoldOffer}";
+        if (_partnerGoldOfferLabel != null)
+            _partnerGoldOfferLabel.Text = $"Ofertado: {_partnerGoldOffer}";
+    }
+
     private void ConfirmTrade()
     {
         if (_myConfirmed) return;
@@ -433,6 +550,18 @@ public partial class TradeUI : Control
         _net?.ClearPendingTrade();
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         net?.SendTradeCancel();
+    }
+
+    private void AbrirInventarioParaTroca()
+    {
+        var inv = GetTree()?.CurrentScene?.FindChild("InventarioUI", true, false) as InventarioUI;
+        if (inv == null)
+            return;
+
+        inv.AbrirPainel();
+        var vp = GetViewportRect();
+        _window.Position = new Vector2(Mathf.Max(8, vp.Size.X - TradeWindowSize.X - 24), Mathf.Max(8, (vp.Size.Y - TradeWindowSize.Y) / 2));
+        inv.PosicionarPainel(new Vector2(24, Mathf.Max(8, (vp.Size.Y - 420) / 2)));
     }
 
     private void AtualizarEstiloSlot(Panel slot, bool occupied)

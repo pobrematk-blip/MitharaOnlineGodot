@@ -521,6 +521,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_TradeRemoveOffer:
                 HandleTradeRemoveOfferPacket(peer, reader);
                 break;
+            case PacketId.C2S_TradeUpdateGold:
+                HandleTradeUpdateGoldPacket(peer, reader);
+                break;
             case PacketId.C2S_CashShopBuy:
                 HandleCashShopBuy(peer, reader);
                 break;
