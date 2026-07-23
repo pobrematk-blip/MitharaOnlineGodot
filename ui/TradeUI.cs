@@ -34,6 +34,10 @@ public partial class TradeUI : Control
     private Panel[] _partnerSlots = new Panel[9];
     private Label[] _mySlotLabels = new Label[9];
     private Label[] _partnerSlotLabels = new Label[9];
+    private TextureRect[] _mySlotIcons = new TextureRect[9];
+    private TextureRect[] _partnerSlotIcons = new TextureRect[9];
+    private Label[] _mySlotQuantities = new Label[9];
+    private Label[] _partnerSlotQuantities = new Label[9];
     private bool _arrastandoJanela;
     private Vector2 _pontoCliqueOriginal;
     private bool _disposed;
@@ -183,6 +187,8 @@ public partial class TradeUI : Control
 
         var slots = isMine ? _mySlots : _partnerSlots;
         var labels = isMine ? _mySlotLabels : _partnerSlotLabels;
+        var icons = isMine ? _mySlotIcons : _partnerSlotIcons;
+        var quantities = isMine ? _mySlotQuantities : _partnerSlotQuantities;
 
         for (int i = 0; i < 9; i++)
         {
@@ -203,6 +209,32 @@ public partial class TradeUI : Control
             slotLabel.MouseFilter = MouseFilterEnum.Ignore;
             slotPanel.AddChild(slotLabel);
 
+            var icon = new TextureRect
+            {
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                MouseFilter = MouseFilterEnum.Ignore,
+                Size = new Vector2(36, 36),
+                Position = new Vector2(5, 3),
+                Visible = false
+            };
+            slotPanel.AddChild(icon);
+
+            var qtyLabel = new Label
+            {
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                MouseFilter = MouseFilterEnum.Ignore,
+                Visible = false
+            };
+            qtyLabel.AddThemeFontSizeOverride("font_size", 9);
+            qtyLabel.AddThemeColorOverride("font_color", Colors.White);
+            qtyLabel.AddThemeColorOverride("font_shadow_color", Colors.Black);
+            qtyLabel.AddThemeConstantOverride("shadow_offset_x", 1);
+            qtyLabel.AddThemeConstantOverride("shadow_offset_y", 1);
+            qtyLabel.SetAnchorsPreset(LayoutPreset.FullRect);
+            slotPanel.AddChild(qtyLabel);
+
             if (isMine)
             {
                 slotPanel.MouseFilter = MouseFilterEnum.Stop;
@@ -218,6 +250,8 @@ public partial class TradeUI : Control
 
             slots[slotIdx] = slotPanel;
             labels[slotIdx] = slotLabel;
+            icons[slotIdx] = icon;
+            quantities[slotIdx] = qtyLabel;
             grid.AddChild(slotPanel);
         }
         vbox.AddChild(grid);
@@ -316,6 +350,8 @@ public partial class TradeUI : Control
         {
             _mySlotLabels[i].Text = "";
             _partnerSlotLabels[i].Text = "";
+            LimparVisualSlot(_mySlots[i], _mySlotLabels[i], _mySlotIcons[i], _mySlotQuantities[i]);
+            LimparVisualSlot(_partnerSlots[i], _partnerSlotLabels[i], _partnerSlotIcons[i], _partnerSlotQuantities[i]);
             AtualizarEstiloSlot(_mySlots[i], false);
             AtualizarEstiloSlot(_partnerSlots[i], false);
             if (_mySlots[i] is TradeDropSlot dropSlot)
@@ -352,6 +388,8 @@ public partial class TradeUI : Control
 
         var slots = isMySide ? _mySlots : _partnerSlots;
         var labels = isMySide ? _mySlotLabels : _partnerSlotLabels;
+        var icons = isMySide ? _mySlotIcons : _partnerSlotIcons;
+        var quantities = isMySide ? _mySlotQuantities : _partnerSlotQuantities;
 
         for (int i = 0; i < 9; i++)
         {
@@ -360,13 +398,12 @@ public partial class TradeUI : Control
                 var entry = (Godot.Collections.Dictionary)dict[i];
                 int itemId = (int)entry["item_id"];
                 int qty = (int)entry["quantity"];
-                string itemName = ObterNomeItem(itemId);
-                labels[i].Text = $"{itemName}\n{qty}x";
+                AtualizarVisualSlot(slots[i], labels[i], icons[i], quantities[i], itemId, qty);
                 AtualizarEstiloSlot(slots[i], true);
             }
             else
             {
-                labels[i].Text = "";
+                LimparVisualSlot(slots[i], labels[i], icons[i], quantities[i]);
                 AtualizarEstiloSlot(slots[i], false);
             }
         }
@@ -504,7 +541,7 @@ public partial class TradeUI : Control
                 btn.Pressed += () =>
                 {
                     _itemPopup.Visible = false;
-                    TryOfferInventorySlot(capturedSlot, 1);
+                    TryOfferInventorySlot(capturedSlot, capturedQty);
                 };
                 _itemPopupList.AddChild(btn);
             }
@@ -525,7 +562,7 @@ public partial class TradeUI : Control
         if (_myOffers.ContainsKey(tradeSlot))
             _net?.SendTradeRemoveOffer(tradeSlot);
 
-        _net?.SendTradeUpdateOffer(inventorySlot, 1);
+        _net?.SendTradeUpdateOffer(inventorySlot, Mathf.Max(1, quantity));
     }
 
     private void SendGoldOfferFromUi()
@@ -573,9 +610,14 @@ public partial class TradeUI : Control
 
     private void AbrirInventarioParaTroca()
     {
-        var inv = GetTree()?.CurrentScene?.FindChild("InventarioUI", true, false) as InventarioUI;
+        var tree = GetTree();
+        var inv = tree?.Root?.FindChild("InventarioUI", true, false) as InventarioUI
+            ?? tree?.CurrentScene?.FindChild("InventarioUI", true, false) as InventarioUI;
         if (inv == null)
+        {
+            GD.PrintErr("[TRADE] InventarioUI nao encontrado para abrir junto com a troca.");
             return;
+        }
 
         inv.AbrirPainel();
         var vp = GetViewportRect();
@@ -643,6 +685,57 @@ public partial class TradeUI : Control
             >= 6051 and <= 6071 => "Escudo Sagrado",
             _ => $"Item #{itemId}",
         };
+    }
+
+    private void AtualizarVisualSlot(Panel slot, Label fallbackLabel, TextureRect icon, Label qtyLabel, int itemId, int quantity)
+    {
+        string itemName = ObterNomeItem(itemId);
+        ItemResource? item = _net?.ItemDB?.GetItem(itemId);
+        Texture2D? texture = item?.Icone;
+        if (item != null)
+            itemName = item.Nome;
+
+        if (IsControlAlive(icon) && texture != null)
+        {
+            icon.Texture = texture;
+            icon.Visible = true;
+            fallbackLabel.Text = "";
+        }
+        else
+        {
+            if (IsControlAlive(icon))
+            {
+                icon.Texture = null;
+                icon.Visible = false;
+            }
+            fallbackLabel.Text = $"{itemName}\n{quantity}x";
+        }
+
+        if (IsControlAlive(qtyLabel))
+        {
+            qtyLabel.Text = quantity > 1 ? quantity.ToString() : "";
+            qtyLabel.Visible = quantity > 1;
+        }
+
+        slot.TooltipText = $"{itemName}\nQuantidade: {quantity}";
+    }
+
+    private static void LimparVisualSlot(Panel slot, Label fallbackLabel, TextureRect icon, Label qtyLabel)
+    {
+        if (GodotObject.IsInstanceValid(fallbackLabel))
+            fallbackLabel.Text = "";
+        if (GodotObject.IsInstanceValid(icon))
+        {
+            icon.Texture = null;
+            icon.Visible = false;
+        }
+        if (GodotObject.IsInstanceValid(qtyLabel))
+        {
+            qtyLabel.Text = "";
+            qtyLabel.Visible = false;
+        }
+        if (GodotObject.IsInstanceValid(slot))
+            slot.TooltipText = "";
     }
 
     public override void _ExitTree()

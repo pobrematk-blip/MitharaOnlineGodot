@@ -174,6 +174,15 @@ partial class GameServer
     private bool CanPlayerDamagePlayer(PlayerEntity attacker, PlayerEntity target, out string reason)
     {
         reason = "";
+        if (CanDuelistsDamage(attacker, target))
+            return true;
+
+        if (IsPlayerInActiveDuel(attacker.Id) || IsPlayerInActiveDuel(target.Id))
+        {
+            reason = "Duelo: PvP liberado somente entre duelistas dentro da area.";
+            return false;
+        }
+
         var area = ResolvePvpArea(attacker, target);
 
         if (area == PvpAreaKind.Safe)

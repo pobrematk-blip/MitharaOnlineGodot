@@ -74,7 +74,7 @@ public partial class PlayerContextMenu : Panel
                     net.SendGuildInvite(_instance._targetName);
                     break;
                 case "Desafiar para Duelo":
-                    net.SendDuelRequest(_instance._targetName);
+                    _instance.ShowDuelWagerDialog();
                     break;
                 case "Solicitar Troca":
                     net.SendTradeRequest(_instance._targetName);
@@ -102,5 +102,41 @@ public partial class PlayerContextMenu : Panel
     {
         if (_instance == null) return;
         _instance.Visible = false;
+    }
+
+    private void ShowDuelWagerDialog()
+    {
+        var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (net == null || string.IsNullOrEmpty(_targetName))
+            return;
+
+        var dialog = new ConfirmationDialog
+        {
+            Title = "Aposta do Duelo",
+            DialogText = $"Quanto ouro quer apostar contra {_targetName}?",
+            MinSize = new Vector2I(360, 150),
+        };
+
+        var spin = new SpinBox
+        {
+            MinValue = 0,
+            MaxValue = Mathf.Max(0, net.Gold),
+            Step = 1,
+            Rounded = true,
+            Value = 0,
+            CustomMinimumSize = new Vector2(180, 30),
+        };
+        dialog.AddChild(spin);
+
+        string targetName = _targetName;
+        dialog.Confirmed += () =>
+        {
+            int wager = Mathf.Max(0, (int)spin.Value);
+            net.SendDuelRequest(targetName, wager);
+            dialog.QueueFree();
+        };
+        dialog.Canceled += () => dialog.QueueFree();
+        AddChild(dialog);
+        dialog.PopupCentered();
     }
 }

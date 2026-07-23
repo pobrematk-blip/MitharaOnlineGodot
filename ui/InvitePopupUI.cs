@@ -59,7 +59,7 @@ public partial class InvitePopupUI : Panel
         hbox.AddChild(declineBtn);
     }
 
-    public static void ShowInvite(string inviteType, string senderName)
+    public static void ShowInvite(string inviteType, string senderName, int goldWager = 0)
     {
         if (_instance == null || !_instance.IsInsideTree())
             return;
@@ -70,7 +70,9 @@ public partial class InvitePopupUI : Panel
             "party" => $"{senderName} convidou voc\u00ea para um grupo!",
             "guild" => $"{senderName} convidou voc\u00ea para a guild!",
             "guild_promote" => $"{senderName} quer passar a lideran\u00e7a da guild para voc\u00ea!",
-            "duel" => $"{senderName} desafiou voc\u00ea para um duelo!",
+            "duel" => goldWager > 0
+                ? $"{senderName} desafiou voc\u00ea para um duelo!\nAposta: {goldWager} ouro"
+                : $"{senderName} desafiou voc\u00ea para um duelo!",
             "trade" => $"{senderName} quer trocar itens com voc\u00ea!",
             _ => $"{senderName} convidou voc\u00ea!",
         };

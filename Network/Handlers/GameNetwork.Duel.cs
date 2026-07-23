@@ -5,10 +5,14 @@ using Mithara.Network;
 
 partial class GameNetwork
 {
-    public void SendDuelRequest(string targetName)
+    public void SendDuelRequest(string targetName, int goldWager = 0)
     {
-        _client?.SendPacket(PacketId.C2S_DuelRequest, w => w.Put(targetName));
-        Log($"[DUEL] Sent duel request to {targetName}");
+        _client?.SendPacket(PacketId.C2S_DuelRequest, w =>
+        {
+            w.Put(targetName);
+            w.Put(Mathf.Max(0, goldWager));
+        });
+        Log($"[DUEL] Sent duel request to {targetName} wager={goldWager}");
     }
 
     public void SendDuelAccept()
@@ -26,8 +30,9 @@ partial class GameNetwork
     private void HandleDuelRequested(NetDataReader r)
     {
         string senderName = r.GetString();
-        Log($"[DUEL] Received duel request from {senderName}");
-        InvitePopupUI.ShowInvite("duel", senderName);
+        int goldWager = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        Log($"[DUEL] Received duel request from {senderName} wager={goldWager}");
+        InvitePopupUI.ShowInvite("duel", senderName, goldWager);
     }
 
     private void HandleDuelStart(NetDataReader r)

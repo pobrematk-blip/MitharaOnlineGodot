@@ -364,7 +364,7 @@ public partial class SlotUI : Control
                 return;
             }
 
-            if (EnviarParaTrocaSeAberta())
+            if (EnviarParaTrocaSeAberta(mouseEvent.ShiftPressed))
             {
                 GetViewport().SetInputAsHandled();
                 return;
@@ -405,7 +405,7 @@ public partial class SlotUI : Control
         }
     }
 
-    private bool EnviarParaTrocaSeAberta()
+    private bool EnviarParaTrocaSeAberta(bool dividirStack)
     {
         if (ObterContainerUi() != TipoContainerUi.Inventario)
             return false;
@@ -416,9 +416,16 @@ public partial class SlotUI : Control
         if (trade == null || !trade.Visible)
             return false;
 
-        bool enviado = trade.TryOfferInventorySlot(SlotIndex, 1);
+        int quantidade = SlotInterno?.Quantidade ?? 0;
+        if (quantidade <= 0)
+            return false;
+
+        if (dividirStack && quantidade > 1)
+            quantidade = (quantidade + 1) / 2;
+
+        bool enviado = trade.TryOfferInventorySlot(SlotIndex, quantidade);
         if (enviado)
-            GD.Print($"[TRADE] Slot {SlotIndex} enviado para oferta por duplo clique.");
+            GD.Print($"[TRADE] Slot {SlotIndex} enviado para oferta por duplo clique. Quantidade={quantidade}");
         return enviado;
     }
 

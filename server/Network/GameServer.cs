@@ -162,6 +162,7 @@ public partial class GameServer : INetEventListener
         ProcessPendingFreneticStrikes();
         ProcessPendingAreaSkillTicks();
         ProcessActiveBastionAreas();
+        ProcessActiveDuels();
 
         foreach (var ch in _world.GetAllChannels())
         {

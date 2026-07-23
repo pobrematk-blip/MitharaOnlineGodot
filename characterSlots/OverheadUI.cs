@@ -399,7 +399,7 @@ public partial class OverheadUI : Control
 
         float scale = 1f;
         if (_camera != null && _camera.Zoom.X > 0.001f)
-            scale = 0.85f / _camera.Zoom.X;
+            scale = 1f / _camera.Zoom.X;
 
         Scale = new Vector2(scale, scale);
         Position = new Vector2(
