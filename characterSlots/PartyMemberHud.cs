@@ -7,6 +7,9 @@ public partial class PartyMemberHud : Control
     private VBoxContainer _container;
     private List<Godot.Collections.Dictionary> _members = new();
     private int _partyId;
+    private bool _refreshPending;
+    private double _refreshCountdown;
+    private const double RefreshIntervalSeconds = 0.10;
 
     private string NomeJogador
     {
@@ -47,6 +50,19 @@ public partial class PartyMemberHud : Control
         Visible = false;
     }
 
+    public override void _Process(double delta)
+    {
+        if (!_refreshPending)
+            return;
+
+        _refreshCountdown -= delta;
+        if (_refreshCountdown > 0.0)
+            return;
+
+        _refreshPending = false;
+        Refresh();
+    }
+
     private void OnNetworkPartyData(int partyId, Godot.Collections.Array<Godot.Collections.Dictionary> members)
     {
         _partyId = partyId;
@@ -56,7 +72,7 @@ public partial class PartyMemberHud : Control
             if ((string)m["name"] != NomeJogador)
                 _members.Add(m);
         }
-        Refresh();
+        RequestRefresh(true);
     }
 
     private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
@@ -93,7 +109,21 @@ public partial class PartyMemberHud : Control
         {
             _members.RemoveAll(m => (ulong)(long)m["entity_id"] == entityId);
         }
-        Refresh();
+        RequestRefresh();
+    }
+
+    private void RequestRefresh(bool immediate = false)
+    {
+        if (immediate)
+        {
+            _refreshPending = false;
+            Refresh();
+            return;
+        }
+
+        _refreshPending = true;
+        if (_refreshCountdown <= 0.0)
+            _refreshCountdown = RefreshIntervalSeconds;
     }
 
     private void Refresh()

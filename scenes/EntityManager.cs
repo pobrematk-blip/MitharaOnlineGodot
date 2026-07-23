@@ -60,6 +60,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _lojinhaNodes = new();
     private readonly Dictionary<ulong, Node2D> _remoteSheriganPets = new();
     private readonly Dictionary<string, AnimatedSprite2D> _bastiaoAreaEffects = new();
+    private static readonly Dictionary<string, SpriteFrames?> _directoryFrameCache = new();
     private ulong _lojinhaInteracaoAtual;
     private Node2D? _worldNode;
     private static readonly Color NomeCorNormal = new(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1238,7 +1239,11 @@ public partial class EntityManager : Node
 
     private void OnEntityManaUpdateHandler(ulong entityId, int mana, int maxMana)
     {
-        if (entityId == _gameNet?.LocalPlayerId)
+        if (_networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node) && node is Player remotePlayer)
+        {
+            remotePlayer.SetManaFromServer(mana, maxMana);
+        }
+        else if (entityId == _gameNet?.LocalPlayerId)
         {
             var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
             if (localPlayer != null && IsInstanceValid(localPlayer))
@@ -1248,16 +1253,6 @@ public partial class EntityManager : Node
 
     private void OnCombatResult(ulong attackerId, ulong targetId, int damage, bool isCrit, int targetHealth, int targetMaxHealth, int skillId)
     {
-        GameNetwork.Log($"[COMBAT] OnCombatResult: attacker={attackerId} target={targetId} damage={damage} isCrit={isCrit} targetHP={targetHealth}/{targetMaxHealth} skill={skillId}");
-
-        if (attackerId == _gameNet?.LocalPlayerId)
-        {
-            string msg = isCrit
-                ? $"[SISTEMA] Você causou {damage} de dano (CRÍTICO!) em #{targetId}."
-                : $"[SISTEMA] Você causou {damage} de dano em #{targetId}.";
-            GD.Print(msg);
-        }
-
         // Reproduz o ataque de qualquer entidade remota.
         if (attackerId != _gameNet?.LocalPlayerId &&
             _networkNodes.TryGetValue(attackerId, out var attackerNode) &&
@@ -2855,6 +2850,10 @@ public partial class EntityManager : Node
 
     private static SpriteFrames? CriarFramesDeDiretorio(string directory, string animName, bool loop, float speed, int maxFrames)
     {
+        string cacheKey = $"{directory}|{animName}|{loop}|{speed}|{maxFrames}";
+        if (_directoryFrameCache.TryGetValue(cacheKey, out var cachedFrames))
+            return cachedFrames;
+
         var frames = new SpriteFrames();
         frames.AddAnimation(animName);
         frames.SetAnimationLoop(animName, loop);
@@ -2871,7 +2870,9 @@ public partial class EntityManager : Node
                 frames.AddFrame(animName, texture);
         }
 
-        return frames.GetFrameCount(animName) > 0 ? frames : null;
+        SpriteFrames? result = frames.GetFrameCount(animName) > 0 ? frames : null;
+        _directoryFrameCache[cacheKey] = result;
+        return result;
     }
 
     private void TocarEfeitoDesafioCaster(Node2D targetNode)

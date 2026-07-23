@@ -353,32 +353,7 @@ partial class GameServer
             BroadcastPartyMemberUpdateForEntity(target.Id);
         }
 
-        var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
-        writer.Put(mob.Id);
-        writer.Put(target.Id);
-        writer.Put(damage);
-        writer.Put(isCrit);
-        writer.Put(target.Health);
-        writer.Put(target.MaxHealth);
-        writer.Put(skillId);
-
-        var aoi = channel.GetEntitiesInAoi(mob.X, mob.Y);
-        foreach (var eid in aoi)
-        {
-            var p = channel.GetPlayerPeer(eid);
-            if (p != null)
-            {
-                p.Send(writer, DeliveryMethod.ReliableOrdered);
-                writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
-                writer.Put(mob.Id);
-                writer.Put(target.Id);
-                writer.Put(damage);
-                writer.Put(isCrit);
-                writer.Put(target.Health);
-                writer.Put(target.MaxHealth);
-                writer.Put(skillId);
-            }
-        }
+        BroadcastCombatResult(channel, mob.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, mob.X, mob.Y, skillId);
 
         if (target.Health <= 0 && target is PlayerEntity player)
         {
@@ -1020,7 +995,10 @@ partial class GameServer
             ApplySharedBerserkerBuffCooldown(caster, skill.SkillId, cooldownSeconds);
         }
         if (skill.CustoMana > 0)
+        {
             caster.Mana = Math.Max(0, caster.Mana - skill.CustoMana);
+            BroadcastPartyMemberUpdateForEntity(caster.Id);
+        }
 
         SendSkillUseResult(peer, skillSlot, skill.SkillId, true, (float)cooldownSeconds);
         SendSharedBerserkerBuffCooldownResult(peer, caster, skill.SkillId, skillSlot, (float)cooldownSeconds);
@@ -3613,22 +3591,23 @@ partial class GameServer
             BreakSleepOnDamage(channel, targetId);
         }
 
-        var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
-        writer.Put(attackerId);
-        writer.Put(targetId);
-        writer.Put(damage);
-        writer.Put(isCrit);
-        writer.Put(targetHealth);
-        writer.Put(targetMaxHealth);
-        writer.Put(skillId);
+        var recipients = channel.GetEntitiesInAoi(x, y);
+        if (channel.GetEntity(attackerId) is { } attackerEntity)
+        {
+            recipients.Add(attackerId);
+            recipients.UnionWith(channel.GetEntitiesInAoi(attackerEntity.X, attackerEntity.Y));
+        }
+        if (channel.GetEntity(targetId) is { } targetEntity)
+        {
+            recipients.Add(targetId);
+            recipients.UnionWith(channel.GetEntitiesInAoi(targetEntity.X, targetEntity.Y));
+        }
 
-        var aoi = channel.GetEntitiesInAoi(x, y);
-        foreach (var eid in aoi)
+        foreach (var eid in recipients)
         {
             var p = channel.GetPlayerPeer(eid);
             if (p == null) continue;
-            p.Send(writer, DeliveryMethod.ReliableOrdered);
-            writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
             writer.Put(attackerId);
             writer.Put(targetId);
             writer.Put(damage);
@@ -3636,6 +3615,7 @@ partial class GameServer
             writer.Put(targetHealth);
             writer.Put(targetMaxHealth);
             writer.Put(skillId);
+            p.Send(writer, DeliveryMethod.ReliableOrdered);
         }
     }
 
@@ -3868,32 +3848,7 @@ partial class GameServer
             hitMob.TargetEntityId = session.EntityId;
         }
 
-        var writerCombat = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
-        writerCombat.Put(session.EntityId);
-        writerCombat.Put(targetId);
-        writerCombat.Put(damage);
-        writerCombat.Put(isCrit);
-        writerCombat.Put(target.Health);
-        writerCombat.Put(target.MaxHealth);
-        writerCombat.Put(0);
-
-        var aoi = channel.GetEntitiesInAoi(attacker.X, attacker.Y);
-        foreach (var eid in aoi)
-        {
-            var p = channel.GetPlayerPeer(eid);
-            if (p != null)
-            {
-                p.Send(writerCombat, DeliveryMethod.ReliableOrdered);
-                writerCombat = PacketSerializer.WritePacket(PacketId.S2C_CombatResult);
-                writerCombat.Put(session.EntityId);
-                writerCombat.Put(targetId);
-                writerCombat.Put(damage);
-                writerCombat.Put(isCrit);
-                writerCombat.Put(target.Health);
-                writerCombat.Put(target.MaxHealth);
-                writerCombat.Put(0);
-            }
-        }
+        BroadcastCombatResult(channel, session.EntityId, targetId, damage, isCrit, target.Health, target.MaxHealth, attacker.X, attacker.Y);
 
         if (target is MonsterEntity killedMob && target.Health <= 0)
         {
