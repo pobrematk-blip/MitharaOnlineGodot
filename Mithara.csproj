@@ -10,23 +10,19 @@
     <Compile Remove="tests\**\*.cs" />
     <Compile Remove="launcher\**\*.cs" />
     <Compile Remove="Mithara.Web\**\*.cs" />
-    <Compile Remove="PalworldPanel\**\*.cs" />
     <Compile Remove="launcher\**\*" />
     <Content Remove="server\**\*" />
     <Content Remove="tests\**\*" />
     <Content Remove="launcher\**\*" />
     <Content Remove="Mithara.Web\**\*" />
-    <Content Remove="PalworldPanel\**\*" />
     <EmbeddedResource Remove="server\**\*" />
     <EmbeddedResource Remove="tests\**\*" />
     <EmbeddedResource Remove="launcher\**\*" />
     <EmbeddedResource Remove="Mithara.Web\**\*" />
-    <EmbeddedResource Remove="PalworldPanel\**\*" />
     <None Remove="server\**\*" />
     <None Remove="tests\**\*" />
     <None Remove="launcher\**\*" />
     <None Remove="Mithara.Web\**\*" />
-    <None Remove="PalworldPanel\**\*" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="2.1.4" />
