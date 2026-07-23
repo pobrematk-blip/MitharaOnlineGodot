@@ -6,6 +6,7 @@ public partial class InvitePopupUI : Panel
     private static InvitePopupUI? _instance;
 
     private Label _titleLabel = null!;
+    private Label _wagerLabel = null!;
     private string _inviteType = "";
 
     public InvitePopupUI()
@@ -20,10 +21,13 @@ public partial class InvitePopupUI : Panel
         ZIndex = 4090;
         MouseFilter = MouseFilterEnum.Stop;
 
-        CustomMinimumSize = new Vector2(420, 150);
+        CustomMinimumSize = new Vector2(420, 176);
         Size = CustomMinimumSize;
 
-        AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
+        var style = MitharaUiTheme.Panel(0.95f);
+        style.ShadowColor = new Color(0, 0, 0, 0.55f);
+        style.ShadowSize = 8;
+        AddThemeStyleboxOverride("panel", style);
 
         var margin = new MarginContainer();
         margin.AddThemeConstantOverride("margin_left", 12);
@@ -40,11 +44,23 @@ public partial class InvitePopupUI : Panel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            CustomMinimumSize = new Vector2(380, 52),
+            CustomMinimumSize = new Vector2(380, 46),
         };
         _titleLabel.AddThemeFontSizeOverride("font_size", 14);
         _titleLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         vbox.AddChild(_titleLabel);
+
+        _wagerLabel = new Label
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Visible = false,
+            CustomMinimumSize = new Vector2(380, 22),
+        };
+        _wagerLabel.AddThemeFontSizeOverride("font_size", 13);
+        _wagerLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
+        _wagerLabel.AddThemeColorOverride("font_outline_color", Colors.Black);
+        _wagerLabel.AddThemeConstantOverride("outline_size", 3);
+        vbox.AddChild(_wagerLabel);
 
         var hbox = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
         hbox.AddThemeConstantOverride("separation", 16);
@@ -70,12 +86,14 @@ public partial class InvitePopupUI : Panel
             "party" => $"{senderName} convidou voc\u00ea para um grupo!",
             "guild" => $"{senderName} convidou voc\u00ea para a guild!",
             "guild_promote" => $"{senderName} quer passar a lideran\u00e7a da guild para voc\u00ea!",
-            "duel" => goldWager > 0
-                ? $"{senderName} desafiou voc\u00ea para um duelo!\nAposta: {goldWager} ouro"
-                : $"{senderName} desafiou voc\u00ea para um duelo!",
+            "duel" => $"{senderName} desafiou voc\u00ea para um duelo!",
             "trade" => $"{senderName} quer trocar itens com voc\u00ea!",
             _ => $"{senderName} convidou voc\u00ea!",
         };
+        _instance._wagerLabel.Visible = inviteType == "duel";
+        _instance._wagerLabel.Text = goldWager > 0
+            ? $"Aposta: {goldWager:N0} ouro"
+            : "Sem aposta em ouro";
 
         var vp = _instance.GetViewportRect();
         _instance.Size = _instance.CustomMinimumSize;

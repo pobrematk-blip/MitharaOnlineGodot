@@ -7,6 +7,7 @@ public partial class PlayerContextMenu : Panel
     private string _targetName = "";
     private ulong _targetId;
     private Label _targetLabel = null!;
+    private Panel? _duelWagerPanel;
 
     public override void _Ready()
     {
@@ -110,12 +111,95 @@ public partial class PlayerContextMenu : Panel
         if (net == null || string.IsNullOrEmpty(_targetName))
             return;
 
-        var dialog = new ConfirmationDialog
+        _duelWagerPanel?.QueueFree();
+
+        _duelWagerPanel = new Panel
         {
-            Title = "Aposta do Duelo",
-            DialogText = $"Quanto ouro quer apostar contra {_targetName}?",
-            MinSize = new Vector2I(360, 150),
+            TopLevel = true,
+            ZIndex = 4095,
+            CustomMinimumSize = new Vector2(390, 218),
+            Size = new Vector2(390, 218),
+            MouseFilter = MouseFilterEnum.Stop,
         };
+        var style = MitharaUiTheme.Panel(0.96f);
+        style.ShadowColor = new Color(0, 0, 0, 0.58f);
+        style.ShadowSize = 10;
+        _duelWagerPanel.AddThemeStyleboxOverride("panel", style);
+
+        var margin = new MarginContainer();
+        margin.SetAnchorsPreset(LayoutPreset.FullRect);
+        margin.AddThemeConstantOverride("margin_left", 14);
+        margin.AddThemeConstantOverride("margin_top", 12);
+        margin.AddThemeConstantOverride("margin_right", 14);
+        margin.AddThemeConstantOverride("margin_bottom", 12);
+        _duelWagerPanel.AddChild(margin);
+
+        var vbox = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 10);
+        margin.AddChild(vbox);
+
+        var titleRow = new HBoxContainer();
+        vbox.AddChild(titleRow);
+
+        var title = new Label
+        {
+            Text = "Aposta do Duelo",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        title.AddThemeFontSizeOverride("font_size", 16);
+        title.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
+        title.AddThemeColorOverride("font_outline_color", Colors.Black);
+        title.AddThemeConstantOverride("outline_size", 3);
+        titleRow.AddChild(title);
+
+        var closeBtn = new Button
+        {
+            Text = "X",
+            Flat = true,
+            CustomMinimumSize = new Vector2(28, 26),
+        };
+        closeBtn.Pressed += CloseDuelWagerDialog;
+        titleRow.AddChild(closeBtn);
+
+        var desc = new Label
+        {
+            Text = $"Quanto ouro quer apostar contra {_targetName}?",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            CustomMinimumSize = new Vector2(0, 34),
+        };
+        desc.AddThemeFontSizeOverride("font_size", 13);
+        desc.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
+        vbox.AddChild(desc);
+
+        var goldBox = new Panel();
+        goldBox.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.72f));
+        goldBox.CustomMinimumSize = new Vector2(0, 72);
+        vbox.AddChild(goldBox);
+
+        var goldMargin = new MarginContainer();
+        goldMargin.SetAnchorsPreset(LayoutPreset.FullRect);
+        goldMargin.AddThemeConstantOverride("margin_left", 18);
+        goldMargin.AddThemeConstantOverride("margin_top", 8);
+        goldMargin.AddThemeConstantOverride("margin_right", 18);
+        goldMargin.AddThemeConstantOverride("margin_bottom", 8);
+        goldBox.AddChild(goldMargin);
+
+        var goldVBox = new VBoxContainer();
+        goldVBox.AddThemeConstantOverride("separation", 5);
+        goldMargin.AddChild(goldVBox);
+
+        var goldLabel = new Label
+        {
+            Text = $"Seu ouro: {net.Gold:N0}",
+            HorizontalAlignment = HorizontalAlignment.Center,
+        };
+        goldLabel.AddThemeFontSizeOverride("font_size", 11);
+        goldLabel.AddThemeColorOverride("font_color", MitharaUiTheme.TextMuted);
+        goldVBox.AddChild(goldLabel);
+
+        var spinCenter = new CenterContainer();
+        goldVBox.AddChild(spinCenter);
 
         var spin = new SpinBox
         {
@@ -124,19 +208,64 @@ public partial class PlayerContextMenu : Panel
             Step = 1,
             Rounded = true,
             Value = 0,
-            CustomMinimumSize = new Vector2(180, 30),
+            CustomMinimumSize = new Vector2(190, 30),
         };
-        dialog.AddChild(spin);
+        spin.GetLineEdit().Alignment = HorizontalAlignment.Center;
+        spinCenter.AddChild(spin);
+
+        var buttons = new HBoxContainer
+        {
+            Alignment = BoxContainer.AlignmentMode.Center,
+            SizeFlagsVertical = SizeFlags.ExpandFill,
+        };
+        buttons.AddThemeConstantOverride("separation", 12);
+        vbox.AddChild(buttons);
 
         string targetName = _targetName;
-        dialog.Confirmed += () =>
+        var confirmBtn = new Button
+        {
+            Text = "Desafiar",
+            CustomMinimumSize = new Vector2(116, 32),
+        };
+        confirmBtn.Pressed += () =>
         {
             int wager = Mathf.Max(0, (int)spin.Value);
             net.SendDuelRequest(targetName, wager);
-            dialog.QueueFree();
+            CloseDuelWagerDialog();
         };
-        dialog.Canceled += () => dialog.QueueFree();
-        AddChild(dialog);
-        dialog.PopupCentered();
+        buttons.AddChild(confirmBtn);
+
+        var cancelBtn = new Button
+        {
+            Text = "Cancelar",
+            CustomMinimumSize = new Vector2(104, 32),
+        };
+        cancelBtn.Pressed += CloseDuelWagerDialog;
+        buttons.AddChild(cancelBtn);
+
+        AddChild(_duelWagerPanel);
+        CenterDuelWagerDialog();
+        _duelWagerPanel.Visible = true;
+        _duelWagerPanel.MoveToFront();
+    }
+
+    private void CloseDuelWagerDialog()
+    {
+        if (_duelWagerPanel == null)
+            return;
+
+        _duelWagerPanel.QueueFree();
+        _duelWagerPanel = null;
+    }
+
+    private void CenterDuelWagerDialog()
+    {
+        if (_duelWagerPanel == null)
+            return;
+
+        var vp = GetViewportRect().Size;
+        _duelWagerPanel.Position = new Vector2(
+            vp.X * 0.5f - _duelWagerPanel.Size.X * 0.5f,
+            vp.Y * 0.5f - _duelWagerPanel.Size.Y * 0.5f);
     }
 }

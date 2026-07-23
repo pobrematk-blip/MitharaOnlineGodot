@@ -231,7 +231,7 @@ public partial class ExportTileData : Node
                 SceneName = sceneName,
                 TileX = marker.GetTileX(),
                 TileY = marker.GetTileY(),
-                Destination = marker.GlobalPosition + marker.DestinationOffset,
+                Destination = marker.GetDestinationPosition(),
             });
         }
 

@@ -68,4 +68,10 @@ public partial class TeleportPairMarker : Area2D
 
     public int GetTileX() => Mathf.FloorToInt(GlobalPosition.X / 32f);
     public int GetTileY() => Mathf.FloorToInt(GlobalPosition.Y / 32f);
+
+    public Vector2 GetDestinationPosition()
+    {
+        var tileCenter = new Vector2(GetTileX() * 32f + 16f, GetTileY() * 32f + 16f);
+        return tileCenter + DestinationOffset;
+    }
 }

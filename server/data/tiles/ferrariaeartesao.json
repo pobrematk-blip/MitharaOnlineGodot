@@ -4,8 +4,8 @@
         "tileY":  8,
         "type":  1,
         "targetScene":  "main",
-        "targetX":  4079,
-        "targetY":  24,
+        "targetX":  4080,
+        "targetY":  16,
         "pairId":  2,
         "source":  "teleport_pair"
     }

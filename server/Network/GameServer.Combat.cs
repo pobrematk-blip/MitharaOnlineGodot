@@ -51,6 +51,7 @@ partial class GameServer
     private const int LuzRestauradoraSkillId = 15107;
     private const int RessurreicaoSkillId = 15108;
     private const int MilagreDivinoSkillId = 15109;
+    private const int SegundoFolegoUniversalSkillId = 9001;
     private const int FuriaBerserkerSkillId = 13101;
     private const int SangramentoMortalSkillId = 13001;
     private const int FrenesiBerserkerSkillId = 13106;
@@ -98,6 +99,8 @@ partial class GameServer
     private const int EspinhosTickCount = 4;
     private const double EspinhosTickInterval = 0.5;
     private const double EspinhosSlowDuration = 3.0;
+    private const int SegundoFolegoTickCount = 5;
+    private const double SegundoFolegoTickInterval = 0.5;
     private const float BastiaoRadius = TileSize * 3f;
     private const int BastiaoMaxHits = 8;
     private const float SaltoNasCostasRange = TileSize * 16f;
@@ -3079,6 +3082,12 @@ partial class GameServer
         int amount = Math.Max(1, skill.Valor);
         if (skill.EffectType == 1)
         {
+            if (IsSegundoFolegoSkill(skill))
+            {
+                ScheduleSegundoFolegoTicks(channel, caster, target, skill);
+                return true;
+            }
+
             int oldHealth = target.Health;
             int oldMana = target.Mana;
             target.Health = Math.Min(target.MaxHealth, target.Health + amount);
@@ -3208,6 +3217,87 @@ partial class GameServer
         BroadcastSkillAreaEffect(channel, peer, skill.SkillId, caster.X, caster.Y, CuraEmAreaRadius, 1.1f);
         SendSystemMessage(peer, $"{skill.Nome}: cura em area aplicada.");
         return true;
+    }
+
+    private static bool IsSegundoFolegoSkill(ServerSkillDefinition skill)
+    {
+        return skill.SkillId == SegundoFolegoUniversalSkillId
+            || string.Equals(NormalizeSkillName(skill.Nome), "segundo folego", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeSkillName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        string formD = value.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(formD.Length);
+        foreach (char c in formD)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(char.ToLowerInvariant(c));
+        }
+
+        return Regex.Replace(sb.ToString().Normalize(NormalizationForm.FormC), @"\s+", " ").Trim();
+    }
+
+    private void ScheduleSegundoFolegoTicks(Channel channel, PlayerEntity caster, PlayerEntity target, ServerSkillDefinition skill)
+    {
+        int totalHealth = Math.Max(SegundoFolegoTickCount, (int)MathF.Round(target.MaxHealth * Math.Max(1, skill.Valor) / 100f));
+        int totalMana = Math.Max(SegundoFolegoTickCount, (int)MathF.Round(target.MaxMana * Math.Max(1, skill.Valor) / 100f));
+        int baseHealthTick = Math.Max(1, totalHealth / SegundoFolegoTickCount);
+        int baseManaTick = Math.Max(1, totalMana / SegundoFolegoTickCount);
+        int healthRemainder = Math.Max(0, totalHealth - baseHealthTick * SegundoFolegoTickCount);
+        int manaRemainder = Math.Max(0, totalMana - baseManaTick * SegundoFolegoTickCount);
+
+        for (int i = 0; i < SegundoFolegoTickCount; i++)
+        {
+            _pendingHealTicks.Add(new PendingHealTick
+            {
+                TickAt = _gameTime + (i + 1) * SegundoFolegoTickInterval,
+                ChannelId = channel.Id,
+                CasterId = caster.Id,
+                TargetId = target.Id,
+                SkillId = skill.SkillId,
+                HealthAmount = baseHealthTick + (i == SegundoFolegoTickCount - 1 ? healthRemainder : 0),
+                ManaAmount = baseManaTick + (i == SegundoFolegoTickCount - 1 ? manaRemainder : 0),
+            });
+        }
+    }
+
+    private void ProcessPendingHealTicks()
+    {
+        for (int i = _pendingHealTicks.Count - 1; i >= 0; i--)
+        {
+            var pending = _pendingHealTicks[i];
+            if (pending.TickAt > _gameTime)
+                continue;
+
+            _pendingHealTicks.RemoveAt(i);
+            var channel = _world.GetChannel(pending.ChannelId);
+            if (channel == null)
+                continue;
+
+            if (channel.GetEntity(pending.CasterId) is not PlayerEntity caster || caster.Health <= 0)
+                continue;
+            if (channel.GetEntity(pending.TargetId) is not PlayerEntity target || target.Health <= 0)
+                continue;
+
+            int oldHealth = target.Health;
+            int oldMana = target.Mana;
+            target.Health = Math.Min(target.MaxHealth, target.Health + Math.Max(1, pending.HealthAmount));
+            target.Mana = Math.Min(target.MaxMana, target.Mana + Math.Max(1, pending.ManaAmount));
+
+            int healedHealth = target.Health - oldHealth;
+            if (healedHealth > 0)
+                BroadcastCombatResult(channel, caster.Id, target.Id, -healedHealth, false, target.Health, target.MaxHealth, target.X, target.Y, pending.SkillId);
+
+            if (target.Mana != oldMana || healedHealth > 0)
+            {
+                BroadcastSingleEntityUpdate(channel, target);
+                BroadcastPartyMemberUpdateForEntity(target.Id);
+            }
+        }
     }
 
     private bool ApplyMilagreDivinoSkill(NetPeer peer, Channel channel, PlayerEntity caster, PlayerSession session, ServerSkillDefinition skill)
@@ -4377,6 +4467,17 @@ internal sealed class PendingDotTick
     public int SkillId { get; init; }
     public int Damage { get; init; }
     public bool IsCrit { get; init; }
+}
+
+internal sealed class PendingHealTick
+{
+    public double TickAt { get; init; }
+    public int ChannelId { get; init; }
+    public ulong CasterId { get; init; }
+    public ulong TargetId { get; init; }
+    public int SkillId { get; init; }
+    public int HealthAmount { get; init; }
+    public int ManaAmount { get; init; }
 }
 
 internal sealed class PendingAreaSkillTick

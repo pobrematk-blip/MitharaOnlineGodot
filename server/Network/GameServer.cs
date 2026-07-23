@@ -38,6 +38,7 @@ public partial class GameServer : INetEventListener
     internal readonly List<PendingProjectileFire> _pendingProjectileFires = new();
     internal readonly List<PendingMonsterProjectileHit> _pendingMonsterProjectileHits = new();
     internal readonly List<PendingDotTick> _pendingDotTicks = new();
+    internal readonly List<PendingHealTick> _pendingHealTicks = new();
     internal readonly List<PendingAreaSkillTick> _pendingAreaSkillTicks = new();
     internal readonly List<PendingFreneticStrike> _pendingFreneticStrikes = new();
     internal readonly List<ActiveBastionArea> _activeBastionAreas = new();
@@ -159,6 +160,7 @@ public partial class GameServer : INetEventListener
         ProcessPendingProjectileHits();
         ProcessPendingMonsterProjectileHits();
         ProcessPendingDotTicks();
+        ProcessPendingHealTicks();
         ProcessPendingFreneticStrikes();
         ProcessPendingAreaSkillTicks();
         ProcessActiveBastionAreas();

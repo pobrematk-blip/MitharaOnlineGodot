@@ -53,6 +53,7 @@ partial class GameNetwork
         bool won = r.GetBool();
         Log($"[DUEL] Duel ended: {(won ? "won" : "lost")}");
         DuelArenaOverlay.Clear(GetTree());
+        DuelArenaOverlay.ShowResult(GetTree(), won);
         EmitSignal(SignalName.OnDuelEnd, won);
     }
 }

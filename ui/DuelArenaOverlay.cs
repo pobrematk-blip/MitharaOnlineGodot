@@ -4,7 +4,11 @@ public partial class DuelArenaOverlay : CanvasLayer
 {
     private const string OverlayName = "DuelArenaOverlay";
     private const string AreaName = "DuelArenaWorldArea";
-    private const string FlagPath = "res://tiles/TileSets/Tileset101.png";
+    private const string ResultOverlayName = "DuelResultFlagOverlay";
+    private const string StartFlagPath = "res://tiles/Bandeiraspvp/Duelo.png";
+    private const string VictoryFlagPath = "res://tiles/Bandeiraspvp/Vitoria.png";
+    private const string DefeatFlagPath = "res://tiles/Bandeiraspvp/Derrota.png";
+    private const double FlagLifetimeSeconds = 5.0;
 
     private Label _timerLabel;
     private double _remaining;
@@ -28,6 +32,47 @@ public partial class DuelArenaOverlay : CanvasLayer
         tree.Root.AddChild(overlay);
         overlay.CreateTimerLabel(opponentName);
         overlay.CreateWorldArea(tree, center, halfSize);
+    }
+
+    public static void ShowResult(SceneTree tree, bool won)
+    {
+        if (tree == null)
+            return;
+
+        var old = tree.Root.GetNodeOrNull<CanvasLayer>(ResultOverlayName);
+        old?.QueueFree();
+
+        var texture = ResourceLoader.Load<Texture2D>(won ? VictoryFlagPath : DefeatFlagPath);
+        if (texture == null)
+            return;
+
+        var layer = new CanvasLayer
+        {
+            Name = ResultOverlayName,
+            Layer = 120,
+        };
+        tree.Root.AddChild(layer);
+
+        var flag = new TextureRect
+        {
+            Texture = texture,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+        };
+        flag.SetAnchorsPreset(Control.LayoutPreset.Center);
+        flag.OffsetLeft = -360;
+        flag.OffsetTop = -240;
+        flag.OffsetRight = 360;
+        flag.OffsetBottom = 240;
+        layer.AddChild(flag);
+
+        var timer = tree.CreateTimer(FlagLifetimeSeconds);
+        timer.Timeout += () =>
+        {
+            if (GodotObject.IsInstanceValid(layer))
+                layer.QueueFree();
+        };
     }
 
     public static void Clear(SceneTree tree)
@@ -129,25 +174,19 @@ public partial class DuelArenaOverlay : CanvasLayer
 
         var flag = new Sprite2D
         {
-            Texture = CreateFlagTexture(),
+            Texture = ResourceLoader.Load<Texture2D>(StartFlagPath),
             GlobalPosition = center,
-            Scale = new Vector2(1.25f, 1.25f),
+            Scale = new Vector2(0.13f, 0.13f),
             ZIndex = 1,
             ZAsRelative = false,
         };
         _areaNode.AddChild(flag);
-    }
 
-    private static Texture2D CreateFlagTexture()
-    {
-        var baseTexture = ResourceLoader.Load<Texture2D>(FlagPath);
-        if (baseTexture == null)
-            return null;
-
-        return new AtlasTexture
+        var timer = GetTree().CreateTimer(FlagLifetimeSeconds);
+        timer.Timeout += () =>
         {
-            Atlas = baseTexture,
-            Region = new Rect2(201, 55, 38, 79),
+            if (GodotObject.IsInstanceValid(flag))
+                flag.QueueFree();
         };
     }
 

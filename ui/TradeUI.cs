@@ -5,7 +5,7 @@ using System.Linq;
 
 public partial class TradeUI : Control
 {
-    private static readonly Vector2 TradeWindowSize = new(430, 352);
+    private static readonly Vector2 TradeWindowSize = new(450, 352);
     private static readonly Vector2 TradeSlotSize = new(46, 46);
     private Panel _window;
     private Label _titleLabel;
@@ -166,18 +166,31 @@ public partial class TradeUI : Control
         var panel = new Panel();
         panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         panel.SizeFlagsVertical = SizeFlags.ExpandFill;
-        panel.CustomMinimumSize = new Vector2(168, 0);
+        panel.CustomMinimumSize = new Vector2(188, 0);
 
         panel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.68f));
 
+        var sideMargin = new MarginContainer();
+        sideMargin.SetAnchorsPreset(LayoutPreset.FullRect);
+        sideMargin.AddThemeConstantOverride("margin_left", 10);
+        sideMargin.AddThemeConstantOverride("margin_top", 6);
+        sideMargin.AddThemeConstantOverride("margin_right", 10);
+        sideMargin.AddThemeConstantOverride("margin_bottom", 8);
+        panel.AddChild(sideMargin);
+
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 5);
-        panel.AddChild(vbox);
+        vbox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        sideMargin.AddChild(vbox);
 
         var header = new Label();
+        header.HorizontalAlignment = HorizontalAlignment.Center;
         header.AddThemeFontSizeOverride("font_size", 10);
         header.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         vbox.AddChild(header);
+
+        var gridCenter = new CenterContainer();
+        gridCenter.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
         var grid = new GridContainer();
         grid.Columns = 3;
@@ -254,7 +267,8 @@ public partial class TradeUI : Control
             quantities[slotIdx] = qtyLabel;
             grid.AddChild(slotPanel);
         }
-        vbox.AddChild(grid);
+        gridCenter.AddChild(grid);
+        vbox.AddChild(gridCenter);
 
         var statusLabel = new Label();
         statusLabel.HorizontalAlignment = HorizontalAlignment.Center;

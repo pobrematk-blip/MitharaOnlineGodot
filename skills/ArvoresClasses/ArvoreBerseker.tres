@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=125 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=126 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Todas/001 - Segundo Fôlego.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/010 - Sangramento Mortal.tres" id="sk_1"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/001 - Fúria.tres" id="sk_2"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/002 - Golpes Frenéticos.tres" id="sk_3"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Bárbaro/003 - Sede de Sangue.tres" id="sk_4"]
@@ -63,7 +63,8 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/36.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/34.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/43.png" id="icon_sk_9"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Todas/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="shared_icon_1"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "ber_base"
@@ -754,10 +755,10 @@ NivelMinimo = 70
 [sub_resource type="Resource" id="shared_1"]
 script = ExtResource("2_node")
 NodeId = "bershared1"
-Nome = "Sangramento Mortal"
-Descricao = "O Barbaro arremessa um machado brutal contra o alvo, abrindo um ferimento mortal que causa 5 ticks de dano."
+Nome = "Segundo Fôlego"
+Descricao = "O Berserker reune suas forcas e restaura Vida e Mana em 5 pulsos."
 HabilidadeAtiva = ExtResource("shared_sk_1")
-Icone = ExtResource("icon_sk_1")
+Icone = ExtResource("shared_icon_1")
 NodeType = 1
 Posicao = Vector2(800, 909)
 Requisitos = PackedStringArray("ber_base")

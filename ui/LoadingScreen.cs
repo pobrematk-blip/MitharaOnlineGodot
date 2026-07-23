@@ -4,7 +4,6 @@ public partial class LoadingScreen : CanvasLayer
 {
     private TextureRect _bg = null!;
     private Control _barHost = null!;
-    private ColorRect _loadingTextCover = null!;
     private ProgressBar _progressBar = null!;
     private string _statusText = "";
     private bool _hasManualProgress;
@@ -13,7 +12,6 @@ public partial class LoadingScreen : CanvasLayer
     private static readonly Vector2 BarBaseSize = new(560, 22);
     private static readonly Vector2 NativeImageSize = new(1792, 1024);
     private static readonly Rect2 ProgressSlotRect = new(new Vector2(516, 858), new Vector2(760, 18));
-    private static readonly Rect2 LoadingTextCoverRect = new(new Vector2(760, 804), new Vector2(272, 36));
     private static readonly Color Gold = new(0.88f, 0.58f, 0.18f);
     private static readonly Color GoldSoft = new(1.0f, 0.78f, 0.34f);
 
@@ -46,13 +44,6 @@ public partial class LoadingScreen : CanvasLayer
         overlay.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         rootCtrl.AddChild(overlay);
 
-        _loadingTextCover = new ColorRect
-        {
-            Color = new Color(0.02f, 0.015f, 0.010f, 0.78f),
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-        };
-        rootCtrl.AddChild(_loadingTextCover);
-
         _barHost = CriarBarraCarregamento();
         rootCtrl.AddChild(_barHost);
 
@@ -66,8 +57,8 @@ public partial class LoadingScreen : CanvasLayer
         if (_hasManualProgress || _progressBar == null)
             return;
 
-        _animatedProgress += delta * 34.0;
-        _progressBar.Value = 10.0 + Mathf.PingPong((float)_animatedProgress, 82.0f);
+        _animatedProgress = System.Math.Min(98.0, _animatedProgress + delta * 28.0);
+        _progressBar.Value = _animatedProgress;
     }
 
     private Control CriarBarraCarregamento()
@@ -129,11 +120,6 @@ public partial class LoadingScreen : CanvasLayer
         _barHost.Size = slotSize;
         _barHost.Position = slotPosition;
 
-        if (_loadingTextCover != null)
-        {
-            _loadingTextCover.Position = imageOffset + LoadingTextCoverRect.Position * imageScale;
-            _loadingTextCover.Size = LoadingTextCoverRect.Size * imageScale;
-        }
     }
 
     private static StyleBoxFlat CriarStyleBox(Color bg, Color border, int borderSize, int radius)
