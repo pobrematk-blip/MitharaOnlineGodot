@@ -36,6 +36,7 @@ public partial class TradeUI : Control
     private Label[] _partnerSlotLabels = new Label[9];
     private bool _arrastandoJanela;
     private Vector2 _pontoCliqueOriginal;
+    private bool _disposed;
 
     private Godot.Collections.Array<Godot.Collections.Dictionary> _cachedInventory = new();
 
@@ -296,6 +297,9 @@ public partial class TradeUI : Control
 
     private void OnTradeStart(ulong partnerId, string partnerName)
     {
+        if (_disposed || !IsInsideTree())
+            return;
+
         _partnerId = partnerId;
         _partnerName = partnerName;
         _myOffers.Clear();
@@ -333,6 +337,9 @@ public partial class TradeUI : Control
 
     private void OnTradeOfferUpdate(ulong playerSide, Godot.Collections.Array<Godot.Collections.Dictionary> offers)
     {
+        if (_disposed || !IsInsideTree())
+            return;
+
         bool isMySide = playerSide == (_net?.LocalPlayerId ?? 0);
         var dict = isMySide ? _myOffers : _partnerOffers;
         dict.Clear();
@@ -373,6 +380,9 @@ public partial class TradeUI : Control
 
     private void OnTradeGoldUpdate(ulong playerSide, int gold)
     {
+        if (_disposed || !IsInsideTree())
+            return;
+
         bool isMySide = playerSide == (_net?.LocalPlayerId ?? 0);
         if (isMySide)
         {
@@ -393,12 +403,15 @@ public partial class TradeUI : Control
 
     private void OnGoldUpdate(int gold)
     {
-        if (_myGoldSpin != null)
+        if (IsControlAlive(_myGoldSpin))
             _myGoldSpin.MaxValue = Mathf.Max(0, gold);
     }
 
     private void OnTradePartnerConfirm(ulong playerSide, bool confirmed)
     {
+        if (_disposed || !IsInsideTree())
+            return;
+
         bool isMySide = playerSide == (_net?.LocalPlayerId ?? 0);
         if (isMySide)
         {
@@ -414,6 +427,9 @@ public partial class TradeUI : Control
 
     private void OnTradeEnd(bool success)
     {
+        if (_disposed || !IsInsideTree())
+            return;
+
         Visible = false;
         _net?.ClearPendingTrade();
         if (success)
@@ -428,6 +444,9 @@ public partial class TradeUI : Control
 
     private void OnInventoryData(Godot.Collections.Array<Godot.Collections.Dictionary> items, Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
     {
+        if (_disposed)
+            return;
+
         _cachedInventory = items;
     }
 
@@ -520,16 +539,16 @@ public partial class TradeUI : Control
 
     private void AtualizarGoldUi()
     {
-        if (_myGoldSpin != null)
+        if (IsControlAlive(_myGoldSpin))
         {
             _myGoldSpin.MaxValue = Mathf.Max(0, _net?.Gold ?? 0);
             _myGoldSpin.Value = Mathf.Min(_myGoldOffer, (int)_myGoldSpin.MaxValue);
             _myGoldSpin.Editable = !_myConfirmed;
         }
 
-        if (_myGoldOfferLabel != null)
+        if (IsControlAlive(_myGoldOfferLabel))
             _myGoldOfferLabel.Text = $"Ofertado: {_myGoldOffer}";
-        if (_partnerGoldOfferLabel != null)
+        if (IsControlAlive(_partnerGoldOfferLabel))
             _partnerGoldOfferLabel.Text = $"Ofertado: {_partnerGoldOffer}";
     }
 
@@ -624,5 +643,28 @@ public partial class TradeUI : Control
             >= 6051 and <= 6071 => "Escudo Sagrado",
             _ => $"Item #{itemId}",
         };
+    }
+
+    public override void _ExitTree()
+    {
+        _disposed = true;
+
+        if (_net != null)
+        {
+            _net.OnTradeStart -= OnTradeStart;
+            _net.OnTradeOfferUpdate -= OnTradeOfferUpdate;
+            _net.OnTradeGoldUpdate -= OnTradeGoldUpdate;
+            _net.OnTradePartnerConfirm -= OnTradePartnerConfirm;
+            _net.OnTradeEnd -= OnTradeEnd;
+            _net.OnInventoryData -= OnInventoryData;
+            _net.OnGoldUpdate -= OnGoldUpdate;
+        }
+
+        _net = null;
+    }
+
+    private static bool IsControlAlive(Control control)
+    {
+        return control != null && GodotObject.IsInstanceValid(control) && !control.IsQueuedForDeletion();
     }
 }
