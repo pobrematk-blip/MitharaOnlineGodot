@@ -38,6 +38,21 @@ public class Channel
     private const float SpawnMinDistance = 180f;
 
     public SpawnerManager Spawner => _spawner;
+
+    public void ClearMonsterAggroOn(ulong targetEntityId)
+    {
+        foreach (var entity in _entities.Values)
+        {
+            if (entity is not MonsterEntity mob || mob.TargetEntityId != targetEntityId)
+                continue;
+
+            mob.TargetEntityId = null;
+            mob.Moving = false;
+            mob.AIState = MonsterAIState.Idle;
+            if (_pathFollowers.TryGetValue(mob.Id, out var follower))
+                follower.Stop();
+        }
+    }
     public event Action<Entity>? EntitySpawned;
 
     public Channel(int id, string name)
@@ -309,7 +324,7 @@ public class Channel
                 {
                     if (player.Health < player.MaxHealth)
                     {
-                        player.HealthRegenAccumulator += player.MaxHealth * healthRegenPercentPerSecond * dt;
+                        player.HealthRegenAccumulator += ((player.MaxHealth * healthRegenPercentPerSecond) + player.HealthRegenBonus) * dt;
                         int hpRegen = (int)player.HealthRegenAccumulator;
                         if (hpRegen > 0)
                         {
@@ -324,7 +339,7 @@ public class Channel
 
                     if (player.Mana < player.MaxMana)
                     {
-                        player.ManaRegenAccumulator += player.MaxMana * manaRegenPercentPerSecond * dt;
+                        player.ManaRegenAccumulator += ((player.MaxMana * manaRegenPercentPerSecond) + player.ManaRegenBonus) * dt;
                         int manaRegen = (int)player.ManaRegenAccumulator;
                         if (manaRegen > 0)
                         {
@@ -525,6 +540,13 @@ public class Channel
                 if (!_entities.TryGetValue(mob.TargetEntityId.Value, out var target) || target.Health <= 0)
                 {
                     mob.TargetEntityId = null;
+                    pathFollower?.Stop();
+                    continue;
+                }
+                if (target is PlayerEntity targetPlayer && targetPlayer.IsInvisible(gameTime))
+                {
+                    mob.TargetEntityId = null;
+                    mob.Moving = false;
                     pathFollower?.Stop();
                     continue;
                 }
@@ -807,6 +829,7 @@ public class Channel
                     {
                         if (!_entities.TryGetValue(eid, out var e) || e.Type != EntityType.Player) continue;
                         if (e.Health <= 0) continue;
+                        if (e is PlayerEntity player && player.IsInvisible(gameTime)) continue;
 
                         float dx = e.X - mob.X;
                         float dy = e.Y - mob.Y;

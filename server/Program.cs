@@ -18,10 +18,6 @@ Logger.Info("");
 var db = new DatabaseManager(config.PgHost, config.PgPort, config.PgDatabase, config.PgUser, config.PgPassword);
 db.Initialize();
 
-// Auto-migrate from SQLite if data exists there
-var sqlitePath = Path.Combine(AppContext.BaseDirectory, config.DbPath);
-DatabaseMigration.MigrateFromSqlite(sqlitePath, db);
-
 db.SeedItemDefinitions();
 ItemDefinitions.LoadFromDatabase(db);
 

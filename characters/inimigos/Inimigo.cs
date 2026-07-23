@@ -33,6 +33,7 @@ public partial class Inimigo : CharacterBody2D
     private bool _avisouDanoLocalBloqueado;
     private float _serverSpeed;
     private bool _mortoVisual;
+    private bool _colisaoMorteDesligada;
 
     public int VidaAtual => _vidaAtual;
     public int VidaMax => VidaMaxima;
@@ -50,6 +51,7 @@ public partial class Inimigo : CharacterBody2D
         Velocity = Vector2.Zero;
         ZIndex = 0;
         ZAsRelative = true;
+        ConfigurarColisaoViva();
 
         _sprite = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
         if (_sprite == null)
@@ -193,6 +195,8 @@ public partial class Inimigo : CharacterBody2D
         _mortoVisual = true;
         _networkMoving = false;
         Velocity = Vector2.Zero;
+        DesativarColisoesDeMorte();
+        EnviarMorteParaTrasDoPlayer();
         SetPhysicsProcess(false);
         SetMeta("dying", true);
         QueueRedraw();
@@ -214,6 +218,97 @@ public partial class Inimigo : CharacterBody2D
         {
             _sprite.Stop();
             QueueFree();
+        }
+    }
+
+    private void ConfigurarColisaoViva()
+    {
+        _colisaoMorteDesligada = false;
+        CollisionLayer = 4u;
+        CollisionMask = 0u;
+
+        foreach (Node child in GetChildren())
+        {
+            if (child is CollisionShape2D shape)
+            {
+                shape.Disabled = false;
+                AjustarShapeParaBaseDosPes(shape);
+            }
+            else if (child is CollisionPolygon2D polygon)
+            {
+                polygon.Disabled = false;
+            }
+        }
+    }
+
+    private void AjustarShapeParaBaseDosPes(CollisionShape2D shape)
+    {
+        if (shape.Shape is not RectangleShape2D rect)
+            return;
+
+        Vector2 tamanhoOriginal = rect.Size;
+        float larguraBase = IsBoss
+            ? Mathf.Clamp(tamanhoOriginal.X * 0.58f, 44f, 58f)
+            : Mathf.Clamp(tamanhoOriginal.X * 0.55f, 28f, 42f);
+        float alturaBase = IsBoss
+            ? Mathf.Clamp(tamanhoOriginal.Y * 0.28f, 20f, 30f)
+            : Mathf.Clamp(tamanhoOriginal.Y * 0.24f, 16f, 24f);
+
+        float baseInferior = shape.Position.Y + tamanhoOriginal.Y * 0.5f;
+        rect.Size = new Vector2(larguraBase, alturaBase);
+        shape.Position = new Vector2(shape.Position.X, baseInferior - alturaBase * 0.5f);
+    }
+
+    private void DesativarColisoesDeMorte()
+    {
+        if (_colisaoMorteDesligada)
+            return;
+
+        _colisaoMorteDesligada = true;
+        SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0);
+        SetDeferred(CollisionObject2D.PropertyName.CollisionMask, 0);
+
+        DesativarColisoesRecursivo(this);
+    }
+
+    private void EnviarMorteParaTrasDoPlayer()
+    {
+        ZIndex = -1;
+        ZAsRelative = false;
+        YSortEnabled = false;
+
+        if (_sprite != null)
+        {
+            _sprite.ZIndex = -1;
+            _sprite.ZAsRelative = false;
+        }
+    }
+
+    private static void DesativarColisoesRecursivo(Node node)
+    {
+        foreach (Node child in node.GetChildren())
+        {
+            switch (child)
+            {
+                case CollisionShape2D shape:
+                    shape.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
+                    break;
+                case CollisionPolygon2D polygon:
+                    polygon.SetDeferred(CollisionPolygon2D.PropertyName.Disabled, true);
+                    break;
+                case Area2D area:
+                    area.SetDeferred(Area2D.PropertyName.Monitoring, false);
+                    area.SetDeferred(Area2D.PropertyName.Monitorable, false);
+                    area.SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0);
+                    area.SetDeferred(CollisionObject2D.PropertyName.CollisionMask, 0);
+                    break;
+                case CollisionObject2D collisionObject:
+                    collisionObject.SetDeferred(CollisionObject2D.PropertyName.CollisionLayer, 0);
+                    collisionObject.SetDeferred(CollisionObject2D.PropertyName.CollisionMask, 0);
+                    break;
+            }
+
+            DesativarColisoesRecursivo(child);
         }
     }
 

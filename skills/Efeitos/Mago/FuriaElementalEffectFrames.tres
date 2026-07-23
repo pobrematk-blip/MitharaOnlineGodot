@@ -1,0 +1,34 @@
+[gd_resource type="SpriteFrames" load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/1/effect1.png" id="1_fx1"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/1/effect2.png" id="2_fx2"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/1/effect3.png" id="3_fx3"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/1/effect4.png" id="4_fx4"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/1/effect5.png" id="5_fx5"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/1/effect6.png" id="6_fx6"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_fx1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_fx2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_fx3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_fx4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_fx5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_fx6")
+}],
+"loop": false,
+"name": &"default",
+"speed": 12.0
+}]

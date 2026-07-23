@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Todas/001 - Segundo Fôlego.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/000 - Corte Rápido.tres" id="sk_1"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/001 - Provocação.tres" id="sk_2"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/002 - Escudo Protetor.tres" id="sk_3"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Guardião/Protetor/003 - Golpe de Escudo.tres" id="sk_4"]
@@ -121,8 +121,8 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 [sub_resource type="Resource" id="protetor_s1"]
 script = ExtResource("2_node")
 NodeId = "gua_protetor_skill_1"
-Nome = "Segundo Fôlego"
-Descricao = "O Guardião reúne suas forças no meio da batalha, respirando fundo para recuperar parte de sua vitalidade e energia."
+Nome = "Corte Rápido"
+Descricao = "O Guardião executa um único corte veloz contra o alvo, causando dano imediato."
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
@@ -147,8 +147,9 @@ NivelMinimo = 1
 [sub_resource type="Resource" id="protetor_s3"]
 script = ExtResource("2_node")
 NodeId = "gua_protetor_skill_3"
-Nome = "Escudo Protetor"
+Nome = "Estocada"
 Descricao = "O Protetor posiciona seu escudo à frente do corpo, absorvendo parte do impacto de ataques recebidos."
+Descricao = "O Guardiao avanca para frente e estoca o primeiro inimigo na linha."
 HabilidadeAtiva = ExtResource("sk_3")
 Icone = ExtResource("icon_sk_3")
 NodeType = 1
@@ -181,7 +182,7 @@ CustoPontos = 1
 script = ExtResource("2_node")
 NodeId = "gua_protetor_skill_4"
 Nome = "Golpe de Escudo"
-Descricao = "Um impacto brutal com o escudo atinge o inimigo de frente, quebrando seu equilíbrio e interrompendo sua ofensiva."
+Descricao = "O Guardião avança com o escudo até o lado do alvo, causando impacto físico e interrompendo a ofensiva inimiga."
 HabilidadeAtiva = ExtResource("sk_4")
 Icone = ExtResource("icon_sk_4")
 NodeType = 1
@@ -193,8 +194,8 @@ NivelMinimo = 10
 [sub_resource type="Resource" id="protetor_s5"]
 script = ExtResource("2_node")
 NodeId = "gua_protetor_skill_5"
-Nome = "Guardião dos Fracos"
-Descricao = "O Protetor cria um juramento de proteção sobre aliados próximos, assumindo parte dos danos que eles receberiam."
+Nome = "Espada Estelar"
+Descricao = "O Guardião invoca uma lâmina de energia estelar sobre o inimigo, causando dano direto."
 HabilidadeAtiva = ExtResource("sk_5")
 Icone = ExtResource("icon_sk_5")
 NodeType = 1
@@ -206,8 +207,8 @@ NivelMinimo = 15
 [sub_resource type="Resource" id="protetor_s6"]
 script = ExtResource("2_node")
 NodeId = "gua_protetor_skill_6"
-Nome = "Muralha Humana"
-Descricao = "O Guardião transforma seu corpo em uma muralha viva, resistindo a ataques que derrubariam guerreiros comuns."
+Nome = "Espinhos"
+Descricao = "Faz espinhos surgirem sob os pes dos inimigos proximos, causando dano em 4 ticks e aplicando slow."
 HabilidadeAtiva = ExtResource("sk_6")
 Icone = ExtResource("icon_sk_6")
 NodeType = 1
@@ -279,7 +280,7 @@ NivelMinimo = 40
 script = ExtResource("2_node")
 NodeId = "gua_protetor_skill_9"
 Nome = "Bastião"
-Descricao = "O Guardião se torna o centro de uma formação defensiva, protegendo aliados que lutam próximos a ele."
+Descricao = "O Guardião cria uma formação defensiva fixa no mapa, reduzindo o dano recebido por aliados da party próximos."
 HabilidadeAtiva = ExtResource("sk_9")
 Icone = ExtResource("icon_sk_9")
 NodeType = 1

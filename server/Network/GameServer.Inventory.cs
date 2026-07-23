@@ -824,6 +824,23 @@ partial class GameServer
         int bonusAtk = 0, bonusDef = 0, bonusMagicDef = 0, bonusHp = 0, bonusMana = 0;
         int bonusForca = 0, bonusAgi = 0, bonusDes = 0, bonusInt = 0;
         float bonusEvasion = 0;
+        float bonusCritChance = 0f;
+        float bonusCritDamage = 0f;
+        float bonusPrecision = 0f;
+        float bonusTenacity = 0f;
+        float bonusAttackSpeed = 0f;
+        float bonusMovementSpeed = 0f;
+        float bonusArmorPen = 0f;
+        float bonusHealthRegen = 0f;
+        float bonusManaRegen = 0f;
+        float bonusLifeSteal = 0f;
+        float bonusManaSteal = 0f;
+        float bonusCooldownReduction = 0f;
+        int bonusPvpDamage = 0;
+        int bonusPvpDefense = 0;
+        float bonusExperience = 0f;
+        float bonusDamageReflect = 0f;
+        float bonusControlResistance = 0f;
         foreach (var kv in player.Equipment)
         {
             var item = kv.Value;
@@ -832,16 +849,33 @@ partial class GameServer
             ItemRoller.EnsureRolled(item);
             var roll = item.Roll;
             double refineMult = GetRefineMultiplier(item.RefineLevel);
-            bonusAtk += Refined(roll.BaseAttack + Affix(roll, "BaseAttack"), item.RefineLevel, refineMult);
-            bonusDef += Refined(roll.Defense + Affix(roll, "DefesaFisica"), item.RefineLevel, refineMult);
-            bonusMagicDef += Refined(roll.MagicDefense + Affix(roll, "DefesaMagica"), item.RefineLevel, refineMult);
-            bonusHp += Refined(roll.Hp + Affix(roll, "Hp"), item.RefineLevel, refineMult);
-            bonusMana += Refined(roll.Mana + Affix(roll, "Mana"), item.RefineLevel, refineMult);
-            bonusEvasion += Math.Min(40f, (float)((roll.Evasion + Affix(roll, "Evasao")) * refineMult));
-            bonusForca += Refined(roll.Forca + Affix(roll, "Forca"), item.RefineLevel, refineMult);
-            bonusAgi += Refined(roll.Agilidade + Affix(roll, "Agilidade"), item.RefineLevel, refineMult);
-            bonusDes += Refined(roll.Destreza + Affix(roll, "Destreza"), item.RefineLevel, refineMult);
-            bonusInt += Refined(roll.Inteligencia + Affix(roll, "Inteligencia"), item.RefineLevel, refineMult);
+            bonusAtk += Refined(roll.BaseAttack + Affix(item, "BaseAttack"), item.RefineLevel, refineMult);
+            bonusDef += Refined(roll.Defense + Affix(item, "DefesaFisica"), item.RefineLevel, refineMult);
+            bonusMagicDef += Refined(roll.MagicDefense + Affix(item, "DefesaMagica"), item.RefineLevel, refineMult);
+            bonusHp += Refined(roll.Hp + Affix(item, "Hp"), item.RefineLevel, refineMult);
+            bonusMana += Refined(roll.Mana + Affix(item, "Mana"), item.RefineLevel, refineMult);
+            bonusEvasion += Math.Min(40f, (float)((roll.Evasion + Affix(item, "Evasao")) * refineMult));
+            bonusForca += Refined(roll.Forca + Affix(item, "Forca"), item.RefineLevel, refineMult);
+            bonusAgi += Refined(roll.Agilidade + Affix(item, "Agilidade"), item.RefineLevel, refineMult);
+            bonusDes += Refined(roll.Destreza + Affix(item, "Destreza"), item.RefineLevel, refineMult);
+            bonusInt += Refined(roll.Inteligencia + Affix(item, "Inteligencia"), item.RefineLevel, refineMult);
+            bonusCritChance += (float)(Affix(item, "ChanceCritica") * refineMult);
+            bonusCritDamage += (float)(Affix(item, "DanoCriticoBonus") * refineMult);
+            bonusPrecision += (float)(Affix(item, "Precisao") * refineMult);
+            bonusTenacity += (float)(Affix(item, "Tenacidade") * refineMult);
+            bonusAttackSpeed += (float)(Affix(item, "VelocidadeAtaque") * refineMult);
+            bonusMovementSpeed += (float)(Affix(item, "VelocidadeMovimento") * refineMult);
+            bonusArmorPen += (float)(Affix(item, "PenetracaoArmadura") * refineMult);
+            bonusHealthRegen += (float)(Affix(item, "RegeneracaoVida") * refineMult);
+            bonusManaRegen += (float)(Affix(item, "RegeneracaoMana") * refineMult);
+            bonusLifeSteal += (float)(Affix(item, "RouboVida") * refineMult);
+            bonusManaSteal += (float)(Affix(item, "RouboMana") * refineMult);
+            bonusCooldownReduction += (float)(Affix(item, "ReducaoCooldown") * refineMult);
+            bonusPvpDamage += Refined(Affix(item, "DanoPvp"), item.RefineLevel, refineMult);
+            bonusPvpDefense += Refined(Affix(item, "DefesaPvp"), item.RefineLevel, refineMult);
+            bonusExperience += (float)(Affix(item, "BonusExperiencia") * refineMult);
+            bonusDamageReflect += (float)((Affix(item, "ReflexaoDano") + Affix(item, "Reflexao")) * refineMult);
+            bonusControlResistance += (float)(Affix(item, "ResistenciaControle") * refineMult);
         }
         int baseAttack = player.CharacterClass.ToLowerInvariant() switch
         {
@@ -861,7 +895,24 @@ partial class GameServer
         player.BaseAttack = baseAttack + bonusAtk;
         player.Defense = baseDefense + bonusDef;
         player.MagicDefense = bonusMagicDef;
-        player.EquipmentEvasion = bonusEvasion;
+        player.EquipmentEvasion = Math.Clamp(bonusEvasion, 0f, 40f);
+        player.CritChanceBonus = Math.Clamp(bonusCritChance, 0f, 45f);
+        player.CritDamageBonus = Math.Clamp(bonusCritDamage, 0f, 100f);
+        player.PrecisionBonus = Math.Clamp(bonusPrecision, 0f, 60f);
+        player.TenacityBonus = Math.Clamp(bonusTenacity, 0f, 75f);
+        player.AttackSpeedBonus = Math.Clamp(bonusAttackSpeed, 0f, 80f);
+        player.MovementSpeedBonus = Math.Clamp(bonusMovementSpeed, 0f, 30f);
+        player.ArmorPenetration = Math.Clamp(bonusArmorPen, 0f, 60f);
+        player.HealthRegenBonus = Math.Clamp(bonusHealthRegen, 0f, 200f);
+        player.ManaRegenBonus = Math.Clamp(bonusManaRegen, 0f, 200f);
+        player.LifeSteal = Math.Clamp(bonusLifeSteal, 0f, 15f);
+        player.ManaSteal = Math.Clamp(bonusManaSteal, 0f, 15f);
+        player.CooldownReduction = Math.Clamp(bonusCooldownReduction, 0f, 40f);
+        player.PvpDamageBonus = Math.Max(0, bonusPvpDamage);
+        player.PvpDefenseBonus = Math.Max(0, bonusPvpDefense);
+        player.BonusExperience = Math.Clamp(bonusExperience, 0f, 100f);
+        player.DamageReflect = Math.Clamp(bonusDamageReflect, 0f, 25f);
+        player.ControlResistance = Math.Clamp(bonusControlResistance, 0f, 50f);
         player.Forca = player.BaseForca + bonusForca;
         player.Agilidade = player.BaseAgilidade + bonusAgi;
         player.Destreza = player.BaseDestreza + bonusDes;
@@ -883,8 +934,14 @@ partial class GameServer
         return Math.Max(refinedValue, baseValue + refineLevel);
     }
 
-    private static float Affix(ItemRoll roll, string name)
-        => roll.Affixes.TryGetValue(name, out float value) ? value : 0f;
+    private static float Affix(ItemInstance item, string name)
+    {
+        var def = item.Definition;
+        if (def == null || !ItemRoller.IsAffixAllowedForItem(def, name))
+            return 0f;
+
+        return item.Roll.Affixes.TryGetValue(name, out float value) ? value : 0f;
+    }
 
     private void HandleCollectLocalItem(NetPeer peer, NetDataReader reader)
     {
@@ -927,6 +984,7 @@ partial class GameServer
             return;
         }
 
+        UpdateQuestCollectProgress(onlinePlayer, onlineItemId.ToString(), onlineQuantity);
         SendInventoryData(peer, onlinePlayer);
         return;
 /*
@@ -950,6 +1008,21 @@ partial class GameServer
         {
             SendCashShopResult(peer, false, "Item nao disponivel na loja cash.");
             SendCashBalance(peer, cashSession.AccountId);
+            return;
+        }
+
+        if (itemId == -1)
+        {
+            if (!_db.TryBuyCharacterSlot(cashSession.AccountId, preco, MaxCharacterSlots, out var slotBalance, out var newSlotLimit, out var reason))
+            {
+                SendCashShopResult(peer, false, string.IsNullOrWhiteSpace(reason) ? "Nao foi possivel comprar o slot." : reason);
+                SendCashBalanceValue(peer, slotBalance);
+                return;
+            }
+
+            SendCashShopResult(peer, true, $"Slot extra comprado! Limite atual: {newSlotLimit}.");
+            SendCashBalanceValue(peer, slotBalance);
+            SendCharacterList(peer, _db.GetCharacters(cashSession.AccountId));
             return;
         }
 
@@ -984,6 +1057,7 @@ partial class GameServer
     {
         return itemId switch
         {
+            -1 => 30,
             100 => 30,
             102 => 50,
             103 => 100,

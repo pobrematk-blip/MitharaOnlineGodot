@@ -3,6 +3,7 @@
 public partial class PlayerHud : Control
 {
     private ProgressBar _healthBar;
+    private ProgressBar _shieldBar;
     private ProgressBar _manaBar;
     private ProgressBar _staminaBar;
     private Label _healthLabel;
@@ -26,8 +27,39 @@ public partial class PlayerHud : Control
         _portraitIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
         _portraitIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         _portraitIcon.CustomMinimumSize = Vector2.Zero;
+        CriarBarraEscudo();
 
         CallDeferred(nameof(ConnectPlayer));
+    }
+
+    private void CriarBarraEscudo()
+    {
+        _shieldBar = new ProgressBar
+        {
+            Name = "ShieldBar",
+            ShowPercentage = false,
+            MouseFilter = MouseFilterEnum.Ignore,
+            MaxValue = 100,
+            Value = 0,
+        };
+        _shieldBar.SetAnchorsPreset(LayoutPreset.FullRect);
+        _shieldBar.GrowHorizontal = GrowDirection.Both;
+        _shieldBar.GrowVertical = GrowDirection.Both;
+
+        var empty = new StyleBoxEmpty();
+        var fill = new StyleBoxFlat
+        {
+            BgColor = new Color(0.92f, 0.98f, 1f, 0.82f),
+            CornerRadiusTopLeft = 4,
+            CornerRadiusTopRight = 4,
+            CornerRadiusBottomLeft = 4,
+            CornerRadiusBottomRight = 4,
+        };
+
+        _shieldBar.AddThemeStyleboxOverride("background", empty);
+        _shieldBar.AddThemeStyleboxOverride("fill", fill);
+        _healthBar.AddChild(_shieldBar);
+        _healthLabel.MoveToFront();
     }
 
     private void ConnectPlayer()
@@ -104,6 +136,9 @@ public partial class PlayerHud : Control
 
         _healthBar.MaxValue = _player.MaxHealth;
         _healthBar.Value = _player.CurrentHealth;
+        _shieldBar.MaxValue = _player.MaxHealth;
+        _shieldBar.Value = Mathf.Min(_player.CurrentArcaneShield, _player.MaxHealth);
+        _shieldBar.Visible = _player.CurrentArcaneShield > 0;
         _manaBar.MaxValue = _player.MaxMana;
         _manaBar.Value = _player.CurrentMana;
         _staminaBar.MaxValue = _player.MaxStamina;

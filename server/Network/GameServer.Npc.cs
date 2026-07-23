@@ -60,6 +60,7 @@ partial class GameServer
         if (!string.IsNullOrEmpty(template?.DialogId))
             dialogId = template.DialogId;
         Logger.Info($"Template={npcEntity.PrefabId} dialogId={dialogId}");
+        UpdateQuestTalkProgress(player, npcEntity.PrefabId);
 
         var dialog = _world.Npcs.GetDialog(dialogId);
         if (dialog == null)

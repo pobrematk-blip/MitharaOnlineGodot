@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/Efeitos/SkillEffectVisual.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Mago/EscudoArcanoEffectFrames.tres" id="2_frames"]
+
+[node name="EscudoArcanoEffect" type="Node2D"]
+z_index = 100
+z_as_relative = false
+script = ExtResource("1_script")
+FreeOnAnimationFinished = false
+LifetimeSeconds = 0.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, 22)
+scale = Vector2(1.62, 1.62)
+z_index = 100
+z_as_relative = false
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true

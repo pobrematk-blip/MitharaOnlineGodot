@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/36.png" id="1_gf2l1"]
+[ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
+
+[resource]
+script = ExtResource("1_sk")
+SkillId = 11210
+Nome = "Sono Arcano"
+Descricao = "Coloca o alvo em sono. O alvo fica parado ate receber a proxima habilidade."
+Icone = ExtResource("1_gf2l1")
+CustoMana = 30
+ClasseRestrita = "Mago"
+Cooldown = 18.0
+Duracao = 5.0
+TargetType = 2
+EffectType = 19
+Especializacao = "Todas"
+Ordem = 4
+Escopo = "Compartilhada"
+Tipo = "Controle"
+EfeitoPrincipal = "Sono"
+BuffDebuff = "Sleep"
+DuracaoTexto = "Ate tomar a proxima habilidade ou 5s"

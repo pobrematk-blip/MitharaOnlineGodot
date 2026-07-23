@@ -43,7 +43,9 @@ public partial class GameEditorUI : Control
     private void CarregarEditores()
     {
         CarregarEditor("Classes", "res://Editor/ClasseEditorUI.tscn");
+        CarregarEditor("Skills", "res://Editor/SkillEditorUI.tscn");
         CarregarEditor("Talentos", "res://Editor/TalentNodeEditorUI.tscn");
+        CarregarEditor("Missoes", "res://Editor/QuestEditorUI.tscn");
         CarregarEditor("Itens", "res://Editor/ItemEditorUI.tscn");
         CarregarEditor("Pets", "res://Editor/PetEditorUI.tscn");
         CarregarEditor("Recursos", "res://Editor/EditorRecursosUI.tscn");

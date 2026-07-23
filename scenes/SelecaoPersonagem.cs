@@ -97,7 +97,7 @@ public partial class SelecaoPersonagem : Control
         if (online)
             PopulatarDeDadosServidor(_net!.Characters);
 
-        int total = _net?.Characters.Count > 0 ? Math.Max(_net.Characters.Count, 3) : 3;
+        int total = online ? Math.Max(_net!.CharacterSlotLimit, 3) : 3;
         _vazio.Visible = _cards.Count == 0;
         _btnJogar.Disabled = true;
         _btnExcluir.Disabled = true;

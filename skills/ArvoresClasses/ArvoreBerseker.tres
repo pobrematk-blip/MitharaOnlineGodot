@@ -33,7 +33,7 @@
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/008 - Colosso.tres" id="sk_29"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Berserker/Titã/009 - Titã Ancestral.tres" id="sk_30"]
 
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/33.png" id="icon_sk_1"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/28.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/26.png" id="icon_sk_10"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/17.png" id="icon_sk_11"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/42.png" id="icon_sk_12"]
@@ -119,12 +119,12 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 [sub_resource type="Resource" id="barbaro_s1"]
 script = ExtResource("2_node")
 NodeId = "ber_barbaro_skill_1"
-Nome = "Segundo Fôlego"
-Descricao = "O Berserker reúne suas últimas forças, controlando a respiração e forçando o próprio corpo a continuar lutando mesmo após sofrer muitos golpes."
+Nome = "Sangramento Mortal"
+Descricao = "O Barbaro arremessa um machado brutal contra o alvo, abrindo um ferimento mortal que causa 5 ticks de dano."
 HabilidadeAtiva = ExtResource("sk_1")
 Icone = ExtResource("icon_sk_1")
 NodeType = 1
-Posicao = Vector2(815, 676.2)
+Posicao = Vector2(815, 766.2)
 Requisitos = PackedStringArray("ber_barbaro_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -754,9 +754,10 @@ NivelMinimo = 70
 [sub_resource type="Resource" id="shared_1"]
 script = ExtResource("2_node")
 NodeId = "bershared1"
-Nome = "Segundo Fôlego"
-Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
+Nome = "Sangramento Mortal"
+Descricao = "O Barbaro arremessa um machado brutal contra o alvo, abrindo um ferimento mortal que causa 5 ticks de dano."
 HabilidadeAtiva = ExtResource("shared_sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(800, 909)
 Requisitos = PackedStringArray("ber_base")
@@ -767,7 +768,7 @@ NivelMinimo = 1
 script = ExtResource("2_node")
 NodeId = "bershared2"
 Nome = "Investida Brutal"
-Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
+Descricao = "O Barbaro arremessa um machado brutal contra o alvo, abrindo um ferimento mortal que causa 5 ticks de dano."
 HabilidadeAtiva = ExtResource("sk_11")
 NodeType = 1
 Posicao = Vector2(950, 1100)
@@ -779,7 +780,7 @@ NivelMinimo = 1
 script = ExtResource("2_node")
 NodeId = "bershared3"
 Nome = "Sangue de Ferro"
-Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
+Descricao = "O Barbaro arremessa um machado brutal contra o alvo, abrindo um ferimento mortal que causa 5 ticks de dano."
 HabilidadeAtiva = ExtResource("sk_21")
 NodeType = 1
 Posicao = Vector2(1100, 909)

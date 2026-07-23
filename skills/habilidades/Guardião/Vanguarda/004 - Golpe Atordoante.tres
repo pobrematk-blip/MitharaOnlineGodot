@@ -13,7 +13,7 @@ Valor = 140
 CustoMana = 25
 ClasseRestrita = "Guardião"
 Cooldown = 15
-Duracao = 2
+Duracao = 3
 TargetType = 2
 EffectType = 8
 Especializacao = "Vanguarda"
@@ -24,6 +24,6 @@ Tipo = "Controle"
 EfeitoPrincipal = "Causa dano e atordoa o alvo."
 DanoEscala = "140% → 250% do dano da arma"
 BuffDebuff = "Stun"
-DuracaoTexto = "2s"
+DuracaoTexto = "3s"
 Progressao = "Lv1 = 140%; Lv10 = 250%."
 Observacoes = "Bosses recebem apenas lentidão."

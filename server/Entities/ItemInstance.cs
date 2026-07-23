@@ -78,7 +78,10 @@ public static class ItemRoller
             IsRolled = true,
         };
 
-        var pool = def.AffixPool.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var pool = def.AffixPool
+            .Where(affix => IsAffixAllowedForItem(def, affix))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         var countRange = AffixCounts[(int)rarity];
         int count = Math.Min(pool.Count, Random.Shared.Next(countRange.min, countRange.max + 1));
         foreach (string affix in pool.OrderBy(_ => Random.Shared.Next()).Take(count))
@@ -133,5 +136,56 @@ public static class ItemRoller
         };
         var range = ranges[band];
         return MathF.Round(range.min + (float)Random.Shared.NextDouble() * (range.max - range.min), 2);
+    }
+
+    public static bool IsAffixAllowedForItem(ItemDefinition def, string affix)
+    {
+        string key = NormalizeAffixName(affix);
+
+        if (key is "roubovida" or "roubomana" or "tenacidade" or "penetracaoarmadura")
+            return def.Type is ItemType.Necklace or ItemType.Ring or ItemType.Earring;
+
+        if (key is "reflexao" or "reflexaodano")
+            return IsTrueShield(def) || IsHeavyArmor(def);
+
+        return true;
+    }
+
+    public static bool IsTrueShield(ItemDefinition def)
+    {
+        if (def.Type != ItemType.Shield)
+            return false;
+
+        return def.Name.Contains("Escudo", StringComparison.OrdinalIgnoreCase)
+            || def.AllowedClasses.Contains("Guardiao", StringComparison.OrdinalIgnoreCase)
+            || def.AllowedClasses.Contains("Guardião", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool IsHeavyArmor(ItemDefinition def)
+    {
+        if (def.Type is not (ItemType.Helmet or ItemType.Chestplate or ItemType.Belt or ItemType.Gloves or ItemType.Pants or ItemType.Boots))
+            return false;
+
+        return def.AllowedClasses.Contains("Berseker", StringComparison.OrdinalIgnoreCase)
+            || def.AllowedClasses.Contains("Berserker", StringComparison.OrdinalIgnoreCase)
+            || def.AllowedClasses.Contains("Guardiao", StringComparison.OrdinalIgnoreCase)
+            || def.AllowedClasses.Contains("Guardião", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static string NormalizeAffixName(string name)
+    {
+        return name.Trim()
+            .Replace("ç", "c", StringComparison.OrdinalIgnoreCase)
+            .Replace("ã", "a", StringComparison.OrdinalIgnoreCase)
+            .Replace("á", "a", StringComparison.OrdinalIgnoreCase)
+            .Replace("â", "a", StringComparison.OrdinalIgnoreCase)
+            .Replace("é", "e", StringComparison.OrdinalIgnoreCase)
+            .Replace("ê", "e", StringComparison.OrdinalIgnoreCase)
+            .Replace("í", "i", StringComparison.OrdinalIgnoreCase)
+            .Replace("ó", "o", StringComparison.OrdinalIgnoreCase)
+            .Replace("ô", "o", StringComparison.OrdinalIgnoreCase)
+            .Replace("ú", "u", StringComparison.OrdinalIgnoreCase)
+            .Replace(" ", "", StringComparison.OrdinalIgnoreCase)
+            .ToLowerInvariant();
     }
 }

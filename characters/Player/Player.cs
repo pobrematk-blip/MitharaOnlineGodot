@@ -13,11 +13,14 @@ public partial class Player : CharacterBody2D
     private const string PlayerAnimationModelScenePath = "res://characters/Player/player.tscn";
     private const byte PlayerActionAttack = 1;
     private const byte PlayerActionBackJump = 2;
+    private const float DashTrailMinDistance = 40f;
+    private const int DashTrailGhostCount = 5;
+    private const float DashTrailDuration = 0.42f;
     private const int SheriganPetId = 10101;
     private static SpriteFrames _modeloAnimacaoPlayer;
     [Signal] public delegate void StatusAtualizadoEventHandler();
 
-    [Export] public float MaxSpeed = 185.0f;
+    [Export] public float MaxSpeed = 200.0f;
     [Export] public float Acceleration = 1200.0f;
     [Export] public float Friction = 1500.0f;
     
@@ -243,6 +246,8 @@ public partial class Player : CharacterBody2D
 
     public int CurrentHealth { get; private set; }
     public int CurrentMana { get; private set; }
+    public int CurrentArcaneShield { get; private set; }
+    public int MaxArcaneShield { get; private set; }
     public bool IsDead => CurrentHealth <= 0;
 
     public bool TryConsumeMana(int amount)
@@ -260,8 +265,11 @@ public partial class Player : CharacterBody2D
     public void SetHealthFromServer(int health, int maxHealth)
     {
         bool wasAlive = !IsDead;
+        int oldHealth = CurrentHealth;
         MaxHealth = maxHealth;
         CurrentHealth = Mathf.Clamp(health, 0, maxHealth);
+        if (_isInvisible && CurrentHealth < oldHealth)
+            ApplyInvisibilityVisual(false, 1f);
         if (CurrentHealth <= 0 && wasAlive)
             Morrer();
         EmitSignal(SignalName.StatusAtualizado);
@@ -271,6 +279,13 @@ public partial class Player : CharacterBody2D
     {
         MaxMana = maxMana;
         CurrentMana = Mathf.Clamp(mana, 0, maxMana);
+        EmitSignal(SignalName.StatusAtualizado);
+    }
+
+    public void SetArcaneShieldFromServer(int currentShield, int maxShield)
+    {
+        CurrentArcaneShield = Mathf.Max(0, currentShield);
+        MaxArcaneShield = Mathf.Max(0, maxShield);
         EmitSignal(SignalName.StatusAtualizado);
     }
 
@@ -296,14 +311,59 @@ public partial class Player : CharacterBody2D
 
     public void BecomeInvisible(float duration)
     {
-        Visible = false;
+        ApplyInvisibilityVisual(true, 0.2f);
         GD.Print($"[PLAYER] Invisivel por {duration}s");
         var t = new Timer();
         t.OneShot = true;
         t.WaitTime = duration;
         AddChild(t);
-        t.Timeout += () => { if (IsInstanceValid(this)) { Visible = true; } t.QueueFree(); };
+        t.Timeout += () =>
+        {
+            if (IsInstanceValid(this))
+                ApplyInvisibilityVisual(false, 1f);
+            t.QueueFree();
+        };
         t.Start();
+    }
+
+    public void ApplyInvisibilityVisual(bool invisible, float alpha = 0f)
+    {
+        _isInvisible = invisible;
+        float finalAlpha = invisible ? Mathf.Clamp(alpha, 0f, 1f) : 1f;
+        ApplyInvisibilityAlphaToChildren(this, invisible, finalAlpha);
+        if (_shadowSprite != null && IsInstanceValid(_shadowSprite))
+            _shadowSprite.Modulate = Colors.White;
+        GetNodeOrNull<PetController>("PetController")?.SetPetVisualAlpha(finalAlpha);
+    }
+
+    private void ApplyInvisibilityAlphaToChildren(Node node, bool invisible, float alpha)
+    {
+        foreach (Node child in node.GetChildren())
+        {
+            if (child == _shadowSprite)
+                continue;
+
+            if (child is CanvasItem item)
+            {
+                if (invisible)
+                {
+                    if (!_invisibilityOriginalModulates.ContainsKey(item))
+                        _invisibilityOriginalModulates[item] = item.Modulate;
+
+                    Color c = item.Modulate;
+                    item.Modulate = new Color(c.R, c.G, c.B, alpha);
+                }
+                else if (_invisibilityOriginalModulates.TryGetValue(item, out var original))
+                {
+                    item.Modulate = original;
+                }
+            }
+
+            ApplyInvisibilityAlphaToChildren(child, invisible, alpha);
+        }
+
+        if (!invisible && node == this)
+            _invisibilityOriginalModulates.Clear();
     }
 
     public void SummonPet(string scenePath)
@@ -604,6 +664,12 @@ public partial class Player : CharacterBody2D
         _selectedTargetId = null;
     }
 
+    public void LimparTargetSeFor(ulong entityId)
+    {
+        if (_selectedTargetId == entityId)
+            LimparTarget();
+    }
+
     public bool TryGetSelectedTargetPosition(out Vector2 targetPosition)
     {
         targetPosition = Vector2.Zero;
@@ -671,6 +737,10 @@ public partial class Player : CharacterBody2D
     public void ApplyServerPosition(float x, float y, bool animated = false)
     {
         var target = new Vector2(x, y);
+        Vector2 origem = GlobalPosition;
+        if (origem.DistanceTo(target) >= DashTrailMinDistance)
+            CriarRastroDeslocamento(origem, target);
+
         if (animated && IsInsideTree())
         {
             var tween = CreateTween();
@@ -696,7 +766,11 @@ public partial class Player : CharacterBody2D
     {
         if (entityId == _network?.LocalPlayerId)
         {
-            GlobalPosition = new Vector2(x, y);
+            Vector2 target = new Vector2(x, y);
+            if (GlobalPosition.DistanceTo(target) >= DashTrailMinDistance)
+                CriarRastroDeslocamento(GlobalPosition, target);
+
+            GlobalPosition = target;
             _lastSentPosition = GlobalPosition;
         }
     }
@@ -1717,6 +1791,35 @@ public partial class Player : CharacterBody2D
         return ClasseRegistry.ObterPrefixoAtaqueRecomendado(NomeDaClasse);
     }
 
+    private float ObterVelocidadeVisualAtaqueAtual()
+    {
+        string classe = NomeDaClasse?.Trim().ToLowerInvariant() ?? "";
+        string prefixo = ObterPrefixoAtaqueAtual()?.Trim().ToLowerInvariant() ?? "";
+        if (classe is "berseker" or "berserker" or "barbaro" or "bárbaro"
+            || prefixo.Contains("machado"))
+        {
+            string direcao = DirectionUtil.DirectionToCardinal(CurrentDirection);
+            return direcao is "left" or "right" ? 1.35f : 1.55f;
+        }
+
+        if (classe is "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote"
+            || prefixo.Contains("maca")
+            || prefixo.Contains("maça")
+            || prefixo.Contains("martelo"))
+        {
+            return 1.55f;
+        }
+
+        if (classe is "guardiao" or "guradiao" or "guardião"
+            || prefixo.Contains("espada")
+            || prefixo.Contains("escudo"))
+        {
+            return 1.45f;
+        }
+
+        return AttackAnimationSpeedScale;
+    }
+
     private void AtualizarOverlaySlot(EquipamentoComponent equipamento, TipoEquipamento tipo, AnimatedSprite2D overlay)
     {
         var slot = equipamento.ObterSlot(tipo);
@@ -1738,6 +1841,12 @@ public partial class Player : CharacterBody2D
     private void UpdateAnimation(Vector2 velocity)
     {
         if (AnimatedSprite == null) return;
+
+        if (EstaComAnimacaoTravada("machado_giratorio_until"))
+        {
+            SincronizarOverlays();
+            return;
+        }
 
         string currentAnim = AnimatedSprite.Animation.ToString();
 
@@ -1788,6 +1897,20 @@ public partial class Player : CharacterBody2D
         }
     }
 
+    private bool EstaComAnimacaoTravada(string metaName)
+    {
+        if (!HasMeta(metaName))
+            return false;
+
+        double until = GetMeta(metaName).AsDouble();
+        double now = Time.GetTicksMsec() / 1000.0;
+        if (until > now)
+            return true;
+
+        RemoveMeta(metaName);
+        return false;
+    }
+
     public virtual void Atacar()
     {
         if (AnimatedSprite == null) return;
@@ -1817,7 +1940,7 @@ public partial class Player : CharacterBody2D
             _attackTimeoutCounter = 0f;
             AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoDeAtaque, false);
             AnimatedSprite.Play(animacaoDeAtaque);
-            AnimatedSprite.SpeedScale = AttackAnimationSpeedScale;
+            AnimatedSprite.SpeedScale = ObterVelocidadeVisualAtaqueAtual();
             SincronizarOverlays();
             GD.Print($"[PLAYER] Iniciando ataque: '{animacaoDeAtaque}'");
         }
@@ -2110,7 +2233,38 @@ public partial class Player : CharacterBody2D
         _attackTimeoutCounter = 0f;
         AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoDeAtaque, false);
         AnimatedSprite.Play(animacaoDeAtaque);
-        AnimatedSprite.SpeedScale = AttackAnimationSpeedScale;
+        AnimatedSprite.SpeedScale = ObterVelocidadeVisualAtaqueAtual();
+        SincronizarOverlays();
+
+        if (_network != null && _network.IsConnected)
+            _network.SendPlayerAction(PlayerActionAttack, DirectionUtil.DirectionToVector(CurrentDirection));
+    }
+
+    public void TocarAnimacaoSkillMelee(Vector2 targetPosition, float speedScale = 1.15f)
+    {
+        if (AnimatedSprite == null || AnimatedSprite.SpriteFrames == null)
+            return;
+        if (IsAttacking)
+            return;
+
+        Vector2 dirToTarget = targetPosition - GlobalPosition;
+        if (dirToTarget.LengthSquared() > 0.001f)
+            CurrentDirection = DirectionUtil.VectorToDirectionString(dirToTarget.Normalized());
+
+        string animacaoDeAtaque = ResolverAnimacaoAtaqueAtual();
+        if (string.IsNullOrEmpty(animacaoDeAtaque))
+        {
+            GD.Print($"[PLAYER] Animacao de skill melee nao encontrada para direcao {CurrentDirection}.");
+            return;
+        }
+
+        IsAttacking = true;
+        _attackIsSkillVisual = true;
+        _projetilDisparado = true;
+        _attackTimeoutCounter = 0f;
+        AnimatedSprite.SpriteFrames.SetAnimationLoop(animacaoDeAtaque, false);
+        AnimatedSprite.Play(animacaoDeAtaque);
+        AnimatedSprite.SpeedScale = Mathf.Max(0.1f, speedScale);
         SincronizarOverlays();
 
         if (_network != null && _network.IsConnected)
@@ -2184,7 +2338,7 @@ public partial class Player : CharacterBody2D
         _chargingTiroPreciso = false;
         if (AnimatedSprite != null)
         {
-            AnimatedSprite.SpeedScale = AttackAnimationSpeedScale;
+            AnimatedSprite.SpeedScale = ObterVelocidadeVisualAtaqueAtual();
             SincronizarOverlays();
         }
 
@@ -2255,11 +2409,109 @@ public partial class Player : CharacterBody2D
         AnimatedSprite.Play(animacaoSalto);
         AnimatedSprite.SpeedScale = 1.0f;
         SincronizarOverlays();
+        CriarRastroDeslocamento(GlobalPosition, GlobalPosition - DirectionUtil.DirectionToVector(CurrentDirection) * 160f);
 
         if (_network != null && _network.IsConnected)
             _network.SendPlayerAction(PlayerActionBackJump, DirectionUtil.DirectionToVector(CurrentDirection));
 
         return true;
+    }
+
+    public void CriarRastroDeslocamento(Vector2 origem, Vector2 destino)
+    {
+        if (!IsInsideTree() || AnimatedSprite == null || AnimatedSprite.SpriteFrames == null)
+            return;
+
+        float distancia = origem.DistanceTo(destino);
+        if (distancia < DashTrailMinDistance)
+            return;
+
+        int count = Mathf.Clamp((int)(distancia / 42f), 3, DashTrailGhostCount);
+        for (int i = 0; i < count; i++)
+        {
+            float t = count <= 1 ? 0f : i / (float)(count - 1);
+            Vector2 pos = origem.Lerp(destino, t);
+            float alpha = Mathf.Lerp(0.46f, 0.16f, t);
+            CriarGhostDoPlayer(pos, alpha, i * 0.035f);
+        }
+    }
+
+    private void CriarGhostDoPlayer(Vector2 globalPosition, float alpha, float delay)
+    {
+        var parent = GetParent();
+        if (parent == null)
+            return;
+
+        var ghost = new Node2D
+        {
+            Name = "DashTrailGhost",
+            GlobalPosition = globalPosition,
+            ZIndex = Math.Max(-1, ZIndex - 1),
+            ZAsRelative = false,
+            Modulate = new Color(1f, 1f, 1f, alpha),
+        };
+
+        CopiarSpriteParaGhost(AnimatedSprite, ghost);
+        CopiarSpriteParaGhost(_armaduraOverlay, ghost);
+        CopiarSpriteParaGhost(_capaceteOverlay, ghost);
+        CopiarSpriteParaGhost(_cabeloOverlay, ghost);
+        CopiarSpriteParaGhost(_barbaOverlay, ghost);
+        CopiarSpriteParaGhost(_luvasOverlay, ghost);
+        CopiarSpriteParaGhost(_botasOverlay, ghost);
+
+        if (ghost.GetChildCount() == 0)
+        {
+            ghost.QueueFree();
+            return;
+        }
+
+        parent.AddChild(ghost);
+        var tween = ghost.CreateTween();
+        if (delay > 0f)
+            tween.TweenInterval(delay);
+        tween.TweenProperty(ghost, "modulate:a", 0f, DashTrailDuration)
+            .SetTrans(Tween.TransitionType.Cubic)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(ghost))
+                ghost.QueueFree();
+        }));
+    }
+
+    private static void CopiarSpriteParaGhost(AnimatedSprite2D origem, Node2D ghost)
+    {
+        if (origem == null || !origem.Visible || origem.SpriteFrames == null)
+            return;
+
+        string anim = origem.Animation.ToString();
+        if (string.IsNullOrWhiteSpace(anim) || !origem.SpriteFrames.HasAnimation(anim))
+            return;
+
+        int frameCount = origem.SpriteFrames.GetFrameCount(anim);
+        if (frameCount <= 0)
+            return;
+
+        int frame = Mathf.Clamp(origem.Frame, 0, frameCount - 1);
+        Texture2D texture = origem.SpriteFrames.GetFrameTexture(anim, frame);
+        if (texture == null)
+            return;
+
+        var clone = new Sprite2D
+        {
+            Name = origem.Name + "_Ghost",
+            Texture = texture,
+            Position = origem.Position,
+            Scale = origem.Scale,
+            Offset = origem.Offset,
+            Centered = origem.Centered,
+            FlipH = origem.FlipH,
+            FlipV = origem.FlipV,
+            ZIndex = origem.ZIndex,
+            ZAsRelative = origem.ZAsRelative,
+            Modulate = origem.Modulate,
+        };
+        ghost.AddChild(clone);
     }
 
     private void ExecutarAtaqueMelee()
@@ -2398,6 +2650,8 @@ public partial class Player : CharacterBody2D
 
         CurrentHealth -= quantidade;
         CurrentHealth = Mathf.Max(CurrentHealth, 0);
+        if (_isInvisible)
+            ApplyInvisibilityVisual(false, 1f);
         GD.Print($"[PLAYER] Levou {quantidade} de dano! Vida restante: {CurrentHealth}/{MaxHealth}");
 
         if (CurrentHealth <= 0)
@@ -2661,8 +2915,10 @@ public partial class Player : CharacterBody2D
     private bool _isFrozen = false;
     private bool _isBlinded = false;
     private bool _isInvincible = false;
+    private bool _isInvisible = false;
     private int _currentReflect = 0;
     private float _speedMultiplier = 1.0f;
+    private readonly Dictionary<CanvasItem, Color> _invisibilityOriginalModulates = new();
 
     public void ApplyTemporaryBuff(string buffType, float duration, int power)
     {
@@ -2763,6 +3019,11 @@ public partial class Player : CharacterBody2D
                 ti.Timeout += () => { _isInvincible = false; ti.QueueFree(); };
                 ti.Start();
                 break;
+            case "invisibility":
+            case "invisibilidade":
+            case "invisibilidade profunda":
+                BecomeInvisible(duration);
+                break;
             case "blindness":
                 _isBlinded = true;
                 GD.Print($"[PLAYER] Cegueira aplicada por {duration}s");
@@ -2815,6 +3076,10 @@ public partial class Player : CharacterBody2D
                 _isFrozen = false; break;
             case "invincibility":
                 _isInvincible = false; break;
+            case "invisibility":
+            case "invisibilidade":
+            case "invisibilidade profunda":
+                ApplyInvisibilityVisual(false, 1f); break;
             case "blindness":
                 _isBlinded = false; break;
             case "reflect":

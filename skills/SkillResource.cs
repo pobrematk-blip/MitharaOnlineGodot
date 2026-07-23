@@ -50,6 +50,10 @@ public partial class SkillResource : Resource
     [Export] public string ClasseRestrita { get; set; } = string.Empty;
     [Export] public string CenaInvocacao { get; set; } = string.Empty;
     [Export] public string EfeitoVisualPath { get; set; } = string.Empty;
+    [Export] public string CenaEfeitoNoAlvo { get; set; } = string.Empty;
+    [Export] public string CenaEfeitoNoPlayer { get; set; } = string.Empty;
+    [Export] public string CenaProjetil { get; set; } = string.Empty;
+    [Export] public string CenaLancamento { get; set; } = string.Empty;
     [Export] public string BuffType { get; set; } = string.Empty;
     [Export] public float Cooldown { get; set; } = 0f;
     [Export] public float Duracao { get; set; } = 0f;
@@ -75,6 +79,10 @@ public partial class SkillResource : Resource
     public int Power { get => Valor; set => Valor = value; }
     public int ManaCost { get => CustoMana; set => CustoMana = value; }
     public string SummonScenePath { get => CenaInvocacao; set => CenaInvocacao = value; }
+    public string TargetEffectScenePath { get => string.IsNullOrWhiteSpace(CenaEfeitoNoAlvo) ? EfeitoVisualPath : CenaEfeitoNoAlvo; set { CenaEfeitoNoAlvo = value; EfeitoVisualPath = value; } }
+    public string PlayerEffectScenePath { get => CenaEfeitoNoPlayer; set => CenaEfeitoNoPlayer = value; }
+    public string ProjectileScenePath { get => CenaProjetil; set => CenaProjetil = value; }
+    public string CastScenePath { get => CenaLancamento; set => CenaLancamento = value; }
     public bool IsPassive { get => Passive; set => Passive = value; }
     public float Duration { get => Duracao; set => Duracao = value; }
     public SkillTargetType GetTargetType() => TargetType;

@@ -51,6 +51,7 @@ partial class GameNetwork
         {
             AccountId = r.GetInt();
             int charCount = r.GetInt();
+            CharacterSlotLimit = r.AvailableBytes >= 4 ? r.GetInt() : 3;
             Characters.Clear();
             for (int i = 0; i < charCount; i++)
             {

@@ -415,14 +415,14 @@ autowrap_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Defesa Física: 0"
+text = "Resistência Física: 0"
 autowrap_mode = 2
 
 [node name="DefesaMagicaLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Defesa Mágica: 0"
+text = "Resistência Mágica: 0"
 autowrap_mode = 2
 
 [node name="EvasaoLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]

@@ -313,8 +313,8 @@ public partial class ItemTooltip : Panel
 		AddInt("Agilidade", itemNovo.Agilidade, itemAntigo.Agilidade);
 		AddInt("Destreza", itemNovo.Destreza, itemAntigo.Destreza);
 		AddInt("Inteligência", itemNovo.Inteligencia, itemAntigo.Inteligencia);
-		AddInt("Proteção", itemNovo.DefesaFisica, itemAntigo.DefesaFisica);
-		AddInt("Resist. Mágica", itemNovo.DefesaMagica, itemAntigo.DefesaMagica);
+		AddInt("Resistência Física", itemNovo.DefesaFisica, itemAntigo.DefesaFisica);
+		AddInt("Resistência Mágica", itemNovo.DefesaMagica, itemAntigo.DefesaMagica);
 		AddInt("Dano Físico", itemNovo.DanoFisico, itemAntigo.DanoFisico);
 		AddInt("Dano Mágico", itemNovo.DanoMagico, itemAntigo.DanoMagico);
 		AddFloat("Crítico", itemNovo.ChanceCritica, itemAntigo.ChanceCritica);
@@ -540,8 +540,8 @@ public partial class ItemTooltip : Panel
 		temAlgo |= AddStat(RefinedInt(item.Destreza, refinoNivel, refineMult), "Destreza", "+{0}", new Color(0.3f, 0.6f, 0.9f));
 		temAlgo |= AddStat(RefinedInt(item.Inteligencia, refinoNivel, refineMult), "Inteligência", "+{0}", new Color(0.5f, 0.4f, 1.0f));
 
-		temAlgo |= AddStat(RefinedInt(item.DefesaFisica, refinoNivel, refineMult), "Proteção", "+{0}", new Color(0.6f, 0.9f, 0.6f));
-		temAlgo |= AddStat(RefinedInt(item.DefesaMagica, refinoNivel, refineMult), "Resist. Mágica", "+{0}", new Color(0.4f, 0.6f, 1.0f));
+		temAlgo |= AddStat(RefinedInt(item.DefesaFisica, refinoNivel, refineMult), "Resistência Física", "+{0}", new Color(0.6f, 0.9f, 0.6f));
+		temAlgo |= AddStat(RefinedInt(item.DefesaMagica, refinoNivel, refineMult), "Resistência Mágica", "+{0}", new Color(0.4f, 0.6f, 1.0f));
 		temAlgo |= AddStat(RefinedInt(item.DanoFisico, refinoNivel, refineMult), "Dano Físico", "+{0}", new Color(1.0f, 0.4f, 0.4f));
 		temAlgo |= AddStat(RefinedInt(item.DanoMagico, refinoNivel, refineMult), "Dano Mágico", "+{0}", new Color(0.4f, 0.4f, 1.0f));
 

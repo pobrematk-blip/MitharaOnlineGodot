@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14105
-Nome = "Muralha Humana"
-Descricao = "O Guardião transforma seu corpo em uma muralha viva, resistindo a ataques que derrubariam guerreiros comuns."
+Nome = "Espinhos"
+Descricao = "O Protetor faz espinhos surgirem sob os pés dos inimigos próximos, causando dano em quatro pulsos rápidos e reduzindo a velocidade deles."
 Icone = ExtResource("2_icon")
-Valor = 0
+Valor = 100
 CustoMana = 25
 ClasseRestrita = "Guardião"
-Cooldown = 35
-Duracao = 10
+Cooldown = 24
+Duracao = 3
 TargetType = 0
-EffectType = 3
+EffectType = 6
 Especializacao = "Protetor"
 NivelRequerido = 20
 Ordem = 5
 Escopo = "Especialização"
-Tipo = "Buff Defensivo"
-EfeitoPrincipal = "Aumenta muito as defesas e reduz o empurrão recebido."
-DanoEscala = ""
-BuffDebuff = "+20% → +40% Defesas; resistência a knockback"
-DuracaoTexto = "10s"
-Progressao = "Lv1 = +20%; Lv10 = +40%."
-Observacoes = "Reduz velocidade durante o efeito."
+Tipo = "Dano em Área"
+EfeitoPrincipal = "Causa dano em área ao redor do Protetor em 4 ticks, um a cada 0,5s."
+DanoEscala = "100% do ataque total dividido em 4 ticks"
+BuffDebuff = "Slow 40% por 3s"
+DuracaoTexto = "2s de dano; 3s de slow"
+Progressao = "O dano total é dividido em 4 ticks."
+Observacoes = "Os espinhos aparecem nos pés dos inimigos atingidos."

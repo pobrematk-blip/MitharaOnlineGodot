@@ -1,0 +1,70 @@
+[gd_resource type="SpriteFrames" load_steps=16 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect2.png" id="1_fx2"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect3.png" id="2_fx3"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect4.png" id="3_fx4"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect5.png" id="4_fx5"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect6.png" id="5_fx6"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect7.png" id="6_fx7"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect8.png" id="7_fx8"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect9.png" id="8_fx9"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect10.png" id="9_fx10"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect11.png" id="10_fx11"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect12.png" id="11_fx12"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect13.png" id="12_fx13"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect14.png" id="13_fx14"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect15.png" id="14_fx15"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/37/effect16.png" id="15_fx16"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_fx2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_fx3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_fx4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_fx5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_fx6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_fx7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_fx8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_fx9")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_fx10")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_fx11")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_fx12")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_fx13")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_fx14")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_fx15")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_fx16")
+}],
+"loop": false,
+"name": &"default",
+"speed": 15.0
+}]

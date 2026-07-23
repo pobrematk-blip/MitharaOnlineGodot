@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/Efeitos/SkillEffectVisual.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Berserker/FrenesiEffectFrames.tres" id="2_frames"]
+
+[node name="FrenesiEffect" type="Node2D"]
+z_index = 126
+z_as_relative = true
+script = ExtResource("1_script")
+FreeOnAnimationFinished = false
+LifetimeSeconds = 0.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, 0)
+scale = Vector2(0.82, 0.82)
+z_index = 126
+z_as_relative = true
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true

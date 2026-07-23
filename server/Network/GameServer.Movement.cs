@@ -8,7 +8,7 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
-    private const float MaxPlayerSpeed = 333f;
+    private const float MaxPlayerSpeed = 360f;
 
     private void HandlePlayerAction(NetPeer peer, NetDataReader reader)
     {
@@ -78,6 +78,15 @@ partial class GameServer
         var entity = channel.GetEntity(session.EntityId);
         if (entity == null) return;
 
+        if (entity is PlayerEntity playerEntity && HasMovementBlockingDebuff(playerEntity))
+        {
+            playerEntity.Moving = false;
+            playerEntity.Sprinting = false;
+            playerEntity.LastMoveTime = _gameTime;
+            BroadcastAuthoritativeMove(channel, playerEntity, playerEntity.X, playerEntity.Y, playerEntity.DirX, playerEntity.DirY);
+            return;
+        }
+
         float dx = targetX - entity.X;
         float dy = targetY - entity.Y;
         float distSq = dx * dx + dy * dy;
@@ -102,6 +111,8 @@ partial class GameServer
         entity.DirY = dirY;
         entity.LastMoveTime = _gameTime;
         channel.MoveEntity(session.EntityId, targetX, targetY);
+        if (entity is PlayerEntity movedPlayer)
+            UpdateQuestReachLocationProgress(movedPlayer, targetX, targetY);
 
         if (CheckTeleportTile(peer, session, channel, entity, targetX, targetY))
             return;
@@ -124,6 +135,17 @@ partial class GameServer
         }
     }
 
+    private bool HasMovementBlockingDebuff(PlayerEntity player)
+    {
+        foreach (string key in new[] { "stun", "sleep", "root", "freeze", "prison" })
+        {
+            if (player.ActiveServerBuffs.TryGetValue(key, out double until) && until > _gameTime)
+                return true;
+        }
+
+        return false;
+    }
+
     private float GetEffectivePlayerMoveSpeed(Entity entity)
     {
         if (entity is not PlayerEntity player)
@@ -142,7 +164,7 @@ partial class GameServer
                 multiplier = MathF.Min(multiplier, 0.60f);
         }
 
-        return MaxPlayerSpeed * multiplier;
+        return MaxPlayerSpeed * multiplier * player.CalculateMovementSpeedMultiplier();
     }
 
     private void HandlePlayerStop(NetPeer peer, NetDataReader reader)

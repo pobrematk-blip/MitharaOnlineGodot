@@ -49,6 +49,15 @@ partial class GameNetwork
         });
     }
 
+    private void HandleSkillUseResult(NetDataReader r)
+    {
+        int slotIndex = r.GetInt();
+        int skillId = r.GetInt();
+        bool success = r.GetBool();
+        float cooldownSeconds = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        EmitSignal(SignalName.OnSkillUseResult, slotIndex, skillId, success, cooldownSeconds);
+    }
+
     public void SendChannelSwitch(int channelId)
     {
         _client?.SendPacket(PacketId.C2S_ChannelSwitch, w =>
@@ -157,7 +166,7 @@ partial class GameNetwork
         byte actionType = r.GetByte();
         var direction = new Vector2(r.GetFloat(), r.GetFloat());
 
-        if (entityId == LocalPlayerId && actionType != 3) return;
+        if (entityId == LocalPlayerId && actionType != 3 && actionType != 5 && actionType != 6 && actionType != 7 && actionType != 8 && actionType != 9) return;
         GetNodeOrNull<EntityManager>("EntityManager")?.HandleRemoteAction(entityId, actionType, direction);
     }
 

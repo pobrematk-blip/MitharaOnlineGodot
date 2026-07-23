@@ -11,12 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="LiteNetLib" Version="2.1.4" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="server_config.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="data\quests.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,130 @@
+[gd_resource type="SpriteFrames" load_steps=19 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/congelamento.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_01"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_02"]
+atlas = ExtResource("1_sheet")
+region = Rect2(80, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_03"]
+atlas = ExtResource("1_sheet")
+region = Rect2(160, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_04"]
+atlas = ExtResource("1_sheet")
+region = Rect2(240, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_05"]
+atlas = ExtResource("1_sheet")
+region = Rect2(320, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_06"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 80, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_07"]
+atlas = ExtResource("1_sheet")
+region = Rect2(80, 80, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_08"]
+atlas = ExtResource("1_sheet")
+region = Rect2(160, 80, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_09"]
+atlas = ExtResource("1_sheet")
+region = Rect2(240, 80, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_10"]
+atlas = ExtResource("1_sheet")
+region = Rect2(320, 80, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_11"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_12"]
+atlas = ExtResource("1_sheet")
+region = Rect2(80, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_13"]
+atlas = ExtResource("1_sheet")
+region = Rect2(160, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_14"]
+atlas = ExtResource("1_sheet")
+region = Rect2(240, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_15"]
+atlas = ExtResource("1_sheet")
+region = Rect2(320, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_16"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 240, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ice_17"]
+atlas = ExtResource("1_sheet")
+region = Rect2(80, 240, 80, 80)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_01")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_02")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_03")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_04")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_05")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_06")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_07")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_08")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_09")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_10")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_11")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_12")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_13")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_15")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_16")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ice_17")
+}],
+"loop": false,
+"name": &"default",
+"speed": 12.0
+}]

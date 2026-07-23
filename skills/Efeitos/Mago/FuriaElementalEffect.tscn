@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/Efeitos/SkillEffectVisual.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Mago/FuriaElementalEffectFrames.tres" id="2_frames"]
+
+[node name="FuriaElementalEffect" type="Node2D"]
+z_index = 101
+z_as_relative = false
+script = ExtResource("1_script")
+LifetimeSeconds = 0.8
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, 48)
+scale = Vector2(0.95, 0.95)
+z_index = 101
+z_as_relative = false
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true

@@ -1,29 +1,26 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/2.png" id="1_xefl0"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15001
-Nome = "Segundo Fôlego"
-Descricao = "O aventureiro reúne suas forças interiores, respirando fundo e restaurando parte de sua vitalidade e energia espiritual para continuar lutando."
-Icone = ExtResource("2_icon")
-Valor = 15
-CustoMana = 15
+Nome = "Raio Sagrado"
+Descricao = "O Sacerdote concentra luz divina em um raio direto, atingindo um inimigo com dano sagrado para conseguir lutar mesmo sozinho."
+Icone = ExtResource("1_xefl0")
+Valor = 115
+CustoMana = 18
 ClasseRestrita = "Clérigo"
-Cooldown = 60
-Duracao = 0
-TargetType = 0
-EffectType = 1
-Especializacao = "Todas"
-NivelRequerido = 1
+Cooldown = 4.0
+TargetType = 2
+EffectType = 7
+Especializacao = "Sacerdote"
 Ordem = 1
-Escopo = "Universal do Jogo"
-Tipo = "Utilitária"
-EfeitoPrincipal = "Recupera 15% do HP Máximo e 15% da Mana Máxima."
-DanoEscala = ""
-BuffDebuff = "Cura pessoal"
+Escopo = "Especialização"
+Tipo = "Dano Sagrado"
+EfeitoPrincipal = "Causa dano sagrado em um inimigo."
+DanoEscala = "Dano: 115% -> 230% do Poder Mágico"
 DuracaoTexto = "Instantâneo"
-Progressao = "Valor fixo: 15% HP / 15% Mana."
-Observacoes = "Disponível para todas as classes do jogo."
+Progressao = "Aumenta o dano conforme o nível da skill."
+Observacoes = "Skill ofensiva básica do Sacerdote para upar solo."

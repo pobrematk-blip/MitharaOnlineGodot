@@ -20,7 +20,8 @@ partial class GameServer
     private const float MainSpawnX = 230f;
     private const float MainSpawnY = 300f;
     private const string MainSceneName = "main";
-    private const int StartingCashBalance = 1000;
+    private const int BaseCharacterSlots = 3;
+    private const int MaxCharacterSlots = 12;
 
     private static readonly Dictionary<string, int[]> _classStartingItems = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -179,17 +180,6 @@ partial class GameServer
         return Math.Max(0, preferredSlot);
     }
 
-    private void EnsureStartingCash(int accountId)
-    {
-        int currentCash = _db.GetCashBalance(accountId);
-        if (currentCash >= StartingCashBalance)
-            return;
-
-        int added = StartingCashBalance - currentCash;
-        _db.AddCash(accountId, added);
-        Logger.Info($"Cash inicial aplicado na conta {accountId}: +{added} (saldo alvo {StartingCashBalance})");
-    }
-
     private void HandleCreateCharacter(NetPeer peer, NetDataReader reader)
     {
         string name = reader.GetString().Trim();
@@ -216,6 +206,15 @@ partial class GameServer
             return;
         }
 
+        var currentChars = _db.GetCharacters(session.AccountId);
+        int slotLimit = Math.Clamp(_db.GetCharacterSlotLimit(session.AccountId), BaseCharacterSlots, MaxCharacterSlots);
+        if (currentChars.Count >= slotLimit)
+        {
+            SendCreateCharacterResult(peer, false, "Voce nao possui slots livres. Compre um Slot Extra na loja cash.");
+            SendCharacterList(peer, currentChars);
+            return;
+        }
+
         int? charId = _db.CreateCharacter(session.AccountId, name, className, race);
         if (charId == null)
         {
@@ -224,7 +223,6 @@ partial class GameServer
         }
 
         GiveStartingItems(charId.Value, className);
-        EnsureStartingCash(session.AccountId);
 
         var chars = _db.GetCharacters(session.AccountId);
 
@@ -248,14 +246,19 @@ partial class GameServer
 
     private void SendCharacterList(NetPeer peer, List<CharacterRow> chars)
     {
+        if (!_sessions.TryGetValue(peer, out var session))
+            return;
+
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CharacterList);
         writer.Put(chars.Count);
+        writer.Put(Math.Clamp(_db.GetCharacterSlotLimit(session.AccountId), BaseCharacterSlots, MaxCharacterSlots));
         foreach (var ch in chars)
         {
             writer.Put(ch.SlotIndex);
             writer.Put(ch.Name);
             writer.Put(ch.Level);
             writer.Put(ch.Class);
+            writer.Put(ch.Race);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -305,6 +308,7 @@ partial class GameServer
         var characters = _db.GetCharacters(session.AccountId);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_LeaveWorld);
         writer.Put(characters.Count);
+        writer.Put(Math.Clamp(_db.GetCharacterSlotLimit(session.AccountId), BaseCharacterSlots, MaxCharacterSlots));
         foreach (var character in characters)
         {
             writer.Put(character.SlotIndex);
@@ -334,6 +338,7 @@ partial class GameServer
         var updated = _db.GetCharacters(session.AccountId);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_CharacterDeleted);
         writer.Put(updated.Count);
+        writer.Put(Math.Clamp(_db.GetCharacterSlotLimit(session.AccountId), BaseCharacterSlots, MaxCharacterSlots));
         foreach (var ch in updated)
         {
             writer.Put(ch.SlotIndex);
@@ -413,7 +418,7 @@ partial class GameServer
             Level = level,
             X = posX,
             Y = posY,
-            Speed = 185f,
+            Speed = 200f,
             Health = maxHp,
             MaxHealth = maxHp,
             Mana = maxMana,

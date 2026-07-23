@@ -26,6 +26,14 @@ public partial class PetController : Node
         return TemPetAtivo && _petNode.PetID == petId;
     }
 
+    public void SetPetVisualAlpha(float alpha)
+    {
+        if (_petNode == null || !IsInstanceValid(_petNode))
+            return;
+
+        _petNode.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(alpha, 0f, 1f));
+    }
+
     public void InvocarPet(int petId, string petNome)
     {
         if (petId <= 0)

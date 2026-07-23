@@ -35,7 +35,7 @@
 
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/39.png" id="icon_sk_1"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/21.png" id="icon_sk_10"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/39.png" id="icon_sk_11"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/36.png" id="icon_sk_11"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/19.png" id="icon_sk_12"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/29.png" id="icon_sk_13"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/35.png" id="icon_sk_14"]
@@ -55,15 +55,15 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/5.png" id="icon_sk_27"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/22.png" id="icon_sk_28"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/25.png" id="icon_sk_29"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/31.png" id="icon_sk_3"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/42.png" id="icon_sk_3"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/27.png" id="icon_sk_30"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/48.png" id="icon_sk_4"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/16.png" id="icon_sk_5"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/33.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/18.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Blodmage/44.png" id="icon_sk_5"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/32.png" id="icon_sk_6"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/15.png" id="icon_sk_7"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/22.png" id="icon_sk_8"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/19.png" id="icon_sk_8"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/34.png" id="icon_sk_9"]
-[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Mago/Todas/004 - Sono Arcano.tres" id="shared_sk_1"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
 NodeId = "mag_base"
@@ -119,12 +119,12 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 [sub_resource type="Resource" id="elementalista_s1"]
 script = ExtResource("2_node")
 NodeId = "mag_elementalista_skill_1"
-Nome = "Segundo Fôlego"
-Descricao = "Recupera HP e Mana."
-HabilidadeAtiva = ExtResource("sk_1")
-Icone = ExtResource("icon_sk_1")
+Nome = "Sono Arcano"
+Descricao = "Coloca o alvo em sono ate receber a proxima habilidade."
+HabilidadeAtiva = ExtResource("shared_sk_1")
+Icone = ExtResource("icon_sk_3")
 NodeType = 1
-Posicao = Vector2(815, 676.2)
+Posicao = Vector2(815, 696.2)
 Requisitos = PackedStringArray("mag_elementalista_escolha_interna_1")
 CustoPontos = 1
 NivelMinimo = 1
@@ -346,7 +346,7 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 script = ExtResource("2_node")
 NodeId = "mag_mago_negro_skill_1"
 Nome = "Teleporte Arcano"
-Descricao = "Teleporta 4 tiles."
+Descricao = "Abre um portal sombrio e teleporta 10 tiles para frente."
 HabilidadeAtiva = ExtResource("sk_11")
 Icone = ExtResource("icon_sk_11")
 NodeType = 1
@@ -755,8 +755,9 @@ NivelMinimo = 70
 script = ExtResource("2_node")
 NodeId = "magshared1"
 Nome = "Segundo Fôlego"
-Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
-HabilidadeAtiva = ExtResource("shared_sk_1")
+Descricao = "Recupera HP e Mana."
+HabilidadeAtiva = ExtResource("sk_1")
+Icone = ExtResource("icon_sk_1")
 NodeType = 1
 Posicao = Vector2(800, 909)
 Requisitos = PackedStringArray("mag_base")
@@ -767,7 +768,7 @@ NivelMinimo = 1
 script = ExtResource("2_node")
 NodeId = "magshared2"
 Nome = "Teleporte Arcano"
-Descricao = "Habilidade compartilhada posicionada perto do núcleo central da árvore, sem alterar as rotas existentes."
+Descricao = "Abre um portal sombrio e teleporta 10 tiles para frente."
 HabilidadeAtiva = ExtResource("sk_11")
 NodeType = 1
 Posicao = Vector2(950, 1100)

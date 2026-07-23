@@ -7,6 +7,7 @@ namespace Mithara.Server.Database;
 
 public class DatabaseManager
 {
+    private const int StartingCashBalance = 100;
     private readonly string _connectionString;
 
     public DatabaseManager(string host, int port, string database, string user, string password)
@@ -42,6 +43,8 @@ public class DatabaseManager
                 security_question VARCHAR(255) NOT NULL DEFAULT '',
                 security_answer VARCHAR(255) NOT NULL DEFAULT '',
                 salt VARCHAR(255) NOT NULL DEFAULT '',
+                cash_balance INT NOT NULL DEFAULT 100,
+                character_slots INT NOT NULL DEFAULT 3,
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -212,7 +215,8 @@ public class DatabaseManager
             ("accounts", "security_answer", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "email", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "salt", "VARCHAR(255) NOT NULL DEFAULT ''"),
-            ("accounts", "cash_balance", "INT NOT NULL DEFAULT 0"),
+            ("accounts", "cash_balance", "INT NOT NULL DEFAULT 100"),
+            ("accounts", "character_slots", "INT NOT NULL DEFAULT 3"),
             ("guilds", "tag", "VARCHAR(12) NOT NULL DEFAULT ''"),
             ("guilds", "emblem", "INT NOT NULL DEFAULT -1"),
             ("items", "refine_level", "INT NOT NULL DEFAULT 0"),
@@ -309,13 +313,14 @@ public class DatabaseManager
 
         using var cmd = conn.CreateCommand();
         string salt = GenerateSalt();
-        cmd.CommandText = "INSERT INTO accounts (username, email, password_hash, security_question, security_answer, salt) VALUES (@u, @e, @p, @q, @a, @s) RETURNING id";
+        cmd.CommandText = "INSERT INTO accounts (username, email, password_hash, security_question, security_answer, salt, cash_balance) VALUES (@u, @e, @p, @q, @a, @s, @cash) RETURNING id";
         cmd.Parameters.AddWithValue("@u", username);
         cmd.Parameters.AddWithValue("@e", email);
         cmd.Parameters.AddWithValue("@p", HashPassword(password, salt));
         cmd.Parameters.AddWithValue("@q", securityQuestion);
         cmd.Parameters.AddWithValue("@a", HashPassword(securityAnswer, salt));
         cmd.Parameters.AddWithValue("@s", salt);
+        cmd.Parameters.AddWithValue("@cash", StartingCashBalance);
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 
@@ -400,6 +405,64 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@a", accountId);
         cmd.Parameters.AddWithValue("@amount", amount);
         return Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+    }
+
+    public int GetCharacterSlotLimit(int accountId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COALESCE(character_slots, 3) FROM accounts WHERE id = @a";
+        cmd.Parameters.AddWithValue("@a", accountId);
+        return Math.Max(3, Convert.ToInt32(cmd.ExecuteScalar() ?? 3));
+    }
+
+    public bool TryBuyCharacterSlot(int accountId, int price, int maxSlots, out int newBalance, out int newSlotLimit, out string reason)
+    {
+        newBalance = GetCashBalance(accountId);
+        newSlotLimit = GetCharacterSlotLimit(accountId);
+        reason = "";
+
+        if (price <= 0)
+        {
+            reason = "Preco invalido.";
+            return false;
+        }
+
+        if (newSlotLimit >= maxSlots)
+        {
+            reason = $"Voce ja atingiu o limite de {maxSlots} slots.";
+            return false;
+        }
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            UPDATE accounts
+            SET cash_balance = cash_balance - @price,
+                character_slots = character_slots + 1
+            WHERE id = @a
+              AND cash_balance >= @price
+              AND character_slots < @max
+            RETURNING cash_balance, character_slots
+            """;
+        cmd.Parameters.AddWithValue("@a", accountId);
+        cmd.Parameters.AddWithValue("@price", price);
+        cmd.Parameters.AddWithValue("@max", maxSlots);
+
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read())
+        {
+            newBalance = GetCashBalance(accountId);
+            newSlotLimit = GetCharacterSlotLimit(accountId);
+            reason = newBalance < price ? "Diamantes insuficientes." : $"Voce ja atingiu o limite de {maxSlots} slots.";
+            return false;
+        }
+
+        newBalance = reader.GetInt32(0);
+        newSlotLimit = reader.GetInt32(1);
+        return true;
     }
 
     public int? CreateCharacter(int accountId, string name, string className, string race)

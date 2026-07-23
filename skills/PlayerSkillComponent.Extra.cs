@@ -5,6 +5,20 @@ using System.Collections.Generic;
 
 public partial class PlayerSkillComponent
 {
+    private const int LancaDeGeloSkillId = 11202;
+    private const int TornadoSkillId = 11204;
+    private const int TempestadeEletricaSkillId = 11206;
+    private const int ExplosaoVulcanicaSkillId = 11207;
+    private const int ChuvaMeteorosSkillId = 11209;
+    private const int CarnificinaSkillId = 13107;
+    private const int RessurreicaoSkillId = 15108;
+    private const float LancaDeGeloMarkerRadius = 120f;
+
+    private GroundTargetMarker? _groundTargetMarker;
+    private int _pendingGroundSkillSlot = -1;
+    private SkillResource? _pendingGroundSkill;
+    private float _pendingGroundSkillCharge = 1f;
+
     // Public activation entrypoint used by the UI.
     public void ActivateSlotIndex(int slotIndex)
     {
@@ -63,14 +77,53 @@ public partial class PlayerSkillComponent
             return;
         }
 
+        if (!TemManaParaAtivar(skill))
+            return;
+
+        if (EhSkillComMiraNoChao(skill.SkillId))
+        {
+            PrepararOuUsarSkillComMiraNoChao(slotIndex, skill, chargePercent);
+            return;
+        }
+
         string dir = _player.CurrentDirection ?? "down";
         Vector2 dirVec = DirectionUtil.DirectionToVector(dir);
         Vector2 targetPosition = _player.GlobalPosition + dirVec * 50f;
         bool isTiroExecucao = skill.SkillId == 10209 || skill.SkillId == 19 || string.Equals(skill.Nome?.Trim(), "Tiro da Execução", StringComparison.OrdinalIgnoreCase);
-        if (isTiroExecucao)
+        bool isMarcaDaMorte = skill.SkillId == 12206
+            || skill.SkillId == 13202
+            || (skill.Nome?.Contains("Marca", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Morte", StringComparison.OrdinalIgnoreCase));
+        bool isExecucaoFinal = skill.SkillId == 12209
+            || (skill.Nome?.Contains("Execu", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Final", StringComparison.OrdinalIgnoreCase));
+        bool isGolpeSombrio = skill.SkillId == 12201
+            || (skill.Nome?.Contains("Golpe", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Sombrio", StringComparison.OrdinalIgnoreCase));
+        bool isGolpeAtordoante = skill.SkillId == 12204
+            || (skill.Nome?.Contains("Golpe", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Atordoante", StringComparison.OrdinalIgnoreCase));
+        bool isChuteNaVirilha = skill.SkillId == 12210
+            || (skill.Nome?.Contains("Chute", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Virilha", StringComparison.OrdinalIgnoreCase));
+        bool isPunhaladaNasCostas = skill.SkillId == 12205
+            || (skill.Nome?.Contains("Punhalada", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Costas", StringComparison.OrdinalIgnoreCase));
+        bool isGolpeDeEscudo = skill.SkillId == 14103
+            || (skill.Nome?.Contains("Golpe", StringComparison.OrdinalIgnoreCase) == true
+                && skill.Nome.Contains("Escudo", StringComparison.OrdinalIgnoreCase));
+        bool isEstocada = skill.SkillId == 14102
+            || (skill.Nome?.Contains("Estocada", StringComparison.OrdinalIgnoreCase) == true);
+        bool isSacerdoteDano = skill.SkillId == 15001 || skill.SkillId == 15102;
+        bool isSangramentoMortal = skill.SkillId == 13001
+            || string.Equals(skill.Nome?.Trim(), "Sangramento Mortal", StringComparison.OrdinalIgnoreCase);
+        if (isTiroExecucao || isMarcaDaMorte || isExecucaoFinal || isGolpeSombrio || isGolpeAtordoante || isChuteNaVirilha || isPunhaladaNasCostas || isGolpeDeEscudo || isEstocada || isSacerdoteDano || isSangramentoMortal)
         {
-            if (!_player.TryEnsureSelectedEnemyTarget(900f, out _, out targetPosition))
-                GD.Print("[SKILLCOMP] Tiro da Execucao sem alvo: nenhum inimigo proximo encontrado.");
+            float range = isExecucaoFinal || isGolpeSombrio || isGolpeAtordoante || isChuteNaVirilha || isPunhaladaNasCostas
+                ? 96f
+                : (isGolpeDeEscudo ? 32f * 10f : (isEstocada ? 32f * 5f : (isSacerdoteDano ? 32f * 8f : (isMarcaDaMorte || isSangramentoMortal ? 32f * 10f : 900f))));
+            if (!_player.TryEnsureSelectedEnemyTarget(range, out _, out targetPosition))
+                GD.Print($"[SKILLCOMP] {skill.Nome} sem alvo: nenhum inimigo proximo encontrado.");
         }
         else if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
         {
@@ -86,6 +139,10 @@ public partial class PlayerSkillComponent
         else if (skill.SkillId == 10201 || skill.SkillId == 10203 || skill.SkillId == 10206 || skill.SkillId == 16 || skill.SkillId == 10209 || skill.SkillId == 19)
         {
             _player.FinalizarCarregamentoTiroPreciso(targetPosition);
+        }
+        else if (isExecucaoFinal || isGolpeSombrio || isGolpeAtordoante || isChuteNaVirilha || isPunhaladaNasCostas || isGolpeDeEscudo || isEstocada || isSangramentoMortal)
+        {
+            _player.TocarAnimacaoSkillMelee(targetPosition, 1.2f);
         }
         else
         {
@@ -210,6 +267,167 @@ public partial class PlayerSkillComponent
                 }
                 break;
         }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_groundTargetMarker != null && IsInstanceValid(_groundTargetMarker) && _player != null)
+            _groundTargetMarker.GlobalPosition = _player.GetGlobalMousePosition();
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (_pendingGroundSkill == null || _groundTargetMarker == null || !IsInstanceValid(_groundTargetMarker))
+            return;
+
+        if (@event is InputEventMouseButton mouseButton && mouseButton.Pressed)
+        {
+            if (mouseButton.ButtonIndex == MouseButton.Left)
+            {
+                ConfirmarGroundTarget();
+                GetViewport()?.SetInputAsHandled();
+            }
+            else if (mouseButton.ButtonIndex == MouseButton.Right)
+            {
+                CancelarGroundTarget();
+                GetViewport()?.SetInputAsHandled();
+            }
+        }
+        else if (@event is InputEventKey key && key.Pressed && key.Keycode == Key.Escape)
+        {
+            CancelarGroundTarget();
+            GetViewport()?.SetInputAsHandled();
+        }
+    }
+
+    private void PrepararOuUsarSkillComMiraNoChao(int slotIndex, SkillResource skill, float chargePercent)
+    {
+        if (_player == null)
+            return;
+
+        var gameNet = _player.GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+            return;
+
+        bool usarTargetDireto = skill.SkillId != CarnificinaSkillId && skill.SkillId != RessurreicaoSkillId;
+        if (usarTargetDireto
+            && _player.TryGetSelectedCombatTarget(out var selectedTargetNode)
+            && IsInstanceValid(selectedTargetNode)
+            && selectedTargetNode is Inimigo)
+        {
+            Vector2 targetPosition = selectedTargetNode.GlobalPosition;
+            _player.TocarAnimacaoSkillArqueiro(targetPosition);
+            gameNet.SendSkillUse(slotIndex, skill.SkillId, targetPosition, chargePercent);
+            CancelarGroundTarget();
+            return;
+        }
+
+        _pendingGroundSkillSlot = slotIndex;
+        _pendingGroundSkill = skill;
+        _pendingGroundSkillCharge = chargePercent;
+        MostrarGroundTargetMarker();
+        GD.Print($"[SKILLCOMP] {skill.Nome}: clique no chão para escolher a área.");
+    }
+
+    private static bool EhSkillComMiraNoChao(int skillId)
+    {
+        return skillId == LancaDeGeloSkillId
+            || skillId == TornadoSkillId
+            || skillId == TempestadeEletricaSkillId
+            || skillId == ExplosaoVulcanicaSkillId
+            || skillId == ChuvaMeteorosSkillId
+            || skillId == CarnificinaSkillId
+            || skillId == RessurreicaoSkillId;
+    }
+
+    private void ConfirmarGroundTarget()
+    {
+        if (_player == null || _pendingGroundSkill == null || _pendingGroundSkillSlot < 0)
+        {
+            CancelarGroundTarget();
+            return;
+        }
+
+        var gameNet = _player.GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            CancelarGroundTarget();
+            return;
+        }
+
+        Vector2 targetPosition = _groundTargetMarker != null && IsInstanceValid(_groundTargetMarker)
+            ? _groundTargetMarker.GlobalPosition
+            : _player.GetGlobalMousePosition();
+
+        if (_pendingGroundSkill.SkillId != CarnificinaSkillId)
+            _player.TocarAnimacaoSkillArqueiro(targetPosition);
+        gameNet.SendSkillUse(_pendingGroundSkillSlot, _pendingGroundSkill.SkillId, targetPosition, _pendingGroundSkillCharge);
+        CancelarGroundTarget();
+    }
+
+    private void MostrarGroundTargetMarker()
+    {
+        if (_groundTargetMarker != null && IsInstanceValid(_groundTargetMarker))
+            _groundTargetMarker.QueueFree();
+
+        _groundTargetMarker = new GroundTargetMarker
+        {
+            Radius = LancaDeGeloMarkerRadius,
+            GlobalPosition = _player?.GetGlobalMousePosition() ?? Vector2.Zero,
+            ZIndex = 90,
+            ZAsRelative = false,
+        };
+
+        Node? parent = GetTree()?.CurrentScene?.FindChild("World", true, false) ?? GetTree()?.CurrentScene;
+        parent?.AddChild(_groundTargetMarker);
+    }
+
+    private void CancelarGroundTarget()
+    {
+        if (_groundTargetMarker != null && IsInstanceValid(_groundTargetMarker))
+            _groundTargetMarker.QueueFree();
+
+        _groundTargetMarker = null;
+        _pendingGroundSkillSlot = -1;
+        _pendingGroundSkill = null;
+        _pendingGroundSkillCharge = 1f;
+    }
+
+    private sealed partial class GroundTargetMarker : Node2D
+    {
+        public float Radius { get; set; } = 120f;
+
+        public override void _Draw()
+        {
+            DrawCircle(Vector2.Zero, Radius, new Color(1f, 0.05f, 0.05f, 0.16f));
+            DrawArc(Vector2.Zero, Radius, 0f, Mathf.Tau, 96, new Color(1f, 0.05f, 0.05f, 0.95f), 3f, true);
+            DrawArc(Vector2.Zero, Radius * 0.62f, 0f, Mathf.Tau, 96, new Color(1f, 0.18f, 0.18f, 0.55f), 2f, true);
+            DrawLine(new Vector2(-Radius, 0), new Vector2(Radius, 0), new Color(1f, 0.05f, 0.05f, 0.5f), 1.5f, true);
+            DrawLine(new Vector2(0, -Radius), new Vector2(0, Radius), new Color(1f, 0.05f, 0.05f, 0.5f), 1.5f, true);
+        }
+    }
+
+    private bool TemManaParaAtivar(SkillResource skill)
+    {
+        if (skill == null || skill.CustoMana <= 0 || _player == null)
+            return true;
+
+        if (_player.CurrentMana >= skill.CustoMana)
+            return true;
+
+        string nome = string.IsNullOrWhiteSpace(skill.Nome) ? "skill" : skill.Nome;
+        string message = $"Mana insuficiente para usar {nome}.";
+        var chat = _player.GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+        if (chat == null)
+            chat = _player.GetNodeOrNull<ChatUI>("/root/Main/HUD/ChatUI");
+
+        if (chat != null)
+            chat.AddSystemMessage(message);
+        else
+            GameNetwork.Log(message);
+
+        GD.Print($"[SKILLCOMP] {message} Mana atual={_player.CurrentMana}, custo={skill.CustoMana}");
+        return false;
     }
 
     private Godot.Timer _skillTimer;

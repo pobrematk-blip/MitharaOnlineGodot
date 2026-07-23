@@ -24,6 +24,7 @@ public class MonsterTemplate
     public int Agilidade { get; set; } = 1;
     public int Destreza { get; set; } = 1;
     public int Inteligencia { get; set; } = 0;
+    public int MagicDefense { get; set; }
     public float Speed { get; set; } = 100f;
     public float AttackRange { get; set; } = 40f;
     public float AggroRange { get; set; } = 384f;
@@ -92,6 +93,7 @@ public class SpawnerManager
             AttackDamage = 7,
             Forca = 1,
             Agilidade = 1,
+            MagicDefense = 2,
             Speed = 72f,
             ExperienceReward = 8,
             GoldMin = 2,
@@ -113,6 +115,7 @@ public class SpawnerManager
             AttackDamage = 18,
             Forca = 4,
             Agilidade = 2,
+            MagicDefense = 5,
             Speed = 84f,
             ExperienceReward = 30,
             Passive = true,
@@ -137,6 +140,7 @@ public class SpawnerManager
             AttackDamage = 7,
             Forca = 2,
             Agilidade = 2,
+            MagicDefense = 2,
             Speed = 96f,
             ExperienceReward = 5,
             GoldMin = 3,
@@ -154,6 +158,7 @@ public class SpawnerManager
             AttackDamage = 10,
             Forca = 3,
             Agilidade = 3,
+            MagicDefense = 3,
             Speed = 132f,
             ExperienceReward = 8,
             GoldMin = 5,
@@ -171,6 +176,7 @@ public class SpawnerManager
             AttackDamage = 15,
             Forca = 5,
             Agilidade = 2,
+            MagicDefense = 3,
             Speed = 84f,
             ExperienceReward = 14,
             GoldMin = 8,
@@ -188,6 +194,7 @@ public class SpawnerManager
             AttackDamage = 35,
             Forca = 12,
             Agilidade = 4,
+            MagicDefense = 14,
             Speed = 96f,
             AttackRange = 55f,
             AggroRange = 500f,
@@ -219,6 +226,7 @@ public class SpawnerManager
             AttackDamage = 16,
             Forca = 2,
             Agilidade = 25,
+            MagicDefense = 10,
             Speed = 60f,
             AttackRange = 35f,
             AggroRange = 250f,
@@ -244,6 +252,7 @@ public class SpawnerManager
             AttackDamage = 28,
             Forca = 4,
             Agilidade = 40,
+            MagicDefense = 16,
             Speed = 60f,
             AttackRange = 40f,
             AggroRange = 300f,
@@ -271,6 +280,7 @@ public class SpawnerManager
             AttackDamage = 20,
             Forca = 2,
             Agilidade = 30,
+            MagicDefense = 12,
             Speed = 72f,
             AttackRange = 40f,
             AggroRange = 300f,
@@ -292,6 +302,7 @@ public class SpawnerManager
             AttackDamage = 35,
             Forca = 5,
             Agilidade = 50,
+            MagicDefense = 20,
             Speed = 72f,
             AttackRange = 45f,
             AggroRange = 350f,
@@ -313,6 +324,7 @@ public class SpawnerManager
             AttackDamage = 30,
             Forca = 15,
             Agilidade = 5,
+            MagicDefense = 18,
             Speed = 108f,
             AttackRange = 60f,
             AggroRange = 500f,
@@ -420,6 +432,7 @@ public class SpawnerManager
             Agilidade = template.Agilidade,
             Destreza = template.Destreza,
             Inteligencia = template.Inteligencia,
+            MagicDefense = ObterDefesaMagicaTemplate(template),
             Speed = template.Speed,
             AttackRange = Math.Max(70f, template.AttackRange),
             AggroRange = template.AggroRange,
@@ -460,6 +473,7 @@ public class SpawnerManager
             Agilidade = template.Agilidade,
             Destreza = template.Destreza,
             Inteligencia = template.Inteligencia,
+            MagicDefense = ObterDefesaMagicaTemplate(template),
             Speed = template.Speed,
             AttackRange = Math.Max(70f, template.AttackRange),
             AggroRange = template.AggroRange,
@@ -473,5 +487,15 @@ public class SpawnerManager
             SpawnX = spawnX,
             SpawnY = spawnY,
         };
+    }
+
+    private static int ObterDefesaMagicaTemplate(MonsterTemplate template)
+    {
+        if (template.MagicDefense > 0)
+            return template.MagicDefense;
+
+        int eliteBonus = template.DropsNormalEquipment ? Math.Max(1, template.Level / 3) : 0;
+        int bossBonus = template.IsBoss ? Math.Max(2, template.Level / 2) : 0;
+        return Math.Max(1, template.Level + template.Inteligencia / 3 + template.Agilidade / 4 + eliteBonus + bossBonus);
     }
 }

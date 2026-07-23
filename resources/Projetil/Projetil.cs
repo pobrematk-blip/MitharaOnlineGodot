@@ -12,6 +12,8 @@ public partial class Projetil : Area2D
 {
     [Export] public ProjectileSoundType SomDisparo { get; set; } = ProjectileSoundType.None;
     [Export] public float VolumeDisparoDb { get; set; } = -2f;
+    [Export] public bool RotacionarComDirecao { get; set; } = true;
+    [Export] public float VisualHitRadius { get; set; } = 30f;
 
     // Valores padrão (serão alterados pelo Player.cs dependendo da classe)
     public float Speed = 600.0f; 
@@ -50,6 +52,9 @@ public partial class Projetil : Area2D
     {
         // Usa GlobalPosition para alinhar perfeitamente com o mundo
         GlobalPosition += _direcao * Speed * (float)delta;
+
+        if (VisualOnlyOnline)
+            ChecarImpactoVisualOnline();
     }
 
     // Função que recebe a direção de quem disparou
@@ -57,8 +62,9 @@ public partial class Projetil : Area2D
     {
         _direcao = direcao.Normalized();
         
-        // Rotaciona o sprite para apontar para onde está voando
-        Rotation = _direcao.Angle();
+        // Flechas e bolas podem apontar para a direção, mas efeitos verticais
+        // como tornado precisam continuar "em pé" enquanto se movem.
+        Rotation = RotacionarComDirecao ? _direcao.Angle() : 0f;
     }
 
     public void DefinirDono(Node dono)
@@ -141,6 +147,29 @@ public partial class Projetil : Area2D
         }
 
         QueueFree();
+    }
+
+    private void ChecarImpactoVisualOnline()
+    {
+        if (!IsInsideTree() || IsQueuedForDeletion())
+            return;
+
+        var inimigos = GetTree().GetNodesInGroup("Inimigos");
+        float radiusSq = VisualHitRadius * VisualHitRadius;
+        foreach (var node in inimigos)
+        {
+            if (node is not Node2D alvo || !IsInstanceValid(alvo))
+                continue;
+
+            if (alvo.HasMeta("dying") && alvo.GetMeta("dying").AsBool())
+                continue;
+
+            if (GlobalPosition.DistanceSquaredTo(alvo.GlobalPosition) <= radiusSq)
+            {
+                QueueFree();
+                return;
+            }
+        }
     }
 
     private void TocarSomDisparo()

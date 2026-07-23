@@ -5,6 +5,22 @@ using System.Linq;
 
 public partial class ItemEditorUI : Control
 {
+    private enum CategoriaPrincipalItem
+    {
+        Armas,
+        Armaduras,
+        Consumiveis,
+        ItensDeQuest,
+        Acessorios,
+        Companheiros,
+        Recursos,
+        Moedas,
+        Runas,
+        Feiticos,
+        Cosmeticos,
+        Outros,
+    }
+
     private Panel _panel;
     private Tree _itemTree;
     private LineEdit _itemSearch;
@@ -23,6 +39,7 @@ public partial class ItemEditorUI : Control
     private CheckBox _ehDuasMaosCheck;
     private CheckBox _ehBolsaCheck;
     private SpinBox _slotsAdicionaisSpin;
+    private OptionButton _categoriaPrincipalDropdown;
     private OptionButton _tipoDropdown;
     private OptionButton _subcategoriaDropdown;
     private OptionButton _categoriaPesoDropdown;
@@ -224,8 +241,8 @@ public partial class ItemEditorUI : Control
         _itemTree.ItemSelected += OnItemSelected;
         _itemSearch.TextChanged += _ => CarregarListaItens();
 
-        foreach (var tipo in _tiposEquipamento)
-            _tipoDropdown.AddItem(tipo);
+        CriarCategoriaPrincipalUi();
+        PopularTiposPorCategoria();
         AtualizarSubcategorias();
 
         _categoriaPesoDropdown.AddItem("Nenhum");
@@ -268,6 +285,7 @@ public partial class ItemEditorUI : Control
         var formFields = new Control[]
         {
             _itemIdSpin, _nomeEdit, _acumulavelCheck, _ehDuasMaosCheck, _ehPvpCheck, _ehBolsaCheck,
+            _categoriaPrincipalDropdown,
             _qtdMaxSpin, _slotsAdicionaisSpin, _nivelReqSpin, _valorSpin,
             _forcaMinSpin, _forcaMaxSpin,
             _agilidadeMinSpin, _agilidadeMaxSpin,
@@ -321,6 +339,340 @@ public partial class ItemEditorUI : Control
     }
 
     public void Mostrar() => _panel.Visible = true;
+
+    private void CriarCategoriaPrincipalUi()
+    {
+        if (_categoriaPrincipalDropdown != null || _tipoDropdown == null)
+            return;
+
+        var tipoRow = _tipoDropdown.GetParent() as Control;
+        var form = tipoRow?.GetParent() as Container;
+        if (tipoRow == null || form == null)
+            return;
+
+        var row = new HBoxContainer { Name = "CategoriaPrincipalRow" };
+        row.AddChild(new Label
+        {
+            Name = "CategoriaPrincipalLabel",
+            Text = "Categoria",
+            CustomMinimumSize = new Vector2(120, 0),
+        });
+
+        _categoriaPrincipalDropdown = new OptionButton
+        {
+            Name = "CategoriaPrincipalDropdown",
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        row.AddChild(_categoriaPrincipalDropdown);
+
+        foreach (CategoriaPrincipalItem categoria in Enum.GetValues<CategoriaPrincipalItem>())
+            _categoriaPrincipalDropdown.AddItem(ObterRotuloCategoria(categoria), (int)categoria);
+
+        int insertIndex = tipoRow.GetIndex();
+        form.AddChild(row);
+        form.MoveChild(row, insertIndex);
+
+        _categoriaPrincipalDropdown.ItemSelected += _ =>
+        {
+            if (_ignorarEventosUi)
+                return;
+
+            PopularTiposPorCategoria();
+            AtualizarSubcategorias();
+            AtualizarEstadoCategoriaPeso();
+            AplicarPadroesCategoriaPrincipal();
+            OnFormDirty();
+        };
+    }
+
+    private CategoriaPrincipalItem ObterCategoriaSelecionada()
+    {
+        if (_categoriaPrincipalDropdown == null)
+            return CategoriaPrincipalItem.Outros;
+
+        long selectedId = _categoriaPrincipalDropdown.GetSelectedId();
+        return Enum.IsDefined(typeof(CategoriaPrincipalItem), (int)selectedId)
+            ? (CategoriaPrincipalItem)selectedId
+            : CategoriaPrincipalItem.Outros;
+    }
+
+    private void SelecionarCategoriaPrincipal(CategoriaPrincipalItem categoria)
+    {
+        if (_categoriaPrincipalDropdown == null)
+            return;
+
+        for (int i = 0; i < _categoriaPrincipalDropdown.ItemCount; i++)
+        {
+            if (_categoriaPrincipalDropdown.GetItemId(i) == (int)categoria)
+            {
+                _categoriaPrincipalDropdown.Select(i);
+                return;
+            }
+        }
+    }
+
+    private void PopularTiposPorCategoria(TipoEquipamento? selecionar = null)
+    {
+        if (_tipoDropdown == null)
+            return;
+
+        var tipos = ObterTiposDaCategoria(ObterCategoriaSelecionada());
+        _tipoDropdown.Clear();
+        foreach (var tipo in tipos)
+            _tipoDropdown.AddItem(ObterRotuloTipo(tipo), (int)tipo);
+
+        TipoEquipamento alvo = selecionar.HasValue && tipos.Contains(selecionar.Value)
+            ? selecionar.Value
+            : tipos.FirstOrDefault();
+        SelecionarTipo(alvo);
+    }
+
+    private TipoEquipamento ObterTipoSelecionado()
+    {
+        if (_tipoDropdown == null || _tipoDropdown.ItemCount == 0)
+            return TipoEquipamento.Nenhum;
+
+        long selectedId = _tipoDropdown.GetSelectedId();
+        return Enum.IsDefined(typeof(TipoEquipamento), (int)selectedId)
+            ? (TipoEquipamento)selectedId
+            : TipoEquipamento.Nenhum;
+    }
+
+    private void SelecionarTipo(TipoEquipamento tipo)
+    {
+        if (_tipoDropdown == null)
+            return;
+
+        for (int i = 0; i < _tipoDropdown.ItemCount; i++)
+        {
+            if (_tipoDropdown.GetItemId(i) == (int)tipo)
+            {
+                _tipoDropdown.Select(i);
+                return;
+            }
+        }
+
+        if (_tipoDropdown.ItemCount > 0)
+            _tipoDropdown.Select(0);
+    }
+
+    private void AplicarPadroesCategoriaPrincipal()
+    {
+        if (_currentItem == null)
+            return;
+
+        switch (ObterCategoriaSelecionada())
+        {
+            case CategoriaPrincipalItem.Consumiveis:
+                _acumulavelCheck.ButtonPressed = true;
+                if (_qtdMaxSpin.Value < 2)
+                    _qtdMaxSpin.Value = 99;
+                _ehDuasMaosCheck.ButtonPressed = false;
+                _ehBolsaCheck.ButtonPressed = false;
+                break;
+            case CategoriaPrincipalItem.ItensDeQuest:
+                _acumulavelCheck.ButtonPressed = true;
+                _podeVenderCheck.ButtonPressed = false;
+                _podeTrocarCheck.ButtonPressed = false;
+                _podeDroparCheck.ButtonPressed = false;
+                _ehDuasMaosCheck.ButtonPressed = false;
+                _ehBolsaCheck.ButtonPressed = false;
+                break;
+            case CategoriaPrincipalItem.Armaduras:
+                if (ObterPesoSelecionado() == PesoItem.Nenhum)
+                    SelecionarPeso(PesoItem.Medio);
+                _ehDuasMaosCheck.ButtonPressed = false;
+                _ehBolsaCheck.ButtonPressed = false;
+                break;
+        }
+    }
+
+    private static string ObterRotuloCategoria(CategoriaPrincipalItem categoria)
+    {
+        return categoria switch
+        {
+            CategoriaPrincipalItem.Armas => "Armas",
+            CategoriaPrincipalItem.Armaduras => "Armaduras",
+            CategoriaPrincipalItem.Consumiveis => "Consumiveis",
+            CategoriaPrincipalItem.ItensDeQuest => "Itens de Quest",
+            CategoriaPrincipalItem.Acessorios => "Acessorios",
+            CategoriaPrincipalItem.Companheiros => "Companheiros",
+            CategoriaPrincipalItem.Recursos => "Recursos",
+            CategoriaPrincipalItem.Moedas => "Moedas",
+            CategoriaPrincipalItem.Runas => "Runas",
+            CategoriaPrincipalItem.Feiticos => "Feiticos",
+            CategoriaPrincipalItem.Cosmeticos => "Cosmeticos",
+            _ => "Outros",
+        };
+    }
+
+    private static TipoEquipamento[] ObterTiposDaCategoria(CategoriaPrincipalItem categoria)
+    {
+        return categoria switch
+        {
+            CategoriaPrincipalItem.Armas => new[] { TipoEquipamento.Arma, TipoEquipamento.Escudo },
+            CategoriaPrincipalItem.Armaduras => new[] { TipoEquipamento.Capacete, TipoEquipamento.Peitoral, TipoEquipamento.Cinto, TipoEquipamento.Luvas, TipoEquipamento.Calca, TipoEquipamento.Botas },
+            CategoriaPrincipalItem.Consumiveis => new[] { TipoEquipamento.Consumivel },
+            CategoriaPrincipalItem.ItensDeQuest => new[] { TipoEquipamento.Nenhum },
+            CategoriaPrincipalItem.Acessorios => new[] { TipoEquipamento.Colar, TipoEquipamento.Anel, TipoEquipamento.Brinco },
+            CategoriaPrincipalItem.Companheiros => new[] { TipoEquipamento.Montaria, TipoEquipamento.Pet },
+            CategoriaPrincipalItem.Moedas => new[] { TipoEquipamento.Moeda },
+            CategoriaPrincipalItem.Runas => new[] { TipoEquipamento.Runa },
+            CategoriaPrincipalItem.Feiticos => new[] { TipoEquipamento.Feitico },
+            CategoriaPrincipalItem.Cosmeticos => new[] { TipoEquipamento.Asa, TipoEquipamento.Skin },
+            _ => new[] { TipoEquipamento.Nenhum },
+        };
+    }
+
+    private static string ObterRotuloTipo(TipoEquipamento tipo)
+    {
+        return tipo switch
+        {
+            TipoEquipamento.Nenhum => "Nenhum / Quest",
+            TipoEquipamento.Calca => "Calca",
+            TipoEquipamento.Consumivel => "Consumivel",
+            TipoEquipamento.Feitico => "Feitico",
+            _ => tipo.ToString(),
+        };
+    }
+
+    private static CategoriaPrincipalItem ObterCategoriaPorTipoOuPasta(TipoEquipamento tipo, string relativePath, ItemResource item)
+    {
+        string normalized = (relativePath ?? "").Replace('\\', '/');
+        if (normalized.Contains("ItensDeQuest", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("Quest", StringComparison.OrdinalIgnoreCase)
+            || normalized.Contains("Missao", StringComparison.OrdinalIgnoreCase))
+            return CategoriaPrincipalItem.ItensDeQuest;
+
+        if (tipo is TipoEquipamento.Arma or TipoEquipamento.Escudo)
+            return CategoriaPrincipalItem.Armas;
+        if (TipoUsaCategoriaPeso(tipo))
+            return CategoriaPrincipalItem.Armaduras;
+        if (tipo == TipoEquipamento.Consumivel)
+            return CategoriaPrincipalItem.Consumiveis;
+        if (tipo is TipoEquipamento.Colar or TipoEquipamento.Anel or TipoEquipamento.Brinco)
+            return CategoriaPrincipalItem.Acessorios;
+        if (tipo is TipoEquipamento.Montaria or TipoEquipamento.Pet)
+            return CategoriaPrincipalItem.Companheiros;
+        if (tipo == TipoEquipamento.Moeda)
+            return CategoriaPrincipalItem.Moedas;
+        if (tipo == TipoEquipamento.Runa)
+            return CategoriaPrincipalItem.Runas;
+        if (tipo == TipoEquipamento.Feitico)
+            return CategoriaPrincipalItem.Feiticos;
+        if (tipo is TipoEquipamento.Asa or TipoEquipamento.Skin)
+            return CategoriaPrincipalItem.Cosmeticos;
+        if (normalized.StartsWith("Recursos/", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith("Materiais/", StringComparison.OrdinalIgnoreCase))
+            return CategoriaPrincipalItem.Recursos;
+
+        return CategoriaPrincipalItem.Outros;
+    }
+
+    private string ObterSubcategoriaSelecionada()
+    {
+        if (_subcategoriaDropdown == null || _subcategoriaDropdown.ItemCount == 0)
+            return "Padrao";
+
+        int index = Math.Clamp(_subcategoriaDropdown.Selected, 0, _subcategoriaDropdown.ItemCount - 1);
+        return _subcategoriaDropdown.GetItemText(index);
+    }
+
+    private string CalcularDiretorioAtual()
+    {
+        TipoEquipamento tipoAtual = ObterTipoSelecionado();
+        string subcategoria = ObterSubcategoriaSelecionada();
+
+        return ObterCategoriaSelecionada() switch
+        {
+            CategoriaPrincipalItem.Armas when tipoAtual == TipoEquipamento.Escudo =>
+                $"{ItensDir}Escudos/{(subcategoria == "Padrao" ? "Outros" : subcategoria)}/",
+            CategoriaPrincipalItem.Armas =>
+                $"{ItensDir}Armas/{(subcategoria == "Padrao" ? "Outros" : subcategoria)}/",
+            CategoriaPrincipalItem.Armaduras =>
+                $"{ItensDir}Armaduras/{ObterPastaPesoAtual()}/{ObterPastaPorTipo(tipoAtual)}/",
+            CategoriaPrincipalItem.Consumiveis => $"{ItensDir}Consumiveis/",
+            CategoriaPrincipalItem.ItensDeQuest => $"{ItensDir}ItensDeQuest/",
+            CategoriaPrincipalItem.Acessorios => $"{ItensDir}{ObterPastaPorTipo(tipoAtual)}/",
+            CategoriaPrincipalItem.Companheiros => $"{ItensDir}{ObterPastaPorTipo(tipoAtual)}/",
+            CategoriaPrincipalItem.Recursos => $"{ItensDir}Recursos/",
+            CategoriaPrincipalItem.Moedas => $"{ItensDir}Moedas/",
+            CategoriaPrincipalItem.Runas => $"{ItensDir}Runas/",
+            CategoriaPrincipalItem.Feiticos => $"{ItensDir}Feiticos/",
+            CategoriaPrincipalItem.Cosmeticos => $"{ItensDir}{ObterPastaPorTipo(tipoAtual)}/",
+            _ => $"{ItensDir}Outros/",
+        };
+    }
+
+    private string ObterPastaPesoAtual()
+    {
+        PesoItem pesoSelecionado = ObterPesoSelecionado();
+        if (pesoSelecionado == PesoItem.Nenhum)
+            pesoSelecionado = PesoItem.Medio;
+
+        return pesoSelecionado switch
+        {
+            PesoItem.Leve => "Leves",
+            PesoItem.Pesado => "Pesadas",
+            _ => "Medias",
+        };
+    }
+
+    private string GarantirCaminhoNaCategoriaAtual()
+    {
+        string targetDir = CalcularDiretorioAtual();
+        if (!DirAccess.DirExistsAbsolute(targetDir))
+            DirAccess.MakeDirRecursiveAbsolute(targetDir);
+
+        string currentPath = (_currentItemPath ?? "").Replace('\\', '/');
+        string fileName = currentPath.Contains('/')
+            ? currentPath[(currentPath.LastIndexOf('/') + 1)..]
+            : "";
+        if (string.IsNullOrWhiteSpace(fileName))
+            fileName = SanitizarNomeArquivo(_currentItem?.Nome ?? "ItemNovo") + ".tres";
+
+        string targetPath = targetDir.TrimEnd('/') + "/" + fileName;
+        if (string.Equals(targetPath, currentPath, StringComparison.OrdinalIgnoreCase))
+            return currentPath;
+
+        string baseName = fileName.EndsWith(".tres", StringComparison.OrdinalIgnoreCase)
+            ? fileName[..^5]
+            : fileName;
+        string extension = fileName.EndsWith(".res", StringComparison.OrdinalIgnoreCase) ? ".res" : ".tres";
+        int counter = 1;
+        while (ResourceLoader.Exists(targetPath))
+        {
+            targetPath = $"{targetDir.TrimEnd('/')}/{baseName}_{counter}{extension}";
+            counter++;
+        }
+
+        return targetPath;
+    }
+
+    private void RemoverArquivoAntigoSeMudou(string oldPath, string newPath)
+    {
+        if (string.IsNullOrWhiteSpace(oldPath)
+            || string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase)
+            || !oldPath.StartsWith(ItensDir, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var dir = DirAccess.Open(ItensDir);
+        dir?.Remove(oldPath.Replace(ItensDir, ""));
+    }
+
+    private static string SanitizarNomeArquivo(string nome)
+    {
+        if (string.IsNullOrWhiteSpace(nome))
+            return "ItemNovo";
+
+        var invalidos = System.IO.Path.GetInvalidFileNameChars();
+        var chars = nome.Trim()
+            .Select(c => invalidos.Contains(c) || char.IsWhiteSpace(c) ? '_' : c)
+            .ToArray();
+        string limpo = new string(chars).Trim('_');
+        return string.IsNullOrWhiteSpace(limpo) ? "ItemNovo" : limpo;
+    }
+
     public void Esconder() => _panel.Visible = false;
     public bool EstaVisivel => _panel?.Visible ?? false;
 
@@ -542,8 +894,9 @@ public partial class ItemEditorUI : Control
         _ehDuasMaosCheck.ButtonPressed = _currentItem.EhDuasMaos;
         _ehBolsaCheck.ButtonPressed = _currentItem.EhBolsa;
         _slotsAdicionaisSpin.Value = _currentItem.SlotsAdicionais;
-        _tipoDropdown.Select((int)_currentItem.Tipo);
         string currentFolder = _currentItemPath?.Replace(ItensDir, "").Replace('\\', '/') ?? "";
+        SelecionarCategoriaPrincipal(ObterCategoriaPorTipoOuPasta(_currentItem.Tipo, currentFolder, _currentItem));
+        PopularTiposPorCategoria(_currentItem.Tipo);
         var parts = currentFolder.Split('/', StringSplitOptions.RemoveEmptyEntries);
         AtualizarSubcategorias(parts.Length >= 3 ? parts[1] : null);
         SelecionarPeso(_currentItem.CategoriaPeso);
@@ -649,7 +1002,8 @@ public partial class ItemEditorUI : Control
         _ehDuasMaosCheck.ButtonPressed = false;
         _ehBolsaCheck.ButtonPressed = false;
         _slotsAdicionaisSpin.Value = 10;
-        _tipoDropdown.Select(0);
+        SelecionarCategoriaPrincipal(CategoriaPrincipalItem.Outros);
+        PopularTiposPorCategoria(TipoEquipamento.Nenhum);
         SelecionarPeso(PesoItem.Nenhum);
         AtualizarEstadoCategoriaPeso();
         _tipoItemDropdown.Select(0);
@@ -757,7 +1111,7 @@ public partial class ItemEditorUI : Control
         _currentItem.EhDuasMaos = _ehDuasMaosCheck.ButtonPressed;
         _currentItem.EhBolsa = _ehBolsaCheck.ButtonPressed;
         _currentItem.SlotsAdicionais = (int)_slotsAdicionaisSpin.Value;
-        _currentItem.Tipo = (TipoEquipamento)_tipoDropdown.Selected;
+        _currentItem.Tipo = ObterTipoSelecionado();
         _currentItem.CategoriaPeso = TipoUsaCategoriaPeso(_currentItem.Tipo)
             ? ObterPesoSelecionado()
             : PesoItem.Nenhum;
@@ -957,7 +1311,7 @@ public partial class ItemEditorUI : Control
     {
         if (_categoriaPesoDropdown == null || _tipoDropdown == null) return;
 
-        bool usaPeso = TipoUsaCategoriaPeso((TipoEquipamento)_tipoDropdown.Selected);
+        bool usaPeso = TipoUsaCategoriaPeso(ObterTipoSelecionado());
         _categoriaPesoDropdown.Disabled = !usaPeso;
 
         if (!ajustarSelecao) return;
@@ -971,7 +1325,7 @@ public partial class ItemEditorUI : Control
     private void AtualizarSubcategorias(string selecionar = null)
     {
         if (_subcategoriaDropdown == null || _tipoDropdown == null) return;
-        string[] options = (TipoEquipamento)_tipoDropdown.Selected switch
+        string[] options = ObterTipoSelecionado() switch
         {
             TipoEquipamento.Arma => new[] { "Arcos", "Adagas", "Machados", "Espadas", "Cajados", "Martelos", "Outros" },
             TipoEquipamento.Escudo => new[] { "AdagasSecundarias", "EscudosGuardiao", "EscudosClerigo", "Outros" },
@@ -994,7 +1348,7 @@ public partial class ItemEditorUI : Control
         var item = new ItemResource();
         item.Nome = "Item Novo";
 
-        var tipoAtual = (TipoEquipamento)_tipoDropdown.Selected;
+        var tipoAtual = ObterTipoSelecionado();
         item.Tipo = tipoAtual;
         if (TipoUsaCategoriaPeso(tipoAtual))
         {
@@ -1006,38 +1360,10 @@ public partial class ItemEditorUI : Control
         {
             item.CategoriaPeso = PesoItem.Nenhum;
         }
-        string pasta = ObterPastaPorTipo(tipoAtual);
-        string subcategoria = _subcategoriaDropdown.GetItemText(_subcategoriaDropdown.Selected);
-        string dirPasta;
-        string selectedMetadata = _itemTree.GetSelected()?.GetMetadata(0).AsString() ?? "";
-        if (selectedMetadata.StartsWith("folder:", StringComparison.Ordinal))
-            dirPasta = ItensDir + selectedMetadata[7..].Trim('/') + "/";
-        else
-        {
-            bool armorSlot = TipoUsaCategoriaPeso(tipoAtual);
-            if (armorSlot)
-            {
-                PesoItem pesoSelecionado = ObterPesoSelecionado();
-                if (pesoSelecionado == PesoItem.Nenhum)
-                    pesoSelecionado = PesoItem.Medio;
-
-                string peso = pesoSelecionado switch
-                {
-                    PesoItem.Leve => "Leves",
-                    PesoItem.Pesado => "Pesadas",
-                    _ => "Medias",
-                };
-                dirPasta = $"{ItensDir}Armaduras/{peso}/{pasta}/";
-            }
-            else
-                dirPasta = ItensDir + pasta + "/";
-
-            if (!armorSlot && (tipoAtual == TipoEquipamento.Arma || tipoAtual == TipoEquipamento.Escudo) && subcategoria != "Padrao")
-                dirPasta += subcategoria + "/";
-        }
+        string dirPasta = CalcularDiretorioAtual();
 
         if (!DirAccess.DirExistsAbsolute(dirPasta))
-            DirAccess.MakeDirAbsolute(dirPasta);
+            DirAccess.MakeDirRecursiveAbsolute(dirPasta);
 
         string baseName = "ItemNovo";
         string basePath = dirPasta + baseName + ".tres";
@@ -1089,9 +1415,13 @@ public partial class ItemEditorUI : Control
             return;
         }
 
-        var err = ResourceSaver.Save(_currentItem, _currentItemPath);
+        string oldPath = _currentItemPath;
+        string savePath = GarantirCaminhoNaCategoriaAtual();
+        var err = ResourceSaver.Save(_currentItem, savePath);
         if (err == Error.Ok)
         {
+            RemoverArquivoAntigoSeMudou(oldPath, savePath);
+            _currentItemPath = savePath;
             AtualizarDatabase();
             var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
             network?.SendAdminUpdateItemDefinition(_currentItem);
@@ -1164,7 +1494,7 @@ public partial class ItemEditorUI : Control
         var rng = new Random();
         int rarityIndex = _raridadeDropdown.Selected;
         string tipoStr = _tipoDropdown.Text;
-        bool isArmor = TipoUsaCategoriaPeso((TipoEquipamento)_tipoDropdown.Selected);
+        bool isArmor = TipoUsaCategoriaPeso(ObterTipoSelecionado());
         string classes = _currentItem.ClassesPermitidas ?? "";
 
         var (mainMin, mainMax, bonusChance) = rarityIndex switch

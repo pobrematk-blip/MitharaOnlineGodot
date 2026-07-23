@@ -189,6 +189,7 @@ partial class GameServer
         writer.Put(true);
         writer.Put(accountId.Value);
         writer.Put(chars.Count);
+        writer.Put(Math.Clamp(_db.GetCharacterSlotLimit(accountId.Value), BaseCharacterSlots, MaxCharacterSlots));
         foreach (var ch in chars)
         {
             writer.Put(ch.SlotIndex);

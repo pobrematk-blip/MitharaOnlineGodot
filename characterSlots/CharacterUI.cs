@@ -641,8 +641,8 @@ public partial class CharacterUI : Control
         AtualizarStatusLabel("Evasao", $"Evasao: {_equipamento.Evasao:F1}%");
         AtualizarStatusLabel("VelocidadeMovimento", $"Vel. Movimento: {_equipamento.VelocidadeMovimento:F2}x");
         AtualizarStatusLabel("VelocidadeAtaque", $"Vel. Ataque: {_equipamento.VelocidadeAtaque:F2}x");
-        AtualizarStatusLabel("DefesaFisica", $"Defesa Fisica: {_equipamento.DefesaFisica}");
-        AtualizarStatusLabel("DefesaMagica", $"Defesa Magica: {_equipamento.DefesaMagica}");
+        AtualizarStatusLabel("DefesaFisica", $"Resistência Física: {_equipamento.DefesaFisica}");
+        AtualizarStatusLabel("DefesaMagica", $"Resistência Mágica: {_equipamento.DefesaMagica}");
         AtualizarStatusLabel("Precisao", $"Precisao: {_equipamento.Precisao}");
         AtualizarStatusLabel("Tenacidade", $"Tenacidade: {_equipamento.Tenacidade}");
         AtualizarStatusLabel("DanoPvp", $"Dano PvP: {_equipamento.DanoPvp}");

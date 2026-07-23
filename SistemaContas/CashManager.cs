@@ -11,7 +11,7 @@ public partial class CashManager : Node
         set => GD.PrintErr("[CASH] Alteracao local de diamantes bloqueada. O saldo vem do servidor.");
     }
 
-    public int SlotsDisponiveis => _saveManager?.SlotsDisponiveis ?? 3;
+    public int SlotsDisponiveis => _net?.CharacterSlotLimit ?? _saveManager?.SlotsDisponiveis ?? 3;
 
     public override void _Ready()
     {

@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14104
-Nome = "Guardião dos Fracos"
-Descricao = "O Protetor cria um juramento de proteção sobre aliados próximos, assumindo parte dos danos que eles receberiam."
+Nome = "Espada Estelar"
+Descricao = "O Guardião invoca uma lâmina de energia estelar sobre o inimigo, causando dano direto."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 30
 ClasseRestrita = "Guardião"
-Cooldown = 30
-Duracao = 10
-TargetType = 1
-EffectType = 7
+Cooldown = 14
+Duracao = 0
+TargetType = 2
+EffectType = 6
 Especializacao = "Protetor"
 NivelRequerido = 15
 Ordem = 4
 Escopo = "Especialização"
-Tipo = "Suporte Defensivo"
-EfeitoPrincipal = "Redireciona parte do dano recebido por aliados próximos para o Guardião."
-DanoEscala = ""
-BuffDebuff = "Redireciona 10% → 25% do dano"
-DuracaoTexto = "10s"
-Progressao = "Lv1 = 10%; Lv10 = 25%."
-Observacoes = "Muito forte em grupo; não deve acumular com outro Guardião."
+Tipo = "Dano"
+EfeitoPrincipal = "Causa dano físico/mágico direto em um alvo e toca a animação Tormenta Hitted Projectile no impacto."
+DanoEscala = "145% do ataque"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Aumenta o dano por nível."
+Observacoes = "Substitui Guardião dos Fracos."

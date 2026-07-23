@@ -1,19 +1,18 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/14.png" id="1_pq7w3"]
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/18.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14106
 Nome = "Desafio"
-Descricao = "O Protetor bate sua arma contra o escudo e emite um desafio ensurdecedor, atraindo a atenção de todos ao redor."
-Icone = ExtResource("2_icon")
-Valor = 0
+Descricao = "O Protetor bate sua arma contra o escudo e emite um desafio ensurdecedor, atraindo a atenção de todos os mobs ao redor."
+Icone = ExtResource("1_pq7w3")
 CustoMana = 25
 ClasseRestrita = "Guardião"
-Cooldown = 20
-Duracao = 5
+Cooldown = 20.0
+Duracao = 5.0
 TargetType = 2
 EffectType = 7
 Especializacao = "Protetor"
@@ -21,8 +20,7 @@ NivelRequerido = 30
 Ordem = 6
 Escopo = "Especialização"
 Tipo = "Controle / Taunt em Área"
-EfeitoPrincipal = "Aplica Taunt em área maior e gera alta ameaça instantânea."
-DanoEscala = ""
+EfeitoPrincipal = "Aplica taunt em área, força os mobs atingidos a focarem o Guardião e gera alta ameaça instantânea."
 BuffDebuff = "Taunt em área"
 DuracaoTexto = "5s"
 Progressao = "Área e ameaça aumentam por nível."

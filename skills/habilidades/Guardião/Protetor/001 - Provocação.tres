@@ -1,28 +1,24 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/26.png" id="1_fdq82"]
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/19.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14101
 Nome = "Provocação"
 Descricao = "O Protetor ergue seu escudo e desafia os inimigos próximos, forçando-os a encará-lo como a maior ameaça do campo de batalha."
-Icone = ExtResource("2_icon")
-Valor = 0
+Icone = ExtResource("1_fdq82")
 CustoMana = 15
 ClasseRestrita = "Guardião"
-Cooldown = 12
-Duracao = 4
-TargetType = 2
+Cooldown = 12.0
+Duracao = 4.0
 EffectType = 7
 Especializacao = "Protetor"
-NivelRequerido = 1
 Ordem = 1
 Escopo = "Especialização"
 Tipo = "Controle / Taunt"
-EfeitoPrincipal = "Aplica Taunt em inimigos próximos, aumentando a ameaça gerada pelo Guardião."
-DanoEscala = ""
+EfeitoPrincipal = "Aplica taunt em inimigos próximos, aumentando a ameaça gerada pelo Guardião."
 BuffDebuff = "Taunt"
 DuracaoTexto = "4s"
 Progressao = "Duração aumenta levemente por nível."

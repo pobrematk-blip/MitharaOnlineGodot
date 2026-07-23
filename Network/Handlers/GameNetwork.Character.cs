@@ -52,6 +52,7 @@ partial class GameNetwork
     private void HandleLeaveWorld(NetDataReader r)
     {
         int characterCount = r.GetInt();
+        CharacterSlotLimit = r.AvailableBytes >= 4 ? r.GetInt() : 3;
         Characters.Clear();
         for (int i = 0; i < characterCount; i++)
         {
@@ -84,15 +85,32 @@ partial class GameNetwork
     private void HandleCharacterList(NetDataReader r)
     {
         int count = r.GetInt();
+        CharacterSlotLimit = r.AvailableBytes >= 4 ? r.GetInt() : 3;
+        Characters.Clear();
         var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
         for (int i = 0; i < count; i++)
         {
+            int slot = r.GetInt();
+            string name = r.GetString();
+            int level = r.GetInt();
+            string cls = r.GetString();
+            string race = r.AvailableBytes > 0 ? r.GetString() : "";
+            Characters.Add(new CharacterEntry
+            {
+                SlotIndex = slot,
+                Name = name,
+                Class = cls,
+                Race = race,
+                Level = level,
+            });
+
             var entry = new Godot.Collections.Dictionary
             {
-                ["slot"] = r.GetInt(),
-                ["name"] = r.GetString(),
-                ["level"] = r.GetInt(),
-                ["class_name"] = r.GetString(),
+                ["slot"] = slot,
+                ["name"] = name,
+                ["level"] = level,
+                ["class_name"] = cls,
+                ["race"] = race,
             };
             list.Add(entry);
         }
@@ -110,6 +128,7 @@ partial class GameNetwork
     private void HandleCharacterDeleted(NetDataReader r)
     {
         int count = r.GetInt();
+        CharacterSlotLimit = r.AvailableBytes >= 4 ? r.GetInt() : 3;
         Characters.Clear();
         var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
         for (int i = 0; i < count; i++)

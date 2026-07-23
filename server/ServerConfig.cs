@@ -12,7 +12,6 @@ public class ServerConfig
     public int ChannelCount { get; set; } = 4;
     public int TickRate { get; set; } = 20;
     public float AoiRadius { get; set; } = 1200f;
-    public string DbPath { get; set; } = "data/mithara.db";
     public bool AdminMode { get; set; }
     public string AdminAccounts { get; set; } = "";
 

@@ -1,0 +1,151 @@
+[gd_resource type="SpriteFrames" load_steps=22 format=3]
+
+[ext_resource type="Texture2D" path="res://skills/Animacao/154.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_01"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_02"]
+atlas = ExtResource("1_sheet")
+region = Rect2(100, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_03"]
+atlas = ExtResource("1_sheet")
+region = Rect2(200, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_04"]
+atlas = ExtResource("1_sheet")
+region = Rect2(300, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_05"]
+atlas = ExtResource("1_sheet")
+region = Rect2(400, 0, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_06"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_07"]
+atlas = ExtResource("1_sheet")
+region = Rect2(100, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_08"]
+atlas = ExtResource("1_sheet")
+region = Rect2(200, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_09"]
+atlas = ExtResource("1_sheet")
+region = Rect2(300, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_10"]
+atlas = ExtResource("1_sheet")
+region = Rect2(400, 100, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_11"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_12"]
+atlas = ExtResource("1_sheet")
+region = Rect2(100, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_13"]
+atlas = ExtResource("1_sheet")
+region = Rect2(200, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_14"]
+atlas = ExtResource("1_sheet")
+region = Rect2(300, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_15"]
+atlas = ExtResource("1_sheet")
+region = Rect2(400, 200, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_16"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_17"]
+atlas = ExtResource("1_sheet")
+region = Rect2(100, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_18"]
+atlas = ExtResource("1_sheet")
+region = Rect2(200, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_19"]
+atlas = ExtResource("1_sheet")
+region = Rect2(300, 300, 100, 100)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_shield_20"]
+atlas = ExtResource("1_sheet")
+region = Rect2(400, 300, 100, 100)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_01")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_02")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_03")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_04")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_05")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_06")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_07")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_08")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_09")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_10")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_11")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_12")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_13")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_15")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_16")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_17")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_18")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_19")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_shield_20")
+}],
+"loop": true,
+"name": &"default",
+"speed": 16.0
+}]

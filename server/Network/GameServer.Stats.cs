@@ -77,6 +77,26 @@ partial class GameServer
         writer.Put(player.Inteligencia);
         writer.Put(player.MaxHealth);
         writer.Put(player.MaxMana);
+        writer.Put(player.CalculateDefense());
+        writer.Put(player.CalculateMagicDefense());
+        writer.Put(player.CalculateCritChance());
+        writer.Put(player.CalculateCritMultiplier());
+        writer.Put(player.CalculateEvasion());
+        writer.Put(player.CalculateMovementSpeedMultiplier());
+        writer.Put(player.CalculateAttackSpeedMultiplier());
+        writer.Put(player.CalculatePrecision());
+        writer.Put(player.CalculateTenacity());
+        writer.Put(player.ArmorPenetration);
+        writer.Put(player.HealthRegenBonus);
+        writer.Put(player.ManaRegenBonus);
+        writer.Put(player.LifeSteal);
+        writer.Put(player.ManaSteal);
+        writer.Put(player.CooldownReduction);
+        writer.Put(player.PvpDamageBonus);
+        writer.Put(player.PvpDefenseBonus);
+        writer.Put(player.BonusExperience);
+        writer.Put(player.DamageReflect);
+        writer.Put(player.ControlResistance);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }

@@ -27,6 +27,7 @@ export_*.log
 export_presets.cfg
 launcher/bin/
 launcher/obj/
+PalworldPanel/
 
 # Animation asset packs (external)
 skills/AnimaÃ§Ã£o/

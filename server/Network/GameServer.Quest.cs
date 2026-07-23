@@ -171,6 +171,27 @@ partial class GameServer
 
     public void UpdateQuestKillProgress(PlayerEntity player, string monsterPrefabId)
     {
+        UpdateQuestObjectiveProgress(player, QuestObjectiveType.Kill, monsterPrefabId);
+    }
+
+    public void UpdateQuestCollectProgress(PlayerEntity player, string itemId, int amount = 1)
+    {
+        UpdateQuestObjectiveProgress(player, QuestObjectiveType.Collect, itemId, amount);
+        UpdateQuestObjectiveProgress(player, QuestObjectiveType.DropItem, itemId, amount);
+    }
+
+    public void UpdateQuestTalkProgress(PlayerEntity player, string npcId)
+    {
+        UpdateQuestObjectiveProgress(player, QuestObjectiveType.Talk, npcId);
+    }
+
+    public void UpdateQuestReachLocationProgress(PlayerEntity player, float x, float y)
+    {
+        UpdateQuestObjectiveProgress(player, QuestObjectiveType.ReachLocation, "", 1, x, y);
+    }
+
+    private void UpdateQuestObjectiveProgress(PlayerEntity player, QuestObjectiveType objectiveType, string targetId, int amount = 1, float x = 0f, float y = 0f)
+    {
         var session = _sessions.Values.FirstOrDefault(s => s.EntityId == player.Id);
         if (session?.SelectedCharacter == null) return;
         int characterId = session.SelectedCharacter.Id;
@@ -187,15 +208,22 @@ partial class GameServer
             for (int i = 0; i < def.Objectives.Count; i++)
             {
                 var obj = def.Objectives[i];
-                if (obj.Type == QuestObjectiveType.Kill && obj.TargetId == monsterPrefabId)
+                if (obj.Type != objectiveType)
+                    continue;
+
+                bool targetMatches = objectiveType == QuestObjectiveType.ReachLocation
+                    ? IsQuestLocationReached(obj, x, y)
+                    : string.Equals(obj.TargetId, targetId, StringComparison.OrdinalIgnoreCase);
+                if (!targetMatches)
+                    continue;
+
+                if (i >= pq.Progress.Count)
+                    pq.Progress.Add(0);
+
+                if (pq.Progress[i] < obj.RequiredCount)
                 {
-                    if (i >= pq.Progress.Count)
-                        pq.Progress.Add(0);
-                    if (pq.Progress[i] < obj.RequiredCount)
-                    {
-                        pq.Progress[i]++;
-                        changed = true;
-                    }
+                    pq.Progress[i] = Math.Min(obj.RequiredCount, pq.Progress[i] + Math.Max(1, amount));
+                    changed = true;
                 }
             }
 
@@ -225,5 +253,13 @@ partial class GameServer
                 }
             }
         }
+    }
+
+    private static bool IsQuestLocationReached(QuestObjective objective, float x, float y)
+    {
+        float radius = objective.Radius <= 0f ? 48f : objective.Radius;
+        float dx = objective.TargetX - x;
+        float dy = objective.TargetY - y;
+        return dx * dx + dy * dy <= radius * radius;
     }
 }

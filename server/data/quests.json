@@ -1,0 +1,30 @@
+{
+  "Version": 1,
+  "Quests": [
+    {
+      "Id": 1,
+      "Name": "Caca aos Slimes",
+      "Description": "Elimine 5 slimes na floresta.",
+      "QuestText": "Derrote 5 slimes para ajudar a limpar a area inicial.",
+      "RequiredLevel": 1,
+      "NpcScenePath": "res://characters/Npcs/WorldNPC.tscn",
+      "OfferDialog": "Os slimes estao se multiplicando. Pode reduzir o numero deles?",
+      "AcceptedDialog": "Boa sorte. Volte quando tiver derrotado os slimes.",
+      "ProgressDialog": "Ainda existem slimes demais por perto.",
+      "CompleteDialog": "Muito bem. Voce ajudou a deixar a area mais segura.",
+      "DeliveryDialog": "Aqui esta sua recompensa.",
+      "Objectives": [
+        {
+          "Type": "Kill",
+          "TargetId": "slime",
+          "RequiredCount": 5
+        }
+      ],
+      "Reward": {
+        "Experience": 35,
+        "Gold": 10,
+        "Items": []
+      }
+    }
+  ]
+}

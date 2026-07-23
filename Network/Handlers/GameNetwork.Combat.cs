@@ -55,6 +55,16 @@ partial class GameNetwork
         EmitSignal(SignalName.OnCombatResult, attackerId, targetId, damage, isCrit, targetHealth, targetMaxHealth, skillId);
     }
 
+    private void HandleSkillAreaEffect(NetDataReader r)
+    {
+        int skillId = r.GetInt();
+        float x = r.GetFloat();
+        float y = r.GetFloat();
+        float radius = r.GetFloat();
+        float duration = r.GetFloat();
+        EmitSignal(SignalName.OnSkillAreaEffect, skillId, x, y, radius, duration);
+    }
+
     private void HandleEntityDied(NetDataReader r)
     {
         ulong entityId = r.GetULong();
@@ -136,6 +146,26 @@ partial class GameNetwork
         int totalInteligencia = r.GetInt();
         int maxHealth = r.GetInt();
         int maxMana = r.GetInt();
-        EmitSignal(SignalName.OnStatUpdate, baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints, totalForca, totalAgilidade, totalDestreza, totalInteligencia, maxHealth, maxMana);
+        int defesaFisica = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        int defesaMagica = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        float chanceCritica = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float danoCritico = r.AvailableBytes >= 4 ? r.GetFloat() : 1.5f;
+        float evasao = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float velocidadeMovimento = r.AvailableBytes >= 4 ? r.GetFloat() : 1f;
+        float velocidadeAtaque = r.AvailableBytes >= 4 ? r.GetFloat() : 1f;
+        float precisao = r.AvailableBytes >= 4 ? r.GetFloat() : 75f;
+        float tenacidade = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float penetracaoArmadura = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float regeneracaoVida = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float regeneracaoMana = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float rouboVida = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float rouboMana = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float reducaoCooldown = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        int danoPvp = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        int defesaPvp = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        float bonusExperiencia = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float reflexaoDano = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        float resistenciaControle = r.AvailableBytes >= 4 ? r.GetFloat() : 0f;
+        EmitSignal(SignalName.OnStatUpdate, baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints, totalForca, totalAgilidade, totalDestreza, totalInteligencia, maxHealth, maxMana, defesaFisica, defesaMagica, chanceCritica, danoCritico, evasao, velocidadeMovimento, velocidadeAtaque, precisao, tenacidade, penetracaoArmadura, regeneracaoVida, regeneracaoMana, rouboVida, rouboMana, reducaoCooldown, danoPvp, defesaPvp, bonusExperiencia, reflexaoDano, resistenciaControle);
     }
 }

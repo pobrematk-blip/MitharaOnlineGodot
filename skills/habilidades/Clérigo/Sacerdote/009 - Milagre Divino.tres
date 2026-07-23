@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 15109
 Nome = "Milagre Divino"
-Descricao = "Uma intervenção celestial toma conta do campo de batalha, restaurando aliados e envolvendo o grupo em uma proteção radiante."
+Descricao = "O Sacerdote invoca uma manifestação divina ao seu redor, causando dano sagrado em todos os inimigos próximos."
 Icone = ExtResource("2_icon")
-Valor = 0
+Valor = 240
 CustoMana = 80
 ClasseRestrita = "Clérigo"
-Cooldown = 120
-Duracao = 15
+Cooldown = 45
+Duracao = 0
 TargetType = 0
-EffectType = 1
+EffectType = 7
 Especializacao = "Sacerdote"
 NivelRequerido = 70
 Ordem = 9
 Escopo = "Especialização"
-Tipo = "Ultimate"
-EfeitoPrincipal = "Cura todos os aliados próximos e aplica proteção temporária."
-DanoEscala = "Cura massiva + escudo"
-BuffDebuff = "Cura/Buff"
-DuracaoTexto = "15s"
-Progressao = "Ultimate Lv1 = cura alta; Lv5 = cura máxima e escudo maior."
-Observacoes = "Ultimate do Sacerdote; possui 5 níveis."
+Tipo = "Dano Sagrado em Área"
+EfeitoPrincipal = "Causa dano sagrado em inimigos ao redor do Sacerdote."
+DanoEscala = "Dano: 240% -> 480% do Poder Mágico"
+BuffDebuff = ""
+DuracaoTexto = "Instantâneo"
+Progressao = "Ultimate Lv1 = dano alto; Lv5 = dano máximo."
+Observacoes = "Atinge inimigos em um raio de 4 tiles ao redor do Sacerdote."

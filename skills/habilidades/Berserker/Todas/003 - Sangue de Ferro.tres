@@ -1,20 +1,18 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/27.png" id="1_gjavp"]
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/40.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13003
 Nome = "Sangue de Ferro"
 Descricao = "A dor desperta a resistência natural do Berserker. Seus músculos endurecem e seu corpo passa a suportar melhor os golpes recebidos."
-Icone = ExtResource("2_icon")
-Valor = 0
+Icone = ExtResource("1_gjavp")
 CustoMana = 20
 ClasseRestrita = "Berserker"
-Cooldown = 30
-Duracao = 15
-TargetType = 0
+Cooldown = 30.0
+Duracao = 15.0
 EffectType = 3
 Especializacao = "Todas"
 NivelRequerido = 5
@@ -22,7 +20,6 @@ Ordem = 3
 Escopo = "Compartilhada da Classe"
 Tipo = "Buff Defensivo"
 EfeitoPrincipal = "Aumenta HP Máximo e resistência geral por tempo limitado."
-DanoEscala = ""
 BuffDebuff = "+10% → +25% HP Máximo e Resistência"
 DuracaoTexto = "15s"
 Progressao = "Skill possui 10 níveis. Bônus aumenta gradualmente de +10% até +25%."

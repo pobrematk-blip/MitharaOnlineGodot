@@ -283,8 +283,7 @@ public partial class PetNode : Node2D
             return;
 
         if (_player.TryGetSelectedCombatTarget(out var targetSelecionado)
-            && IsInstanceValid(targetSelecionado)
-            && targetSelecionado.IsInGroup("Inimigos")
+            && EhAlvoValidoDoPet(targetSelecionado)
             && _player.GlobalPosition.DistanceTo(targetSelecionado.GlobalPosition) <= OwnerAttackLeashRange)
         {
             _alvoInimigo = targetSelecionado;
@@ -297,7 +296,7 @@ public partial class PetNode : Node2D
 
         foreach (var node in inimigos)
         {
-            if (node is Node2D n && n != _player)
+            if (node is Node2D n && EhAlvoValidoDoPet(n))
             {
                 float d = _player.GlobalPosition.DistanceTo(n.GlobalPosition);
                 if (d < menorDist && IsInstanceValid(n))
@@ -314,6 +313,11 @@ public partial class PetNode : Node2D
     private void AtacarAlvo()
     {
         if (_alvoInimigo == null || !IsInstanceValid(_alvoInimigo)) return;
+        if (!EhAlvoValidoDoPet(_alvoInimigo))
+        {
+            _alvoInimigo = null;
+            return;
+        }
 
         float agora = (float)Time.GetTicksMsec() / 1000f;
         if (agora - _ultimoAtaque < AtaqueCooldown) return;
@@ -348,6 +352,23 @@ public partial class PetNode : Node2D
         }
 
         CriarEfeitoAtaque();
+    }
+
+    private bool EhAlvoValidoDoPet(Node2D alvo)
+    {
+        if (alvo == null || !IsInstanceValid(alvo))
+            return false;
+
+        if (alvo == _player || alvo is Player || alvo.IsInGroup("player") || alvo.IsInGroup("RemotePlayers"))
+            return false;
+
+        if (alvo is not Inimigo)
+            return false;
+
+        if (alvo.HasMeta("dying") && alvo.GetMeta("dying").AsBool())
+            return false;
+
+        return alvo.IsInGroup("Inimigos");
     }
 
     private void CriarEfeitoAtaque()

@@ -8,6 +8,15 @@ public partial class EntityManager : Node
     private const byte PlayerActionAttack = 1;
     private const byte PlayerActionBackJump = 2;
     private const byte PlayerActionSummonSherigan = 3;
+    private const byte PlayerActionInvisibility = 4;
+    private const byte PlayerActionReveal = 5;
+    private const byte PlayerActionArcaneTeleportEnter = 6;
+    private const byte PlayerActionArcaneTeleportExit = 7;
+    private const byte PlayerActionGolpesFreneticos = 8;
+    private const byte PlayerActionCarnificinaJump = 9;
+    private const float RemoteDashTrailMinDistance = 56f;
+    private const int RemoteDashTrailGhostCount = 5;
+    private const float RemoteDashTrailDuration = 0.42f;
     private GameNetwork? _gameNet;
     private PackedScene? _inimigoScene;
     private readonly Dictionary<string, PackedScene?> _mobScenes = new();
@@ -50,6 +59,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
     private readonly Dictionary<ulong, Node2D> _lojinhaNodes = new();
     private readonly Dictionary<ulong, Node2D> _remoteSheriganPets = new();
+    private readonly Dictionary<string, AnimatedSprite2D> _bastiaoAreaEffects = new();
     private ulong _lojinhaInteracaoAtual;
     private Node2D? _worldNode;
     private static readonly Color NomeCorNormal = Colors.White;
@@ -80,6 +90,9 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, RemoteState> _remoteStates = new();
     private readonly Dictionary<ulong, Vector2> _lastDirections = new();
     private readonly Dictionary<ulong, Vector2> _previousPositions = new();
+    private readonly Dictionary<ulong, double> _lastDashTrailAt = new();
+    private readonly Dictionary<string, double> _lastCasterSkillEffectAt = new();
+    private const string MetaMachadoGiratorioUntil = "machado_giratorio_until";
     private const double InterpolationDelay = 0.08;
     private const int PendingMonsterSpawnBatchSize = 8;
     private const float VisibilityCullMargin = 320f;
@@ -165,12 +178,69 @@ public partial class EntityManager : Node
     }
 
     private const string MetaAnimPrefix = "anim_prefix";
+    private const string MetaCharacterClass = "character_class";
     private const string MetaSpritePath = "sprite_path";
+    private const string ArcaneShieldEffectNodeName = "ArcaneShieldLoopEffect";
+    private const string EscudoProtetorEffectPath = "res://skills/Animacao/AA_S0_42_ProtectEXE_20FPS.png";
     private const string FlechaImpactoEffectPath = "res://skills/Efeitos/Arqueiro/FlechaImpactoEffect.tscn";
+    private const string MagoBasicHitEffectPath = "res://skills/Efeitos/Mago/MagoBasicHitEffect.tscn";
+    private const string RaioEstaticoEffectPath = "res://skills/Efeitos/Mago/RaioEstaticoEffect.tscn";
+    private const string LancaGeloEffectPath = "res://skills/Efeitos/Mago/LancaGeloEffect.tscn";
+    private const string TornadoEffectPath = "res://skills/Efeitos/Mago/TornadoEffect.tscn";
+    private const string TempestadeEletricaEffectPath = "res://skills/Efeitos/Mago/TempestadeEletricaEffect.tscn";
+    private const string ExplosaoVulcanicaEffectPath = "res://skills/Efeitos/Mago/ExplosaoVulcanicaEffect.tscn";
+    private const string ChuvaMeteorosEffectPath = "res://skills/Efeitos/Mago/ChuvaMeteorosEffect.tscn";
+    private const string SonoArcanoEffectPath = "res://skills/Efeitos/Mago/SonoArcanoEffect.tscn";
+    private const string PrisaoGeloEffectPath = "res://skills/Efeitos/Mago/PrisaoGeloEffect.tscn";
+    private const string TeleporteArcanoPortalEffectPath = "res://skills/Efeitos/Mago/TeleporteArcanoPortalEffect.tscn";
+    private const string EscudoArcanoEffectPath = "res://skills/Efeitos/Mago/EscudoArcanoEffect.tscn";
+    private const string FuriaElementalEffectPath = "res://skills/Efeitos/Mago/FuriaElementalEffect.tscn";
     private const string TiroParalisanteEffectPath = "res://skills/Efeitos/Arqueiro/TiroParalisanteEffect.tscn";
     private const string TiroExecucaoEffectPath = "res://skills/Efeitos/Arqueiro/TiroExecucaoEffect.tscn";
     private const string MarcaExecutorPoisonEffectPath = "res://skills/Efeitos/Arqueiro/MarcaExecutorPoisonEffect.tscn";
+    private const string GolpeSombrioEffectDir = "res://skills/Animacao/50 Animated Effects v5/50 Animated Effects v5/8";
+    private const string ExecucaoFinalEffectPath = "res://skills/Animacao/175.png";
+    private const string PunhaladaNasCostasEffectPath = "res://skills/Animacao/1_100x100px.png";
+    private const string GolpeAtordoanteEffectDir = "res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/60";
+    private const string SequenciaMortalEffectDir = "res://skills/Animacao/50 Animated Effects v3/50 Animated Effects v3/29";
+    private const string ReflexosAssassinosEffectPath = "res://skills/Animacao/AA_S0_14_Dark_20FPS.png";
     private const string BossSlimeSlowEffectPath = "res://skills/Efeitos/Bosses/SlimeSlowEffect.tscn";
+    private const string FuriaBerserkerEffectPath = "res://skills/Efeitos/Berserker/FuriaEffect.tscn";
+    private const string FrenesiBerserkerEffectPath = "res://skills/Efeitos/Berserker/FrenesiEffect.tscn";
+    private const string DeusDaGuerraEffectPath = "res://skills/Efeitos/Berserker/DeusDaGuerraEffect.tscn";
+    private const string SangueDeFerroEffectPath = "res://skills/Efeitos/Berserker/SangueDeFerroEffect.tscn";
+    private const string InvestidaBrutalImpactEffectPath = "res://skills/Efeitos/Berserker/InvestidaBrutalImpact.tscn";
+    private const string SedeDeSangueEffectPath = "res://skills/Efeitos/Berserker/SedeDeSangueEffect.tscn";
+    private const string ForcaBrutalEffectPath = "res://skills/Efeitos/Berserker/ForcaBrutalEffect.tscn";
+    private const string GolpesFreneticosEffectPath = "res://skills/Efeitos/Berserker/GolpesFreneticosEffect.tscn";
+    private const string MachadoGiratorioEffectPath = "res://skills/Efeitos/Berserker/MachadoGiratorioEffect.tscn";
+    private const string SangramentoMortalEffectPath = "res://skills/Animacao/193.png";
+    private const string SangramentoMortalProjectilePath = "res://skills/Animacao/Axe_03.png";
+    private const string BerserkEffectDir = "res://skills/Animacao/50 Animated Effects v5/50 Animated Effects v5/19";
+    private const string CuraMenorEffectPath = "res://skills/Animacao/72.png";
+    private const string ClerigoBasicHitEffectPath = "res://skills/Animacao/strike2.png";
+    private const string CuraEmAreaEffectPath = "res://skills/Animacao/Recover1_a.png";
+    private const string RaioSagradoEffectPath = "res://skills/Animacao/155.png";
+    private const string MarteloDesolacaoEffectPath = "res://skills/Animacao/sprite-sheete.png";
+    private const string ChoqueEstaticoEffectPath = "res://skills/Animacao/4.png";
+    private const string MilagreDivinoEffectPath = "res://skills/Animacao/AA_S0_01_Cast_20FPS.png";
+    private const string CorteRapidoEffectPath = "res://skills/Animacao/8a.png";
+    private const string EstocadaEffectDir = "res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/34";
+    private const string EspadaEstelarEffectPath = "res://skills/Animacao/Tormenta Hitted Projectile.png";
+    private const string GolpeDeEscudoImpactEffectPath = "res://skills/Animacao/AA_S0_15_Stone_20FPS.png";
+    private const string DesafioCasterEffectDir = "res://skills/Animacao/50 Animated Effects v9/50 Animated Effects v9/20";
+    private const string DesafioMobEffectDir = "res://skills/Animacao/50 Animated Effects v5/50 Animated Effects v5/6";
+    private const string EspinhosEffectPath = "res://skills/Animacao/spikes.png";
+    private const string FortificacaoEffectPath = "res://skills/Animacao/21.png";
+    private const string MuralhaInabalavelEffectPath = "res://skills/Animacao/82.png";
+    private const string BastiaoEffectPath = "res://skills/Animacao/AA_S0_34_DeProtect_20FPS.png";
+    private const string LuzRestauradoraEffectPath = "res://skills/Animacao/AA_B1_02_GoldAura_20FPS.png";
+    private const string RenovacaoEffectPath = "res://skills/Animacao/Flechas Comuns3.png";
+    private const string RessurreicaoEffectPath = "res://skills/Animacao/237.png";
+    private const string PurificacaoEffectPath = "res://skills/Animacao/100422.png";
+    private const string BencaoSagradaEffectDir = "res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/28";
+    private const string CarnificinaImpactEffectDir = "res://skills/Animacao/50 Animated Effects v4/50 Animated Effects v4/45";
+    private const string CarnificinaStunEffectDir = "res://skills/Animacao/50 Animated Effects v4/50 Animated Effects v4/4";
     private const string SheriganScenePath = "res://characters/Inimigos/SpriteInimigo/Sherigan.tscn";
 
     private bool _sceneReady;
@@ -215,13 +285,16 @@ public partial class EntityManager : Node
         _gameNet.OnStatUpdate += OnStatUpdate;
         _gameNet.OnProjectileSpawn += OnProjectileSpawn;
         _gameNet.OnItemUseResult += OnItemUseResult;
+        _gameNet.OnSkillUseResult += OnSkillUseResult;
         _gameNet.OnPartyData += OnPartyDataChanged;
         _gameNet.OnPartyMemberUpdate += OnPartyMemberChanged;
         _gameNet.OnGuildData += OnGuildDataChanged;
         _gameNet.OnGuildMemberUpdate += OnGuildMemberChanged;
         _gameNet.OnGuildCleared += OnGuildClearedHandler;
         _gameNet.OnStatusEffect += OnStatusEffect;
+        _gameNet.OnShieldUpdate += OnShieldUpdate;
         _gameNet.OnBossCast += OnBossCast;
+        _gameNet.OnSkillAreaEffect += OnSkillAreaEffect;
 
         CriarUI();
         CriarNavegacaoMundo();
@@ -636,6 +709,7 @@ public partial class EntityManager : Node
         PrepararEntidadeYSort(root);
         root.SetMeta("network_id", entityId);
         root.SetMeta("player_name", name);
+        root.SetMeta(MetaCharacterClass, characterClass);
         root.AddToGroup("RemotePlayers");
 
         string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(characterClass);
@@ -937,8 +1011,7 @@ public partial class EntityManager : Node
                 AutowrapMode = TextServer.AutowrapMode.Off,
                 MouseFilter = Control.MouseFilterEnum.Ignore,
             };
-            labelNome.AddThemeFontSizeOverride("normal_font_size", 19);
-            labelNome.AddThemeColorOverride("default_color", Colors.White);
+            AplicarEstiloNomeMob(labelNome, Colors.White);
             inimigo.AddChild(labelNome);
 
             { var _p = ObterMundo(); if (_p != null) _p.AddChild(inimigo); else AddChild(inimigo); }
@@ -978,10 +1051,7 @@ public partial class EntityManager : Node
             Position = new Vector2(-30, -60),
             ZIndex = 2,
         };
-        labelName.AddThemeFontSizeOverride("font_size", 14);
-        labelName.AddThemeColorOverride("font_color", Colors.White);
-        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
-        labelName.AddThemeConstantOverride("outline_size", 2);
+        AplicarEstiloNomeMob(labelName, Colors.White);
         placeholder.AddChild(labelName);
 
         var _p2 = ObterMundo();
@@ -1228,6 +1298,84 @@ public partial class EntityManager : Node
                 if (skillId == 10209 || skillId == 19)
                     TocarEfeitoTiroExecucao(targetNode);
             }
+            if (damage > 0 && skillId == 0 && EhAtaqueBasicoDeMago(attackerId))
+                TocarEfeitoAtaqueBasicoMago(targetNode, 0.45f);
+            if (damage > 0 && skillId == 0 && EhAtaqueBasicoDeClerigo(attackerId))
+                TocarEfeitoClerigoDano(targetNode, ClerigoBasicHitEffectPath, "ClerigoBasicHitEffect", "clerigo_basic_hit", 5, 4, 0.8f, new Vector2(0f, -28f));
+            if (damage > 0 && skillId == 11201)
+                TocarEfeitoAtaqueBasicoMago(targetNode, 1.45f);
+            if (damage > 0 && skillId == 11203)
+                TocarEfeitoRaioEstatico(targetNode);
+            if (damage > 0 && skillId == 11202)
+                TocarEfeitoLancaGelo(targetNode);
+            if (damage > 0 && skillId == 11204)
+                TocarGiroVisualTornado(targetNode);
+            if (damage > 0 && skillId == 11206)
+                TocarEfeitoTempestadeEletrica(targetNode);
+            if (damage > 0 && skillId == 11207)
+                TocarEfeitoExplosaoVulcanica(targetNode);
+            if (damage > 0 && skillId == 11209)
+                TocarEfeitoChuvaMeteoros(targetNode);
+            if (skillId == 11205)
+                TocarEfeitoPrisaoGelo(targetNode);
+            if (skillId == 11210)
+                TocarEfeitoSonoArcano(targetNode);
+            if (damage > 0 && skillId == 12201)
+                TocarEfeitoGolpeSombrio(targetNode, ObterNoCombate(attackerId));
+            if (damage > 0 && skillId == 12204)
+                TocarEfeitoGolpeAtordoante(targetNode, 3f);
+            if (damage > 0 && skillId == 12210)
+                TocarEfeitoGolpeAtordoante(targetNode, 2f);
+            if (damage > 0 && skillId == 12205)
+                TocarEfeitoPunhaladaNasCostas(targetNode, ObterNoCombate(attackerId));
+            if (damage > 0 && skillId == 12207)
+                TocarEfeitoSequenciaMortal(targetNode);
+            if (damage > 0 && skillId == 12209)
+                TocarEfeitoExecucaoFinal(targetNode);
+            if (damage > 0 && skillId == 13002)
+                TocarEfeitoInvestidaBrutal(targetNode);
+            if (damage > 0 && skillId == 13001)
+                TocarEfeitoClerigoDano(targetNode, SangramentoMortalEffectPath, "SangramentoMortalTickEffect", "sangramento_mortal_tick", 5, 3, 1.0f, new Vector2(0f, -34f));
+            if (damage > 0 && skillId == 15001)
+                TocarEfeitoClerigoDano(targetNode, RaioSagradoEffectPath, "RaioSagradoEffect", "raio_sagrado_cast", 5, 3, 0.9f, new Vector2(0f, -34f));
+            if (damage > 0 && skillId == 15102)
+                TocarEfeitoClerigoDano(targetNode, MarteloDesolacaoEffectPath, "MarteloDesolacaoEffect", "martelo_desolacao_cast", 5, 3, 1.65f, new Vector2(0f, -36f));
+            if (damage > 0 && skillId == 15106)
+            {
+                TocarEfeitoClerigoDano(targetNode, ChoqueEstaticoEffectPath, "ChoqueEstaticoEffect", "choque_estatico_cast", 5, 2, 1.65f, new Vector2(0f, -30f));
+                TocarEfeitoGolpeAtordoante(targetNode, 3f);
+            }
+            if (damage > 0 && skillId == 15109)
+                TocarEfeitoClerigoDano(targetNode, MilagreDivinoEffectPath, "MilagreDivinoEffect", "milagre_divino_cast", 5, 4, 1.55f, new Vector2(0f, -42f));
+            if (damage > 0 && skillId == 14100)
+                TocarProjetilCorteRapido(ObterNoCombate(attackerId), targetNode);
+            if (damage > 0 && skillId == 14102)
+                TocarEfeitoEstocada(targetNode);
+            if (damage > 0 && skillId == 14104)
+                TocarEfeitoEspadaEstelar(targetNode);
+            if (damage > 0 && skillId == 14103)
+                TocarEfeitoClerigoDano(targetNode, GolpeDeEscudoImpactEffectPath, "GolpeDeEscudoImpactEffect", "golpe_de_escudo_hit", 5, 6, 0.65f, new Vector2(0f, 16f));
+            if (skillId is 14101 or 14106)
+            {
+                if (targetId == attackerId)
+                    TocarEfeitoDesafioCaster(targetNode);
+                else
+                    TocarEfeitoDesafioMob(targetNode, skillId == 14101 ? 4f : 5f);
+            }
+            if (damage > 0 && skillId == 14105)
+                TocarEfeitoEspinhos(targetNode);
+            if (skillId == 13105)
+                TocarEfeitoMachadoGiratorioNoCaster(attackerId);
+            if (damage > 0 && skillId == 13107)
+                TocarEfeitoCarnificinaStun(targetNode, 4f);
+            if (damage < 0 && skillId == 15101 && targetId != _gameNet?.LocalPlayerId)
+                TocarEfeitoCuraMenor(targetNode);
+            if (damage < 0 && skillId == 15105)
+                TocarEfeitoRenovacao(targetNode, 10f);
+            if (damage < 0 && skillId == 15107 && targetId != _gameNet?.LocalPlayerId)
+                TocarEfeitoLuzRestauradora(targetNode);
+            if (skillId == 15108)
+                TocarEfeitoRessurreicao(targetNode);
 
             if (targetNode is Inimigo inimigo)
                 inimigo.SetVidaAtual(targetHealth, targetMaxHealth);
@@ -1236,17 +1384,27 @@ public partial class EntityManager : Node
             else if (targetHealth <= 0)
                 SetRemotePlayerDowned(targetNode);
 
+            if (damage == 0)
+                return;
+
             bool isPlayerTakingDamage = targetId == _gameNet?.LocalPlayerId;
 
             var damageLabel = new Label
             {
-                Text = damage.ToString(),
+                Text = damage < 0 ? $"+{-damage}" : damage.ToString(),
                 Position = new Vector2(-10, -20),
                 ZIndex = 10,
             };
             damageLabel.AddThemeFontOverride("font", GetBoldFont());
 
-            if (isCrit)
+            if (damage < 0)
+            {
+                damageLabel.AddThemeFontSizeOverride("font_size", 26);
+                damageLabel.AddThemeColorOverride("font_color", new Color(0.45f, 1.0f, 0.25f));
+                damageLabel.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0));
+                damageLabel.AddThemeConstantOverride("outline_size", 5);
+            }
+            else if (isCrit)
             {
                 damageLabel.Text = $"{damage}!";
                 damageLabel.AddThemeFontSizeOverride("font_size", 32);
@@ -1296,6 +1454,806 @@ public partial class EntityManager : Node
         return false;
     }
 
+    private bool EhAtaqueBasicoDeMago(ulong attackerId)
+    {
+        if (attackerId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            string classeLocal = localPlayer?.NomeDaClasse ?? "";
+            return classeLocal.Contains("mago", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (!_networkNodes.TryGetValue(attackerId, out var attackerNode) || !IsInstanceValid(attackerNode))
+            return false;
+
+        if (attackerNode.HasMeta(MetaCharacterClass))
+        {
+            string classe = attackerNode.GetMeta(MetaCharacterClass).AsString();
+            if (classe.Contains("mago", System.StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (classe.Contains("prist", System.StringComparison.OrdinalIgnoreCase)
+                || classe.Contains("priest", System.StringComparison.OrdinalIgnoreCase)
+                || classe.Contains("clerigo", System.StringComparison.OrdinalIgnoreCase)
+                || classe.Contains("clérigo", System.StringComparison.OrdinalIgnoreCase)
+                || classe.Contains("sacerdote", System.StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        if (attackerNode.HasMeta(MetaAnimPrefix))
+        {
+            string prefixo = attackerNode.GetMeta(MetaAnimPrefix).AsString();
+            return prefixo.Contains("mago", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private bool EhAtaqueBasicoDeClerigo(ulong attackerId)
+    {
+        static bool EhClasseClerigo(string value)
+        {
+            return value.Contains("prist", System.StringComparison.OrdinalIgnoreCase)
+                || value.Contains("priest", System.StringComparison.OrdinalIgnoreCase)
+                || value.Contains("clerigo", System.StringComparison.OrdinalIgnoreCase)
+                || value.Contains("clérigo", System.StringComparison.OrdinalIgnoreCase)
+                || value.Contains("sacerdote", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (attackerId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            return EhClasseClerigo(localPlayer?.NomeDaClasse ?? "");
+        }
+
+        if (!_networkNodes.TryGetValue(attackerId, out var attackerNode) || !IsInstanceValid(attackerNode))
+            return false;
+
+        if (attackerNode.HasMeta(MetaCharacterClass) && EhClasseClerigo(attackerNode.GetMeta(MetaCharacterClass).AsString()))
+            return true;
+
+        if (attackerNode.HasMeta(MetaAnimPrefix))
+        {
+            string prefixo = attackerNode.GetMeta(MetaAnimPrefix).AsString();
+            return prefixo.Contains("maca", System.StringComparison.OrdinalIgnoreCase)
+                || prefixo.Contains("maça", System.StringComparison.OrdinalIgnoreCase)
+                || prefixo.Contains("martelo", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private void TocarEfeitoAtaqueBasicoMago(Node2D targetNode, float escala = 1f)
+    {
+        if (!ResourceLoader.Exists(MagoBasicHitEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(MagoBasicHitEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Scale = Vector2.One * Mathf.Max(0.1f, escala);
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoCuraMenor(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(CuraMenorEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(CuraMenorEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 5;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "cura_menor_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "CuraMenorEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -2f),
+            Scale = new Vector2(1.55f, 1.55f),
+            ZIndex = 132,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoCuraEmAreaNoChao(Vector2 globalPosition)
+    {
+        if (!ResourceLoader.Exists(CuraEmAreaEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(CuraEmAreaEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 6;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "cura_em_area_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "CuraEmAreaEffect",
+            SpriteFrames = frames,
+            GlobalPosition = globalPosition + new Vector2(0f, -18f),
+            Scale = new Vector2(1.35f, 1.35f),
+            ZIndex = 133,
+            ZAsRelative = false,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoClerigoDano(Node2D targetNode, string texturePath, string nodeName, string animName, int columns, int rows, float scale, Vector2 offset)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(texturePath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(texturePath);
+        if (texture == null)
+            return;
+
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            SpriteFrames = frames,
+            Position = offset,
+            Scale = new Vector2(scale, scale),
+            ZIndex = 134,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoLuzRestauradora(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(LuzRestauradoraEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(LuzRestauradoraEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 3;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "luz_restauradora_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 20f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "LuzRestauradoraEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -22f),
+            Scale = new Vector2(1.78f, 1.78f),
+            ZIndex = 133,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoRenovacao(Node2D targetNode, float duration = 0f)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(RenovacaoEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(RenovacaoEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 4;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "renovacao_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, duration > 0f);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "RenovacaoEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -10f),
+            Scale = new Vector2(1.65f, 1.65f),
+            ZIndex = 133,
+            ZAsRelative = true,
+        };
+
+        if (duration > 0f)
+        {
+            var oldEffect = targetNode.GetNodeOrNull<Node>("RenovacaoEffect");
+            if (oldEffect != null && IsInstanceValid(oldEffect))
+                oldEffect.QueueFree();
+
+            targetNode.AddChild(effect);
+            effect.Play(animName);
+            var timer = GetTree()?.CreateTimer(duration);
+            if (timer != null)
+            {
+                timer.Timeout += () =>
+                {
+                    if (IsInstanceValid(effect))
+                        effect.QueueFree();
+                };
+            }
+            return;
+        }
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoRessurreicao(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(RessurreicaoEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(RessurreicaoEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 3;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "ressurreicao_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 12f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "RessurreicaoEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -60f),
+            Scale = new Vector2(1.7f, 1.7f),
+            ZIndex = 134,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoPurificacao(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(PurificacaoEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(PurificacaoEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 5;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "purificacao_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "PurificacaoEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -34f),
+            Scale = new Vector2(1.66f, 1.66f),
+            ZIndex = 133,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoBencaoSagrada(Node2D targetNode, float duration)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        const string nodeName = "BencaoSagradaLoopEffect";
+        var existing = targetNode.GetNodeOrNull<Node2D>(nodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+
+        var frames = CriarFramesDeDiretorio(BencaoSagradaEffectDir, "bencao_sagrada_cast", true, 14f, 9);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -8f),
+            Scale = new Vector2(1.55f, 1.55f),
+            ZIndex = 133,
+            ZAsRelative = true,
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play("bencao_sagrada_cast");
+
+        if (duration <= 0f)
+            return;
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = duration,
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+        timer.Start();
+    }
+
+    private void TocarEfeitoLancaGelo(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(LancaGeloEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(LancaGeloEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoRaioEstatico(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(RaioEstaticoEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(RaioEstaticoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoTornadoNoCentro(Vector2 globalPosition)
+    {
+        if (!ResourceLoader.Exists(TornadoEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(TornadoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.ZAsRelative = false;
+        effect.ZIndex = 1;
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            AddChild(effect);
+        effect.GlobalPosition = globalPosition;
+    }
+
+    private void OnSkillAreaEffect(int skillId, float x, float y, float radius, float duration)
+    {
+        if (skillId == 11204)
+            TocarEfeitoTornadoNoCentro(new Vector2(x, y));
+        else if (skillId == 15103)
+            TocarEfeitoCuraEmAreaNoChao(new Vector2(x, y));
+        else if (skillId == 13107)
+            TocarEfeitoCarnificinaImpactoNoChao(new Vector2(x, y));
+        else if (skillId == 14108)
+            AtualizarEfeitoBastiao(new Vector2(x, y), radius, duration);
+    }
+
+    private void AtualizarEfeitoBastiao(Vector2 globalPosition, float radius, float duration)
+    {
+        string key = CriarChaveBastiao(globalPosition);
+        if (duration <= 0f)
+        {
+            if (_bastiaoAreaEffects.TryGetValue(key, out var existing) && IsInstanceValid(existing))
+            {
+                if (duration < 0f)
+                {
+                    AjustarFrameBastiao(existing, -duration);
+                    return;
+                }
+
+                existing.QueueFree();
+            }
+            _bastiaoAreaEffects.Remove(key);
+            return;
+        }
+
+        if (!ResourceLoader.Exists(BastiaoEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(BastiaoEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 4;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        const string animName = "bastiao_area";
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 20f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        float diameter = Mathf.Max(64f, radius * 2f);
+        float scale = Mathf.Clamp(diameter / frameWidth, 0.8f, 2.2f);
+        var effect = new AnimatedSprite2D
+        {
+            Name = "BastiaoAreaEffect",
+            SpriteFrames = frames,
+            GlobalPosition = globalPosition,
+            Scale = Vector2.One * scale,
+            ZIndex = 2,
+            ZAsRelative = false,
+        };
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            AddChild(effect);
+
+        effect.Play(animName);
+        effect.Frame = 0;
+        effect.Pause();
+        _bastiaoAreaEffects[key] = effect;
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.2f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+            _bastiaoAreaEffects.Remove(key);
+        };
+        timer.Start();
+    }
+
+    private static string CriarChaveBastiao(Vector2 position)
+    {
+        int x = Mathf.RoundToInt(position.X / 8f);
+        int y = Mathf.RoundToInt(position.Y / 8f);
+        return $"{x}:{y}";
+    }
+
+    private static void AjustarFrameBastiao(AnimatedSprite2D effect, float progress)
+    {
+        if (effect.SpriteFrames == null || !effect.SpriteFrames.HasAnimation("bastiao_area"))
+            return;
+
+        int frameCount = effect.SpriteFrames.GetFrameCount("bastiao_area");
+        if (frameCount <= 0)
+            return;
+
+        int frame = Mathf.Clamp(Mathf.RoundToInt(Mathf.Clamp(progress, 0f, 1f) * (frameCount - 1)), 0, frameCount - 1);
+        effect.Frame = frame;
+        effect.Pause();
+    }
+
+    private void TocarGiroVisualTornado(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !IsInsideTree())
+            return;
+
+        var visual = targetNode.GetNodeOrNull<Node2D>("AnimatedSprite")
+            ?? targetNode.FindChild("AnimatedSprite", true, false) as Node2D;
+        if (visual == null || !IsInstanceValid(visual))
+            return;
+
+        float originalRotation = visual.Rotation;
+        Vector2 originalPosition = visual.Position;
+        var tween = CreateTween();
+        tween.SetParallel(true);
+        tween.TweenProperty(visual, "rotation", originalRotation + Mathf.Tau, 0.55f)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(visual, "position", originalPosition + new Vector2(0, -18), 0.22f)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween.Chain();
+        tween.TweenProperty(visual, "position", originalPosition, 0.28f)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.In);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(visual))
+            {
+                visual.Rotation = originalRotation;
+                visual.Position = originalPosition;
+            }
+        }));
+    }
+
+    private void TocarEfeitoTempestadeEletrica(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(TempestadeEletricaEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(TempestadeEletricaEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoExplosaoVulcanica(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(ExplosaoVulcanicaEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(ExplosaoVulcanicaEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoChuvaMeteoros(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(ChuvaMeteorosEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(ChuvaMeteorosEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoSonoArcano(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(SonoArcanoEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(SonoArcanoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoPrisaoGelo(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(PrisaoGeloEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(PrisaoGeloEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
     private void TocarImpactoFlecha(Node2D targetNode, float escala = 1f)
     {
         if (!ResourceLoader.Exists(FlechaImpactoEffectPath))
@@ -1306,14 +2264,8 @@ public partial class EntityManager : Node
         if (effect == null)
             return;
 
-        effect.GlobalPosition = targetNode.GlobalPosition;
         effect.Scale = Vector2.One * Mathf.Max(0.1f, escala);
-
-        var world = ObterMundo();
-        if (world != null)
-            world.AddChild(effect);
-        else
-            targetNode.GetParent()?.AddChild(effect);
+        AnexarEfeitoNoAlvo(targetNode, effect);
     }
 
     private void TocarEfeitoTiroParalisante(Node2D targetNode)
@@ -1326,12 +2278,14 @@ public partial class EntityManager : Node
         if (effect == null)
             return;
 
-        effect.GlobalPosition = targetNode.GlobalPosition;
-        var world = ObterMundo();
-        if (world != null)
-            world.AddChild(effect);
-        else
-            targetNode.GetParent()?.AddChild(effect);
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private static void AnexarEfeitoNoAlvo(Node2D targetNode, Node2D effect)
+    {
+        effect.Position = Vector2.Zero;
+        effect.ZAsRelative = true;
+        targetNode.AddChild(effect);
     }
 
     private void TocarEfeitoTiroExecucao(Node2D targetNode)
@@ -1366,14 +2320,1407 @@ public partial class EntityManager : Node
         targetNode.AddChild(effect);
     }
 
+    private Node2D? ObterNoCombate(ulong entityId)
+    {
+        if (entityId == _gameNet?.LocalPlayerId)
+            return GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+
+        return _networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node)
+            ? node
+            : null;
+    }
+
+    private void TocarEfeitoGolpesFreneticosNoCaster(ulong attackerId)
+    {
+        Node2D? casterNode = ObterNoCombate(attackerId);
+        if (casterNode == null || !IsInstanceValid(casterNode) || !ResourceLoader.Exists(GolpesFreneticosEffectPath))
+            return;
+
+        string key = $"{attackerId}:13102";
+        double now = Time.GetTicksMsec() / 1000.0;
+        if (_lastCasterSkillEffectAt.TryGetValue(key, out double last) && now - last < 0.7)
+            return;
+
+        _lastCasterSkillEffectAt[key] = now;
+
+        var scene = ResourceLoader.Load<PackedScene>(GolpesFreneticosEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Position = Vector2.Zero;
+        effect.ZIndex = 109;
+        effect.ZAsRelative = true;
+        casterNode.AddChild(effect);
+    }
+
+    private void TocarProjetilGolpesFreneticos(Node2D casterNode, Vector2 direction)
+    {
+        if (casterNode == null || !IsInstanceValid(casterNode) || !ResourceLoader.Exists(GolpesFreneticosEffectPath))
+            return;
+
+        Vector2 dir = direction.LengthSquared() > 0.001f ? direction.Normalized() : Vector2.Down;
+        var scene = ResourceLoader.Load<PackedScene>(GolpesFreneticosEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        var parent = casterNode.GetParent() ?? GetTree()?.CurrentScene;
+        if (parent == null)
+            return;
+
+        Vector2 start = casterNode.GlobalPosition + dir * 42f + new Vector2(0f, -18f);
+        Vector2 end = start + dir * 170f;
+        effect.GlobalPosition = start;
+        effect.Rotation = dir.Angle() + Mathf.Pi;
+        effect.ZIndex = casterNode.ZIndex + 1;
+        effect.ZAsRelative = false;
+        parent.AddChild(effect);
+        effect.GlobalPosition = start;
+
+        var tween = effect.CreateTween();
+        tween.TweenProperty(effect, "global_position", end, 0.22f)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        }));
+    }
+
+    private void TocarProjetilCorteRapido(Node2D? casterNode, Node2D targetNode)
+    {
+        if (casterNode == null || targetNode == null || !IsInstanceValid(casterNode) || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(CorteRapidoEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(CorteRapidoEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 1;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "corte_rapido_projectile";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 22f);
+
+        for (int col = 0; col < columns; col++)
+        {
+            var atlas = new AtlasTexture
+            {
+                Atlas = texture,
+                Region = new Rect2(col * frameWidth, 0, frameWidth, frameHeight)
+            };
+            frames.AddFrame(animName, atlas);
+        }
+
+        Vector2 rawDir = targetNode.GlobalPosition - casterNode.GlobalPosition;
+        Vector2 dir = SnapVectorToCardinal(rawDir.LengthSquared() > 0.001f ? rawDir.Normalized() : Vector2.Down);
+        Vector2 start = casterNode.GlobalPosition + dir * 34f + new Vector2(0f, -24f);
+        Vector2 end = targetNode.GlobalPosition + new Vector2(0f, -24f);
+        if ((end - start).LengthSquared() < 16f)
+            end = start + dir * 56f;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "CorteRapidoProjectileEffect",
+            SpriteFrames = frames,
+            GlobalPosition = start,
+            Rotation = dir.Angle() + Mathf.Pi,
+            Scale = new Vector2(0.92f, 0.92f),
+            ZIndex = Mathf.Max(casterNode.ZIndex, targetNode.ZIndex) + 3,
+            ZAsRelative = false,
+        };
+
+        Node? parent = ObterMundo() ?? casterNode.GetParent() ?? GetTree()?.CurrentScene;
+        if (parent == null)
+            return;
+
+        parent.AddChild(effect);
+        effect.GlobalPosition = start;
+        effect.Play(animName);
+
+        float travelTime = Mathf.Clamp(start.DistanceTo(end) / 720f, 0.08f, 0.22f);
+        var tween = effect.CreateTween();
+        tween.TweenProperty(effect, "global_position", end, travelTime)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        }));
+    }
+
+    private static Vector2 SnapVectorToCardinal(Vector2 direction)
+    {
+        if (Mathf.Abs(direction.X) > Mathf.Abs(direction.Y))
+            return direction.X >= 0f ? Vector2.Right : Vector2.Left;
+
+        return direction.Y >= 0f ? Vector2.Down : Vector2.Up;
+    }
+
+    private void TocarEfeitoMachadoGiratorioNoCaster(ulong attackerId)
+    {
+        Node2D? casterNode = ObterNoCombate(attackerId);
+        if (casterNode == null || !IsInstanceValid(casterNode) || !ResourceLoader.Exists(MachadoGiratorioEffectPath))
+            return;
+
+        string key = $"{attackerId}:13105";
+        double now = Time.GetTicksMsec() / 1000.0;
+        if (_lastCasterSkillEffectAt.TryGetValue(key, out double last) && now - last < 0.65)
+            return;
+
+        _lastCasterSkillEffectAt[key] = now;
+        casterNode.SetMeta(MetaMachadoGiratorioUntil, now + 1.65);
+
+        var scene = ResourceLoader.Load<PackedScene>(MachadoGiratorioEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Position = Vector2.Zero;
+        effect.ZIndex = 108;
+        effect.ZAsRelative = true;
+        casterNode.AddChild(effect);
+        GirarVisualMachadoGiratorio(casterNode);
+    }
+
+    private void GirarVisualMachadoGiratorio(Node2D casterNode)
+    {
+        if (casterNode == null || !IsInstanceValid(casterNode) || !IsInsideTree())
+            return;
+
+        var animatedSprites = new List<AnimatedSprite2D>();
+        ColetarAnimatedSprites(casterNode, animatedSprites);
+        foreach (var sprite in animatedSprites)
+        {
+            if (sprite == null || !IsInstanceValid(sprite) || sprite.SpriteFrames == null || sprite.Name.ToString().Contains("Effect"))
+                continue;
+
+            string originalAnimation = sprite.Animation.ToString();
+            float originalSpeed = sprite.SpeedScale;
+            string prefix = ResolverPrefixoGiroMachado(casterNode, sprite);
+            string[] directions = { "down", "right", "up", "left", "down", "right", "up", "left", "down", "right", "up", "left" };
+
+            var tween = CreateTween();
+            foreach (string direction in directions)
+            {
+                string animation = ResolverAnimacaoGiroMachado(sprite.SpriteFrames, prefix, direction);
+                if (string.IsNullOrWhiteSpace(animation))
+                    continue;
+
+                tween.TweenCallback(Callable.From(() =>
+                {
+                    if (!IsInstanceValid(sprite) || sprite.SpriteFrames == null)
+                        return;
+
+                    sprite.Rotation = 0f;
+                    sprite.SpeedScale = 1.25f;
+                    if (sprite.SpriteFrames.HasAnimation(animation))
+                        sprite.Play(animation);
+                }));
+                tween.TweenInterval(0.12f);
+            }
+
+            tween.TweenCallback(Callable.From(() =>
+            {
+                if (!IsInstanceValid(sprite))
+                    return;
+
+                sprite.Rotation = 0f;
+                sprite.SpeedScale = originalSpeed;
+                if (sprite.SpriteFrames != null && sprite.SpriteFrames.HasAnimation(originalAnimation))
+                    sprite.Play(originalAnimation);
+            }));
+        }
+    }
+
+    private static string ResolverPrefixoGiroMachado(Node2D casterNode, AnimatedSprite2D sprite)
+    {
+        if (casterNode.HasMeta("anim_prefix"))
+            return casterNode.GetMeta("anim_prefix").AsString();
+
+        string current = sprite.Animation.ToString();
+        int attackIndex = current.IndexOf("_attack_", System.StringComparison.OrdinalIgnoreCase);
+        if (attackIndex > 0)
+            return current[..attackIndex];
+
+        if (casterNode is Player player)
+            return ClasseRegistry.ObterPrefixoAtaqueRecomendado(player.NomeDaClasse);
+
+        string[] candidates = { "machado_guerra", "machado", "berserker", "berseker", "guerreiro" };
+        foreach (string candidate in candidates)
+        {
+            if (sprite.SpriteFrames != null && sprite.SpriteFrames.HasAnimation($"{candidate}_attack_down"))
+                return candidate;
+        }
+
+        return "machado_guerra";
+    }
+
+    private static string ResolverAnimacaoGiroMachado(SpriteFrames frames, string prefix, string direction)
+    {
+        string[] candidates =
+        {
+            $"{prefix}_attack_{direction}",
+            $"{prefix}_{direction}_attack",
+            $"machado_guerra_attack_{direction}",
+            $"machado_{direction}_attack",
+            $"attack_{direction}",
+        };
+
+        foreach (string candidate in candidates)
+        {
+            if (frames.HasAnimation(candidate))
+                return candidate;
+        }
+
+        return "";
+    }
+
+    private static void ColetarAnimatedSprites(Node node, List<AnimatedSprite2D> result)
+    {
+        foreach (Node child in node.GetChildren())
+        {
+            if (child is AnimatedSprite2D sprite)
+                result.Add(sprite);
+            ColetarAnimatedSprites(child, result);
+        }
+    }
+
+    private void TocarEfeitoGolpeSombrio(Node2D targetNode, Node2D? attackerNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "golpe_sombrio_hit";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 14f);
+
+        for (int i = 1; i <= 8; i++)
+        {
+            string path = $"{GolpeSombrioEffectDir}/effect{i}.png";
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var texture = ResourceLoader.Load<Texture2D>(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+        }
+
+        if (frames.GetFrameCount(animName) == 0)
+            return;
+
+        float side = attackerNode == null || attackerNode.GlobalPosition.X <= targetNode.GlobalPosition.X ? 1f : -1f;
+        var effect = new AnimatedSprite2D
+        {
+            Name = "GolpeSombrioHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(10f * side, -8f),
+            Scale = new Vector2(0.48f * side, 0.48f),
+            RotationDegrees = -12f * side,
+            ZIndex = 126,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoPunhaladaNasCostas(Node2D targetNode, Node2D? attackerNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(PunhaladaNasCostasEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(PunhaladaNasCostasEffectPath);
+        if (texture == null)
+            return;
+
+        const int frameSize = 100;
+        int columns = texture.GetWidth() / frameSize;
+        int rows = texture.GetHeight() / frameSize;
+        if (columns <= 0 || rows <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "punhalada_nas_costas_hit";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameSize, row * frameSize, frameSize, frameSize)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        float side = attackerNode == null || attackerNode.GlobalPosition.X <= targetNode.GlobalPosition.X ? 1f : -1f;
+        var effect = new AnimatedSprite2D
+        {
+            Name = "PunhaladaNasCostasHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(6f * side, -18f),
+            Scale = new Vector2(1.05f * side, 1.05f),
+            RotationDegrees = -8f * side,
+            ZIndex = 128,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoEstocada(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        var frames = CriarFramesDeDiretorio(EstocadaEffectDir, "estocada_hit", false, 18f, 12);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "EstocadaHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -28f),
+            Scale = new Vector2(0.85f, 0.85f),
+            ZIndex = 132,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play("estocada_hit");
+    }
+
+    private void TocarEfeitoGolpeAtordoante(Node2D targetNode, float duration)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "golpe_atordoante_hit";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 12f);
+
+        for (int i = 1; i <= 8; i++)
+        {
+            string path = $"{GolpeAtordoanteEffectDir}/effect{i}.png";
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var texture = ResourceLoader.Load<Texture2D>(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+        }
+
+        if (frames.GetFrameCount(animName) == 0)
+            return;
+
+        var old = targetNode.GetNodeOrNull<Node2D>("GolpeAtordoanteStunEffect");
+        if (old != null && IsInstanceValid(old))
+            old.QueueFree();
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "GolpeAtordoanteStunEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -72f),
+            Scale = new Vector2(0.72f, 0.72f),
+            ZIndex = 129,
+            ZAsRelative = true,
+        };
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.15f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+        timer.Start();
+    }
+
+    private void TocarEfeitoCarnificinaImpactoNoChao(Vector2 globalPosition)
+    {
+        var frames = CriarFramesDeDiretorio(CarnificinaImpactEffectDir, "carnificina_impacto", false, 22f, 24);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "CarnificinaImpactEffect",
+            SpriteFrames = frames,
+            GlobalPosition = globalPosition,
+            Position = globalPosition,
+            Scale = new Vector2(1.05f, 1.05f),
+            ZIndex = 130,
+            ZAsRelative = false,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        Node? parent = GetTree()?.CurrentScene?.FindChild("World", true, false) ?? GetTree()?.CurrentScene;
+        parent?.AddChild(effect);
+        effect.GlobalPosition = globalPosition;
+        effect.Play("carnificina_impacto");
+    }
+
+    private void TocarEfeitoCarnificinaStun(Node2D targetNode, float duration)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        var frames = CriarFramesDeDiretorio(CarnificinaStunEffectDir, "carnificina_stun", true, 8f, 3);
+        if (frames == null)
+            return;
+
+        var old = targetNode.GetNodeOrNull<Node2D>("CarnificinaStunEffect");
+        if (old != null && IsInstanceValid(old))
+            old.QueueFree();
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "CarnificinaStunEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -74f),
+            Scale = new Vector2(0.95f, 0.95f),
+            ZIndex = 130,
+            ZAsRelative = true,
+        };
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.15f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play("carnificina_stun");
+        timer.Start();
+    }
+
+    private static SpriteFrames? CriarFramesDeDiretorio(string directory, string animName, bool loop, float speed, int maxFrames)
+    {
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, loop);
+        frames.SetAnimationSpeed(animName, speed);
+
+        for (int i = 1; i <= maxFrames; i++)
+        {
+            string path = $"{directory}/effect{i}.png";
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var texture = ResourceLoader.Load<Texture2D>(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+        }
+
+        return frames.GetFrameCount(animName) > 0 ? frames : null;
+    }
+
+    private void TocarEfeitoDesafioCaster(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        var frames = CriarFramesDeDiretorio(DesafioCasterEffectDir, "desafio_cast", false, 7f, 16);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "DesafioCasterEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -38f),
+            Scale = new Vector2(1.15f, 1.15f),
+            ZIndex = 134,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play("desafio_cast");
+    }
+
+    private void TocarEfeitoEspadaEstelar(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(EspadaEstelarEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(EspadaEstelarEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 6;
+        const string animName = "espada_estelar_hit";
+        float frameWidth = texture.GetWidth() / (float)columns;
+        int frameHeight = texture.GetHeight();
+        if (frameWidth <= 0f || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 14f);
+
+        for (int col = 0; col < columns; col++)
+        {
+            float x0 = col * frameWidth;
+            float x1 = col == columns - 1 ? texture.GetWidth() : (col + 1) * frameWidth;
+            var atlas = new AtlasTexture
+            {
+                Atlas = texture,
+                Region = new Rect2(x0, 0f, x1 - x0, frameHeight)
+            };
+            frames.AddFrame(animName, atlas);
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "EspadaEstelarHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -42f),
+            Scale = new Vector2(1.25f, 1.25f),
+            ZIndex = 135,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoEspinhos(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(EspinhosEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(EspinhosEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 10;
+        const int rows = 4;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        const string animName = "espinhos_hit";
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 22f);
+
+        for (int row = 0; row < 2; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "EspinhosHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, 12f),
+            Scale = new Vector2(1.15f, 1.15f),
+            ZIndex = 132,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoDesafioMob(Node2D targetNode, float duration)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        const string nodeName = "DesafioMobLoopEffect";
+        var existing = targetNode.GetNodeOrNull<Node2D>(nodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+
+        var frames = CriarFramesDeDiretorio(DesafioMobEffectDir, "desafio_taunt_loop", true, 12f, 16);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -42f),
+            Scale = new Vector2(1.0f, 1.0f),
+            ZIndex = 134,
+            ZAsRelative = true,
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play("desafio_taunt_loop");
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.2f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+        timer.Start();
+    }
+
+    private void TocarEfeitoSequenciaMortal(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        const string animName = "sequencia_mortal_hit";
+        var frames = CriarFramesDeDiretorio(SequenciaMortalEffectDir, animName, false, 18f, 15);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "SequenciaMortalHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -32f),
+            Scale = new Vector2(0.82f, 0.82f),
+            ZIndex = 130,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoExecucaoFinal(Node2D targetNode)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode) || !ResourceLoader.Exists(ExecucaoFinalEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(ExecucaoFinalEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 5;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "execucao_final_hit";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 18f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "ExecucaoFinalHitEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -34f),
+            Scale = new Vector2(0.82f, 0.82f),
+            ZIndex = 130,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
     private void OnStatusEffect(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath)
     {
+        if (effectId == "stun")
+        {
+            var stunnedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (stunnedPlayer != null && IsInstanceValid(stunnedPlayer))
+                TocarEfeitoGolpeAtordoante(stunnedPlayer, duration);
+            return;
+        }
+
+        if (effectId == "carnificina_stun")
+        {
+            var stunnedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (stunnedPlayer != null && IsInstanceValid(stunnedPlayer))
+                TocarEfeitoCarnificinaStun(stunnedPlayer, duration);
+            return;
+        }
+
+        if (effectId == "reflexos_assassinos")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoReflexosAssassinos(buffedPlayer);
+            return;
+        }
+
+        if (effectId == "arcane_shield")
+        {
+            var shieldedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (shieldedPlayer != null && IsInstanceValid(shieldedPlayer))
+            {
+                if (duration > 0f)
+                    TocarEfeitoEscudoArcano(shieldedPlayer, duration);
+                else
+                    RemoverEfeitoEscudoArcano(shieldedPlayer);
+            }
+            return;
+        }
+
+        if (effectId == "escudo_protetor")
+        {
+            var shieldedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (shieldedPlayer != null && IsInstanceValid(shieldedPlayer))
+                TocarEfeitoEscudoProtetor(shieldedPlayer, duration);
+            return;
+        }
+
+        if (effectId == "furia_elemental")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoFuriaElemental(buffedPlayer);
+            return;
+        }
+
+        if (effectId == "furia_berserker")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoBuffBerserker(buffedPlayer, FuriaBerserkerEffectPath, "FuriaBerserkerLoopEffect", duration);
+            return;
+        }
+
+        if (effectId == "frenesi_berserker")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoBuffBerserker(buffedPlayer, FrenesiBerserkerEffectPath, "FrenesiBerserkerLoopEffect", duration);
+            return;
+        }
+
+        if (effectId == "deus_da_guerra")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoBuffBerserker(buffedPlayer, DeusDaGuerraEffectPath, "DeusDaGuerraLoopEffect", duration);
+            return;
+        }
+
+        if (effectId == "sangue_de_ferro")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoBuffBerserker(buffedPlayer, SangueDeFerroEffectPath, "SangueDeFerroLoopEffect", duration);
+            return;
+        }
+
+        if (effectId == "sede_de_sangue")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoSedeDeSangue(buffedPlayer);
+            return;
+        }
+
+        if (effectId == "forca_brutal")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoForcaBrutal(buffedPlayer);
+            return;
+        }
+
+        if (effectId == "fortificacao")
+        {
+            var fortifiedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (fortifiedPlayer != null && IsInstanceValid(fortifiedPlayer))
+                TocarEfeitoFortificacao(fortifiedPlayer, duration);
+            return;
+        }
+
+        if (effectId == "muralha_inabalavel")
+        {
+            var fortifiedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (fortifiedPlayer != null && IsInstanceValid(fortifiedPlayer))
+                TocarEfeitoMuralhaInabalavel(fortifiedPlayer, duration);
+            return;
+        }
+
+        if (effectId == "berserk")
+        {
+            var buffedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (buffedPlayer != null && IsInstanceValid(buffedPlayer))
+                TocarEfeitoBerserk(buffedPlayer);
+            return;
+        }
+
+        if (effectId == "purificacao")
+        {
+            var purifiedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (purifiedPlayer != null && IsInstanceValid(purifiedPlayer))
+                TocarEfeitoPurificacao(purifiedPlayer);
+            return;
+        }
+
+        if (effectId == "bencao_sagrada")
+        {
+            var blessedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (blessedPlayer != null && IsInstanceValid(blessedPlayer))
+                TocarEfeitoBencaoSagrada(blessedPlayer, duration);
+            return;
+        }
+
+        if (effectId == "bencao_divina")
+        {
+            var blessedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+            if (blessedPlayer != null && IsInstanceValid(blessedPlayer))
+                TocarEfeitoBencaoSagrada(blessedPlayer, duration);
+            return;
+        }
+
         if (effectId != "boss_slime_slow")
             return;
 
         var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
         if (localPlayer != null && IsInstanceValid(localPlayer))
             TocarEfeitoBossSlimeSlow(localPlayer);
+    }
+
+    private void TocarEfeitoReflexosAssassinos(Node2D playerNode)
+    {
+        if (playerNode == null || !IsInstanceValid(playerNode) || !ResourceLoader.Exists(ReflexosAssassinosEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(ReflexosAssassinosEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 6;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "reflexos_assassinos_cast";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 20f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "ReflexosAssassinosCastEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -34f),
+            Scale = new Vector2(0.78f, 0.78f),
+            ZIndex = 131,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        playerNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoEscudoArcano(Node2D playerNode, float duration)
+    {
+        if (!ResourceLoader.Exists(EscudoArcanoEffectPath))
+            return;
+
+        RemoverEfeitoEscudoArcano(playerNode);
+
+        var scene = ResourceLoader.Load<PackedScene>(EscudoArcanoEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Name = ArcaneShieldEffectNodeName;
+        effect.Position = Vector2.Zero;
+        effect.ZAsRelative = true;
+        effect.ZIndex = 100;
+        playerNode.AddChild(effect);
+
+        if (duration > 0f)
+        {
+            var timer = new Timer
+            {
+                OneShot = true,
+                WaitTime = duration,
+            };
+            effect.AddChild(timer);
+            timer.Timeout += () =>
+            {
+                if (IsInstanceValid(effect))
+                    effect.QueueFree();
+            };
+            timer.Start();
+        }
+    }
+
+    private static void RemoverEfeitoEscudoArcano(Node2D playerNode)
+    {
+        var existing = playerNode.GetNodeOrNull<Node2D>(ArcaneShieldEffectNodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+    }
+
+    private void TocarEfeitoEscudoProtetor(Node2D playerNode, float duration)
+    {
+        if (playerNode == null || !IsInstanceValid(playerNode) || !ResourceLoader.Exists(EscudoProtetorEffectPath))
+            return;
+
+        const string nodeName = "EscudoProtetorLoopEffect";
+        var existing = playerNode.GetNodeOrNull<Node2D>(nodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+
+        var texture = ResourceLoader.Load<Texture2D>(EscudoProtetorEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 5;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "escudo_protetor_loop";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 16f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -20f),
+            Scale = new Vector2(1.05f, 1.05f),
+            ZIndex = 134,
+            ZAsRelative = true,
+        };
+
+        playerNode.AddChild(effect);
+        effect.Play(animName);
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.2f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+        timer.Start();
+    }
+
+    private void OnShieldUpdate(int currentShield, int maxShield)
+    {
+        if (currentShield > 0)
+            return;
+
+        var shieldedPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+        if (shieldedPlayer != null && IsInstanceValid(shieldedPlayer))
+            RemoverEfeitoEscudoArcano(shieldedPlayer);
+    }
+
+    private void TocarEfeitoFuriaElemental(Node2D playerNode)
+    {
+        if (!ResourceLoader.Exists(FuriaElementalEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(FuriaElementalEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(playerNode, effect);
+    }
+
+    private void TocarEfeitoInvestidaBrutal(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(InvestidaBrutalImpactEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(InvestidaBrutalImpactEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(targetNode, effect);
+    }
+
+    private void TocarEfeitoSedeDeSangue(Node2D playerNode)
+    {
+        if (!ResourceLoader.Exists(SedeDeSangueEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(SedeDeSangueEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(playerNode, effect);
+    }
+
+    private void TocarEfeitoForcaBrutal(Node2D playerNode)
+    {
+        if (!ResourceLoader.Exists(ForcaBrutalEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(ForcaBrutalEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        AnexarEfeitoNoAlvo(playerNode, effect);
+    }
+
+    private void TocarEfeitoFortificacao(Node2D playerNode, float duration)
+    {
+        if (playerNode == null || !IsInstanceValid(playerNode) || !ResourceLoader.Exists(FortificacaoEffectPath))
+            return;
+
+        const string nodeName = "FortificacaoLoopEffect";
+        var existing = playerNode.GetNodeOrNull<Node2D>(nodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+
+        var texture = ResourceLoader.Load<Texture2D>(FortificacaoEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 5;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "fortificacao_loop";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 14f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            SpriteFrames = frames,
+            Position = new Vector2(0f, 6f),
+            Scale = new Vector2(1.25f, 1.25f),
+            ZIndex = 134,
+            ZAsRelative = true,
+        };
+
+        playerNode.AddChild(effect);
+        effect.Play(animName);
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.2f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+        timer.Start();
+    }
+
+    private void TocarEfeitoMuralhaInabalavel(Node2D playerNode, float duration)
+    {
+        if (playerNode == null || !IsInstanceValid(playerNode) || !ResourceLoader.Exists(MuralhaInabalavelEffectPath))
+            return;
+
+        const string nodeName = "MuralhaInabalavelLoopEffect";
+        var existing = playerNode.GetNodeOrNull<Node2D>(nodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+
+        var texture = ResourceLoader.Load<Texture2D>(MuralhaInabalavelEffectPath);
+        if (texture == null)
+            return;
+
+        const int columns = 5;
+        const int rows = 4;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight() / rows;
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "muralha_inabalavel_loop";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 14f);
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int col = 0; col < columns; col++)
+            {
+                var atlas = new AtlasTexture
+                {
+                    Atlas = texture,
+                    Region = new Rect2(col * frameWidth, row * frameHeight, frameWidth, frameHeight)
+                };
+                frames.AddFrame(animName, atlas);
+            }
+        }
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            SpriteFrames = frames,
+            Position = new Vector2(0f, 18f),
+            Scale = new Vector2(1.35f, 1.35f),
+            ZIndex = 135,
+            ZAsRelative = true,
+        };
+
+        playerNode.AddChild(effect);
+        effect.Play(animName);
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = Mathf.Max(0.2f, duration),
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+        timer.Start();
+    }
+
+    private void TocarEfeitoBerserk(Node2D playerNode)
+    {
+        if (playerNode == null || !IsInstanceValid(playerNode))
+            return;
+
+        var frames = CriarFramesDeDiretorio(BerserkEffectDir, "berserk_cast", false, 6f, 8);
+        if (frames == null)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "BerserkCastEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -56f),
+            Scale = new Vector2(0.82f, 0.82f),
+            ZIndex = 135,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        playerNode.AddChild(effect);
+        var tween = effect.CreateTween();
+        tween.TweenProperty(effect, "position", new Vector2(0f, -112f), 1.25f)
+            .SetTrans(Tween.TransitionType.Sine)
+            .SetEase(Tween.EaseType.Out);
+        effect.Play("berserk_cast");
+    }
+
+    private static void TocarEfeitoBuffBerserker(Node2D playerNode, string effectPath, string nodeName, float duration)
+    {
+        if (playerNode == null || !IsInstanceValid(playerNode) || !ResourceLoader.Exists(effectPath))
+            return;
+
+        var existing = playerNode.GetNodeOrNull<Node2D>(nodeName);
+        if (existing != null && IsInstanceValid(existing))
+            existing.QueueFree();
+
+        var scene = ResourceLoader.Load<PackedScene>(effectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.Name = nodeName;
+        AnexarEfeitoNoAlvo(playerNode, effect);
+
+        if (duration <= 0f)
+            return;
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = duration,
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+        timer.Start();
     }
 
     private void OnBossCast(ulong bossId, string effectId, string skillName, float castSeconds, float effectDuration, bool isBuff)
@@ -1539,7 +3886,7 @@ public partial class EntityManager : Node
         {
             Name = "LevelUpEffect",
             SpriteFrames = frames,
-            Position = new Vector2(0, -42),
+            Position = new Vector2(0, 10),
             Scale = new Vector2(1.15f, 1.15f),
             ZIndex = 20,
             ZAsRelative = true,
@@ -1616,7 +3963,7 @@ public partial class EntityManager : Node
         return ImageTexture.CreateFromImage(image);
     }
 
-    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana)
+    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle)
     {
         if (_gameNet == null) return;
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
@@ -1635,6 +3982,21 @@ public partial class EntityManager : Node
         player.SetManaFromServer(mana, maxMana);
     }
 
+    private void OnSkillUseResult(int slotIndex, int skillId, bool success, float cooldownSeconds)
+    {
+        if (!success)
+            return;
+
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+        if (player == null || !IsInstanceValid(player))
+            return;
+
+        if (skillId == 15101)
+            TocarEfeitoCuraMenor(player);
+        else if (skillId == 15107)
+            TocarEfeitoLuzRestauradora(player);
+    }
+
     private static void SetRemotePlayerDowned(Node2D node)
     {
         if (!node.IsInGroup("PlayersDowned"))
@@ -1649,6 +4011,8 @@ public partial class EntityManager : Node
     public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving, bool sprinting = false)
     {
         if (!IsInstanceValid(entity)) return;
+        if (EstaComAnimacaoTravada(entity, MetaMachadoGiratorioUntil))
+            return;
 
         if (entity is Inimigo inimigo)
         {
@@ -1679,6 +4043,20 @@ public partial class EntityManager : Node
             sprite.Play(targetAnim);
     }
 
+    private static bool EstaComAnimacaoTravada(Node2D entity, string metaName)
+    {
+        if (!entity.HasMeta(metaName))
+            return false;
+
+        double until = entity.GetMeta(metaName).AsDouble();
+        double now = Time.GetTicksMsec() / 1000.0;
+        if (until > now)
+            return true;
+
+        entity.RemoveMeta(metaName);
+        return false;
+    }
+
     private static void TriggerRemotePlayerAttack(Node2D entity, Vector2 direction)
     {
         var sprite = entity.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
@@ -1691,7 +4069,10 @@ public partial class EntityManager : Node
         string animation = $"{prefix}_attack_{dirName}";
         if (sprite.SpriteFrames.HasAnimation(animation))
         {
-            sprite.SpeedScale = 2.0f;
+            if (prefix.Contains("machado", System.StringComparison.OrdinalIgnoreCase))
+                sprite.SpeedScale = dirName is "left" or "right" ? 1.0f : 1.15f;
+            else
+                sprite.SpeedScale = 2.0f;
             sprite.Play(animation);
             if (!sprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => sprite.SpeedScale = 1.0f)))
                 sprite.AnimationFinished += () => sprite.SpeedScale = 1.0f;
@@ -1713,6 +4094,31 @@ public partial class EntityManager : Node
         sprite.Play(animation);
         if (!sprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => sprite.SpeedScale = 1.0f)))
             sprite.AnimationFinished += () => sprite.SpeedScale = 1.0f;
+    }
+
+    private static void TriggerRemotePlayerJump(Node2D entity, Vector2 direction)
+    {
+        var sprite = entity.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        if (sprite?.SpriteFrames == null) return;
+
+        string dirName = DirectionUtil.VectorToCardinal(direction);
+        string animation = $"jump_{dirName}";
+        if (!sprite.SpriteFrames.HasAnimation(animation))
+            return;
+
+        var animatedSprites = new List<AnimatedSprite2D>();
+        ColetarAnimatedSprites(entity, animatedSprites);
+        foreach (var animSprite in animatedSprites)
+        {
+            if (animSprite?.SpriteFrames == null || !animSprite.SpriteFrames.HasAnimation(animation))
+                continue;
+
+            animSprite.SpriteFrames.SetAnimationLoop(animation, false);
+            animSprite.SpeedScale = 1.15f;
+            animSprite.Play(animation);
+            if (!animSprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => animSprite.SpeedScale = 1.0f)))
+                animSprite.AnimationFinished += () => animSprite.SpeedScale = 1.0f;
+        }
     }
 
     private static string ResolverAnimacaoBackJump(SpriteFrames frames, string dirName)
@@ -1739,19 +4145,241 @@ public partial class EntityManager : Node
             HandleSummonSheriganAction(entityId);
             return;
         }
+        if (actionType == PlayerActionInvisibility)
+        {
+            ApplyRemoteInvisibility(entityId, Mathf.Max(1f, direction.X));
+            return;
+        }
+        if (actionType == PlayerActionReveal)
+        {
+            SetRemoteInvisibility(entityId, false);
+            return;
+        }
+        if (actionType == PlayerActionArcaneTeleportEnter || actionType == PlayerActionArcaneTeleportExit)
+        {
+            HandleArcaneTeleportAction(entityId, actionType == PlayerActionArcaneTeleportEnter, direction);
+            return;
+        }
 
-        if (actionType != PlayerActionAttack && actionType != PlayerActionBackJump) return;
-        if (!_networkNodes.TryGetValue(entityId, out var entity) || !IsInstanceValid(entity)) return;
+        if (actionType != PlayerActionAttack
+            && actionType != PlayerActionBackJump
+            && actionType != PlayerActionGolpesFreneticos
+            && actionType != PlayerActionCarnificinaJump) return;
+        Node2D? entity = ObterNoCombate(entityId);
+        if (entity == null || !IsInstanceValid(entity)) return;
 
         if (direction.LengthSquared() < 0.001f && _lastDirections.TryGetValue(entityId, out var lastDirection))
             direction = lastDirection;
         if (direction.LengthSquared() < 0.001f)
             direction = Vector2.Down;
 
-        if (actionType == PlayerActionBackJump)
+        if (actionType == PlayerActionGolpesFreneticos)
+        {
+            TriggerRemotePlayerAttack(entity, direction.Normalized());
+            TocarProjetilGolpesFreneticos(entity, direction.Normalized());
+        }
+        else if (actionType == PlayerActionCarnificinaJump)
+        {
+            TriggerRemotePlayerJump(entity, direction.Normalized());
+        }
+        else if (actionType == PlayerActionBackJump)
+        {
+            CriarRastroRemoto(entity, entity.GlobalPosition, entity.GlobalPosition - direction.Normalized() * 160f);
             TriggerRemotePlayerBackJump(entity, direction.Normalized());
+        }
         else
             TriggerRemotePlayerAttack(entity, direction.Normalized());
+    }
+
+    private void HandleArcaneTeleportAction(ulong entityId, bool entering, Vector2 direction)
+    {
+        Node2D? entity = null;
+        if (entityId == _gameNet?.LocalPlayerId)
+            entity = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+        else if (_networkNodes.TryGetValue(entityId, out var remoteEntity) && IsInstanceValid(remoteEntity))
+            entity = remoteEntity;
+
+        if (entity == null || !IsInstanceValid(entity))
+            return;
+
+        if (direction.LengthSquared() < 0.001f && _lastDirections.TryGetValue(entityId, out var lastDirection))
+            direction = lastDirection;
+        if (direction.LengthSquared() < 0.001f)
+            direction = Vector2.Down;
+
+        Vector2 dir = direction.Normalized();
+        Vector2 portalPosition = entering
+            ? entity.GlobalPosition + dir * 40f
+            : direction;
+
+        TocarEfeitoTeleporteArcano(portalPosition);
+        SetEntityVisualAlpha(entity, entering ? 0f : 1f);
+    }
+
+    private void TocarEfeitoTeleporteArcano(Vector2 globalPosition)
+    {
+        if (!ResourceLoader.Exists(TeleporteArcanoPortalEffectPath))
+            return;
+
+        var scene = ResourceLoader.Load<PackedScene>(TeleporteArcanoPortalEffectPath);
+        var effect = scene?.Instantiate<Node2D>();
+        if (effect == null)
+            return;
+
+        effect.GlobalPosition = globalPosition;
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            AddChild(effect);
+    }
+
+    private static void SetEntityVisualAlpha(Node entity, float alpha)
+    {
+        if (entity is CanvasItem canvas)
+        {
+            var color = canvas.Modulate;
+            color.A = alpha;
+            canvas.Modulate = color;
+        }
+
+        foreach (var child in entity.GetChildren())
+        {
+            if (child is CanvasItem childCanvas)
+            {
+                var color = childCanvas.Modulate;
+                color.A = alpha;
+                childCanvas.Modulate = color;
+            }
+        }
+    }
+
+    private void CriarRastroRemoto(Node2D entity, Vector2 origem, Vector2 destino)
+    {
+        if (entity == null || !IsInstanceValid(entity) || !IsInsideTree())
+            return;
+
+        var source = entity.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite");
+        if (source == null || !source.Visible || source.SpriteFrames == null)
+            return;
+
+        float distancia = origem.DistanceTo(destino);
+        if (distancia < RemoteDashTrailMinDistance)
+            return;
+
+        int count = Mathf.Clamp((int)(distancia / 42f), 3, RemoteDashTrailGhostCount);
+        for (int i = 0; i < count; i++)
+        {
+            float t = count <= 1 ? 0f : i / (float)(count - 1);
+            Vector2 pos = origem.Lerp(destino, t);
+            float alpha = Mathf.Lerp(0.42f, 0.14f, t);
+            CriarGhostRemoto(entity, source, pos, alpha, i * 0.035f);
+        }
+    }
+
+    private void CriarGhostRemoto(Node2D entity, AnimatedSprite2D source, Vector2 globalPosition, float alpha, float delay)
+    {
+        string anim = source.Animation.ToString();
+        if (string.IsNullOrWhiteSpace(anim) || source.SpriteFrames == null || !source.SpriteFrames.HasAnimation(anim))
+            return;
+
+        int frameCount = source.SpriteFrames.GetFrameCount(anim);
+        if (frameCount <= 0)
+            return;
+
+        int frame = Mathf.Clamp(source.Frame, 0, frameCount - 1);
+        Texture2D texture = source.SpriteFrames.GetFrameTexture(anim, frame);
+        if (texture == null)
+            return;
+
+        var ghost = new Node2D
+        {
+            Name = "RemoteDashTrailGhost",
+            GlobalPosition = globalPosition,
+            ZIndex = Mathf.Max(-1, entity.ZIndex - 1),
+            ZAsRelative = false,
+            Modulate = new Color(1f, 1f, 1f, alpha),
+        };
+
+        var sprite = new Sprite2D
+        {
+            Name = "AnimatedSprite_Ghost",
+            Texture = texture,
+            Position = source.Position,
+            Scale = source.Scale,
+            Offset = source.Offset,
+            Centered = source.Centered,
+            FlipH = source.FlipH,
+            FlipV = source.FlipV,
+            ZIndex = source.ZIndex,
+            ZAsRelative = source.ZAsRelative,
+            Modulate = source.Modulate,
+        };
+        ghost.AddChild(sprite);
+
+        var parent = entity.GetParent();
+        if (parent == null)
+            return;
+
+        parent.AddChild(ghost);
+        var tween = ghost.CreateTween();
+        if (delay > 0f)
+            tween.TweenInterval(delay);
+        tween.TweenProperty(ghost, "modulate:a", 0f, RemoteDashTrailDuration)
+            .SetTrans(Tween.TransitionType.Cubic)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(ghost))
+                ghost.QueueFree();
+        }));
+    }
+
+    private void ApplyRemoteInvisibility(ulong entityId, float duration)
+    {
+        SetRemoteInvisibility(entityId, true);
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = duration,
+        };
+        AddChild(timer);
+        timer.Timeout += () =>
+        {
+            SetRemoteInvisibility(entityId, false);
+            timer.QueueFree();
+        };
+        timer.Start();
+    }
+
+    private void SetRemoteInvisibility(ulong entityId, bool invisible)
+    {
+        float alpha = invisible ? 0f : 1f;
+        if (invisible)
+        {
+            var localTargetOwner = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            localTargetOwner?.LimparTargetSeFor(entityId);
+        }
+
+        if (entityId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            localPlayer?.ApplyInvisibilityVisual(invisible, alpha);
+            return;
+        }
+
+        if (_networkNodes.TryGetValue(entityId, out var entity) && IsInstanceValid(entity))
+            SetRemoteVisualAlpha(entity, alpha);
+
+        if (_remoteSheriganPets.TryGetValue(entityId, out var pet) && IsInstanceValid(pet))
+            SetRemoteVisualAlpha(pet, alpha);
+    }
+
+    private static void SetRemoteVisualAlpha(Node2D node, float alpha)
+    {
+        node.Modulate = new Color(1f, 1f, 1f, Mathf.Clamp(alpha, 0f, 1f));
     }
 
     private void HandleSummonSheriganAction(ulong entityId)
@@ -1847,6 +4475,12 @@ public partial class EntityManager : Node
         if (_gameNet == null) return;
         if (projectileType != 2 && entityId != _gameNet.LocalPlayerId && !_networkNodes.TryGetValue(entityId, out var _)) return;
 
+        if (projectileType == 3)
+        {
+            SpawnSangramentoMortalProjectile(originX, originY, dirX, dirY);
+            return;
+        }
+
         string scenePath = projectileType switch
         {
             0 => "res://resources/Projetil/ProjetilArqueiro.tscn",
@@ -1880,6 +4514,66 @@ public partial class EntityManager : Node
             };
             proj.DefinirDirecao(new Vector2(dirX, dirY));
         }
+    }
+
+    private void SpawnSangramentoMortalProjectile(float originX, float originY, float dirX, float dirY)
+    {
+        if (!ResourceLoader.Exists(SangramentoMortalProjectilePath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(SangramentoMortalProjectilePath);
+        if (texture == null)
+            return;
+
+        const int columns = 6;
+        int frameWidth = texture.GetWidth() / columns;
+        int frameHeight = texture.GetHeight();
+        if (frameWidth <= 0 || frameHeight <= 0)
+            return;
+
+        const string animName = "sangramento_mortal_axe";
+        var frames = new SpriteFrames();
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 18f);
+        for (int col = 0; col < columns; col++)
+        {
+            frames.AddFrame(animName, new AtlasTexture
+            {
+                Atlas = texture,
+                Region = new Rect2(col * frameWidth, 0, frameWidth, frameHeight)
+            });
+        }
+
+        Vector2 direction = new Vector2(dirX, dirY).Normalized();
+        if (direction == Vector2.Zero)
+            direction = Vector2.Right;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "SangramentoMortalProjectile",
+            SpriteFrames = frames,
+            GlobalPosition = new Vector2(originX, originY),
+            Scale = new Vector2(0.45f, 0.45f),
+            Rotation = direction.Angle(),
+            ZIndex = 122,
+            ZAsRelative = false,
+        };
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(effect);
+        else
+            AddChild(effect);
+
+        effect.Play(animName);
+        var tween = CreateTween();
+        tween.TweenProperty(effect, "global_position", effect.GlobalPosition + direction * 340f, 0.45f);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        }));
     }
 
     private void OnLootSpawn(ulong lootId, float x, float y, int itemId, int quantity)
@@ -2203,6 +4897,7 @@ public partial class EntityManager : Node
                 _remoteStates.Remove(kvp.Key);
                 _previousPositions.Remove(kvp.Key);
                 _lastDirections.Remove(kvp.Key);
+                _lastDashTrailAt.Remove(kvp.Key);
                 continue;
             }
 
@@ -2240,6 +4935,14 @@ public partial class EntityManager : Node
             }
             else
             {
+                float distanciaAtualizacao = node.GlobalPosition.DistanceTo(cur.Position);
+                if (distanciaAtualizacao >= RemoteDashTrailMinDistance
+                    && (!_lastDashTrailAt.TryGetValue(kvp.Key, out var lastTrail) || now - lastTrail >= 0.22))
+                {
+                    CriarRastroRemoto(node, node.GlobalPosition, cur.Position);
+                    _lastDashTrailAt[kvp.Key] = now;
+                }
+
                 float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
                 UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
@@ -2325,7 +5028,27 @@ public partial class EntityManager : Node
         var color = inimigo.IsBoss || perseguindoOuAtacando
             ? new Color(1.0f, 0.22f, 0.18f)
             : Colors.White;
-        label.AddThemeColorOverride("default_color", color);
+        AplicarEstiloNomeMob(label, color);
+    }
+
+    private static void AplicarEstiloNomeMob(RichTextLabel label, Color cor)
+    {
+        label.AddThemeFontOverride("normal_font", GetBoldFont());
+        label.AddThemeFontOverride("bold_font", GetBoldFont());
+        label.AddThemeFontSizeOverride("normal_font_size", 20);
+        label.AddThemeFontSizeOverride("bold_font_size", 20);
+        label.AddThemeColorOverride("default_color", cor);
+        label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+        label.AddThemeConstantOverride("outline_size", 4);
+    }
+
+    private static void AplicarEstiloNomeMob(Label label, Color cor)
+    {
+        label.AddThemeFontOverride("font", GetBoldFont());
+        label.AddThemeFontSizeOverride("font_size", 16);
+        label.AddThemeColorOverride("font_color", cor);
+        label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+        label.AddThemeConstantOverride("outline_size", 4);
     }
 
     private static bool EhMobPassivoVisual(string mobType)
@@ -2476,6 +5199,7 @@ public partial class EntityManager : Node
         _remoteStates.Clear();
         _lastDirections.Clear();
         _previousPositions.Clear();
+        _lastDashTrailAt.Clear();
         _pendingSpawns.Clear();
         _worldNode = null;
         _flushRetryCount = 0;
@@ -2517,6 +5241,7 @@ public partial class EntityManager : Node
         _remoteStates.Remove(entityId);
         _lastDirections.Remove(entityId);
         _previousPositions.Remove(entityId);
+        _lastDashTrailAt.Remove(entityId);
         _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
         if (_remoteSheriganPets.TryGetValue(entityId, out var pet) && IsInstanceValid(pet))
             pet.QueueFree();
@@ -2550,13 +5275,16 @@ public partial class EntityManager : Node
             _gameNet.OnStatUpdate -= OnStatUpdate;
             _gameNet.OnProjectileSpawn -= OnProjectileSpawn;
             _gameNet.OnItemUseResult -= OnItemUseResult;
+            _gameNet.OnSkillUseResult -= OnSkillUseResult;
             _gameNet.OnPartyData -= OnPartyDataChanged;
             _gameNet.OnPartyMemberUpdate -= OnPartyMemberChanged;
             _gameNet.OnGuildData -= OnGuildDataChanged;
             _gameNet.OnGuildMemberUpdate -= OnGuildMemberChanged;
             _gameNet.OnGuildCleared -= OnGuildClearedHandler;
             _gameNet.OnStatusEffect -= OnStatusEffect;
+            _gameNet.OnShieldUpdate -= OnShieldUpdate;
             _gameNet.OnBossCast -= OnBossCast;
+            _gameNet.OnSkillAreaEffect -= OnSkillAreaEffect;
         }
     }
 

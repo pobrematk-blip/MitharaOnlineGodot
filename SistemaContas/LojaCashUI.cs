@@ -245,12 +245,6 @@ public partial class LojaCashUI : Control
             return;
         }
 
-        if (itemId == -1)
-        {
-            MostrarFeedback("❌ Compra de slot precisa ser validada pelo servidor.", new Color(0.9f, 0.3f, 0.3f));
-            return;
-        }
-
         MostrarFeedback("⏳ Solicitando compra...", new Color(0.9f, 0.9f, 0.3f));
 
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");

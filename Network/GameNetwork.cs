@@ -56,6 +56,7 @@ public partial class GameNetwork : Node
     public int LocalChannelId { get; private set; }
     public int Gold { get; set; }
     public int CashBalance { get; private set; }
+    public int CharacterSlotLimit { get; private set; } = 3;
     public int GuildId { get; set; } = -1;
     public string GuildName { get; set; } = "";
     public string GuildTag { get; set; } = "";
@@ -110,10 +111,13 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
-    [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana);
+    [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle);
     [Signal] public delegate void OnVipStatusEventHandler(long expiryBinary);
     [Signal] public delegate void OnStatusEffectEventHandler(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath);
+    [Signal] public delegate void OnShieldUpdateEventHandler(int currentShield, int maxShield);
     [Signal] public delegate void OnBossCastEventHandler(ulong bossId, string effectId, string skillName, float castSeconds, float effectDuration, bool isBuff);
+    [Signal] public delegate void OnSkillUseResultEventHandler(int slotIndex, int skillId, bool success, float cooldownSeconds);
+    [Signal] public delegate void OnSkillAreaEffectEventHandler(int skillId, float x, float y, float radius, float duration);
     [Signal] public delegate void OnTalentDataEventHandler(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados);
     [Signal] public delegate void OnSkillBarDataEventHandler(Godot.Collections.Array<int> skillIds);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
@@ -608,6 +612,15 @@ public partial class GameNetwork : Node
             case PacketId.S2C_BossCast:
                 HandleBossCast(r);
                 break;
+            case PacketId.S2C_SkillUseResult:
+                HandleSkillUseResult(r);
+                break;
+            case PacketId.S2C_ShieldUpdate:
+                HandleShieldUpdate(r);
+                break;
+            case PacketId.S2C_SkillAreaEffect:
+                HandleSkillAreaEffect(r);
+                break;
             case PacketId.S2C_MapEditorTileData:
                 HandleMapEditorTileData(r);
                 break;
@@ -953,13 +966,50 @@ public partial class GameNetwork : Node
         int power = r.GetInt();
         string iconPath = r.GetString();
 
+        if (!isDebuff && string.Equals(effectId, "invisibility", StringComparison.OrdinalIgnoreCase) && duration <= 0f)
+        {
+            var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            player?.ApplyInvisibilityVisual(false, 1f);
+        }
+
         if (isDebuff && string.Equals(effectId, "boss_slime_slow", StringComparison.OrdinalIgnoreCase))
         {
             var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
             player?.ApplyTemporaryBuff("slow", duration, power);
         }
+        else if (!isDebuff && string.Equals(effectId, "invisibility", StringComparison.OrdinalIgnoreCase) && duration > 0f)
+        {
+            var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            player?.ApplyTemporaryBuff("invisibility", duration, power);
+        }
+        else if (!isDebuff && string.Equals(effectId, "arcane_shield", StringComparison.OrdinalIgnoreCase) && duration > 0f)
+        {
+            var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            if (player != null)
+            {
+                var timer = new Timer { OneShot = true, WaitTime = duration };
+                player.AddChild(timer);
+                timer.Timeout += () =>
+                {
+                    if (IsInstanceValid(player) && player.CurrentArcaneShield > 0)
+                        player.SetArcaneShieldFromServer(0, 0);
+                    if (IsInstanceValid(timer))
+                        timer.QueueFree();
+                };
+                timer.Start();
+            }
+        }
 
         EmitSignal(SignalName.OnStatusEffect, effectId, displayName, isDebuff, duration, power, iconPath);
+    }
+
+    private void HandleShieldUpdate(NetDataReader r)
+    {
+        int currentShield = r.GetInt();
+        int maxShield = r.GetInt();
+        var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+        player?.SetArcaneShieldFromServer(currentShield, maxShield);
+        EmitSignal(SignalName.OnShieldUpdate, currentShield, maxShield);
     }
 
     private void HandleBossCast(NetDataReader r)

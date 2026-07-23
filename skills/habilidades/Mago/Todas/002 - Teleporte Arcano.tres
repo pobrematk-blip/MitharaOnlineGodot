@@ -1,15 +1,15 @@
 [gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/39.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/36.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11002
 Nome = "Teleporte Arcano"
-Descricao = "Teleporta 4 tiles."
+Descricao = "Abre um portal sombrio e teleporta 10 tiles para frente."
 Icone = ExtResource("2_icon")
-Valor = 0
+Valor = 320
 CustoMana = 15
 ClasseRestrita = "Mago"
 Cooldown = 15

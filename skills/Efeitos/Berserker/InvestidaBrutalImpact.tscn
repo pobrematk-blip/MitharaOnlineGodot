@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://skills/Efeitos/SkillEffectVisual.cs" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://skills/Efeitos/Berserker/InvestidaBrutalImpactFrames.tres" id="2_frames"]
+
+[node name="InvestidaBrutalImpact" type="Node2D"]
+z_index = 128
+z_as_relative = true
+script = ExtResource("1_script")
+LifetimeSeconds = 0.9
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -34)
+scale = Vector2(0.55, 0.55)
+z_index = 128
+z_as_relative = true
+sprite_frames = ExtResource("2_frames")
+animation = &"default"
+playing = true

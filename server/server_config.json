@@ -238,40 +238,40 @@
   ],
   "NpcSpawnPoints": [
     {
-      "X": 1109,
-      "Y": 957,
+      "X": 1077,
+      "Y": 778,
       "PrefabId": "banqueiro",
       "Map": "main",
       "Direction": "down",
       "Enabled": true
     },
     {
-      "X": 1098,
-      "Y": 1177,
+      "X": 1557,
+      "Y": 762,
       "PrefabId": "guarda_solareth",
       "Map": "main",
       "Direction": "down",
       "Enabled": true
     },
     {
-      "X": 1130,
-      "Y": 1040,
+      "X": 710,
+      "Y": 780,
       "PrefabId": "general_merchant",
       "Map": "main",
       "Direction": "down",
       "Enabled": true
     },
     {
-      "X": 1070,
-      "Y": 1025,
+      "X": 1287,
+      "Y": 775,
       "PrefabId": "refiner",
       "Map": "main",
       "Direction": "down",
       "Enabled": true
     },
     {
-      "X": 1145,
-      "Y": 1040,
+      "X": 901,
+      "Y": 779,
       "PrefabId": "merchant_auctioneer",
       "Map": "main",
       "Direction": "down",

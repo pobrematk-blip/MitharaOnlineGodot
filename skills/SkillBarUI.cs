@@ -10,11 +10,22 @@ public partial class SkillBarUI : Control
     private const int TiroPenetranteSkillId = 10203;
     private const int DisparoCriticoSkillId = 10205;
     private const int TiroExecucaoSkillId = 10209;
+    private const int GolpeSombrioSkillId = 12201;
+    private const int InvisibilidadeProfundaSkillId = 12202;
+    private const int ExecucaoFinalSkillId = 12209;
+    private const int MarcaDaMorteAssassinoSkillId = 12206;
+    private const int MarcaDaMorteSlayerSkillId = 13202;
+    private const float GolpeSombrioMeleeRange = 96f;
+    private const float MarcaDaMorteRange = 32f * 10f;
     private const float SkillChargeMaxSeconds = 2.0f;
     private const string MiraApuradaEffectPath = "res://skills/Efeitos/Arqueiro/MiraApuradaEffect.tscn";
     private const string DisparoCriticoEffectPath = "res://skills/Efeitos/Arqueiro/DisparoCriticoEffect.tscn";
     private const string SegundoFolegoEffectPath = "res://skills/Efeitos/SegundoFolegoEffect.tscn";
     private const string TiroExecucaoEffectPath = "res://skills/Efeitos/Arqueiro/TiroExecucaoEffect.tscn";
+    private const string GolpeSombrioEffectDir = "res://skills/Animacao/50 Animated Effects v5/50 Animated Effects v5/8";
+    private const string ExecucaoFinalEffectPath = "res://skills/Animacao/175.png";
+    private const string InvisibilidadeProfundaEffectDir = "res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/64";
+    private const string MarcaDaMorteEffectDir = "res://skills/Animacao/50 Animated Effects v5/50 Animated Effects v5/38";
 
     private SkillBarSlotUI[,] _slots = new SkillBarSlotUI[2, SLOT_COUNT];
 
@@ -77,6 +88,7 @@ public partial class SkillBarUI : Control
             net.OnPartyMemberUpdate -= OnPartyMemberUpdate;
             net.OnStatusEffect -= OnStatusEffect;
             net.OnItemUseResult -= OnItemUseResult;
+            net.OnSkillUseResult -= OnSkillUseResult;
         }
     }
 
@@ -88,6 +100,29 @@ public partial class SkillBarUI : Control
 
         net.OnItemUseResult -= OnItemUseResult;
         net.OnItemUseResult += OnItemUseResult;
+        net.OnSkillUseResult -= OnSkillUseResult;
+        net.OnSkillUseResult += OnSkillUseResult;
+    }
+
+    private void OnSkillUseResult(int slotIndex, int skillId, bool success, float cooldownSeconds)
+    {
+        if (!success || cooldownSeconds <= 0f)
+            return;
+
+        int row = slotIndex / SLOT_COUNT;
+        int col = slotIndex % SLOT_COUNT;
+        if (row < 0 || row >= _slots.GetLength(0) || col < 0 || col >= _slots.GetLength(1))
+            return;
+
+        var slot = _slots[row, col];
+        if (slot == null)
+            return;
+
+        var skill = ObterSkillDoSlot(row, col);
+        if (skill != null && skill.SkillId != skillId)
+            return;
+
+        slot.StartCooldown(cooldownSeconds);
     }
 
     private void OnItemUseResult(int health, int maxHealth, int mana, int maxMana, int itemId, float cooldownSeconds)
@@ -308,12 +343,20 @@ public partial class SkillBarUI : Control
 
     private void OnStatusEffect(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath)
     {
-        if (string.IsNullOrWhiteSpace(effectId) || duration <= 0f)
+        if (string.IsNullOrWhiteSpace(effectId))
             return;
 
         EnsureBuffContainer();
         if (_buffContainer == null)
             return;
+
+        if (duration <= 0f)
+        {
+            if (_activeStatusIcons.TryGetValue(effectId, out var removeIcon) && IsInstanceValid(removeIcon))
+                removeIcon.QueueFree();
+            _activeStatusIcons.Remove(effectId);
+            return;
+        }
 
         if (_activeStatusIcons.TryGetValue(effectId, out var existing) && IsInstanceValid(existing))
         {
@@ -560,19 +603,24 @@ public partial class SkillBarUI : Control
             if (comp != null)
             {
                 int slotIndex = row * SLOT_COUNT + col;
-                comp.ActivateSlotIndex(slotIndex);
                 var skill = ObterSkillDoSlot(row, col);
                 if (skill == null && comp.SkillSlots != null && slotIndex >= 0 && slotIndex < comp.SkillSlots.Length)
                     skill = comp.SkillSlots[slotIndex];
 
+                if (skill != null && !TemManaParaSkill(skill, player as Player, true))
+                    return;
+
+                comp.ActivateSlotIndex(slotIndex);
+
                 if (skill != null)
                 {
                     GD.Print($"[SKILL BAR] Skill visual slot={slotIndex} id={skill.SkillId} nome={skill.Nome}");
-                    slot.StartCooldown(skill.Cooldown);
                     MostrarBuffSeNecessario(skill);
                     AplicarBonusVisualBuffArqueiro(player, skill);
                     TocarEfeitoSegundoFolego(player as Node2D, skill);
                     TocarEfeitoTiroExecucaoAoUsar(player as Player, skill);
+                    TocarEfeitoInvisibilidadeProfunda(player as Node2D, skill);
+                    TocarEfeitoMarcaDaMorteAoUsar(player as Player, skill);
                 }
             }
         }
@@ -588,6 +636,9 @@ public partial class SkillBarUI : Control
 
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
         if (player == null)
+            return false;
+
+        if (!TemManaParaSkill(skill, player, true))
             return false;
 
         Vector2 targetPosition = player.GlobalPosition + DirectionUtil.DirectionToVector(player.CurrentDirection ?? "down") * 50f;
@@ -639,8 +690,41 @@ public partial class SkillBarUI : Control
         if (comp == null)
             return;
 
+        if (!TemManaParaSkill(skill, player, true))
+        {
+            player.CancelarCarregamentoTiroPreciso();
+            return;
+        }
+
         comp.ActivateSlotIndex(slotIndex, charge);
-        slot.StartCooldown(skill.Cooldown);
+    }
+
+    private bool TemManaParaSkill(SkillResource skill, Player player, bool mostrarMensagem)
+    {
+        if (skill == null || player == null || skill.CustoMana <= 0)
+            return true;
+
+        if (player.CurrentMana >= skill.CustoMana)
+            return true;
+
+        string nome = string.IsNullOrWhiteSpace(skill.Nome) ? "skill" : skill.Nome;
+        string message = $"Mana insuficiente para usar {nome}.";
+        if (mostrarMensagem)
+            MostrarMensagemSistema(message);
+        GD.Print($"[SKILL BAR] {message} Mana atual={player.CurrentMana}, custo={skill.CustoMana}");
+        return false;
+    }
+
+    private void MostrarMensagemSistema(string message)
+    {
+        var chat = GetNodeOrNull<ChatUI>("/root/main/HUD/ChatUI");
+        if (chat == null)
+            chat = GetNodeOrNull<ChatUI>("/root/Main/HUD/ChatUI");
+
+        if (chat != null)
+            chat.AddSystemMessage(message);
+        else
+            GameNetwork.Log(message);
     }
 
     private SkillResource ObterSkillDoSlot(int row, int col)
@@ -853,6 +937,209 @@ public partial class SkillBarUI : Control
         GD.Print($"[TIRO EXECUCAO] Alvo marcado em {targetNode.Name}.");
     }
 
+    private void TocarVisualGolpeSombrio(Player player, SkillResource skill)
+    {
+        if (player == null || !EhGolpeSombrio(skill))
+            return;
+
+        Node2D targetNode = null;
+        Vector2 targetPosition = player.GlobalPosition + DirectionUtil.DirectionToVector(player.CurrentDirection ?? "down") * GolpeSombrioMeleeRange;
+        if (player.TryGetSelectedCombatTarget(out var selectedTargetNode)
+            && selectedTargetNode != null
+            && IsInstanceValid(selectedTargetNode)
+            && player.GlobalPosition.DistanceTo(selectedTargetNode.GlobalPosition) <= GolpeSombrioMeleeRange)
+        {
+            targetNode = selectedTargetNode;
+            targetPosition = selectedTargetNode.GlobalPosition;
+        }
+        else if (player.TryEnsureSelectedEnemyTarget(GolpeSombrioMeleeRange, out var ensuredTargetNode, out var ensuredTargetPosition))
+        {
+            targetNode = ensuredTargetNode;
+            targetPosition = ensuredTargetPosition;
+        }
+
+        if (targetNode == null || !IsInstanceValid(targetNode))
+        {
+            GD.Print("[GOLPE SOMBRIO] Nenhum alvo em alcance corpo a corpo.");
+            return;
+        }
+
+        player.TocarAnimacaoSkillMelee(targetPosition, 1.2f);
+        TocarEfeitoGolpeSombrio(targetNode, player.GlobalPosition);
+    }
+
+    private void TocarEfeitoGolpeSombrio(Node2D targetNode, Vector2 attackerPosition)
+    {
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "golpe_sombrio";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 14f);
+
+        for (int i = 1; i <= 8; i++)
+        {
+            string path = $"{GolpeSombrioEffectDir}/effect{i}.png";
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var texture = ResourceLoader.Load<Texture2D>(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+        }
+
+        if (frames.GetFrameCount(animName) == 0)
+            return;
+
+        float side = attackerPosition.X <= targetNode.GlobalPosition.X ? 1f : -1f;
+        var effect = new AnimatedSprite2D
+        {
+            Name = "GolpeSombrioEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(10f * side, -8f),
+            Scale = new Vector2(0.34f * side, 0.34f),
+            RotationDegrees = -12f * side,
+            ZIndex = 126,
+            ZAsRelative = true,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoInvisibilidadeProfunda(Node2D player, SkillResource skill)
+    {
+        if (player == null || !EhInvisibilidadeProfunda(skill))
+            return;
+
+        var frames = new SpriteFrames();
+        const string animName = "invisibilidade_profunda";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, false);
+        frames.SetAnimationSpeed(animName, 12f);
+
+        for (int i = 2; i <= 10; i++)
+        {
+            string path = $"{InvisibilidadeProfundaEffectDir}/effect{i}.png";
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var texture = ResourceLoader.Load<Texture2D>(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+        }
+
+        if (frames.GetFrameCount(animName) == 0)
+            return;
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "InvisibilidadeProfundaEffect",
+            SpriteFrames = frames,
+            GlobalPosition = player.GlobalPosition + new Vector2(0f, 18f),
+            Scale = new Vector2(0.46f, 0.46f),
+            ZIndex = 120,
+            ZAsRelative = false,
+        };
+
+        effect.AnimationFinished += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        (player.GetParent() ?? player).AddChild(effect);
+        effect.Play(animName);
+    }
+
+    private void TocarEfeitoMarcaDaMorteAoUsar(Player player, SkillResource skill)
+    {
+        if (player == null || !EhMarcaDaMorte(skill))
+            return;
+
+        Node2D targetNode = null;
+        if (player.TryGetSelectedCombatTarget(out var selectedTargetNode)
+            && selectedTargetNode != null
+            && IsInstanceValid(selectedTargetNode)
+            && player.GlobalPosition.DistanceTo(selectedTargetNode.GlobalPosition) <= MarcaDaMorteRange)
+        {
+            targetNode = selectedTargetNode;
+        }
+        else if (player.TryEnsureSelectedEnemyTarget(MarcaDaMorteRange, out var ensuredTargetNode, out _))
+        {
+            targetNode = ensuredTargetNode;
+        }
+
+        if (targetNode == null || !IsInstanceValid(targetNode))
+        {
+            GD.Print("[MARCA DA MORTE] Nenhum alvo encontrado para marcar.");
+            return;
+        }
+
+        TocarEfeitoMarcaDaMorte(targetNode, Math.Max(1f, skill.Duracao));
+    }
+
+    private void TocarEfeitoMarcaDaMorte(Node2D targetNode, float duration)
+    {
+        var frames = new SpriteFrames();
+        const string animName = "marca_da_morte";
+        frames.AddAnimation(animName);
+        frames.SetAnimationLoop(animName, true);
+        frames.SetAnimationSpeed(animName, 6f);
+
+        for (int i = 1; i <= 8; i++)
+        {
+            string path = $"{MarcaDaMorteEffectDir}/effect{i}.png";
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var texture = ResourceLoader.Load<Texture2D>(path);
+            if (texture != null)
+                frames.AddFrame(animName, texture);
+        }
+
+        if (frames.GetFrameCount(animName) == 0)
+            return;
+
+        var old = targetNode.GetNodeOrNull<Node2D>("MarcaDaMorteEffect");
+        if (old != null && IsInstanceValid(old))
+            old.QueueFree();
+
+        var effect = new AnimatedSprite2D
+        {
+            Name = "MarcaDaMorteEffect",
+            SpriteFrames = frames,
+            Position = new Vector2(0f, -58f),
+            Scale = new Vector2(0.36f, 0.36f),
+            ZIndex = 125,
+            ZAsRelative = true,
+        };
+
+        var timer = new Timer
+        {
+            OneShot = true,
+            WaitTime = duration,
+        };
+        effect.AddChild(timer);
+        timer.Timeout += () =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        };
+
+        targetNode.AddChild(effect);
+        effect.Play(animName);
+        timer.Start();
+    }
+
     private static bool EhDisparoCritico(SkillResource skill)
     {
         if (skill == null)
@@ -898,6 +1185,115 @@ public partial class SkillBarUI : Control
             || skill.SkillId == 19
             || (nome.Contains("Tiro", StringComparison.OrdinalIgnoreCase)
                 && nome.Contains("Execu", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool EhGolpeSombrio(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == GolpeSombrioSkillId
+            || (nome.Contains("Golpe", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("Sombrio", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void TocarEfeitoExecucaoFinalAoUsar(Player player, SkillResource skill)
+    {
+        if (player == null || !EhExecucaoFinal(skill))
+            return;
+
+        Node2D targetNode = null;
+        if (player.TryGetSelectedCombatTarget(out var selectedTargetNode)
+            && selectedTargetNode != null
+            && IsInstanceValid(selectedTargetNode)
+            && player.GlobalPosition.DistanceTo(selectedTargetNode.GlobalPosition) <= GolpeSombrioMeleeRange)
+        {
+            targetNode = selectedTargetNode;
+        }
+        else if (player.TryEnsureSelectedEnemyTarget(GolpeSombrioMeleeRange, out var ensuredTargetNode, out _))
+        {
+            targetNode = ensuredTargetNode;
+        }
+
+        if (targetNode == null || !IsInstanceValid(targetNode))
+        {
+            GD.Print("[EXECUCAO FINAL] Nenhum alvo em alcance corpo a corpo.");
+            return;
+        }
+
+        TocarEfeitoExecucaoFinal(targetNode);
+    }
+
+    private void TocarEfeitoExecucaoFinal(Node2D targetNode)
+    {
+        if (!ResourceLoader.Exists(ExecucaoFinalEffectPath))
+            return;
+
+        var texture = ResourceLoader.Load<Texture2D>(ExecucaoFinalEffectPath);
+        if (texture == null)
+            return;
+
+        var effect = new Sprite2D
+        {
+            Name = "ExecucaoFinalEffect",
+            Texture = texture,
+            Position = new Vector2(0f, -18f),
+            Scale = new Vector2(0.42f, 0.42f),
+            ZIndex = 128,
+            ZAsRelative = true,
+            Modulate = new Color(1f, 1f, 1f, 0f),
+        };
+
+        targetNode.AddChild(effect);
+        var tween = effect.CreateTween();
+        tween.TweenProperty(effect, "modulate:a", 1f, 0.06f);
+        tween.Parallel().TweenProperty(effect, "position", new Vector2(0f, -76f), 0.46f)
+            .SetTrans(Tween.TransitionType.Cubic)
+            .SetEase(Tween.EaseType.Out);
+        tween.Parallel().TweenProperty(effect, "scale", new Vector2(0.56f, 0.56f), 0.46f)
+            .SetTrans(Tween.TransitionType.Cubic)
+            .SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(effect, "modulate:a", 0f, 0.16f);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            if (IsInstanceValid(effect))
+                effect.QueueFree();
+        }));
+    }
+
+    private static bool EhInvisibilidadeProfunda(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == InvisibilidadeProfundaSkillId
+            || (nome.Contains("Invisibilidade", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("Profunda", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool EhExecucaoFinal(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == ExecucaoFinalSkillId
+            || (nome.Contains("Execu", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("Final", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool EhMarcaDaMorte(SkillResource skill)
+    {
+        if (skill == null)
+            return false;
+
+        string nome = skill.Nome ?? string.Empty;
+        return skill.SkillId == MarcaDaMorteAssassinoSkillId
+            || skill.SkillId == MarcaDaMorteSlayerSkillId
+            || (nome.Contains("Marca", StringComparison.OrdinalIgnoreCase)
+                && nome.Contains("Morte", StringComparison.OrdinalIgnoreCase));
     }
 
     // Assign a skill to a slot (called by slot UI on drop)

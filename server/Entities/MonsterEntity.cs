@@ -18,6 +18,7 @@ public class MonsterEntity : Entity
     public int ExperienceReward { get; set; }
     public string PrefabId { get; set; } = "";
     public int AttackDamage { get; set; }
+    public int MagicDefense { get; set; }
     public float AttackRange { get; set; } = 40f;
     public float AggroRange { get; set; } = 768f;
     public bool Passive { get; set; } = true;
@@ -56,5 +57,10 @@ public class MonsterEntity : Entity
     public int CalculateDefense()
     {
         return Agilidade;
+    }
+
+    public int CalculateMagicDefense()
+    {
+        return Math.Max(0, MagicDefense + Inteligencia / 3);
     }
 }

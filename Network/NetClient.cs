@@ -3,7 +3,7 @@ using Godot;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Mithara.Network;
 
 public partial class NetClient : Node
@@ -11,7 +11,7 @@ public partial class NetClient : Node
     private NetManager _netManager = null!;
     private NetPeer? _serverPeer;
     private EventBasedNetListener _listener = null!;
-    private readonly Queue<Action> _pendingActions = new();
+    private readonly ConcurrentQueue<Action> _pendingActions = new();
 
     public new bool IsConnected => _serverPeer != null && _serverPeer.ConnectionState == ConnectionState.Connected;
     public int Ping => _serverPeer?.Ping ?? 0;
@@ -101,7 +101,7 @@ public partial class NetClient : Node
             try { action(); }
             catch (System.Exception ex)
             {
-                GD.PrintErr($"[NetClient] Erro em pending action: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
+                GD.PrintErr($"[NetClient] Erro em pending action: {ex.GetType().Name}: {ex.Message}\n{ex}");
             }
         }
     }

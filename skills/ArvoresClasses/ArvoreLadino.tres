@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=120 format=3]
+[gd_resource type="Resource" script_class="TalentTreeResource" load_steps=121 format=3]
 
 [ext_resource type="Script" path="res://skills/TalentTreeResource.cs" id="1_tree"]
 [ext_resource type="Script" path="res://skills/TalentNodeResource.cs" id="2_node"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Compartilhadas/002 - Passo Sombrio.tres" id="sk_1"]
+[ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/010 - Chute na Virilha.tres" id="sk_ass_chute"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/001 - Golpe Sombrio.tres" id="sk_2"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/002 - Invisibilidade Profunda.tres" id="sk_3"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Ladino/Assassino/003 - Salto nas Costas.tres" id="sk_4"]
@@ -42,7 +43,7 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/38.png" id="icon_sk_17"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/12.png" id="icon_sk_18"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/44.png" id="icon_sk_19"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/35.png" id="icon_sk_2"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/44.png" id="icon_sk_2"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/31.png" id="icon_sk_20"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/46.png" id="icon_sk_21"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/20.png" id="icon_sk_22"]
@@ -53,12 +54,12 @@
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/42.png" id="icon_sk_27"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/48.png" id="icon_sk_28"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/43.png" id="icon_sk_3"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/23.png" id="icon_sk_4"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/14.png" id="icon_sk_4"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/10.png" id="icon_sk_5"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/25.png" id="icon_sk_6"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/24.png" id="icon_sk_7"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/37.png" id="icon_sk_6"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/34.png" id="icon_sk_7"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/28.png" id="icon_sk_8"]
-[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/37.png" id="icon_sk_9"]
+[ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/18.png" id="icon_sk_9"]
 [ext_resource type="Resource" script_class="SkillResource" path="res://skills/habilidades/Todas/Todas/001 - Segundo Fôlego.tres" id="shared_sk_1"]
 [sub_resource type="Resource" id="base"]
 script = ExtResource("2_node")
@@ -115,10 +116,10 @@ StatOptionValues = PackedFloat32Array(0.1, 0.1, 0.1)
 [sub_resource type="Resource" id="assassino_s1"]
 script = ExtResource("2_node")
 NodeId = "lad_assassino_skill_1"
-Nome = "Passo Sombrio"
+Nome = "Chute na Virilha"
 Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
-HabilidadeAtiva = ExtResource("sk_1")
-Icone = ExtResource("icon_sk_1")
+HabilidadeAtiva = ExtResource("sk_ass_chute")
+Icone = ExtResource("icon_sk_5")
 NodeType = 1
 Posicao = Vector2(815, 716.2)
 Requisitos = PackedStringArray("lad_assassino_escolha_interna_1")

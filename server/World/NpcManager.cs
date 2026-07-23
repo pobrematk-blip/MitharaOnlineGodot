@@ -101,11 +101,11 @@ public class NpcManager
             FactionId = "solari",
         });
 
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1109, Y = 957, PrefabId = "banqueiro" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1098, Y = 1177, PrefabId = "guarda_solareth" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1130, Y = 1040, PrefabId = "general_merchant" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1070, Y = 1025, PrefabId = "refiner" });
-        _spawnPoints.Add(new NpcSpawnPoint { X = 1145, Y = 1040, PrefabId = "merchant_auctioneer" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1077, Y = 778, PrefabId = "banqueiro" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1557, Y = 762, PrefabId = "guarda_solareth" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 710, Y = 780, PrefabId = "general_merchant" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1287, Y = 775, PrefabId = "refiner" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 901, Y = 779, PrefabId = "merchant_auctioneer" });
     }
 
     private void RegisterDialogs()
