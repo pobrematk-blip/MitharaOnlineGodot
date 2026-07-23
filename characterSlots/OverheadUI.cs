@@ -83,6 +83,10 @@ public partial class OverheadUI : Control
     private Color _nomeCor = new Color(1f, 1f, 1f, 1f);
     private long _xpAtual;
     private long _xpMaximo = 1;
+    private int _remoteHealth = 1;
+    private int _remoteMaxHealth = 1;
+    private int _remoteMana = 1;
+    private int _remoteMaxMana = 1;
 
     private const float BarraLargura = 80f;
     private const float BarraAltura = 6f;
@@ -263,6 +267,7 @@ public partial class OverheadUI : Control
         }
         else
         {
+            Atualizar();
             AtualizarXp();
         }
     }
@@ -272,6 +277,29 @@ public partial class OverheadUI : Control
         _remoteMode = true;
         _nomePersonagem = nome;
         AtualizarDadosRemotos(nome, guildName, guildTag, guildEmblem, xp, xpMax);
+    }
+
+    public void AtualizarStatusRemoto(int health, int maxHealth, int mana, int maxMana)
+    {
+        _remoteMaxHealth = System.Math.Max(1, maxHealth);
+        _remoteHealth = Mathf.Clamp(health, 0, _remoteMaxHealth);
+        _remoteMaxMana = System.Math.Max(1, maxMana);
+        _remoteMana = Mathf.Clamp(mana, 0, _remoteMaxMana);
+        Atualizar();
+    }
+
+    public void AtualizarVidaRemota(int health, int maxHealth)
+    {
+        _remoteMaxHealth = System.Math.Max(1, maxHealth);
+        _remoteHealth = Mathf.Clamp(health, 0, _remoteMaxHealth);
+        Atualizar();
+    }
+
+    public void AtualizarManaRemota(int mana, int maxMana)
+    {
+        _remoteMaxMana = System.Math.Max(1, maxMana);
+        _remoteMana = Mathf.Clamp(mana, 0, _remoteMaxMana);
+        Atualizar();
     }
 
     public void AtualizarDadosRemotos(string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax)
@@ -297,7 +325,11 @@ public partial class OverheadUI : Control
 
     public void DefinirCorNome(Color cor)
     {
-        _nomeCor = new Color(cor.R, cor.G, cor.B, 1f);
+        Color novaCor = new Color(cor.R, cor.G, cor.B, 1f);
+        if (_nomeCor.IsEqualApprox(novaCor))
+            return;
+
+        _nomeCor = novaCor;
         if (_nomeLabel != null)
             _nomeLabel.AddThemeColorOverride("font_color", _nomeCor);
     }
@@ -444,10 +476,15 @@ public partial class OverheadUI : Control
 
     private void Atualizar()
     {
-        if (!IsInsideTree() || _player == null || _hpFill == null || _manaFill == null) return;
+        if (!IsInsideTree() || _hpFill == null || _manaFill == null) return;
 
-        float hpPct = Mathf.Clamp(_player.CurrentHealth / (float)_player.MaxHealth, 0, 1);
-        float manaPct = Mathf.Clamp(_player.CurrentMana / (float)_player.MaxMana, 0, 1);
+        int health = _remoteMode ? _remoteHealth : _player?.CurrentHealth ?? 1;
+        int maxHealth = _remoteMode ? _remoteMaxHealth : _player?.MaxHealth ?? 1;
+        int mana = _remoteMode ? _remoteMana : _player?.CurrentMana ?? 1;
+        int maxMana = _remoteMode ? _remoteMaxMana : _player?.MaxMana ?? 1;
+
+        float hpPct = Mathf.Clamp(health / (float)System.Math.Max(1, maxHealth), 0, 1);
+        float manaPct = Mathf.Clamp(mana / (float)System.Math.Max(1, maxMana), 0, 1);
         _hpFill.Size = new Vector2(BarraLargura * hpPct, BarraAltura);
         _manaFill.Size = new Vector2(BarraLargura * manaPct, BarraAltura);
     }

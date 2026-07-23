@@ -634,7 +634,6 @@ public partial class EntityManager : Node
     {
         if (_networkNodes.ContainsKey(entityId))
         {
-            GameNetwork.Log($"OnEntitySpawned: ignorando duplicado {entityType} '{name}' ({entityId})");
             return;
         }
 
@@ -647,13 +646,11 @@ public partial class EntityManager : Node
                 X = x, Y = y, Level = level, Health = health, MaxHealth = maxHealth,
                 Extra1 = extraData1, Extra2 = extraData2, Extra3 = extraData3,
             };
-            GameNetwork.Log($"OnEntitySpawned: atualizando spawn pendente {entityType} '{name}' ({entityId})");
             return;
         }
 
         if (!_sceneReady)
         {
-            GameNetwork.Log($"Cena nao pronta, buffering spawn {entityType} '{name}' ({entityId})");
             _pendingSpawns.Add(new SpawnEvent
             {
                 EntityId = entityId, EntityType = entityType, Name = name,
@@ -663,7 +660,6 @@ public partial class EntityManager : Node
             return;
         }
 
-        GameNetwork.Log($"Processando spawn {entityType} '{name}' ({entityId}) em tempo real");
         try
         {
             ProcessSpawn(entityId, entityType, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3);
@@ -698,11 +694,8 @@ public partial class EntityManager : Node
     {
         if (entityId == _gameNet?.LocalPlayerId)
         {
-            GameNetwork.Log($"CreatePlayerEntity: pulando proprio jogador {name} (ID={entityId})");
             return null!;
         }
-
-        GD.Print($"[EntityManager] Criando entidade de jogador: {name} (ID={entityId}) em ({x:F1}, {y:F1}) classe={characterClass} raca={race}");
 
         var root = new Node2D();
         root.Position = new Vector2(x, y);
@@ -727,7 +720,6 @@ public partial class EntityManager : Node
         {
             sprite.SpriteFrames = resolvedFrames;
             sprite.Play("idle_down");
-            GameNetwork.Log($"CreatePlayerEntity: sprite frames carregados para {name} ({race}/{characterClass}/{perfilVisual})");
         }
         else if (!string.IsNullOrWhiteSpace(sheetPath) && ResourceLoader.Exists(sheetPath))
         {
@@ -739,16 +731,9 @@ public partial class EntityManager : Node
                 {
                     sprite.SpriteFrames = frames;
                     sprite.Play("idle_down");
-                    GameNetwork.Log($"CreatePlayerEntity: sprite frames carregados para {name} ({race})");
                 }
-                else
-                    GameNetwork.Log($"CreatePlayerEntity: frames vazios para {name} ({race})");
             }
-            else
-                GameNetwork.Log($"CreatePlayerEntity: sheet nulo para {name} ({sheetPath})");
         }
-        else
-            GameNetwork.Log($"CreatePlayerEntity: sheet nao existe {sheetPath} para {name}");
 
         root.AddChild(sprite);
 
@@ -779,6 +764,7 @@ public partial class EntityManager : Node
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
         overhead.ConfigurarRemoto(name, guildName, guildTag, guildEmblem, xp, xpMax);
+        overhead.AtualizarStatusRemoto(health, maxHealth, 1, 1);
         overhead.DefinirCorNome(CalcularCorNomeRemoto(entityId, factionId, guildName));
         root.AddChild(overhead);
 
@@ -786,12 +772,10 @@ public partial class EntityManager : Node
         if (parent != null)
         {
             parent.AddChild(root);
-            GameNetwork.Log($"CreatePlayerEntity: {name} adicionado ao World (parent={parent.Name})");
         }
         else
         {
             AddChild(root);
-            GameNetwork.Log($"CreatePlayerEntity: {name} adicionado ao EntityManager (World null) - PODE ESTAR INVISIVEL");
         }
         return root;
     }
@@ -824,7 +808,44 @@ public partial class EntityManager : Node
 
     private void OnPartyMemberChanged(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
     {
+        AtualizarOverheadStatusRemoto(entityId, health, maxHealth, mana, maxMana);
         AtualizarCoresNomesRemotos();
+    }
+
+    private void AtualizarOverheadStatusRemoto(ulong entityId, int health, int maxHealth, int mana, int maxMana)
+    {
+        if (!_networkNodes.TryGetValue(entityId, out var node) || node == null || !IsInstanceValid(node))
+            return;
+
+        var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
+        if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
+            return;
+
+        overhead.AtualizarStatusRemoto(health, maxHealth, mana, maxMana);
+    }
+
+    private void AtualizarOverheadVidaRemota(ulong entityId, int health, int maxHealth)
+    {
+        if (!_networkNodes.TryGetValue(entityId, out var node) || node == null || !IsInstanceValid(node))
+            return;
+
+        var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
+        if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
+            return;
+
+        overhead.AtualizarVidaRemota(health, maxHealth);
+    }
+
+    private void AtualizarOverheadManaRemota(ulong entityId, int mana, int maxMana)
+    {
+        if (!_networkNodes.TryGetValue(entityId, out var node) || node == null || !IsInstanceValid(node))
+            return;
+
+        var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
+        if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
+            return;
+
+        overhead.AtualizarManaRemota(mana, maxMana);
     }
 
     private void OnGuildDataChanged(int guildId, string guildName, string guildTag, int guildEmblem, Godot.Collections.Array<Godot.Collections.Dictionary> members, int level, int xp, int skillPoints, Godot.Collections.Array<Godot.Collections.Dictionary> skills)
@@ -1228,6 +1249,8 @@ public partial class EntityManager : Node
                 inimigo.SetVidaAtual(health, maxHealth);
             else if (node is Player player && entityId != _gameNet?.LocalPlayerId)
                 player.SetHealthFromServer(health, maxHealth);
+            else
+                AtualizarOverheadVidaRemota(entityId, health, maxHealth);
         }
         else if (entityId == _gameNet?.LocalPlayerId)
         {
@@ -1242,6 +1265,10 @@ public partial class EntityManager : Node
         if (_networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node) && node is Player remotePlayer)
         {
             remotePlayer.SetManaFromServer(mana, maxMana);
+        }
+        else if (_networkNodes.ContainsKey(entityId))
+        {
+            AtualizarOverheadManaRemota(entityId, mana, maxMana);
         }
         else if (entityId == _gameNet?.LocalPlayerId)
         {
@@ -1376,8 +1403,12 @@ public partial class EntityManager : Node
                 inimigo.SetVidaAtual(targetHealth, targetMaxHealth);
             else if (targetNode is Player player)
                 player.SetHealthFromServer(targetHealth, targetMaxHealth);
-            else if (targetHealth <= 0)
-                SetRemotePlayerDowned(targetNode);
+            else
+            {
+                AtualizarOverheadVidaRemota(targetId, targetHealth, targetMaxHealth);
+                if (targetHealth <= 0)
+                    SetRemotePlayerDowned(targetNode);
+            }
 
             if (damage == 0)
                 return;
@@ -4887,6 +4918,7 @@ public partial class EntityManager : Node
         double now = Time.GetTicksMsec() / 1000.0;
         AtualizarInteracaoLojinha();
 
+        List<ulong>? invalidRemoteIds = null;
         foreach (var kvp in _remoteStates)
         {
             if (!_networkNodes.TryGetValue(kvp.Key, out var node))
@@ -4894,11 +4926,8 @@ public partial class EntityManager : Node
 
             if (!IsInstanceValid(node))
             {
-                _networkNodes.Remove(kvp.Key);
-                _remoteStates.Remove(kvp.Key);
-                _previousPositions.Remove(kvp.Key);
-                _lastDirections.Remove(kvp.Key);
-                _lastDashTrailAt.Remove(kvp.Key);
+                invalidRemoteIds ??= new List<ulong>();
+                invalidRemoteIds.Add(kvp.Key);
                 continue;
             }
 
@@ -4948,6 +4977,18 @@ public partial class EntityManager : Node
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
                 UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
                 UpdateRemoteSheriganPet(kvp.Key, node, animDir, cur.Moving, delta);
+            }
+        }
+
+        if (invalidRemoteIds != null)
+        {
+            foreach (ulong id in invalidRemoteIds)
+            {
+                _networkNodes.Remove(id);
+                _remoteStates.Remove(id);
+                _previousPositions.Remove(id);
+                _lastDirections.Remove(id);
+                _lastDashTrailAt.Remove(id);
             }
         }
 

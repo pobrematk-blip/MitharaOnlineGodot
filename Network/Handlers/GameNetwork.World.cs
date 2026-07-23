@@ -121,7 +121,6 @@ partial class GameNetwork
                 break;
         }
 
-        GD.Print($"[GAME] Spawn {typeLabel}: {name} em ({x:F1}, {y:F1}) [HP={health}/{maxHealth}]");
         try
         {
             EmitSignal(SignalName.OnEntitySpawned, entityId, typeLabel, name, x, y, level, health, maxHealth, extra1, extra2, extra3);
