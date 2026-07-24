@@ -9,8 +9,8 @@ using System.Text.Json;
 
 public partial class GameNetwork : Node
 {
-    private const string DefaultServerHost = "maintenance-aid.gl.at.ply.gg";
-    private const int DefaultServerPort = 49027;
+    private const string DefaultServerHost = "164.163.10.64";
+    private const int DefaultServerPort = 7777;
 
     public static bool AutoLogin = false;
 
