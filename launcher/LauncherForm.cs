@@ -10,6 +10,7 @@ public sealed class LauncherForm : Form
     private const string RepositoryOwner = "pobrematk-blip";
     private const string RepositoryName = "MitharaOnlineGodot";
     private const string ManifestAssetName = "manifest.json";
+    private const string ArchiveAssetName = "MitharaOnline_Update.zip";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -136,15 +137,8 @@ public sealed class LauncherForm : Form
             UpdateManifest? local = await ReadManifestAsync(LocalManifestPath);
             _version.Text = $"Versão local: {local?.Version ?? "não instalada"}";
 
-            string apiUrl = $"https://api.github.com/repos/{RepositoryOwner}/{RepositoryName}/releases/latest";
-            GitHubRelease release = await GetJsonAsync<GitHubRelease>(apiUrl)
-                ?? throw new InvalidOperationException("A Release mais recente não retornou dados válidos.");
-
-            GitHubAsset manifestAsset = release.Assets.FirstOrDefault(a =>
-                a.Name.Equals(ManifestAssetName, StringComparison.OrdinalIgnoreCase))
-                ?? throw new InvalidOperationException("A Release não contém manifest.json.");
-
-            UpdateManifest remote = await GetJsonAsync<UpdateManifest>(manifestAsset.DownloadUrl)
+            string latestDownloadBase = $"https://github.com/{RepositoryOwner}/{RepositoryName}/releases/latest/download";
+            UpdateManifest remote = await GetJsonAsync<UpdateManifest>($"{latestDownloadBase}/{ManifestAssetName}")
                 ?? throw new InvalidOperationException("O manifesto da atualização é inválido.");
             _activeManifest = remote;
 
@@ -154,9 +148,13 @@ public sealed class LauncherForm : Form
             bool needsUpdate = !arquivosValidos;
             if (needsUpdate)
             {
-                GitHubAsset archiveAsset = release.Assets.FirstOrDefault(a =>
-                    a.Name.Equals(remote.Archive, StringComparison.OrdinalIgnoreCase))
-                    ?? throw new InvalidOperationException($"A Release não contém {remote.Archive}.");
+                string archiveName = string.IsNullOrWhiteSpace(remote.Archive) ? ArchiveAssetName : remote.Archive;
+                GitHubAsset archiveAsset = new()
+                {
+                    Name = archiveName,
+                    DownloadUrl = $"{latestDownloadBase}/{archiveName}",
+                    Size = 0,
+                };
                 await InstallUpdateAsync(remote, archiveAsset);
             }
 
