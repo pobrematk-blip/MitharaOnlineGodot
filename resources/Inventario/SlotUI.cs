@@ -720,7 +720,11 @@ public partial class SlotUI : Control
         // Equipar bolsa no inventário
         if (EhSlotBolsaInventario)
         {
-            GD.PrintErr("[INVENTARIO] Equipar bolsa local bloqueado. Operacao deve passar pelo servidor.");
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet != null && gameNet.IsConnected && containerOrigem == TipoContainerUi.Inventario)
+                gameNet.SendMoveItem(slotOrigem.SlotIndex, SlotIndex);
+            else
+                GD.PrintErr("[INVENTARIO] Equipar bolsa bloqueado. Conecte ao servidor.");
             return;
         }
 

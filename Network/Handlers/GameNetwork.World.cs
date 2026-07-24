@@ -5,6 +5,11 @@ using Mithara.Network;
 
 partial class GameNetwork
 {
+    public void SendSceneTeleport(int pairId)
+    {
+        _client?.SendPacket(PacketId.C2S_SceneTeleport, w => w.Put(pairId));
+    }
+
     public void SendPlayerAction(byte actionType, Vector2 direction)
     {
         _client?.SendPacket(PacketId.C2S_PlayerAction, w =>

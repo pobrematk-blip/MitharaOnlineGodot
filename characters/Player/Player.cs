@@ -265,6 +265,7 @@ public partial class Player : CharacterBody2D
     public void SetHealthFromServer(int health, int maxHealth)
     {
         bool wasAlive = !IsDead;
+        bool wasDead = IsDead;
         int oldHealth = CurrentHealth;
         MaxHealth = maxHealth;
         CurrentHealth = Mathf.Clamp(health, 0, maxHealth);
@@ -272,6 +273,8 @@ public partial class Player : CharacterBody2D
             ApplyInvisibilityVisual(false, 1f);
         if (CurrentHealth <= 0 && wasAlive)
             Morrer();
+        else if (CurrentHealth > 0 && wasDead && _isLyingDown)
+            LevantarAposRevive();
         EmitSignal(SignalName.StatusAtualizado);
     }
 
@@ -840,11 +843,7 @@ public partial class Player : CharacterBody2D
         float interiorX = x + SceneConstants.INTERIOR_OFFSET_X;
         float interiorY = y + SceneConstants.INTERIOR_OFFSET_Y;
 
-        var spawnPoint = interior.GetNodeOrNull<Marker2D>("SpawnPoint");
-        if (spawnPoint != null)
-            interiores.Position = new Vector2(interiorX - spawnPoint.Position.X, interiorY - spawnPoint.Position.Y);
-        else
-            interiores.Position = new Vector2(interiorX, interiorY);
+        interiores.Position = new Vector2(SceneConstants.INTERIOR_OFFSET_X, SceneConstants.INTERIOR_OFFSET_Y);
 
         GlobalPosition = new Vector2(interiorX, interiorY);
         _lastSentPosition = GlobalPosition;
@@ -2718,18 +2717,34 @@ public partial class Player : CharacterBody2D
         }
     }
 
-    public void Reviver(float x, float y, int health, int maxHealth, int mana = 0, int maxMana = 0)
+    private void LevantarAposRevive()
     {
         _isLyingDown = false;
         _idleTransitionTimer = 0f;
         _holdingBeforeIdle = false;
         RemoveFromGroup("PlayersDowned");
+        SetPhysicsProcess(true);
+        SetProcess(true);
+
+        if (AnimatedSprite?.SpriteFrames != null)
+        {
+            string cardinal = DirectionUtil.DirectionToCardinal(CurrentDirection);
+            string idle = $"idle_{cardinal}";
+            AnimatedSprite.SpeedScale = 1f;
+            if (AnimatedSprite.SpriteFrames.HasAnimation(idle))
+                AnimatedSprite.Play(idle);
+            else if (AnimatedSprite.SpriteFrames.HasAnimation("idle_down"))
+                AnimatedSprite.Play("idle_down");
+            SincronizarOverlays();
+        }
+    }
+
+    public void Reviver(float x, float y, int health, int maxHealth, int mana = 0, int maxMana = 0)
+    {
         GlobalPosition = new Vector2(x, y);
         SetHealthFromServer(health, maxHealth);
         if (maxMana > 0)
             SetManaFromServer(mana, maxMana);
-        SetPhysicsProcess(true);
-        SetProcess(true);
 
         var respawnUI = ObterRespawnUI();
         if (respawnUI != null)

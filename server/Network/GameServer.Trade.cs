@@ -397,6 +397,7 @@ partial class GameServer
     private bool TemEspacoParaReceber(PlayerEntity destino, List<TradeOfferItem> incoming, List<TradeOfferItem> outgoing)
     {
         var slotsOcupados = destino.Items
+            .Where(item => item.Slot >= 0 && item.Slot < GetInventorySlotLimit(destino))
             .Where(item => !outgoing.Any(offer =>
                 offer.InventorySlot == item.Slot &&
                 offer.ItemId == item.ItemId &&
@@ -404,7 +405,7 @@ partial class GameServer
             .Select(item => item.Slot)
             .ToHashSet();
 
-        int slotsLivres = InventorySlotCount - slotsOcupados.Count;
+        int slotsLivres = GetInventorySlotLimit(destino) - slotsOcupados.Count;
         int slotsNecessarios = 0;
 
         foreach (var offer in incoming)

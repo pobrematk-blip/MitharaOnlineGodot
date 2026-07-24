@@ -173,8 +173,9 @@ public partial class ItemDatabase : Node
             108 or 109 or 112 => "res://Itens/Incones/Bau surpresa 1.png",
             110 => "res://Itens/Incones/Porcao de Vida.png",
             111 => "res://Itens/Incones/Porcao de Mana.png",
-            113 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
+            113 => "res://Itens/Incones/Pergaminho de Criação de Guild.png",
             114 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
+            115 or 116 or 117 or 118 => "res://Itens/Incones/Bag 3.png",
             _ => IconeEquipamentoFallback(itemId),
         };
 
@@ -192,8 +193,12 @@ public partial class ItemDatabase : Node
             110 => "Poção de Vida",
             111 => "Poção de Mana",
             112 => "Lojinha Grande",
-            113 => "Pergaminho de Reset de Talentos",
+            113 => "Pergaminho de Reset de Personagem",
             114 => "Pergaminho de Captura de Pet",
+            115 => "Bolsa de 6 Slots",
+            116 => "Bolsa de 12 Slots",
+            117 => "Bolsa de 18 Slots",
+            118 => "Bolsa de 24 Slots",
             _ => NomeDoArquivo(knownPath, itemId),
         };
 
@@ -210,6 +215,21 @@ public partial class ItemDatabase : Node
             Acumulavel = true,
             QuantidadeMaximaPorSlot = 99,
         };
+
+        if (itemId is 115 or 116 or 117 or 118)
+        {
+            fallback.Acumulavel = false;
+            fallback.QuantidadeMaximaPorSlot = 1;
+            fallback.EhBolsa = true;
+            fallback.SlotsAdicionais = itemId switch
+            {
+                115 => 6,
+                116 => 12,
+                117 => 18,
+                118 => 24,
+                _ => 0,
+            };
+        }
 
         _cache[itemId] = fallback;
         GD.PrintErr($"[ItemDatabase] Fallback criado para itemId={itemId}. Verifique se o .tres desse item foi exportado.");

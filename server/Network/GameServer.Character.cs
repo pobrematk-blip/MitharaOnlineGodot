@@ -420,6 +420,22 @@ partial class GameServer
         string race = useInline ? inlineRace : ch!.Race;
         float posX = useInline ? inlineX : ch!.PosX;
         float posY = useInline ? inlineY : ch!.PosY;
+        if (!float.IsFinite(posX) || !float.IsFinite(posY)
+            || MathF.Abs(posX) > MaxWorldCoordinate
+            || MathF.Abs(posY) > MaxWorldCoordinate)
+        {
+            Logger.Info($"AVISO Posição inválida de {name} ao entrar: ({posX:F1}, {posY:F1}). Restaurando ponto inicial.");
+            posX = MainSpawnX;
+            posY = MainSpawnY;
+            session.CurrentMap = MainSceneName;
+            if (ch != null)
+            {
+                ch.PosX = posX;
+                ch.PosY = posY;
+                ch.CurrentMap = MainSceneName;
+                _db.SaveCharacterPosition(ch.Id, posX, posY, MainSceneName);
+            }
+        }
         int level = useInline ? 1 : ch!.Level;
         long xp = useInline ? 0 : ch!.Xp;
         int forca = Math.Max(5, useInline ? 5 : ch!.Forca);
@@ -630,6 +646,7 @@ partial class GameServer
                 else
                     player.Items.Add(item);
             }
+            RemoveDuplicatedRuntimeItemInstances(player, ch.Id, "EnterWorld");
             NormalizeLoadedInventory(player, ch.Id);
 
             RecalculatePlayerStats(player);

@@ -9,6 +9,8 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private const float MaxPlayerSpeed = 360f;
+    private const float MaxWorldCoordinate = 20000f;
+    private const double PassiveTeleportCheckInterval = 0.10;
 
     private void HandlePlayerAction(NetPeer peer, NetDataReader reader)
     {
@@ -61,7 +63,7 @@ partial class GameServer
 
         if (session.IsTransitioning)
         {
-            if (_gameTime - session.TransitionStartTime < 3.0) return;
+            if (_gameTime - session.TransitionStartTime < 0.35) return;
             session.IsTransitioning = false;
         }
 
@@ -113,9 +115,6 @@ partial class GameServer
         channel.MoveEntity(session.EntityId, targetX, targetY);
         if (entity is PlayerEntity movedPlayer)
             UpdateQuestReachLocationProgress(movedPlayer, targetX, targetY);
-
-        if (CheckTeleportTile(peer, session, channel, entity, targetX, targetY))
-            return;
 
         var aoi = channel.GetEntitiesInAoi(targetX, targetY);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_EntityMove);
@@ -183,7 +182,12 @@ partial class GameServer
         {
             float stopX = reader.GetFloat();
             float stopY = reader.GetFloat();
-            channel.MoveEntity(session.EntityId, stopX, stopY);
+            if (!float.IsFinite(stopX) || !float.IsFinite(stopY)
+                || MathF.Abs(stopX) > MaxWorldCoordinate
+                || MathF.Abs(stopY) > MaxWorldCoordinate)
+            {
+                Logger.Info($"AVISO Stop validation: {entity.Name} enviou posição inválida ({stopX:F1}, {stopY:F1})");
+            }
         }
 
         if (session.SelectedCharacter != null)
@@ -230,7 +234,7 @@ partial class GameServer
 
     private bool CheckTeleportTile(NetPeer peer, PlayerSession session, Channel channel, Entity entity, float x, float y)
     {
-        if (_gameTime - session.LastTeleportTime < 1.0) return false;
+        if (_gameTime - session.LastTeleportTime < 0.20) return false;
         string sceneName = string.IsNullOrWhiteSpace(session.CurrentMap)
             ? "main"
             : session.CurrentMap.Trim().ToLowerInvariant();
@@ -238,11 +242,130 @@ partial class GameServer
         if (!TryFindTeleportAtPosition(sceneName, x, y, out int tileX, out int tileY, out var info))
             return false;
 
+        if (IsTeleportSuppressed(session, sceneName, tileX, tileY, x, y))
+            return false;
+
+        return ExecuteTeleport(peer, session, channel, entity, sceneName, tileX, tileY, info, x, y);
+    }
+
+    private void HandleSceneTeleport(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.IsTransitioning)
+            return;
+
+        int pairId = reader.GetInt();
+        if (pairId <= 0 || _gameTime - session.LastTeleportTime < 0.20)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        var entity = channel?.GetEntity(session.EntityId);
+        if (channel == null || entity == null || entity.Health <= 0)
+            return;
+
+        string sceneName = string.IsNullOrWhiteSpace(session.CurrentMap)
+            ? "main"
+            : session.CurrentMap.Trim().ToLowerInvariant();
+        if (!_teleportTargets.TryGetValue(sceneName, out var teleports))
+            return;
+
+        foreach (var teleport in teleports)
+        {
+            if (teleport.Value.PairId != pairId)
+                continue;
+
+            Logger.Info($"[TELEPORT PAIR] {entity.Name} tocou PairId={pairId} em {sceneName}.");
+            ExecuteTeleport(
+                peer,
+                session,
+                channel,
+                entity,
+                sceneName,
+                teleport.Key.X,
+                teleport.Key.Y,
+                teleport.Value,
+                entity.X,
+                entity.Y);
+            return;
+        }
+    }
+
+    private bool CheckTeleportAlongMovement(
+        NetPeer peer,
+        PlayerSession session,
+        Channel channel,
+        Entity entity,
+        float fromX,
+        float fromY,
+        float toX,
+        float toY)
+    {
+        if (_gameTime - session.LastTeleportTime < 0.20)
+            return false;
+
+        string sceneName = string.IsNullOrWhiteSpace(session.CurrentMap)
+            ? "main"
+            : session.CurrentMap.Trim().ToLowerInvariant();
+
+        if (!_teleportTargets.TryGetValue(sceneName, out var teleports))
+            return false;
+
+        const float playerRadius = 16f;
+        float movementMinX = MathF.Min(fromX, toX) - playerRadius;
+        float movementMaxX = MathF.Max(fromX, toX) + playerRadius;
+        float movementMinY = MathF.Min(fromY, toY) - playerRadius;
+        float movementMaxY = MathF.Max(fromY, toY) + playerRadius;
+
+        foreach (var teleport in teleports)
+        {
+            int tileX = teleport.Key.X;
+            int tileY = teleport.Key.Y;
+            float tileMinX = tileX * 32f;
+            float tileMaxX = tileMinX + 32f;
+            float tileMinY = tileY * 32f;
+            float tileMaxY = tileMinY + 32f;
+
+            if (movementMaxX < tileMinX || movementMinX > tileMaxX
+                || movementMaxY < tileMinY || movementMinY > tileMaxY)
+                continue;
+
+            float contactX = Math.Clamp(toX, tileMinX, tileMaxX);
+            float contactY = Math.Clamp(toY, tileMinY, tileMaxY);
+            if (IsTeleportSuppressed(session, sceneName, tileX, tileY, contactX, contactY))
+                continue;
+
+            return ExecuteTeleport(
+                peer,
+                session,
+                channel,
+                entity,
+                sceneName,
+                tileX,
+                tileY,
+                teleport.Value,
+                contactX,
+                contactY);
+        }
+
+        return false;
+    }
+
+    private bool ExecuteTeleport(
+        NetPeer peer,
+        PlayerSession session,
+        Channel channel,
+        Entity entity,
+        string sceneName,
+        int tileX,
+        int tileY,
+        TeleportTileInfo info,
+        float entryX,
+        float entryY)
+    {
         session.LastTeleportTime = _gameTime;
         session.IsTransitioning = true;
         session.TransitionStartTime = _gameTime;
-        session.TeleportEntryX = x;
-        session.TeleportEntryY = y;
+        session.TeleportEntryX = entryX;
+        session.TeleportEntryY = entryY;
         session.CurrentMap = info.TargetScene;
 
         if (session.SelectedCharacter != null)
@@ -253,9 +376,68 @@ partial class GameServer
         }
 
         channel.MoveEntity(entity.Id, info.TargetX, info.TargetY);
+        SuppressDestinationTeleport(session, info.TargetScene, info.TargetX, info.TargetY);
         SendSceneChange(peer, info.TargetScene, info.TargetX, info.TargetY);
         Logger.Info($"[TELEPORT] {entity.Name} tile ({tileX},{tileY}) -> {info.TargetScene} ({info.TargetX:F1},{info.TargetY:F1})");
         return true;
+    }
+
+    private static bool IsTeleportSuppressed(PlayerSession session, string sceneName, int tileX, int tileY, float x, float y)
+    {
+        if (!string.Equals(session.SuppressedTeleportScene, sceneName, StringComparison.OrdinalIgnoreCase)
+            || session.SuppressedTeleportTileX != tileX
+            || session.SuppressedTeleportTileY != tileY)
+            return false;
+
+        float centerX = tileX * 32f + 16f;
+        float centerY = tileY * 32f + 16f;
+        float dx = x - centerX;
+        float dy = y - centerY;
+        const float clearRadius = 48f;
+        if (dx * dx + dy * dy <= clearRadius * clearRadius)
+            return true;
+
+        ClearSuppressedTeleport(session);
+        return false;
+    }
+
+    private static void ClearSuppressedTeleport(PlayerSession session)
+    {
+        session.SuppressedTeleportScene = "";
+        session.SuppressedTeleportTileX = int.MinValue;
+        session.SuppressedTeleportTileY = int.MinValue;
+    }
+
+    private static void SuppressDestinationTeleport(PlayerSession session, string targetScene, float targetX, float targetY)
+    {
+        ClearSuppressedTeleport(session);
+        if (!_teleportTargets.TryGetValue(targetScene, out var teleports))
+            return;
+
+        const float adjacentDistance = 32f;
+        float bestDistanceSq = adjacentDistance * adjacentDistance + 0.01f;
+        (int X, int Y)? nearestTile = null;
+
+        foreach (var teleport in teleports)
+        {
+            float centerX = teleport.Key.X * 32f + 16f;
+            float centerY = teleport.Key.Y * 32f + 16f;
+            float dx = targetX - centerX;
+            float dy = targetY - centerY;
+            float distanceSq = dx * dx + dy * dy;
+            if (distanceSq > bestDistanceSq)
+                continue;
+
+            bestDistanceSq = distanceSq;
+            nearestTile = teleport.Key;
+        }
+
+        if (nearestTile == null)
+            return;
+
+        session.SuppressedTeleportScene = targetScene;
+        session.SuppressedTeleportTileX = nearestTile.Value.X;
+        session.SuppressedTeleportTileY = nearestTile.Value.Y;
     }
 
     private static bool TryFindTeleportAtPosition(string sceneName, float x, float y, out int tileX, out int tileY, out TeleportTileInfo info)
@@ -270,46 +452,7 @@ partial class GameServer
         if (teleports.TryGetValue((tileX, tileY), out info!))
             return true;
 
-        const float activationRadius = 46f;
-        float bestDistanceSq = activationRadius * activationRadius;
-        int bestTileX = tileX;
-        int bestTileY = tileY;
-        TeleportTileInfo? bestInfo = null;
-
-        for (int ox = -1; ox <= 1; ox++)
-        {
-            for (int oy = -1; oy <= 1; oy++)
-            {
-                if (ox == 0 && oy == 0)
-                    continue;
-
-                int checkX = tileX + ox;
-                int checkY = tileY + oy;
-                if (!teleports.TryGetValue((checkX, checkY), out var candidate))
-                    continue;
-
-                float centerX = checkX * 32f + 16f;
-                float centerY = checkY * 32f + 16f;
-                float dx = x - centerX;
-                float dy = y - centerY;
-                float distSq = dx * dx + dy * dy;
-                if (distSq > bestDistanceSq)
-                    continue;
-
-                bestDistanceSq = distSq;
-                bestTileX = checkX;
-                bestTileY = checkY;
-                bestInfo = candidate;
-            }
-        }
-
-        if (bestInfo == null)
-            return false;
-
-        tileX = bestTileX;
-        tileY = bestTileY;
-        info = bestInfo;
-        return true;
+        return false;
     }
 
     private void HandleChannelSwitch(NetPeer peer, NetDataReader reader)

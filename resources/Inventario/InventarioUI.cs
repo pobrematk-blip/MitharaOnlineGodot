@@ -252,6 +252,7 @@ public partial class InventarioUI : Control
             if (_containerBolsas.HasNode(nomeSlotManual))
             {
                 SlotUI slotManual = _containerBolsas.GetNode<SlotUI>(nomeSlotManual);
+                slotManual.SlotIndex = -10 - i;
                 _slotsBolsasVisuais.Add(slotManual);
                 
                 GD.Print($"[INVENTÁRIO UI]   ✅ {nomeSlotManual} encontrado e mapeado");

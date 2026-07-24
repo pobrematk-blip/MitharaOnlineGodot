@@ -777,6 +777,10 @@ public partial class EntityManager : Node
         {
             AddChild(root);
         }
+
+        if (health <= 0)
+            SetRemotePlayerDowned(root);
+
         return root;
     }
 
@@ -1234,10 +1238,7 @@ public partial class EntityManager : Node
 
         if (node.IsInGroup("PlayersDowned"))
         {
-            node.RemoveFromGroup("PlayersDowned");
-            var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
-            if (sprite != null && sprite.SpriteFrames != null)
-                sprite.Play("idle_down");
+            SetRemotePlayerRevived(node);
         }
     }
 
@@ -1250,7 +1251,13 @@ public partial class EntityManager : Node
             else if (node is Player player && entityId != _gameNet?.LocalPlayerId)
                 player.SetHealthFromServer(health, maxHealth);
             else
+            {
                 AtualizarOverheadVidaRemota(entityId, health, maxHealth);
+                if (health <= 0)
+                    SetRemotePlayerDowned(node);
+                else if (node.IsInGroup("PlayersDowned"))
+                    SetRemotePlayerRevived(node);
+            }
         }
         else if (entityId == _gameNet?.LocalPlayerId)
         {
@@ -1368,7 +1375,7 @@ public partial class EntityManager : Node
                 TocarEfeitoGolpeAtordoante(targetNode, 3f);
             }
             if (damage > 0 && skillId == 15109)
-                TocarEfeitoClerigoDano(targetNode, MilagreDivinoEffectPath, "MilagreDivinoEffect", "milagre_divino_cast", 5, 4, 1.55f, new Vector2(0f, -42f));
+                TocarEfeitoClerigoDano(targetNode, MilagreDivinoEffectPath, "MilagreDivinoEffect", "milagre_divino_cast", 5, 4, 1.7f, new Vector2(0f, -48f));
             if (damage > 0 && skillId == 14100)
                 TocarProjetilCorteRapido(ObterNoCombate(attackerId), targetNode);
             if (damage > 0 && skillId == 14102)
@@ -1392,9 +1399,9 @@ public partial class EntityManager : Node
                 TocarEfeitoCarnificinaStun(targetNode, 4f);
             if (damage < 0 && skillId == 15101 && targetId != _gameNet?.LocalPlayerId)
                 TocarEfeitoCuraMenor(targetNode);
-            if (damage < 0 && skillId == 15105)
+            if (skillId == 15105)
                 TocarEfeitoRenovacao(targetNode, 10f);
-            if (damage < 0 && skillId == 15107 && targetId != _gameNet?.LocalPlayerId)
+            if (skillId == 15107)
                 TocarEfeitoLuzRestauradora(targetNode);
             if (skillId == 15108)
                 TocarEfeitoRessurreicao(targetNode);
@@ -4031,18 +4038,73 @@ public partial class EntityManager : Node
 
     private static void SetRemotePlayerDowned(Node2D node)
     {
+        if (node == null || !IsInstanceValid(node))
+            return;
+
         if (!node.IsInGroup("PlayersDowned"))
-        {
             node.AddToGroup("PlayersDowned");
-            var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
-            if (sprite != null)
-                sprite.Stop();
+
+        node.SetMeta("remote_downed", true);
+        var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        if (sprite?.SpriteFrames == null)
+            return;
+
+        if (!sprite.SpriteFrames.HasAnimation("death"))
+        {
+            sprite.Stop();
+            return;
         }
+
+        if (sprite.Animation.ToString() != "death")
+        {
+            sprite.SpriteFrames.SetAnimationLoop("death", false);
+            sprite.SpeedScale = 1f;
+            sprite.Play("death");
+        }
+
+        if (!node.HasMeta("remote_death_lock_connected"))
+        {
+            node.SetMeta("remote_death_lock_connected", true);
+            sprite.AnimationFinished += () =>
+            {
+                if (node == null || !IsInstanceValid(node) || !node.HasMeta("remote_downed"))
+                    return;
+                if (sprite == null || !IsInstanceValid(sprite) || sprite.SpriteFrames == null)
+                    return;
+                if (sprite.Animation.ToString() != "death")
+                    return;
+
+                int frameCount = sprite.SpriteFrames.GetFrameCount("death");
+                if (frameCount > 0)
+                    sprite.Frame = frameCount - 1;
+                sprite.Stop();
+            };
+        }
+    }
+
+    private static void SetRemotePlayerRevived(Node2D node)
+    {
+        if (node == null || !IsInstanceValid(node))
+            return;
+
+        node.RemoveFromGroup("PlayersDowned");
+        if (node.HasMeta("remote_downed"))
+            node.RemoveMeta("remote_downed");
+
+        var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        if (sprite?.SpriteFrames == null)
+            return;
+
+        sprite.SpeedScale = 1f;
+        if (sprite.SpriteFrames.HasAnimation("idle_down"))
+            sprite.Play("idle_down");
     }
 
     public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving, bool sprinting = false)
     {
         if (!IsInstanceValid(entity)) return;
+        if (entity.IsInGroup("PlayersDowned") || entity.HasMeta("remote_downed"))
+            return;
         if (EstaComAnimacaoTravada(entity, MetaMachadoGiratorioUntil))
             return;
 

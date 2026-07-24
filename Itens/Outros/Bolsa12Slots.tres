@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Bag 3.png" id="1_icon"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+ItemID = 116
+Nome = "Bolsa de 12 Slots"
+Descricao = "Aumenta o inventario em 12 slots quando equipada."
+Icone = ExtResource("1_icon")
+Acumulavel = false
+QuantidadeMaximaPorSlot = 1
+EhBolsa = true
+SlotsAdicionais = 12
+Valor = 0

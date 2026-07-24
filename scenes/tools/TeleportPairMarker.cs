@@ -7,6 +7,7 @@ public partial class TeleportPairMarker : Area2D
     private Vector2 _destinationOffset = new(0, 32);
     private Polygon2D _preview;
     private Label _label;
+    private bool _localPlayerInside;
 
     [Export]
     public int PairId
@@ -32,13 +33,16 @@ public partial class TeleportPairMarker : Area2D
         _label = GetNodeOrNull<Label>("Label");
 
         CollisionLayer = 0;
-        CollisionMask = 0;
+        CollisionMask = 2;
+        Monitoring = true;
         AddToGroup("teleport_pair_marker");
 
         if (!Engine.IsEditorHint())
         {
             Visible = false;
-            SetProcess(false);
+            BodyEntered += OnBodyEntered;
+            BodyExited += OnBodyExited;
+            SetPhysicsProcess(true);
             return;
         }
 
@@ -73,5 +77,40 @@ public partial class TeleportPairMarker : Area2D
     {
         var tileCenter = new Vector2(GetTileX() * 32f + 16f, GetTileY() * 32f + 16f);
         return tileCenter + DestinationOffset;
+    }
+
+    private void OnBodyEntered(Node2D body)
+    {
+        if (_localPlayerInside || body is not Player)
+            return;
+
+        var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (network == null || !network.IsConnected)
+            return;
+
+        _localPlayerInside = true;
+        GD.Print($"[TELEPORT PAIR] Player tocou o colisor PairId={PairId}.");
+        network.SendSceneTeleport(PairId);
+    }
+
+    private void OnBodyExited(Node2D body)
+    {
+        if (body is Player)
+            _localPlayerInside = false;
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (_localPlayerInside)
+            return;
+
+        foreach (Node2D body in GetOverlappingBodies())
+        {
+            if (body is Player)
+            {
+                OnBodyEntered(body);
+                return;
+            }
+        }
     }
 }

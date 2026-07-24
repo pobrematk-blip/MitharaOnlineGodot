@@ -143,6 +143,26 @@ public partial class InventarioComponent : Node
     public void AplicarDadosServidor(Godot.Collections.Array<Godot.Collections.Dictionary> items, ItemDatabase itemDB)
     {
         Slots.Clear();
+        for (int i = 0; i < SlotsDasBolsasEquipadas.Count; i++)
+            SlotsDasBolsasEquipadas[i] = new SlotInventario();
+
+        foreach (var entry in items)
+        {
+            int slot = (int)entry["slot"];
+            if (slot > -10 || slot <= -16)
+                continue;
+
+            int itemId = (int)entry["item_id"];
+            int qty = (int)entry["quantity"];
+            int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;
+            string instanceData = entry.ContainsKey("instance_data") ? (string)entry["instance_data"] : "";
+            int bagIndex = -10 - slot;
+
+            var resource = itemDB.GetItem(itemId);
+            if (resource != null && resource.EhBolsa && bagIndex >= 0 && bagIndex < SlotsDasBolsasEquipadas.Count)
+                SlotsDasBolsasEquipadas[bagIndex] = new SlotInventario(resource, qty, refineLevel, instanceData);
+        }
+
         RecalcularTamanhoDoInventario(false);
 
         for (int i = 0; i < Slots.Count; i++)
@@ -151,6 +171,9 @@ public partial class InventarioComponent : Node
         foreach (var entry in items)
         {
             int slot = (int)entry["slot"];
+            if (slot < 0)
+                continue;
+
             int itemId = (int)entry["item_id"];
             int qty = (int)entry["quantity"];
             int refineLevel = entry.ContainsKey("refine_level") ? (int)entry["refine_level"] : 0;

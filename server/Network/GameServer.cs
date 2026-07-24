@@ -115,6 +115,10 @@ public partial class GameServer : INetEventListener
         if (repairedGuilds > 0)
             Logger.Info($"Guildas antigas sem sigla/emblema reparadas: {repairedGuilds}.");
 
+        int repairedLeaders = _db.RepairGuildsWithoutLeader();
+        if (repairedLeaders > 0)
+            Logger.Info($"Guildas sem lider reparadas: {repairedLeaders}.");
+
         _db.LoadAllGuilds(
             onGuild: (id, name, level, xp, skillPoints, tag, emblem) =>
             {
@@ -557,6 +561,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_LojinhaRequestItems:
                 HandleLojinhaConfigure(peer, reader);
                 break;
+            case PacketId.C2S_SceneTeleport:
+                HandleSceneTeleport(peer, reader);
+                break;
 
             case PacketId.C2S_MapEditorPlaceTile:
                 HandleMapEditorPlaceTile(peer, reader);
@@ -704,6 +711,10 @@ public class PlayerSession
     public double LastTeleportTime { get; set; } = -1;
     public bool IsTransitioning { get; set; }
     public double TransitionStartTime { get; set; }
+    public double NextPassiveTeleportCheck { get; set; }
+    public string SuppressedTeleportScene { get; set; } = "";
+    public int SuppressedTeleportTileX { get; set; } = int.MinValue;
+    public int SuppressedTeleportTileY { get; set; } = int.MinValue;
 
     public bool IsAdminOrAdminMode(ServerConfig config)
     {

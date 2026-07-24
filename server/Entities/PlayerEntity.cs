@@ -146,7 +146,9 @@ public class PlayerEntity : Entity
 
     public int FindEmptyInventorySlot()
     {
-        const int maxSlots = 30;
+        int maxSlots = 30 + Items
+            .Where(item => item.Definition?.IsBag == true && item.Slot <= -10 && item.Slot > -16)
+            .Sum(item => Math.Clamp(item.Definition?.ExtraSlots ?? 0, 0, 100));
         for (int i = 0; i < maxSlots; i++)
         {
             if (!Items.Any(item => item.Slot == i))

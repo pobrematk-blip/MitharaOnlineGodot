@@ -1068,6 +1068,45 @@ public class DatabaseManager
         return cmd.ExecuteNonQuery();
     }
 
+    public int RepairGuildsWithoutLeader()
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            WITH guilds_without_leader AS (
+                SELECT g.id AS guild_id
+                FROM guilds g
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM guild_members gm
+                    WHERE gm.guild_id = g.id
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM guild_members leader
+                    WHERE leader.guild_id = g.id
+                      AND leader.rank = 0
+                )
+            ),
+            chosen_leaders AS (
+                SELECT DISTINCT ON (gm.guild_id)
+                    gm.guild_id,
+                    gm.entity_id
+                FROM guild_members gm
+                INNER JOIN guilds_without_leader missing
+                    ON missing.guild_id = gm.guild_id
+                ORDER BY gm.guild_id, gm.rank ASC, gm.name ASC, gm.entity_id ASC
+            )
+            UPDATE guild_members gm
+            SET rank = 0
+            FROM chosen_leaders chosen
+            WHERE gm.guild_id = chosen.guild_id
+              AND gm.entity_id = chosen.entity_id
+            """;
+        return cmd.ExecuteNonQuery();
+    }
+
     public bool SaveGuild(int guildId, string name, int level, int xp, int skillPoints, string tag = "", int emblem = -1)
     {
         using var conn = new NpgsqlConnection(_connectionString);
@@ -1314,6 +1353,7 @@ public class DatabaseManager
         int delCharRows = delChar.ExecuteNonQuery();
 
         tx.Commit();
+        RepairGuildsWithoutLeader();
         Logger.Info($"[DB] Personagem {characterId} ({characterName}) deletado: char={delCharRows}, itens={delItemsRows}, quests={delQuestsRows}, talentos={delTalentsRows}, skillSlots={delSkillSlotsRows}, pets={delPetsRows}, guild={delGuildRows}, lojinhas={delLojinhasRows}, lojinhaItens={delLojinhaItemsRows}.");
     }
 
@@ -1894,8 +1934,12 @@ public class DatabaseManager
             new() { Id = ItemDefinitions.PergaminhoVip15Dias, Name = "Pergaminho VIP (15 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
             new() { Id = ItemDefinitions.PergaminhoVip30Dias, Name = "Pergaminho VIP (30 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
             new() { Id = ItemDefinitions.PergaminhoVip7DiasTrial, Name = "Pergaminho VIP Trial (7 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
-            new() { Id = ItemDefinitions.PergaminhoResetTalentos, Name = "Pergaminho de Reset de Talentos", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 100 },
+            new() { Id = ItemDefinitions.PergaminhoResetTalentos, Name = "Pergaminho de Reset de Personagem", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 100 },
             new() { Id = ItemDefinitions.PergaminhoDoPet5, Name = "Pergaminho do Pet (5 Tentativas)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.Bolsa6Slots, Name = "Bolsa de 6 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 6, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.Bolsa12Slots, Name = "Bolsa de 12 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 12, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.Bolsa18Slots, Name = "Bolsa de 18 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 18, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.Bolsa24Slots, Name = "Bolsa de 24 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 24, BuyPrice = 0 },
             new() { Id = 1000, Name = "Arco da Primeira Caçada", Type = ItemType.Weapon, RequiredLevel = 1, IsElite = false, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 1, DestrezaMin = 1, DestrezaMax = 2, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 3, BaseAttackMin = 2, BaseAttackMax = 4, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 10, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
             new() { Id = 11000, Name = "Arco da Primeira Caçada", Type = ItemType.Weapon, RequiredLevel = 1, IsElite = true, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 1, DestrezaMin = 1, DestrezaMax = 2, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 3, BaseAttackMin = 2, BaseAttackMax = 5, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 10, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
             new() { Id = 1001, Name = "Arco do Vento Verde", Type = ItemType.Weapon, RequiredLevel = 10, IsElite = false, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 5, DestrezaMin = 4, DestrezaMax = 6, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 13, BaseAttackMin = 11, BaseAttackMax = 15, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 100, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },

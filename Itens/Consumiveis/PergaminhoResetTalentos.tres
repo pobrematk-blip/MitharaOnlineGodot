@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_item")
 ItemID = 113
-Nome = "Pergaminho de Reset de Talentos"
-Descricao = "Reseta a arvore de talentos, remove as skills da barra e devolve todos os pontos gastos."
+Nome = "Pergaminho de Reset de Personagem"
+Descricao = "Reseta os atributos distribuidos, limpa a arvore de talentos, remove as skills da barra e devolve os pontos para refazer sua build."
 Icone = ExtResource("2_icon")
 Acumulavel = true
 QuantidadeMaximaPorSlot = 99

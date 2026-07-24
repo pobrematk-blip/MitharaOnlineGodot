@@ -20603,3 +20603,4 @@ tile_set = SubResource("TileSet_siotg")
 
 [node name="TeleportPair_Main_1" parent="." instance=ExtResource("8_d71om")]
 position = Vector2(657, 685)
+DestinationOffset = Vector2(0, -32)

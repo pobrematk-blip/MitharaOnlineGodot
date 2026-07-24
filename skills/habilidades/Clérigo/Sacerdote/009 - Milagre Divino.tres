@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 15109
 Nome = "Milagre Divino"
-Descricao = "O Sacerdote invoca uma manifestação divina ao seu redor, causando dano sagrado em todos os inimigos próximos."
+Descricao = "O Sacerdote invoca uma manifestação divina ao seu redor, causando dano sagrado em todos os inimigos dentro de 10 tiles."
 Icone = ExtResource("2_icon")
 Valor = 240
 CustoMana = 80
@@ -21,9 +21,9 @@ NivelRequerido = 70
 Ordem = 9
 Escopo = "Especialização"
 Tipo = "Dano Sagrado em Área"
-EfeitoPrincipal = "Causa dano sagrado em inimigos ao redor do Sacerdote."
+EfeitoPrincipal = "Causa dano sagrado em todos os inimigos ao redor do Sacerdote em um raio de 10 tiles."
 DanoEscala = "Dano: 240% -> 480% do Poder Mágico"
 BuffDebuff = ""
 DuracaoTexto = "Instantâneo"
-Progressao = "Ultimate Lv1 = dano alto; Lv5 = dano máximo."
-Observacoes = "Atinge inimigos em um raio de 4 tiles ao redor do Sacerdote."
+Progressao = "Ultimate Lv1 = dano alto; Lv5 = dano máximo. Área fixa: 10 tiles ao redor do Sacerdote."
+Observacoes = "A animação aparece em cada alvo atingido dentro da área."

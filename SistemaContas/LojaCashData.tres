@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LojaCashData" load_steps=12 format=3]
+[gd_resource type="Resource" script_class="LojaCashData" load_steps=17 format=3]
 [ext_resource type="Script" path="res://SistemaContas/LojaCashData.cs" id="1_script"]
 [ext_resource type="Script" path="res://SistemaContas/LojaCashEntry.cs" id="2_entry"]
 
@@ -65,6 +65,41 @@ PrecoDiamantes = 200
 NomeExibicao = "Lojinha Grande"
 Descricao = "Coloca uma lojinha portátil com 15 slots para vender itens."
 
+[sub_resource type="Resource" id="LojaCashEntry_resetpersonagem"]
+script = ExtResource("2_entry")
+ItemID = 113
+PrecoDiamantes = 150
+NomeExibicao = "Reset de Personagem"
+Descricao = "Devolve pontos de atributos e limpa talentos e barra de habilidades."
+
+[sub_resource type="Resource" id="LojaCashEntry_bolsa6"]
+script = ExtResource("2_entry")
+ItemID = 115
+PrecoDiamantes = 60
+NomeExibicao = "Bolsa de 6 Slots"
+Descricao = "Aumenta o inventario em 6 slots quando equipada."
+
+[sub_resource type="Resource" id="LojaCashEntry_bolsa12"]
+script = ExtResource("2_entry")
+ItemID = 116
+PrecoDiamantes = 110
+NomeExibicao = "Bolsa de 12 Slots"
+Descricao = "Aumenta o inventario em 12 slots quando equipada."
+
+[sub_resource type="Resource" id="LojaCashEntry_bolsa18"]
+script = ExtResource("2_entry")
+ItemID = 117
+PrecoDiamantes = 160
+NomeExibicao = "Bolsa de 18 Slots"
+Descricao = "Aumenta o inventario em 18 slots quando equipada."
+
+[sub_resource type="Resource" id="LojaCashEntry_bolsa24"]
+script = ExtResource("2_entry")
+ItemID = 118
+PrecoDiamantes = 220
+NomeExibicao = "Bolsa de 24 Slots"
+Descricao = "Aumenta o inventario em 24 slots quando equipada."
+
 [resource]
 script = ExtResource("1_script")
-Itens = Array[ExtResource("2_entry")]([SubResource("LojaCashEntry_slot"), SubResource("LojaCashEntry_vip7"), SubResource("LojaCashEntry_vip15"), SubResource("LojaCashEntry_vip30"), SubResource("LojaCashEntry_guild"), SubResource("LojaCashEntry_petcapture"), SubResource("LojaCashEntry_lojapeq"), SubResource("LojaCashEntry_lojamed"), SubResource("LojaCashEntry_lojagrande")])
+Itens = Array[ExtResource("2_entry")]([SubResource("LojaCashEntry_slot"), SubResource("LojaCashEntry_vip7"), SubResource("LojaCashEntry_vip15"), SubResource("LojaCashEntry_vip30"), SubResource("LojaCashEntry_guild"), SubResource("LojaCashEntry_petcapture"), SubResource("LojaCashEntry_lojapeq"), SubResource("LojaCashEntry_lojamed"), SubResource("LojaCashEntry_lojagrande"), SubResource("LojaCashEntry_resetpersonagem"), SubResource("LojaCashEntry_bolsa6"), SubResource("LojaCashEntry_bolsa12"), SubResource("LojaCashEntry_bolsa18"), SubResource("LojaCashEntry_bolsa24")])

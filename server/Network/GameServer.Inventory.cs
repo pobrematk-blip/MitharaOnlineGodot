@@ -10,6 +10,8 @@ namespace Mithara.Server.Network;
 partial class GameServer
 {
     private const int InventorySlotCount = 30;
+    private const int InventoryBagSlotCount = 6;
+    private const int InventoryBagSlotBase = -10;
     private const double PotionUseCooldownSeconds = 40.0;
 
     private void HandleAdminUpdateItemDefinition(NetPeer peer, NetDataReader reader)
@@ -136,7 +138,7 @@ partial class GameServer
         {
             foreach (var existing in player.Items.Where(i =>
                          i.Slot >= 0
-                         && i.Slot < InventorySlotCount
+                         && i.Slot < GetInventorySlotLimit(player)
                          && i.ItemId == itemId
                          && i.Quantity < maxStack).OrderBy(i => i.Slot))
             {
@@ -154,7 +156,8 @@ partial class GameServer
             ? (int)Math.Ceiling(remaining / (double)maxStack)
             : remaining;
 
-        for (int slot = 0; slot < InventorySlotCount && newSlots.Count < newStacksNeeded; slot++)
+        int slotLimit = GetInventorySlotLimit(player);
+        for (int slot = 0; slot < slotLimit && newSlots.Count < newStacksNeeded; slot++)
         {
             if (usedSlots.Contains(slot)) continue;
             usedSlots.Add(slot);
@@ -194,13 +197,68 @@ partial class GameServer
         return def.Type is ItemType.Consumable or ItemType.Material;
     }
 
+    private static bool IsInventoryBagSlot(int slot)
+        => slot <= InventoryBagSlotBase && slot > InventoryBagSlotBase - InventoryBagSlotCount;
+
+    private static int GetInventoryBagIndex(int slot)
+        => InventoryBagSlotBase - slot;
+
+    private static int GetInventorySlotLimit(PlayerEntity player)
+    {
+        int extraSlots = player.Items
+            .Where(item => IsInventoryBagSlot(item.Slot))
+            .Sum(item => Math.Clamp(item.Definition?.ExtraSlots ?? 0, 0, 100));
+        return InventorySlotCount + extraSlots;
+    }
+
+    private static bool IsValidInventorySlot(PlayerEntity player, int slot)
+        => slot >= 0 && slot < GetInventorySlotLimit(player);
+
+    private static bool HasItemsBeyondInventoryLimit(PlayerEntity player, int limit)
+        => player.Items.Any(item => item.Slot >= limit);
+
+    private bool RemoveDuplicatedRuntimeItemInstances(PlayerEntity player, int characterId, string origin)
+    {
+        var seen = new HashSet<int>();
+        bool removed = false;
+
+        foreach (var item in player.Items.ToList())
+        {
+            if (item.DbId <= 0)
+                continue;
+
+            if (seen.Add(item.DbId))
+                continue;
+
+            player.Items.Remove(item);
+            removed = true;
+            Logger.Info($"[ANTI-DUPE] Item duplicado removido da memoria em {origin}: char={characterId}, dbId={item.DbId}, itemId={item.ItemId}, slot={item.Slot}.");
+        }
+
+        foreach (var kv in player.Equipment.ToList())
+        {
+            var item = kv.Value;
+            if (item.DbId <= 0)
+                continue;
+
+            if (seen.Add(item.DbId))
+                continue;
+
+            player.Equipment.Remove(kv.Key);
+            removed = true;
+            Logger.Info($"[ANTI-DUPE] Equipamento duplicado removido da memoria em {origin}: char={characterId}, dbId={item.DbId}, itemId={item.ItemId}, equipSlot={kv.Key}.");
+        }
+
+        return removed;
+    }
+
     private void NormalizeLoadedInventory(PlayerEntity player, int characterId)
     {
         var usedSlots = new HashSet<int>(player.Items.Select(i => i.Slot));
 
         int? TakeFreeSlot()
         {
-            for (int slot = 0; slot < InventorySlotCount; slot++)
+            for (int slot = 0; slot < GetInventorySlotLimit(player); slot++)
             {
                 if (usedSlots.Contains(slot))
                     continue;
@@ -295,7 +353,7 @@ partial class GameServer
         int invSlot = reader.GetInt();
         int equipSlot = reader.GetInt();
 
-        if (invSlot < 0 || invSlot >= InventorySlotCount)
+        if (!IsValidInventorySlot(player, invSlot))
         {
             SendSystemMessage(peer, "Slot de inventario invalido.");
             SendInventoryData(peer, player);
@@ -441,7 +499,7 @@ partial class GameServer
         if (targetInvSlot < 0)
             targetInvSlot = FindEmptyInventorySlot(player);
 
-        if (targetInvSlot < 0 || targetInvSlot >= InventorySlotCount)
+        if (!IsValidInventorySlot(player, targetInvSlot))
         {
             SendSystemMessage(peer, "Inventario cheio!");
             SendInventoryData(peer, player);
@@ -485,7 +543,7 @@ partial class GameServer
 
     private static int FindEmptyInventorySlot(PlayerEntity player)
     {
-        for (int slot = 0; slot < InventorySlotCount; slot++)
+        for (int slot = 0; slot < GetInventorySlotLimit(player); slot++)
         {
             if (!player.Items.Any(item => item.Slot == slot))
                 return slot;
@@ -505,7 +563,13 @@ partial class GameServer
         int fromSlot = reader.GetInt();
         int toSlot = reader.GetInt();
 
-        if (fromSlot < 0 || fromSlot >= InventorySlotCount || toSlot < 0 || toSlot >= InventorySlotCount)
+        if (IsInventoryBagSlot(fromSlot) || IsInventoryBagSlot(toSlot))
+        {
+            HandleMoveInventoryBag(peer, session, player, fromSlot, toSlot);
+            return;
+        }
+
+        if (!IsValidInventorySlot(player, fromSlot) || !IsValidInventorySlot(player, toSlot))
         {
             SendSystemMessage(peer, "Slot de inventario invalido.");
             SendInventoryData(peer, player);
@@ -547,6 +611,75 @@ partial class GameServer
             _db.SaveItem(session.SelectedCharacter!.Id, toItem);
 
         SendInventoryData(peer, player);
+    }
+
+    private void HandleMoveInventoryBag(NetPeer peer, PlayerSession session, PlayerEntity player, int fromSlot, int toSlot)
+    {
+        bool fromBagSlot = IsInventoryBagSlot(fromSlot);
+        bool toBagSlot = IsInventoryBagSlot(toSlot);
+
+        if (!fromBagSlot && !IsValidInventorySlot(player, fromSlot))
+        {
+            SendSystemMessage(peer, "Slot de inventario invalido.");
+            SendInventoryData(peer, player);
+            return;
+        }
+
+        if (!toBagSlot && !IsValidInventorySlot(player, toSlot))
+        {
+            SendSystemMessage(peer, "Slot de inventario invalido.");
+            SendInventoryData(peer, player);
+            return;
+        }
+
+        var fromItem = player.Items.FirstOrDefault(i => i.Slot == fromSlot);
+        var toItem = player.Items.FirstOrDefault(i => i.Slot == toSlot);
+        if (fromItem == null)
+            return;
+
+        if (toBagSlot)
+        {
+            if (fromItem.Definition?.IsBag != true)
+            {
+                SendSystemMessage(peer, "Apenas bolsas podem ser equipadas nesse slot.");
+                SendInventoryData(peer, player);
+                return;
+            }
+
+            if (toItem != null)
+            {
+                SendSystemMessage(peer, "Remova a bolsa atual antes de equipar outra nesse slot.");
+                SendInventoryData(peer, player);
+                return;
+            }
+
+            fromItem.Slot = toSlot;
+            _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
+            SendInventoryData(peer, player);
+            return;
+        }
+
+        if (fromBagSlot)
+        {
+            if (toItem != null)
+            {
+                SendSystemMessage(peer, "Escolha um slot vazio para remover a bolsa.");
+                SendInventoryData(peer, player);
+                return;
+            }
+
+            int newLimit = GetInventorySlotLimit(player) - Math.Clamp(fromItem.Definition?.ExtraSlots ?? 0, 0, 100);
+            if (toSlot >= newLimit || HasItemsBeyondInventoryLimit(player, newLimit))
+            {
+                SendSystemMessage(peer, "Esvazie os slots extras antes de remover a bolsa.");
+                SendInventoryData(peer, player);
+                return;
+            }
+
+            fromItem.Slot = toSlot;
+            _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
+            SendInventoryData(peer, player);
+        }
     }
 
     private void HandleUseItem(NetPeer peer, NetDataReader reader)
@@ -595,13 +728,41 @@ partial class GameServer
         }
         else if (item.ItemId == ItemDefinitions.PergaminhoResetTalentos)
         {
+            int pontosDevolvidos = Math.Max(0, player.BaseForca - 5)
+                + Math.Max(0, player.BaseAgilidade - 5)
+                + Math.Max(0, player.BaseDestreza - 5)
+                + Math.Max(0, player.BaseInteligencia - 5);
+
+            player.BaseForca = 5;
+            player.BaseAgilidade = 5;
+            player.BaseDestreza = 5;
+            player.BaseInteligencia = 5;
+            player.StatPoints = Math.Max(0, player.StatPoints) + pontosDevolvidos;
+
             player.UnlockedTalents.Clear();
             if (player.SkillBarSlots == null || player.SkillBarSlots.Length != 20)
                 player.SkillBarSlots = new int[20];
             Array.Fill(player.SkillBarSlots, 0);
 
+            RecalculatePlayerStats(player);
+            player.Health = player.MaxHealth;
+            player.Mana = player.MaxMana;
+
+            _db.SaveCharacterStats(
+                session.SelectedCharacter.Id,
+                player.BaseForca,
+                player.BaseAgilidade,
+                player.BaseDestreza,
+                player.BaseInteligencia,
+                player.StatPoints);
             _db.DeleteCharacterTalents(session.SelectedCharacter.Id);
             _db.DeleteCharacterSkillSlots(session.SelectedCharacter.Id);
+
+            session.SelectedCharacter.Forca = player.BaseForca;
+            session.SelectedCharacter.Agilidade = player.BaseAgilidade;
+            session.SelectedCharacter.Destreza = player.BaseDestreza;
+            session.SelectedCharacter.Inteligencia = player.BaseInteligencia;
+            session.SelectedCharacter.StatPoints = player.StatPoints;
 
             item.Quantity--;
             if (item.Quantity <= 0)
@@ -615,9 +776,19 @@ partial class GameServer
             }
 
             SendInventoryData(peer, player);
+            SendStatUpdate(peer, player);
             SendTalentData(peer, player);
             SendSkillBarData(peer, player);
-            SendSystemMessage(peer, "Talentos resetados. Seus pontos foram devolvidos.");
+            SendSystemMessage(peer, $"Personagem resetado. {pontosDevolvidos} ponto(s) de atributo foram devolvidos e os talentos foram limpos.");
+
+            var resetResult = PacketSerializer.WritePacket(PacketId.S2C_ItemUseResult);
+            resetResult.Put(player.Health);
+            resetResult.Put(player.MaxHealth);
+            resetResult.Put(player.Mana);
+            resetResult.Put(player.MaxMana);
+            resetResult.Put(item.ItemId);
+            resetResult.Put(0f);
+            peer.Send(resetResult, DeliveryMethod.ReliableOrdered);
             return;
         }
         else if (item.ItemId is ItemDefinitions.PergaminhoVip7Dias or ItemDefinitions.PergaminhoVip15Dias or ItemDefinitions.PergaminhoVip30Dias or ItemDefinitions.PergaminhoVip7DiasTrial)
@@ -1066,6 +1237,11 @@ partial class GameServer
             108 => 50,
             109 => 100,
             112 => 200,
+            113 => 150,
+            115 => 60,
+            116 => 110,
+            117 => 160,
+            118 => 220,
             _ => 0,
         };
     }

@@ -243,7 +243,8 @@ public partial class PlayerContextMenu : Panel
         cancelBtn.Pressed += CloseDuelWagerDialog;
         buttons.AddChild(cancelBtn);
 
-        AddChild(_duelWagerPanel);
+        var dialogParent = GetParent() ?? this;
+        dialogParent.AddChild(_duelWagerPanel);
         CenterDuelWagerDialog();
         _duelWagerPanel.Visible = true;
         _duelWagerPanel.MoveToFront();

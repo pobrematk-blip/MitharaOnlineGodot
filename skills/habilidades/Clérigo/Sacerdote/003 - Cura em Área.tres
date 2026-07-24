@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 15103
 Nome = "Cura em Área"
-Descricao = "Ondas de luz restauradora se espalham ao redor do Sacerdote, curando todos os aliados que estiverem dentro do alcance da oração."
+Descricao = "Ondas de luz restauradora se espalham na área marcada, curando todos os aliados dentro de um círculo de 20 por 20 tiles."
 Icone = ExtResource("1_r46kf")
 Valor = 150
 CustoMana = 35
@@ -19,9 +19,9 @@ NivelRequerido = 10
 Ordem = 3
 Escopo = "Especialização"
 Tipo = "Cura em Área"
-EfeitoPrincipal = "Cura aliados próximos em área."
-DanoEscala = "Cura: 150% → 300% do Poder Mágico"
+EfeitoPrincipal = "Cura todos os aliados dentro da área marcada de 20 por 20 tiles."
+DanoEscala = "Cura: 150% -> 300% do Poder Mágico"
 BuffDebuff = "Cura em área"
 DuracaoTexto = "Instantâneo"
-Progressao = "Lv1 = 150%; Lv10 = 300%."
+Progressao = "Lv1 = 150%; Lv10 = 300%. Área fixa: 20 por 20 tiles."
 Observacoes = "Cura menor que cura focada, mas atinge vários aliados."

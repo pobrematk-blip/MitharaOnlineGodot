@@ -1,13 +1,19 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$Version,
-    [string]$GameDirectory = (Join-Path $PSScriptRoot '..\build'),
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot '..\release'),
+    [string]$GameDirectory = '',
+    [string]$OutputDirectory = '',
     [string]$ArchiveName = 'MitharaOnline_Update.zip',
     [string]$GameExecutable = 'MitharaOnlineTeste.exe'
 )
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($GameDirectory)) {
+    $GameDirectory = Join-Path $PSScriptRoot '..\build'
+}
+if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
+    $OutputDirectory = Join-Path $PSScriptRoot '..\release'
+}
 $gameRoot = [IO.Path]::GetFullPath($GameDirectory)
 $outputRoot = [IO.Path]::GetFullPath($OutputDirectory)
 

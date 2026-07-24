@@ -227,6 +227,8 @@ public partial class LojaCashUI : Control
             104 => "res://Itens/Incones/Vip 2.png",
             105 => "res://Itens/Incones/vip 3.png",
             108 or 109 or 112 => "res://Itens/Incones/Bau surpresa 1.png",
+            113 => "res://Itens/Incones/Pergaminho de Criação de Guild.png",
+            115 or 116 or 117 or 118 => "res://Itens/Incones/Bag 3.png",
             _ => "res://Itens/Incones/bagitem.png",
         };
 

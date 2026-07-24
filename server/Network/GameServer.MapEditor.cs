@@ -15,6 +15,7 @@ public partial class GameServer
 
     public class TeleportTileInfo
     {
+        public int PairId { get; set; }
         public string TargetScene { get; set; } = "main";
         public float TargetX { get; set; }
         public float TargetY { get; set; }
@@ -56,7 +57,8 @@ public partial class GameServer
                 {
                     teleports[(tileX, tileY)] = new TeleportTileInfo
                     {
-                        TargetScene = ts.GetString() ?? "main",
+                        PairId = entry.TryGetProperty("pairId", out var pairId) ? pairId.GetInt32() : 0,
+                        TargetScene = (ts.GetString() ?? "main").Trim().ToLowerInvariant(),
                         TargetX = (float)entry.GetProperty("targetX").GetDouble(),
                         TargetY = (float)entry.GetProperty("targetY").GetDouble(),
                     };

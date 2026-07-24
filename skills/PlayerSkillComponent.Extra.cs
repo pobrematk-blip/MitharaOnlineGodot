@@ -10,9 +10,11 @@ public partial class PlayerSkillComponent
     private const int TempestadeEletricaSkillId = 11206;
     private const int ExplosaoVulcanicaSkillId = 11207;
     private const int ChuvaMeteorosSkillId = 11209;
+    private const int CuraEmAreaSkillId = 15103;
     private const int CarnificinaSkillId = 13107;
     private const int RessurreicaoSkillId = 15108;
     private const float LancaDeGeloMarkerRadius = 120f;
+    private const float CuraEmAreaMarkerRadius = 32f * 10f;
 
     private GroundTargetMarker? _groundTargetMarker;
     private int _pendingGroundSkillSlot = -1;
@@ -124,6 +126,14 @@ public partial class PlayerSkillComponent
                 : (isGolpeDeEscudo ? 32f * 10f : (isEstocada ? 32f * 5f : (isSacerdoteDano ? 32f * 8f : (isMarcaDaMorte || isSangramentoMortal ? 32f * 10f : 900f))));
             if (!_player.TryEnsureSelectedEnemyTarget(range, out _, out targetPosition))
                 GD.Print($"[SKILLCOMP] {skill.Nome} sem alvo: nenhum inimigo proximo encontrado.");
+        }
+        else if (skill.TargetType == SkillTargetType.Ally
+            && _player.TryGetSelectedCombatTarget(out var selectedAllyNode)
+            && selectedAllyNode != null
+            && GodotObject.IsInstanceValid(selectedAllyNode)
+            && selectedAllyNode.HasMeta("player_name"))
+        {
+            targetPosition = selectedAllyNode.GlobalPosition;
         }
         else if (skill.TargetType == SkillTargetType.Enemy && _player.TryGetSelectedTargetPosition(out var selectedTargetPosition))
         {
@@ -309,7 +319,9 @@ public partial class PlayerSkillComponent
         if (gameNet == null || !gameNet.IsConnected)
             return;
 
-        bool usarTargetDireto = skill.SkillId != CarnificinaSkillId && skill.SkillId != RessurreicaoSkillId;
+        bool usarTargetDireto = skill.SkillId != CarnificinaSkillId
+            && skill.SkillId != RessurreicaoSkillId
+            && skill.SkillId != CuraEmAreaSkillId;
         if (usarTargetDireto
             && _player.TryGetSelectedCombatTarget(out var selectedTargetNode)
             && IsInstanceValid(selectedTargetNode)
@@ -336,6 +348,7 @@ public partial class PlayerSkillComponent
             || skillId == TempestadeEletricaSkillId
             || skillId == ExplosaoVulcanicaSkillId
             || skillId == ChuvaMeteorosSkillId
+            || skillId == CuraEmAreaSkillId
             || skillId == CarnificinaSkillId
             || skillId == RessurreicaoSkillId;
     }
@@ -372,7 +385,9 @@ public partial class PlayerSkillComponent
 
         _groundTargetMarker = new GroundTargetMarker
         {
-            Radius = LancaDeGeloMarkerRadius,
+            Radius = ObterRaioMarcacaoNoChao(_pendingGroundSkill?.SkillId ?? 0),
+            FillColor = ObterCorMarcacaoNoChao(_pendingGroundSkill?.SkillId ?? 0, preenchimento: true),
+            LineColor = ObterCorMarcacaoNoChao(_pendingGroundSkill?.SkillId ?? 0, preenchimento: false),
             GlobalPosition = _player?.GetGlobalMousePosition() ?? Vector2.Zero,
             ZIndex = 90,
             ZAsRelative = false,
@@ -380,6 +395,23 @@ public partial class PlayerSkillComponent
 
         Node? parent = GetTree()?.CurrentScene?.FindChild("World", true, false) ?? GetTree()?.CurrentScene;
         parent?.AddChild(_groundTargetMarker);
+    }
+
+    private static float ObterRaioMarcacaoNoChao(int skillId)
+    {
+        return skillId == CuraEmAreaSkillId ? CuraEmAreaMarkerRadius : LancaDeGeloMarkerRadius;
+    }
+
+    private static Color ObterCorMarcacaoNoChao(int skillId, bool preenchimento)
+    {
+        if (skillId == CuraEmAreaSkillId)
+            return preenchimento
+                ? new Color(1f, 0.82f, 0.05f, 0.18f)
+                : new Color(1f, 0.88f, 0.12f, 0.95f);
+
+        return preenchimento
+            ? new Color(1f, 0.05f, 0.05f, 0.16f)
+            : new Color(1f, 0.05f, 0.05f, 0.95f);
     }
 
     private void CancelarGroundTarget()
@@ -396,14 +428,17 @@ public partial class PlayerSkillComponent
     private sealed partial class GroundTargetMarker : Node2D
     {
         public float Radius { get; set; } = 120f;
+        public Color FillColor { get; set; } = new(1f, 0.05f, 0.05f, 0.16f);
+        public Color LineColor { get; set; } = new(1f, 0.05f, 0.05f, 0.95f);
 
         public override void _Draw()
         {
-            DrawCircle(Vector2.Zero, Radius, new Color(1f, 0.05f, 0.05f, 0.16f));
-            DrawArc(Vector2.Zero, Radius, 0f, Mathf.Tau, 96, new Color(1f, 0.05f, 0.05f, 0.95f), 3f, true);
-            DrawArc(Vector2.Zero, Radius * 0.62f, 0f, Mathf.Tau, 96, new Color(1f, 0.18f, 0.18f, 0.55f), 2f, true);
-            DrawLine(new Vector2(-Radius, 0), new Vector2(Radius, 0), new Color(1f, 0.05f, 0.05f, 0.5f), 1.5f, true);
-            DrawLine(new Vector2(0, -Radius), new Vector2(0, Radius), new Color(1f, 0.05f, 0.05f, 0.5f), 1.5f, true);
+            var softLine = new Color(LineColor.R, LineColor.G, LineColor.B, 0.52f);
+            DrawCircle(Vector2.Zero, Radius, FillColor);
+            DrawArc(Vector2.Zero, Radius, 0f, Mathf.Tau, 128, LineColor, 3f, true);
+            DrawArc(Vector2.Zero, Radius * 0.62f, 0f, Mathf.Tau, 128, softLine, 2f, true);
+            DrawLine(new Vector2(-Radius, 0), new Vector2(Radius, 0), softLine, 1.5f, true);
+            DrawLine(new Vector2(0, -Radius), new Vector2(0, Radius), softLine, 1.5f, true);
         }
     }
 

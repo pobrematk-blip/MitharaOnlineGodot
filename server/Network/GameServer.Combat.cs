@@ -43,6 +43,7 @@ partial class GameServer
     private const int EscudoArcanoSkillId = 11003;
     private const int FuriaElementalSkillId = 11208;
     private const int BencaoDivinaSkillId = 15003;
+    private const int PassoDivinoSkillId = 15002;
     private const int CuraMenorSkillId = 15101;
     private const int MarteloDesolacaoSkillId = 15102;
     private const int CuraEmAreaSkillId = 15103;
@@ -52,6 +53,7 @@ partial class GameServer
     private const int RessurreicaoSkillId = 15108;
     private const int MilagreDivinoSkillId = 15109;
     private const int SegundoFolegoUniversalSkillId = 9001;
+    private const double RenovacaoTickInterval = 1.0;
     private const int FuriaBerserkerSkillId = 13101;
     private const int SangramentoMortalSkillId = 13001;
     private const int FrenesiBerserkerSkillId = 13106;
@@ -77,8 +79,8 @@ partial class GameServer
     private const float MarcaDaMorteRange = TileSize * 10f;
     private const float SacerdoteDanoRange = TileSize * 8f;
     private const float SangramentoMortalRange = TileSize * 10f;
-    private const float CuraEmAreaRadius = TileSize * 5f;
-    private const float MilagreDivinoRadius = TileSize * 4f;
+    private const float CuraEmAreaRadius = TileSize * 10f;
+    private const float MilagreDivinoRadius = TileSize * 10f;
     private const float RessurreicaoRange = TileSize * 10f;
     private const float RessurreicaoTargetRadius = TileSize * 3.75f;
     private const float LancaDeGeloRange = TileSize * 22.5f;
@@ -2193,6 +2195,7 @@ partial class GameServer
         {
             10002 => tileSize * 6f,
             TeleporteArcanoSkillId => tileSize * 10f,
+            PassoDivinoSkillId => tileSize * 10f,
             _ => MathF.Max(tileSize * 2f, skill.Valor),
         };
         float originX = caster.X + dirX * 42f;
@@ -3062,14 +3065,14 @@ partial class GameServer
         if (IsMarcaDaMorteSkill(skill))
             return ApplyMarcaDaMorteSkill(peer, channel, caster, skill, targetX, targetY);
         if (skill.SkillId == CuraEmAreaSkillId)
-            return ApplyCuraEmAreaSkill(peer, channel, caster, skill);
+            return ApplyCuraEmAreaSkill(peer, channel, caster, skill, targetX, targetY);
 
         PlayerEntity target = caster;
         if (skill.TargetType == 1)
         {
             target = channel.GetEntitiesInAoi(caster.X, caster.Y)
                 .Select(id => channel.GetEntity(id) as PlayerEntity)
-                .Where(p => p != null && p.Health > 0 && p.FactionId == caster.FactionId)
+                .Where(p => p != null && p.Health > 0 && IsValidSupportTarget(caster, p))
                 .OrderBy(p =>
                 {
                     float dx = p!.X - targetX;
@@ -3088,15 +3091,15 @@ partial class GameServer
                 return true;
             }
 
-            int oldHealth = target.Health;
-            int oldMana = target.Mana;
-            target.Health = Math.Min(target.MaxHealth, target.Health + amount);
             if (skill.SkillId == RenovacaoSkillId)
-                target.Mana = Math.Min(target.MaxMana, target.Mana + amount);
-            BroadcastCombatResult(channel, caster.Id, target.Id, -(target.Health - oldHealth), false, target.Health, target.MaxHealth, caster.X, caster.Y, skill.SkillId);
-            if (skill.SkillId == RenovacaoSkillId && target.Mana != oldMana)
-                BroadcastSingleEntityUpdate(channel, target);
-            BroadcastPartyMemberUpdateForEntity(target.Id);
+            {
+                ScheduleRenovacaoTicks(channel, caster, caster, skill);
+                if (target.Id != caster.Id)
+                    ScheduleRenovacaoTicks(channel, caster, target, skill);
+                return true;
+            }
+
+            ApplyInstantSupportRecovery(channel, caster, target, skill, amount, restoreMana: false);
             return true;
         }
 
@@ -3183,19 +3186,46 @@ partial class GameServer
         return true;
     }
 
-    private bool ApplyCuraEmAreaSkill(NetPeer peer, Channel channel, PlayerEntity caster, ServerSkillDefinition skill)
+    private void ApplyInstantSupportRecovery(Channel channel, PlayerEntity caster, PlayerEntity target, ServerSkillDefinition skill, int amount, bool restoreMana)
+    {
+        if (target.Health <= 0)
+            return;
+
+        int oldHealth = target.Health;
+        int oldMana = target.Mana;
+        target.Health = Math.Min(target.MaxHealth, target.Health + amount);
+        if (restoreMana)
+            target.Mana = Math.Min(target.MaxMana, target.Mana + amount);
+
+        int healedHealth = target.Health - oldHealth;
+        BroadcastCombatResult(channel, caster.Id, target.Id, -healedHealth, false, target.Health, target.MaxHealth, target.X, target.Y, skill.SkillId);
+        if (restoreMana && target.Mana != oldMana)
+            BroadcastSingleEntityUpdate(channel, target);
+        BroadcastPartyMemberUpdateForEntity(target.Id);
+    }
+
+    private static bool IsValidSupportTarget(PlayerEntity caster, PlayerEntity? target)
+    {
+        if (target == null || target.Health <= 0)
+            return false;
+        if (target.Id == caster.Id)
+            return true;
+        if (caster.PartyId >= 0 && target.PartyId == caster.PartyId)
+            return true;
+        return string.Equals(target.FactionId, caster.FactionId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool ApplyCuraEmAreaSkill(NetPeer peer, Channel channel, PlayerEntity caster, ServerSkillDefinition skill, float targetX, float targetY)
     {
         int amount = Math.Max(1, skill.Valor);
-        var targets = channel.GetEntitiesInAoi(caster.X, caster.Y)
+        var targets = channel.GetEntitiesInAoi(targetX, targetY)
             .Select(id => channel.GetEntity(id) as PlayerEntity)
             .Where(p => p != null && p.Health > 0)
-            .Where(p => string.Equals(p!.FactionId, caster.FactionId, StringComparison.OrdinalIgnoreCase)
-                || p.Id == caster.Id
-                || (caster.PartyId >= 0 && p.PartyId == caster.PartyId))
+            .Where(p => IsValidSupportTarget(caster, p))
             .Where(p =>
             {
-                float dx = p!.X - caster.X;
-                float dy = p.Y - caster.Y;
+                float dx = p!.X - targetX;
+                float dy = p.Y - targetY;
                 return MathF.Sqrt(dx * dx + dy * dy) <= CuraEmAreaRadius;
             })
             .ToList();
@@ -3210,11 +3240,11 @@ partial class GameServer
         {
             int oldHealth = target!.Health;
             target.Health = Math.Min(target.MaxHealth, target.Health + amount);
-            BroadcastCombatResult(channel, caster.Id, target.Id, -(target.Health - oldHealth), false, target.Health, target.MaxHealth, caster.X, caster.Y, skill.SkillId);
+            BroadcastCombatResult(channel, caster.Id, target.Id, -(target.Health - oldHealth), false, target.Health, target.MaxHealth, target.X, target.Y, skill.SkillId);
             BroadcastPartyMemberUpdateForEntity(target.Id);
         }
 
-        BroadcastSkillAreaEffect(channel, peer, skill.SkillId, caster.X, caster.Y, CuraEmAreaRadius, 1.1f);
+        BroadcastSkillAreaEffect(channel, peer, skill.SkillId, targetX, targetY, CuraEmAreaRadius, 1.1f);
         SendSystemMessage(peer, $"{skill.Nome}: cura em area aplicada.");
         return true;
     }
@@ -3265,6 +3295,33 @@ partial class GameServer
         }
     }
 
+    private void ScheduleRenovacaoTicks(Channel channel, PlayerEntity caster, PlayerEntity target, ServerSkillDefinition skill)
+    {
+        float duration = Math.Max(1f, skill.Duracao);
+        int tickCount = Math.Max(1, (int)MathF.Ceiling(duration / (float)RenovacaoTickInterval));
+        int totalHealth = Math.Max(tickCount, skill.Valor);
+        int totalMana = Math.Max(tickCount, skill.Valor);
+        int baseHealthTick = Math.Max(1, totalHealth / tickCount);
+        int baseManaTick = Math.Max(1, totalMana / tickCount);
+        int healthRemainder = Math.Max(0, totalHealth - baseHealthTick * tickCount);
+        int manaRemainder = Math.Max(0, totalMana - baseManaTick * tickCount);
+
+        for (int i = 0; i < tickCount; i++)
+        {
+            _pendingHealTicks.Add(new PendingHealTick
+            {
+                TickAt = _gameTime + i * RenovacaoTickInterval,
+                ChannelId = channel.Id,
+                CasterId = caster.Id,
+                TargetId = target.Id,
+                SkillId = skill.SkillId,
+                HealthAmount = baseHealthTick + (i == tickCount - 1 ? healthRemainder : 0),
+                ManaAmount = baseManaTick + (i == tickCount - 1 ? manaRemainder : 0),
+                StartVisual = i == 0,
+            });
+        }
+    }
+
     private void ProcessPendingHealTicks()
     {
         for (int i = _pendingHealTicks.Count - 1; i >= 0; i--)
@@ -3289,8 +3346,9 @@ partial class GameServer
             target.Mana = Math.Min(target.MaxMana, target.Mana + Math.Max(1, pending.ManaAmount));
 
             int healedHealth = target.Health - oldHealth;
-            if (healedHealth > 0)
-                BroadcastCombatResult(channel, caster.Id, target.Id, -healedHealth, false, target.Health, target.MaxHealth, target.X, target.Y, pending.SkillId);
+            int visualSkillId = pending.StartVisual ? pending.SkillId : 0;
+            if (healedHealth > 0 || visualSkillId != 0)
+                BroadcastCombatResult(channel, caster.Id, target.Id, -healedHealth, false, target.Health, target.MaxHealth, target.X, target.Y, visualSkillId);
 
             if (target.Mana != oldMana || healedHealth > 0)
             {
@@ -3319,7 +3377,6 @@ partial class GameServer
                 float dy = e.Y - caster.Y;
                 return dx * dx + dy * dy;
             })
-            .Take(Math.Max(1, skill.MaxTargets))
             .ToList();
 
         if (targets.Count == 0)
@@ -4478,6 +4535,7 @@ internal sealed class PendingHealTick
     public int SkillId { get; init; }
     public int HealthAmount { get; init; }
     public int ManaAmount { get; init; }
+    public bool StartVisual { get; init; }
 }
 
 internal sealed class PendingAreaSkillTick

@@ -45,6 +45,8 @@ public partial class SelecaoPersonagem : Control
 
     public override void _Ready()
     {
+        VisualStateReset.PrepararTelaSelecao(GetTree());
+
         _subTitulo = GetNode<Label>("%SubTitulo");
         _listaContainer = GetNode<VBoxContainer>("%ListaContainer");
         _btnJogar = GetNode<Button>("%BtnJogar");
@@ -62,6 +64,7 @@ public partial class SelecaoPersonagem : Control
         _previewFaccao = GetNode<Label>("%PreviewFaccao");
         _previewEmblema = GetNode<TextureRect>("%PreviewEmblema");
         _areaSprite = GetNode<Control>("%AreaSprite");
+        ResetarVisualDaCena();
 
         _net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         _registry = GetNodeOrNull<ClasseRegistry>("/root/ClasseRegistry");
@@ -81,6 +84,23 @@ public partial class SelecaoPersonagem : Control
         AddChild(_confirmacaoExcluir);
 
         PopulatarLista();
+    }
+
+    private void ResetarVisualDaCena()
+    {
+        Modulate = Colors.White;
+        SelfModulate = Colors.White;
+
+        var fundo = GetNodeOrNull<TextureRect>("Fundo");
+        if (fundo != null)
+        {
+            fundo.Modulate = Colors.White;
+            fundo.SelfModulate = Colors.White;
+        }
+
+        var overlay = GetNodeOrNull<ColorRect>("FundoOverlay");
+        if (overlay != null)
+            overlay.Color = new Color(0, 0, 0, 0.28f);
     }
 
     private void PopulatarLista()

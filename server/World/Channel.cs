@@ -320,6 +320,13 @@ public class Channel
         {
             if (kv.Value is PlayerEntity player)
             {
+                if (player.Health <= 0)
+                {
+                    player.HealthRegenAccumulator = 0;
+                    player.ManaRegenAccumulator = 0;
+                    continue;
+                }
+
                 if (gameTime - player.LastCombatTime >= outOfCombatDelay)
                 {
                     if (player.Health < player.MaxHealth)

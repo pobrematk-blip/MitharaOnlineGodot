@@ -45875,7 +45875,7 @@
         "type":  1,
         "targetScene":  "alfaiataria",
         "targetX":  656,
-        "targetY":  720,
+          "targetY":  656,
         "pairId":  1,
         "source":  "teleport_pair"
     },
@@ -57776,8 +57776,8 @@
         "tileY":  -1,
         "type":  1,
         "targetScene":  "ferrariaeartesao",
-        "targetX":  112,
-        "targetY":  304,
+          "targetX":  294,
+          "targetY":  641,
         "pairId":  2,
         "source":  "teleport_pair"
     }

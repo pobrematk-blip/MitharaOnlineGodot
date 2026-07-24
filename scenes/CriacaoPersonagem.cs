@@ -611,17 +611,25 @@ public partial class CriacaoPersonagem : Control
         return copia;
     }
 
-    private void MostrarTelaCarregamento()
+    private LoadingScreen MostrarTelaCarregamento(string status = "Carregando...", float progresso = 12f)
     {
-        var existing = GetTree().Root.GetNodeOrNull("LoadingScreen");
-        if (existing != null) return;
-        var loading = ResourceLoader.Load<PackedScene>("res://ui/LoadingScreen.tscn")
-            .Instantiate<LoadingScreen>();
+        var existing = GetTree().Root.GetNodeOrNull<LoadingScreen>("LoadingScreen");
+        if (existing != null)
+        {
+            existing.SetStatus(status);
+            existing.SetProgress(progresso);
+            return existing;
+        }
+
+        var loading = ResourceLoader.Load<PackedScene>("res://ui/LoadingScreen.tscn").Instantiate<LoadingScreen>();
         loading.Name = "LoadingScreen";
         GetTree().Root.AddChild(loading);
+        loading.SetStatus(status);
+        loading.SetProgress(progresso);
+        return loading;
     }
 
-    private void OnEntrarJogo()
+    private async void OnEntrarJogo()
     {
         if (_faccaoSelecionada == null || _racaSelecionada == null || _classeSelecionada == null) return;
         if (string.IsNullOrWhiteSpace(_nomeEdit.Text)) return;
@@ -656,7 +664,8 @@ public partial class CriacaoPersonagem : Control
             _racaPendente = nomeRaca;
             _aguardandoCriacaoServidor = true;
             _btnEntrarJogo.Disabled = true;
-            MostrarTelaCarregamento();
+            MostrarTelaCarregamento("Criando personagem...", 18f);
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             net.SendCreateCharacter(
                 escolhido.NomePersonagem,
                 nomeClasse,
@@ -694,7 +703,7 @@ public partial class CriacaoPersonagem : Control
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected && net.LoggedIn)
         {
-            MostrarTelaCarregamento();
+            MostrarTelaCarregamento("Entrando no mundo...", 48f);
             net.SendEnterWorld(_nomePendente, _classePendente, _racaPendente, 230f, 300f);
         }
     }

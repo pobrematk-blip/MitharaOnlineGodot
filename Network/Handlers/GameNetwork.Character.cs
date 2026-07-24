@@ -84,9 +84,7 @@ partial class GameNetwork
 
         ClearCharacterScopedState();
 
-        var loading = GetTree()?.Root.GetNodeOrNull("LoadingScreen");
-        loading?.QueueFree();
-        Input.MouseMode = Input.MouseModeEnum.Visible;
+        VisualStateReset.PrepararTelaSelecao(GetTree());
 
         var err = GetTree().ChangeSceneToFile(SceneConstants.SELECAO_PERSONAGEM);
         if (err != Error.Ok)

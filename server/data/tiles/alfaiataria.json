@@ -665,7 +665,7 @@
         "type":  1,
         "targetScene":  "main",
         "targetX":  3312,
-        "targetY":  -16,
+        "targetY":  16,
         "pairId":  1,
         "source":  "teleport_pair"
     },
