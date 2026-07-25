@@ -140,6 +140,11 @@ public partial class MarketplaceUI : Control
         _myListingsButton.Pressed += () =>
         {
             _ownOnly = _myListingsButton.ButtonPressed;
+            if (_ownOnly)
+            {
+                _search.Text = "";
+                _category.Select(0);
+            }
             RequestList();
         };
         filters.AddChild(_myListingsButton);

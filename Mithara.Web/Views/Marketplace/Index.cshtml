@@ -76,9 +76,14 @@
                         {
                             <strong>R$ @((item.PriceTotalCents / 100m).ToString("N2"))</strong>
                             <span>PIX, sem reembolso</span>
-                            @if (Model.IsAuthenticated && Model.Characters.Count > 0)
+                            @if (!item.CanBuyWithPix)
+                            {
+                                <span class="market-buy-pix market-buy-disabled">Indisponível</span>
+                            }
+                            else if (Model.IsAuthenticated && Model.Characters.Count > 0)
                             {
                                 <form asp-controller="Marketplace" asp-action="BuyPix" method="post" class="market-pix-form">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@item.Id" />
                                     <select name="characterId" required>
                                         @foreach (var character in Model.Characters)
@@ -86,8 +91,12 @@
                                             <option value="@character.Id">@character.Name - Nv. @character.Level</option>
                                         }
                                     </select>
-                                    <button type="submit" class="market-buy-pix" disabled="@(!item.CanBuyWithPix)">Comprar via Mercado Pago</button>
+                                    <button type="submit" class="market-buy-pix">Comprar via PIX</button>
                                 </form>
+                            }
+                            else if (Model.IsAuthenticated)
+                            {
+                                <span class="market-buy-pix market-buy-disabled">Crie um personagem para comprar</span>
                             }
                             else
                             {

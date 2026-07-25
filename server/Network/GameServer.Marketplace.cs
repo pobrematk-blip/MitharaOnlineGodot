@@ -224,18 +224,22 @@ partial class GameServer
     private void SendMarketplaceList(NetPeer peer, string search = "", int itemType = -1, bool ownOnly = false)
     {
         int sellerCharacterId = 0;
+        int sellerAccountId = 0;
         if (ownOnly && _sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+        {
             sellerCharacterId = session.SelectedCharacter.Id;
+            sellerAccountId = session.AccountId;
+        }
 
-        var listings = _db.LoadMarketplaceListings(search, itemType, sellerCharacterId: sellerCharacterId, ownOnly: ownOnly);
+        var listings = _db.LoadMarketplaceListings(search, itemType, sellerCharacterId: sellerCharacterId, sellerAccountId: sellerAccountId, ownOnly: ownOnly);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_MarketplaceListResult);
         writer.Put(listings.Count);
         foreach (var listing in listings)
-            WriteMarketplaceListing(writer, listing, sellerCharacterId);
+            WriteMarketplaceListing(writer, listing, sellerCharacterId, sellerAccountId);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
-    private static void WriteMarketplaceListing(NetDataWriter writer, MarketplaceListing listing, int viewerCharacterId)
+    private static void WriteMarketplaceListing(NetDataWriter writer, MarketplaceListing listing, int viewerCharacterId, int viewerAccountId)
     {
         writer.Put(listing.Id);
         writer.Put(listing.SellerName);
@@ -252,7 +256,7 @@ partial class GameServer
         writer.Put(listing.RollData);
         writer.Put(listing.Status);
         writer.Put(listing.ExpiresAt.ToBinary());
-        writer.Put(listing.SellerCharacterId == viewerCharacterId);
+        writer.Put(listing.SellerCharacterId == viewerCharacterId || (viewerAccountId > 0 && listing.SellerAccountId == viewerAccountId));
         writer.Put(listing.ProceedsGold);
         writer.Put(listing.ProceedsClaimed);
         writer.Put(listing.PaymentStatus);

@@ -63,10 +63,10 @@ public class NpcManager
         RegisterTemplate(new NpcTemplate
         {
             PrefabId = "guarda_solareth",
-            Name = "GuardiÃ£o de Solareth",
+            Name = "Guardião de Solareth",
             DialogId = "guilda",
-            Race = "GuardiÃ£o de solaret",
-            AnimPrefix = "mago",
+            Race = "Guarda da cidade de solareth",
+            AnimPrefix = "padrao",
             FactionId = "solari",
         });
 

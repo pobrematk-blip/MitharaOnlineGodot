@@ -41,5 +41,5 @@ public sealed class MarketplaceListingViewModel
 
     public bool IsPix => CurrencyType == 2;
     public bool IsGoldListing => ListingType == 2;
-    public bool CanBuyWithPix => IsPix && (Status == "active" || Status == "pending_payment") && ExpiresAt > DateTime.UtcNow;
+    public bool CanBuyWithPix => IsPix && Status == "active" && ExpiresAt > DateTime.UtcNow;
 }

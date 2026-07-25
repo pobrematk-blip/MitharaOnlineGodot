@@ -945,7 +945,7 @@ public class DatabaseManager
         return Convert.ToBoolean(cmd.ExecuteScalar() ?? false);
     }
 
-    public List<MarketplaceListing> LoadMarketplaceListings(string search = "", int itemType = -1, int limit = 80, int sellerCharacterId = 0, bool ownOnly = false)
+    public List<MarketplaceListing> LoadMarketplaceListings(string search = "", int itemType = -1, int limit = 80, int sellerCharacterId = 0, int sellerAccountId = 0, bool ownOnly = false)
     {
         var result = new List<MarketplaceListing>();
         using var conn = new NpgsqlConnection(_connectionString);
@@ -959,7 +959,7 @@ public class DatabaseManager
                    expires_at, proceeds_gold, proceeds_claimed, mercado_pago_preference_id, mercado_pago_payment_id, payment_status
             FROM marketplace_listings
             WHERE (@own = 1 OR status IN ('active', 'pending_payment'))
-              AND (@own = 0 OR seller_character_id = @seller)
+              AND (@own = 0 OR seller_character_id = @seller OR seller_account_id = @sellerAccount)
               AND (@type < 0 OR item_type = @type)
               AND (@search = '' OR LOWER(item_name) LIKE LOWER(@like) OR LOWER(seller_name) LIKE LOWER(@like))
             ORDER BY created_at DESC
@@ -970,6 +970,7 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@like", "%" + search.Trim() + "%");
         cmd.Parameters.AddWithValue("@limit", Math.Clamp(limit, 1, 200));
         cmd.Parameters.AddWithValue("@seller", sellerCharacterId);
+        cmd.Parameters.AddWithValue("@sellerAccount", sellerAccountId);
         cmd.Parameters.AddWithValue("@own", ownOnly ? 1 : 0);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())

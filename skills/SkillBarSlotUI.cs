@@ -139,9 +139,8 @@ public partial class SkillBarSlotUI : Panel
     {
         if (TryGetSkillFromDragData(data, out _)) return true;
 
-        var obj = data.AsGodotObject();
-        if (obj is SkillBarSlotUI) return true;
-        if (obj is SlotUI slot)
+        if (TryGetSkillBarSlotFromDragData(data, out _)) return true;
+        if (TryGetInventorySlotFromDragData(data, out var slot))
             return IsConsumableShortcut(slot.SlotInterno?.Item);
         return false;
     }
@@ -152,7 +151,7 @@ public partial class SkillBarSlotUI : Panel
         {
             _owner.AssignSkill(Row, Col, skill);
         }
-        else if (data.AsGodotObject() is SkillBarSlotUI sourceSlot && _owner != null)
+        else if (TryGetSkillBarSlotFromDragData(data, out var sourceSlot) && _owner != null)
         {
             if (sourceSlot == this)
                 return;
@@ -163,7 +162,7 @@ public partial class SkillBarSlotUI : Panel
                 _owner.AssignItem(Row, Col, sourceSlot._assignedItem, sourceSlot._assignedItemInventorySlot);
             sourceSlot.Clear();
         }
-        else if (data.AsGodotObject() is SlotUI slot && _owner != null)
+        else if (TryGetInventorySlotFromDragData(data, out var slot) && _owner != null)
         {
             var item = slot.SlotInterno?.Item;
             if (IsConsumableShortcut(item))
@@ -180,6 +179,48 @@ public partial class SkillBarSlotUI : Panel
 
         return item.Tipo == TipoEquipamento.Consumivel
             || (item.ItemID >= 100 && item.ItemID < 200);
+    }
+
+    private static bool TryGetInventorySlotFromDragData(Variant data, out SlotUI slot)
+    {
+        slot = null;
+
+        if (data.VariantType == Variant.Type.Object)
+        {
+            slot = data.Obj as SlotUI ?? data.AsGodotObject() as SlotUI;
+            return slot != null;
+        }
+
+        if (data.VariantType != Variant.Type.Dictionary)
+            return false;
+
+        var dict = data.AsGodotDictionary();
+        if (dict.ContainsKey("slot") && dict["slot"].VariantType == Variant.Type.Object)
+        {
+            slot = dict["slot"].Obj as SlotUI ?? dict["slot"].AsGodotObject() as SlotUI;
+            return slot != null;
+        }
+
+        if (dict.ContainsKey("source") && dict["source"].VariantType == Variant.Type.Object)
+        {
+            slot = dict["source"].Obj as SlotUI ?? dict["source"].AsGodotObject() as SlotUI;
+            return slot != null;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSkillBarSlotFromDragData(Variant data, out SkillBarSlotUI slot)
+    {
+        slot = null;
+
+        if (data.VariantType == Variant.Type.Object)
+        {
+            slot = data.Obj as SkillBarSlotUI ?? data.AsGodotObject() as SkillBarSlotUI;
+            return slot != null;
+        }
+
+        return false;
     }
 
     private bool TryGetSkillFromDragData(Variant data, out SkillResource skill)

@@ -104,8 +104,8 @@ public partial class WikiService
 
     private string GetItemIconUrl(int itemId, string itemName)
     {
-        if (_itemIconCache.TryGetValue(itemId, out var iconFile))
-            return $"/images/items/{Uri.EscapeDataString(iconFile)}";
+        if (itemId > 0)
+            return $"/Marketplace/ItemIcon/{itemId}";
 
         // Manual override for known consumíveis/items without .tres
         if (_manualIcons.TryGetValue(itemName, out var manualIcon))
