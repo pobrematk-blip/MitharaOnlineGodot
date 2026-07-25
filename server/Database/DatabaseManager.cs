@@ -370,7 +370,7 @@ public class DatabaseManager
         conn.Open();
 
         using var check = conn.CreateCommand();
-        check.CommandText = "SELECT id FROM accounts WHERE username = @u OR LOWER(email) = LOWER(@e)";
+        check.CommandText = "SELECT id FROM accounts WHERE LOWER(username) = LOWER(@u) OR LOWER(email) = LOWER(@e)";
         check.Parameters.AddWithValue("@u", username);
         check.Parameters.AddWithValue("@e", email);
         var exists = check.ExecuteScalar();
@@ -395,14 +395,14 @@ public class DatabaseManager
         conn.Open();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, password_hash, salt FROM accounts WHERE username = @u";
+        cmd.CommandText = "SELECT id, password_hash, salt FROM accounts WHERE LOWER(username) = LOWER(@u) OR LOWER(email) = LOWER(@u)";
         cmd.Parameters.AddWithValue("@u", username);
         using var reader = cmd.ExecuteReader();
         if (!reader.Read()) return null;
 
         var hash = reader.GetString(1);
         var salt = reader.IsDBNull(2) ? "" : reader.GetString(2);
-        if (hash != HashPassword(password, salt)) return null;
+        if (!string.Equals(hash, HashPassword(password, salt), StringComparison.OrdinalIgnoreCase)) return null;
 
         return reader.GetInt32(0);
     }
@@ -686,7 +686,7 @@ public class DatabaseManager
 
         var storedHash = reader.GetString(1);
         var salt = reader.IsDBNull(2) ? "" : reader.GetString(2);
-        if (storedHash != HashPassword(answer, salt)) return false;
+        if (!string.Equals(storedHash, HashPassword(answer, salt), StringComparison.OrdinalIgnoreCase)) return false;
 
         int accountId = reader.GetInt32(0);
         reader.Close();

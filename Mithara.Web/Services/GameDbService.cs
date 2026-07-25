@@ -33,7 +33,7 @@ public class GameDbService
     {
         var combined = Encoding.UTF8.GetBytes(password + salt);
         var hash = SHA256.HashData(combined);
-        return Convert.ToHexString(hash);
+        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
     public (int? id, string? error) CreateAccount(string username, string email, string password)
@@ -41,7 +41,7 @@ public class GameDbService
         using var conn = CreateConnection();
 
         using var check = conn.CreateCommand();
-        check.CommandText = "SELECT id FROM accounts WHERE username = @u OR LOWER(email) = LOWER(@e)";
+        check.CommandText = "SELECT id FROM accounts WHERE LOWER(username) = LOWER(@u) OR LOWER(email) = LOWER(@e)";
         check.Parameters.AddWithValue("@u", username);
         check.Parameters.AddWithValue("@e", email);
         var exists = check.ExecuteScalar();
@@ -66,15 +66,15 @@ public class GameDbService
         using var conn = CreateConnection();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, password_hash, salt FROM accounts WHERE username = @u";
+        cmd.CommandText = "SELECT id, username, password_hash, salt FROM accounts WHERE LOWER(username) = LOWER(@u) OR LOWER(email) = LOWER(@u)";
         cmd.Parameters.AddWithValue("@u", username);
         using var reader = cmd.ExecuteReader();
         if (!reader.Read())
             return (null, "Usu\u00E1rio ou senha inv\u00E1lidos.");
 
-        var hash = reader.GetString(1);
-        var salt = reader.IsDBNull(2) ? "" : reader.GetString(2);
-        if (hash != HashPassword(password, salt))
+        var hash = reader.GetString(2);
+        var salt = reader.IsDBNull(3) ? "" : reader.GetString(3);
+        if (!string.Equals(hash, HashPassword(password, salt), StringComparison.OrdinalIgnoreCase))
             return (null, "Usu\u00E1rio ou senha inv\u00E1lidos.");
 
         return (reader.GetInt32(0), null);
