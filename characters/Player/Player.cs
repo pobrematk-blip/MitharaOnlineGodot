@@ -916,11 +916,12 @@ public partial class Player : CharacterBody2D
         {
             talentComp = new TalentTreeComponent();
             talentComp.Name = "TalentTreeComponent";
+            talentComp.TalentTree = classe.ArvoreTalentos;
             AddChild(talentComp);
             talentComp.Owner = this;
         }
 
-        talentComp.TalentTree = classe.ArvoreTalentos;
+        talentComp.DefinirArvore(classe.ArvoreTalentos);
 
         GD.Print($"[PLAYER] Arvore de talentos configurada: {classe.ArvoreTalentos.ResourceName}");
     }

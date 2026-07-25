@@ -31,8 +31,7 @@ public partial class TalentTreeComponent : Node
         if (_gameNet != null)
         {
             _gameNet.OnTalentData += AplicarEstadoServidor;
-            if (_gameNet.PendingTalentPoints.HasValue && _gameNet.PendingTalentNodes != null)
-                AplicarEstadoServidor(_gameNet.PendingTalentPoints.Value, _gameNet.PendingTalentNodes);
+            AplicarEstadoPendenteServidor();
         }
     }
 
@@ -55,6 +54,13 @@ public partial class TalentTreeComponent : Node
         if (node == null) return false;
         if (PontosDisponiveis < node.CustoPontos) return false;
         return TalentTree.PodeDesbloquear(node, _nosDesbloqueados, nivelAtual);
+    }
+
+    public void DefinirArvore(TalentTreeResource talentTree)
+    {
+        TalentTree = talentTree;
+        AplicarEstadoPendenteServidor();
+        EmitSignal(SignalName.EstadoAtualizado);
     }
 
     public bool DesbloquearNo(string nodeId, int nivelAtual)
@@ -92,6 +98,12 @@ public partial class TalentTreeComponent : Node
         PontosDisponiveis = pontosDisponiveis;
         GD.Print($"[TALENT TREE] Estado do servidor aplicado: pontos={PontosDisponiveis}, desbloqueados={_nosDesbloqueados.Count}");
         EmitSignal(SignalName.EstadoAtualizado);
+    }
+
+    private void AplicarEstadoPendenteServidor()
+    {
+        if (_gameNet?.PendingTalentPoints.HasValue == true && _gameNet.PendingTalentNodes != null)
+            AplicarEstadoServidor(_gameNet.PendingTalentPoints.Value, _gameNet.PendingTalentNodes);
     }
 
     private void AplicarBonusDoTalento(TalentNodeResource node)
