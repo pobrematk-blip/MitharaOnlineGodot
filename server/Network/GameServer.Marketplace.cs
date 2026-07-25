@@ -65,7 +65,7 @@ partial class GameServer
             if (item.Quantity <= 0)
                 player.Items.Remove(item);
             SendInventoryData(peer, player);
-            SendMarketplaceList(peer);
+            SendMarketplaceList(peer, ownOnly: true);
         }
 
         SendMarketplaceActionResult(peer, ok, message);
@@ -102,7 +102,7 @@ partial class GameServer
             player.Gold = remainingGold;
             session.SelectedCharacter.Gold = remainingGold;
             SendGoldUpdate(peer, player.Gold);
-            SendMarketplaceList(peer);
+            SendMarketplaceList(peer, ownOnly: true);
         }
 
         SendMarketplaceActionResult(peer, ok, message);
@@ -164,7 +164,7 @@ partial class GameServer
                 player.Items.Add(item);
                 SendInventoryData(peer, player);
             }
-            SendMarketplaceList(peer);
+            SendMarketplaceList(peer, ownOnly: true);
         }
 
         SendMarketplaceActionResult(peer, ok, message);

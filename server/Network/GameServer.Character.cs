@@ -824,7 +824,7 @@ partial class GameServer
         {
             int itemId = Math.Abs(skillId);
             var itemDef = ItemDefinitions.Get(itemId);
-            if (itemDef == null || itemDef.Type != ItemType.Consumable)
+            if (!IsSkillBarConsumable(itemId, itemDef))
             {
                 SendSystemMessage(peer, "Somente consumiveis podem ser colocados na barra.");
                 SendSkillBarData(peer, player);
@@ -879,7 +879,7 @@ partial class GameServer
             {
                 int itemId = Math.Abs(skillId);
                 var itemDef = ItemDefinitions.Get(itemId);
-                if (itemDef == null || itemDef.Type != ItemType.Consumable || !player.Items.Any(item => item.ItemId == itemId && item.Quantity > 0))
+                if (!IsSkillBarConsumable(itemId, itemDef) || !player.Items.Any(item => item.ItemId == itemId && item.Quantity > 0))
                     player.SkillBarSlots[i] = 0;
                 continue;
             }
@@ -892,6 +892,27 @@ partial class GameServer
                 player.SkillBarSlots[i] = 0;
             }
         }
+    }
+
+    private static bool IsSkillBarConsumable(int itemId, ItemDefinition? itemDef)
+    {
+        if (itemDef?.Type == ItemType.Consumable)
+            return true;
+
+        return itemId is ItemDefinitions.PergaminhoDoPet
+            or 101
+            or ItemDefinitions.PergaminhoCriacaoCla
+            or ItemDefinitions.PergaminhoVip7Dias
+            or ItemDefinitions.PergaminhoVip15Dias
+            or ItemDefinitions.PergaminhoVip30Dias
+            or ItemDefinitions.PergaminhoVip7DiasTrial
+            or ItemDefinitions.LojinhaPequena
+            or ItemDefinitions.LojinhaMedia
+            or ItemDefinitions.PocaoVida
+            or ItemDefinitions.PocaoMana
+            or ItemDefinitions.LojinhaGrande
+            or ItemDefinitions.PergaminhoResetTalentos
+            or ItemDefinitions.PergaminhoDoPet5;
     }
 
     private static int GetAvailableTalentPoints(PlayerEntity player)

@@ -140,8 +140,8 @@ public partial class SkillBarSlotUI : Panel
         if (TryGetSkillFromDragData(data, out _)) return true;
 
         if (TryGetSkillBarSlotFromDragData(data, out _)) return true;
-        if (TryGetInventorySlotFromDragData(data, out var slot))
-            return IsConsumableShortcut(slot.SlotInterno?.Item);
+        if (TryGetInventoryDrop(data, out var item, out _))
+            return IsConsumableShortcut(item);
         return false;
     }
 
@@ -162,12 +162,11 @@ public partial class SkillBarSlotUI : Panel
                 _owner.AssignItem(Row, Col, sourceSlot._assignedItem, sourceSlot._assignedItemInventorySlot);
             sourceSlot.Clear();
         }
-        else if (TryGetInventorySlotFromDragData(data, out var slot) && _owner != null)
+        else if (TryGetInventoryDrop(data, out var item, out int inventorySlot) && _owner != null)
         {
-            var item = slot.SlotInterno?.Item;
             if (IsConsumableShortcut(item))
             {
-                _owner.AssignItem(Row, Col, item, slot.SlotIndex);
+                _owner.AssignItem(Row, Col, item, inventorySlot);
             }
         }
     }
@@ -179,6 +178,34 @@ public partial class SkillBarSlotUI : Panel
 
         return item.Tipo == TipoEquipamento.Consumivel
             || (item.ItemID >= 100 && item.ItemID < 200);
+    }
+
+    private static bool TryGetInventoryDrop(Variant data, out ItemResource item, out int inventorySlot)
+    {
+        item = null;
+        inventorySlot = -1;
+
+        if (TryGetInventorySlotFromDragData(data, out var slot))
+        {
+            item = slot.SlotInterno?.Item;
+            inventorySlot = slot.SlotIndex;
+            return item != null && inventorySlot >= 0;
+        }
+
+        if (data.VariantType != Variant.Type.Dictionary)
+            return false;
+
+        var dict = data.AsGodotDictionary();
+        if (dict.ContainsKey("item") && dict["item"].VariantType == Variant.Type.Object)
+            item = dict["item"].Obj as ItemResource ?? dict["item"].AsGodotObject() as ItemResource;
+
+        inventorySlot = GetOptionalInt(dict, "slot");
+        if (inventorySlot < 0)
+            inventorySlot = GetOptionalInt(dict, "inventory_slot");
+        if (inventorySlot < 0)
+            inventorySlot = GetOptionalInt(dict, "slot_index");
+
+        return item != null && inventorySlot >= 0;
     }
 
     private static bool TryGetInventorySlotFromDragData(Variant data, out SlotUI slot)
@@ -264,6 +291,11 @@ public partial class SkillBarSlotUI : Panel
     private static int GetInt(Godot.Collections.Dictionary dict, string key)
     {
         return dict.ContainsKey(key) ? dict[key].AsInt32() : 0;
+    }
+
+    private static int GetOptionalInt(Godot.Collections.Dictionary dict, string key)
+    {
+        return dict.ContainsKey(key) ? dict[key].AsInt32() : -1;
     }
 
     private SkillResource ResolveSkillById(int skillId)
