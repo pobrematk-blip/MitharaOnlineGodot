@@ -46,13 +46,16 @@ public partial class GameServer : INetEventListener
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
     internal readonly Dictionary<string, double> _loginCooldowns = new();
+    internal readonly Dictionary<ulong, double> _lastMoveValidationLog = new();
 
     internal volatile bool _running;
     internal double _gameTime;
     private const double AutoSaveInterval = 60.0;
     private const double PresenceUpdateInterval = 30.0;
+    private const double EntityBroadcastInterval = 0.10;
     private double _lastAutoSaveTime;
     private double _nextPresenceUpdateTime;
+    private double _nextEntityBroadcastTime;
 
     public WorldManager World => _world;
 
@@ -190,7 +193,11 @@ public partial class GameServer : INetEventListener
             }
         }
 
-        BroadcastEntityUpdates();
+        if (_gameTime >= _nextEntityBroadcastTime)
+        {
+            _nextEntityBroadcastTime = _gameTime + EntityBroadcastInterval;
+            BroadcastEntityUpdates();
+        }
 
         if (_gameTime - _lastAutoSaveTime >= AutoSaveInterval)
         {

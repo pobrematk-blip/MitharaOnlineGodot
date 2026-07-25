@@ -102,7 +102,11 @@ partial class GameServer
             float scale = MathF.Sqrt(maxDistSq / distSq);
             targetX = entity.X + dx * scale;
             targetY = entity.Y + dy * scale;
-            Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {effectiveMaxSpeed:F0})");
+            if (!_lastMoveValidationLog.TryGetValue(entity.Id, out var lastLog) || _gameTime - lastLog >= 2.0)
+            {
+                _lastMoveValidationLog[entity.Id] = _gameTime;
+                Logger.Info($"Move validation: {entity.Name} speed {MathF.Sqrt(distSq)/dt:F0}px/s (max {effectiveMaxSpeed:F0})");
+            }
         }
 
         ResolveMapCollision(session.CurrentMap, entity.X, entity.Y, ref targetX, ref targetY);

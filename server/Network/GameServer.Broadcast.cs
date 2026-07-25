@@ -306,7 +306,7 @@ partial class GameServer
         var packet = PacketSerializer.WritePacket(PacketId.S2C_EntityUpdate);
         packet.Put(count);
         packet.Put(writer.CopyData());
-        peer.Send(packet, DeliveryMethod.ReliableOrdered);
+        peer.Send(packet, DeliveryMethod.Unreliable);
     }
 
     private void BroadcastSingleEntityUpdate(Channel channel, Entity entity)

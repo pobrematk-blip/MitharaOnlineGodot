@@ -59,6 +59,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Node2D> _lootNodes = new();
     private readonly Dictionary<ulong, Node2D> _lojinhaNodes = new();
     private readonly Dictionary<ulong, Node2D> _remoteSheriganPets = new();
+    private readonly Dictionary<ulong, AnimatedSprite2D> _remotePlayerSprites = new();
     private readonly Dictionary<string, AnimatedSprite2D> _bastiaoAreaEffects = new();
     private static readonly Dictionary<string, SpriteFrames?> _directoryFrameCache = new();
     private ulong _lojinhaInteracaoAtual;
@@ -736,6 +737,7 @@ public partial class EntityManager : Node
         }
 
         root.AddChild(sprite);
+        _remotePlayerSprites[entityId] = sprite;
 
         long xp = 0;
         long xpMax = 1;
@@ -5044,7 +5046,7 @@ public partial class EntityManager : Node
 
                 float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 15f : 25f));
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
-                UpdateRemoteAnimation(node, animDir, cur.Moving, cur.Sprinting);
+                UpdateRemotePlayerAnimationCached(kvp.Key, node, animDir, cur.Moving, cur.Sprinting);
                 UpdateRemoteSheriganPet(kvp.Key, node, animDir, cur.Moving, delta);
             }
         }
@@ -5058,10 +5060,48 @@ public partial class EntityManager : Node
                 _previousPositions.Remove(id);
                 _lastDirections.Remove(id);
                 _lastDashTrailAt.Remove(id);
+                _remotePlayerSprites.Remove(id);
             }
         }
 
         UpdateVisibilityCulling(delta);
+    }
+
+    private void UpdateRemotePlayerAnimationCached(ulong entityId, Node2D entity, Vector2 direction, bool moving, bool sprinting = false)
+    {
+        if (!IsInstanceValid(entity)) return;
+        if (entity.IsInGroup("PlayersDowned") || entity.HasMeta("remote_downed"))
+            return;
+        if (EstaComAnimacaoTravada(entity, MetaMachadoGiratorioUntil))
+            return;
+
+        if (!_remotePlayerSprites.TryGetValue(entityId, out var sprite) || !IsInstanceValid(sprite))
+        {
+            sprite = entity.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite")
+                ?? entity.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+            if (sprite == null)
+                return;
+            _remotePlayerSprites[entityId] = sprite;
+        }
+
+        if (sprite.SpriteFrames == null)
+            return;
+
+        string currentAnim = sprite.Animation.ToString();
+        if (currentAnim.Contains("attack") &&
+            sprite.Frame < sprite.SpriteFrames.GetFrameCount(currentAnim) - 1)
+            return;
+
+        string dirName = DirectionUtil.VectorToCardinal(direction);
+        string state = moving && direction.LengthSquared() > 0.01f
+            ? (sprinting ? "run" : "walk")
+            : "idle";
+        string targetAnim = $"{state}_{dirName}";
+
+        if (currentAnim == targetAnim || !sprite.SpriteFrames.HasAnimation(targetAnim))
+            return;
+
+        sprite.Play(targetAnim);
     }
 
     private void UpdateRemoteSheriganPet(ulong ownerId, Node2D owner, Vector2 ownerDirection, bool ownerMoving, double delta)
@@ -5323,6 +5363,7 @@ public partial class EntityManager : Node
         _lastDirections.Clear();
         _previousPositions.Clear();
         _lastDashTrailAt.Clear();
+        _remotePlayerSprites.Clear();
         _pendingSpawns.Clear();
         _worldNode = null;
         _flushRetryCount = 0;
@@ -5365,6 +5406,7 @@ public partial class EntityManager : Node
         _lastDirections.Remove(entityId);
         _previousPositions.Remove(entityId);
         _lastDashTrailAt.Remove(entityId);
+        _remotePlayerSprites.Remove(entityId);
         _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
         if (_remoteSheriganPets.TryGetValue(entityId, out var pet) && IsInstanceValid(pet))
             pet.QueueFree();
