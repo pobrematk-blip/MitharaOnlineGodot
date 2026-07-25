@@ -138,6 +138,9 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnTradeGoldUpdateEventHandler(ulong playerSide, int gold);
     [Signal] public delegate void OnTradePartnerConfirmEventHandler(ulong playerSide, bool confirmed);
     [Signal] public delegate void OnTradeEndEventHandler(bool success);
+    [Signal] public delegate void OnOpenMarketplaceEventHandler(string title, string rules);
+    [Signal] public delegate void OnMarketplaceListResultEventHandler(Godot.Collections.Array<Godot.Collections.Dictionary> listings);
+    [Signal] public delegate void OnMarketplaceActionResultEventHandler(bool success, string message);
     [Signal] public delegate void OnCashShopResultEventHandler(bool success, string message);
     [Signal] public delegate void OnCashBalanceEventHandler(int balance);
     [Signal] public delegate void OnRefineResultEventHandler(bool success, int newLevel, string message);
@@ -625,6 +628,15 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_SkillAreaEffect:
                 HandleSkillAreaEffect(r);
+                break;
+            case PacketId.S2C_OpenMarketplace:
+                HandleOpenMarketplace(r);
+                break;
+            case PacketId.S2C_MarketplaceListResult:
+                HandleMarketplaceListResult(r);
+                break;
+            case PacketId.S2C_MarketplaceActionResult:
+                HandleMarketplaceActionResult(r);
                 break;
             case PacketId.S2C_MapEditorTileData:
                 HandleMapEditorTileData(r);

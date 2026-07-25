@@ -76,7 +76,16 @@
                                     else if (mob.IsElite) { <span class="wiki-mob-tag elite-tag">ELITE</span> }
                                 </div>
                                 <div class="wiki-mob-card-body">
-                                    <div class="wiki-mob-avatar">@mob.Name[0]</div>
+                                    <div class="wiki-mob-portrait">
+                                        @if (!string.IsNullOrEmpty(mob.ImageUrl))
+                                        {
+                                            <img src="@mob.ImageUrl" alt="@mob.Name" />
+                                        }
+                                        else
+                                        {
+                                            <span>@mob.Name[0]</span>
+                                        }
+                                    </div>
                                     <h4>@mob.Name</h4>
                                     <p>HP: @mob.Health | ATK: @mob.AttackDamage</p>
                                 </div>

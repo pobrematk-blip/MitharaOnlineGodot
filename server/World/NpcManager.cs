@@ -152,10 +152,10 @@ public class NpcManager
         _dialogs["leilao"] = new DialogNode
         {
             Id = "leilao",
-            Text = "Bem-vindo ao Mercado das Lojinhas! Aqui você encontra itens de todos os vendedores ambulantes. Deseja ver o catálogo completo?",
+            Text = "Bem-vindo ao Mercado de Jogadores. Aqui voce pode anunciar itens por gold ou, sendo VIP, por PIX. O leilao cobra 20% de taxa nas vendas por gold. Compras por PIX nao possuem reembolso e so sao entregues apos confirmacao segura.",
             Options = new List<DialogOption>
             {
-                new() { Text = "Ver itens das lojinhas", Action = "leilao_list", ActionData = "" },
+                new() { Text = "Abrir Mercado de Jogadores", Action = "marketplace_open", ActionData = "" },
                 new() { Text = "Sair", Action = "close" },
             },
         };

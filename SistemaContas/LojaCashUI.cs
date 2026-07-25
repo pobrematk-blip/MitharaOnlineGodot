@@ -16,6 +16,8 @@ public partial class LojaCashUI : Control
     private Vector2 _pontoCliqueOriginal;
     private Texture2D _coinIcon;
 
+    private static readonly Vector2 WindowSize = new(640, 440);
+    private static readonly Vector2 CardSize = new(126, 150);
     private static readonly string LojaDataPath = "res://SistemaContas/LojaCashData.tres";
     private static readonly string CoinIconPath = "res://Itens/Incones/loja de cash.png";
 
@@ -35,6 +37,7 @@ public partial class LojaCashUI : Control
 
         _fecharBtn.Pressed += OnFechar;
         _tituloLabel.GuiInput += OnTituloGuiInput;
+        ConfigurarTopo();
 
         if (_net != null)
             _net.Connect(GameNetwork.SignalName.OnCashShopResult, Callable.From((bool success, string message) => OnCashShopResult(success, message)));
@@ -65,13 +68,36 @@ public partial class LojaCashUI : Control
         _diamantesLabel.Text = $"{_cash?.Diamantes ?? 0}";
     }
 
+    private void ConfigurarTopo()
+    {
+        Size = WindowSize;
+        CustomMinimumSize = WindowSize;
+
+        _tituloLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _tituloLabel.VerticalAlignment = VerticalAlignment.Center;
+        _tituloLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        _tituloLabel.AddThemeFontSizeOverride("font_size", 16);
+        _tituloLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
+
+        _diamantesLabel.AddThemeColorOverride("font_color", Color.FromHtml("#72d6ff"));
+        _diamantesLabel.AddThemeFontSizeOverride("font_size", 13);
+
+        var topo = _tituloLabel.GetParent() as HBoxContainer;
+        if (topo != null && topo.GetChildCount() > 0 && topo.GetChild(0) == _tituloLabel)
+        {
+            var spacer = new Control { CustomMinimumSize = new Vector2(58, 1) };
+            topo.AddChild(spacer);
+            topo.MoveChild(spacer, 0);
+        }
+    }
+
     private void Centralizar()
     {
         Vector2 tela = GetViewportRect().Size;
-        Vector2 desired = (tela / 2) - (Size / 2) + new Vector2(48f, 0f);
+        Vector2 desired = (tela / 2) - (WindowSize / 2);
         Position = new Vector2(
-            Mathf.Clamp(desired.X, 8f, Mathf.Max(8f, tela.X - Size.X - 8f)),
-            Mathf.Clamp(desired.Y, 8f, Mathf.Max(8f, tela.Y - Size.Y - 8f))
+            Mathf.Clamp(desired.X, 8f, Mathf.Max(8f, tela.X - WindowSize.X - 8f)),
+            Mathf.Clamp(desired.Y, 8f, Mathf.Max(8f, tela.Y - WindowSize.Y - 8f))
         );
     }
 
@@ -109,23 +135,13 @@ public partial class LojaCashUI : Control
         foreach (var entry in _lojaData.Itens)
         {
             var card = new PanelContainer();
-            var style = new StyleBoxFlat();
-            style.BgColor = new Color(0.1f, 0.11f, 0.15f, 0.94f);
-            style.BorderWidthLeft = 1;
-            style.BorderWidthTop = 1;
-            style.BorderWidthRight = 1;
-            style.BorderWidthBottom = 1;
-            style.BorderColor = new Color(0.3f, 0.35f, 0.5f, 1);
-            style.CornerRadiusTopLeft = 8;
-            style.CornerRadiusTopRight = 8;
-            style.CornerRadiusBottomLeft = 8;
-            style.CornerRadiusBottomRight = 8;
-            card.AddThemeStyleboxOverride("panel", style);
-            card.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            card.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.74f, 5));
+            card.CustomMinimumSize = CardSize;
+            card.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 
             var vbox = new VBoxContainer();
-            vbox.CustomMinimumSize = new Vector2(0, 160);
-            vbox.AddThemeConstantOverride("separation", 4);
+            vbox.CustomMinimumSize = CardSize;
+            vbox.AddThemeConstantOverride("separation", 5);
             vbox.ThemeTypeVariation = "VBoxContainer";
             card.AddChild(vbox);
 
@@ -145,25 +161,33 @@ public partial class LojaCashUI : Control
 
             var nomeLabel = new Label();
             nomeLabel.Text = nome;
-            nomeLabel.AddThemeFontSizeOverride("font_size", 12);
-            nomeLabel.AddThemeColorOverride("font_color", new Color(0.85f, 0.85f, 0.95f));
+            nomeLabel.CustomMinimumSize = new Vector2(112, 34);
+            nomeLabel.AddThemeFontSizeOverride("font_size", 11);
+            nomeLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
             nomeLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            nomeLabel.VerticalAlignment = VerticalAlignment.Center;
             nomeLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             nomeLabel.MaxLinesVisible = 2;
             vbox.AddChild(nomeLabel);
 
             var iconContainer = new CenterContainer();
             iconContainer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            iconContainer.SizeFlagsVertical = SizeFlags.ExpandFill;
-            iconContainer.CustomMinimumSize = new Vector2(72, 72);
+            iconContainer.CustomMinimumSize = new Vector2(86, 66);
             vbox.AddChild(iconContainer);
+
+            var iconSlot = new Panel();
+            iconSlot.CustomMinimumSize = new Vector2(58, 58);
+            iconSlot.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
+            iconContainer.AddChild(iconSlot);
 
             var iconRect = new TextureRect();
             iconRect.Texture = itemIcon;
-            iconRect.CustomMinimumSize = new Vector2(62, 62);
-            iconRect.ExpandMode = TextureRect.ExpandModeEnum.FitWidth;
+            iconRect.CustomMinimumSize = new Vector2(48, 48);
+            iconRect.Size = new Vector2(48, 48);
+            iconRect.Position = new Vector2(5, 5);
+            iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
             iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            iconContainer.AddChild(iconRect);
+            iconSlot.AddChild(iconRect);
 
             var precoContainer = new HBoxContainer();
             precoContainer.Alignment = BoxContainer.AlignmentMode.Center;
@@ -183,14 +207,14 @@ public partial class LojaCashUI : Control
             var precoLabel = new Label();
             precoLabel.Text = $"{entry.PrecoDiamantes}";
             precoLabel.AddThemeFontSizeOverride("font_size", 12);
-            precoLabel.AddThemeColorOverride("font_color", new Color(0.91f, 0.77f, 0.28f));
+            precoLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
             precoLabel.VerticalAlignment = VerticalAlignment.Center;
             precoContainer.AddChild(precoLabel);
 
             var comprarBtn = new Button();
             comprarBtn.Text = "Comprar";
-            comprarBtn.CustomMinimumSize = new Vector2(0, 24);
-            comprarBtn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            comprarBtn.CustomMinimumSize = new Vector2(96, 26);
+            comprarBtn.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
             comprarBtn.AddThemeFontSizeOverride("font_size", 11);
             int capturedItemId = entry.ItemID;
             int capturedPreco = entry.PrecoDiamantes;
@@ -287,7 +311,7 @@ public partial class LojaCashUI : Control
         var timer = GetTree().CreateTimer(2.0);
         timer.Timeout += () =>
         {
-            if (_feedback != null) _feedback.Visible = false;
+            if (GodotObject.IsInstanceValid(_feedback)) _feedback.Visible = false;
         };
     }
 

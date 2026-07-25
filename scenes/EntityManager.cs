@@ -1180,17 +1180,24 @@ public partial class EntityManager : Node
             var labelName = new Label
             {
                 Text = name,
-                Position = new Vector2(-60, -60),
+                Position = new Vector2(-70, -68),
                 ZIndex = 2,
-                Size = new Vector2(120, 0),
+                Size = new Vector2(140, 24),
                 HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
             };
             labelName.Name = "NameLabel";
-            labelName.AddThemeFontSizeOverride("font_size", 14);
-            labelName.AddThemeColorOverride("font_color", Colors.White);
-            labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
-            labelName.AddThemeConstantOverride("outline_size", 2);
+            AplicarEstiloNomeNpc(labelName);
             root.AddChild(labelName);
+        }
+        else if (root.GetNodeOrNull("NameLabel") is Label existingNameLabel)
+        {
+            existingNameLabel.Text = name;
+            existingNameLabel.Position = new Vector2(-70, -68);
+            existingNameLabel.Size = new Vector2(140, 24);
+            existingNameLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            existingNameLabel.VerticalAlignment = VerticalAlignment.Center;
+            AplicarEstiloNomeNpc(existingNameLabel);
         }
 
         if (root.GetNodeOrNull("InteractPrompt") == null)
@@ -5153,6 +5160,18 @@ public partial class EntityManager : Node
         label.AddThemeColorOverride("font_color", cor);
         label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
         label.AddThemeConstantOverride("outline_size", 4);
+    }
+
+    private static void AplicarEstiloNomeNpc(Label label)
+    {
+        label.AddThemeFontOverride("font", GetBoldFont());
+        label.AddThemeFontSizeOverride("font_size", 16);
+        label.AddThemeColorOverride("font_color", new Color(1.0f, 0.86f, 0.16f, 1f));
+        label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1f));
+        label.AddThemeConstantOverride("outline_size", 5);
+        label.AddThemeConstantOverride("shadow_offset_x", 1);
+        label.AddThemeConstantOverride("shadow_offset_y", 1);
+        label.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
     }
 
     private static bool EhMobPassivoVisual(string mobType)

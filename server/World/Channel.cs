@@ -312,9 +312,9 @@ public class Channel
 
     private void UpdatePlayerRegen(float dt, double gameTime)
     {
-        const double outOfCombatDelay = 30.0;
-        const float healthRegenPercentPerSecond = 0.0015f;
-        const float manaRegenPercentPerSecond = 0.004f;
+        const double outOfCombatDelay = 18.0;
+        const float healthRegenPercentPerSecond = 0.003f;
+        const float manaRegenPercentPerSecond = 0.006f;
 
         foreach (var kv in _entities)
         {

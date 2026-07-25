@@ -95,16 +95,9 @@ public class WikiController : Controller
         var total = await _wikiService.CountMobsAsync(search);
         var pageSize = 30;
 
-        return View(new WikiItemsViewModel
+        return View(new WikiMobsViewModel
         {
-            Items = mobs.Select(m => new ItemSummary
-            {
-                Id = m.Id,
-                Name = m.Name,
-                TypeName = $"Nível {m.Level}",
-                RequiredLevel = m.Level,
-                IsElite = m.IsElite,
-            }).ToList(),
+            Mobs = mobs,
             Search = search,
             Page = page,
             TotalPages = (int)Math.Ceiling((double)total / pageSize),

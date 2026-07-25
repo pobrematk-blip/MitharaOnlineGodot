@@ -286,4 +286,16 @@ public class GameDbService
         cmd.CommandText = "SELECT COUNT(*) FROM accounts WHERE last_seen > NOW() - INTERVAL '5 minutes'";
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
+
+    public SiteStatusSnapshot GetSiteStatusSnapshot()
+    {
+        return new SiteStatusSnapshot
+        {
+            OnlinePlayers = GetOnlinePlayerCount(),
+            TotalAccounts = GetTotalAccounts(),
+            TotalCharacters = GetTotalCharacters(),
+            TotalGuilds = GetTotalGuilds(),
+            ServerTimeUtc = DateTime.UtcNow,
+        };
+    }
 }

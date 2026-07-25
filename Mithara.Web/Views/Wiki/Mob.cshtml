@@ -15,6 +15,23 @@
     <div class="container">
         <div class="wiki-detail-grid">
             <div class="wiki-detail-main">
+                <div class="wiki-detail-card mob-showcase-card">
+                    <div class="mob-showcase">
+                        @if (!string.IsNullOrEmpty(Model.Mob.ImageUrl))
+                        {
+                            <img src="@Model.Mob.ImageUrl" alt="@Model.Mob.Name" class="mob-showcase-img" />
+                        }
+                        else
+                        {
+                            <div class="wiki-mob-avatar">@Model.Mob.Name[0]</div>
+                        }
+                        <div>
+                            <h2>@Model.Mob.Name</h2>
+                            <p>@(Model.Mob.IsBoss ? "Boss" : Model.Mob.IsElite ? "Elite" : "Monstro comum") de nível @Model.Mob.Level</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="wiki-detail-card">
                     <h2>Informações do Monstro</h2>
                     <table class="wiki-stats-table">

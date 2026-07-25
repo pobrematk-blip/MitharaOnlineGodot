@@ -21,6 +21,14 @@ public class WikiItemsViewModel
     public List<string> ItemTypes { get; set; } = new();
 }
 
+public class WikiMobsViewModel
+{
+    public List<WikiMob> Mobs { get; set; } = new();
+    public string Search { get; set; } = "";
+    public int Page { get; set; } = 1;
+    public int TotalPages { get; set; }
+}
+
 public class ItemSummary
 {
     public int Id { get; set; }

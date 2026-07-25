@@ -199,6 +199,17 @@ partial class GameServer
                 HandleLojinhaListRequest(peer);
                 break;
 
+            case "marketplace_open":
+                if (!IsNearNpc(channel, player, "merchant_auctioneer"))
+                {
+                    SendSystemMessage(peer, "Aproxime-se do Mercador Leiloeiro para abrir o mercado.");
+                    break;
+                }
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                SendOpenMarketplace(peer);
+                SendMarketplaceList(peer);
+                break;
+
             case "close":
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;

@@ -51,6 +51,11 @@ partial class GameNetwork
         _client?.SendPacket(PacketId.C2S_UseItem, w => w.Put(slot));
     }
 
+    public void SendSplitItemStack(int slot)
+    {
+        _client?.SendPacket(PacketId.C2S_SplitItemStack, w => w.Put(slot));
+    }
+
     private void HandleInventoryData(NetDataReader r)
     {
         int invCount = r.GetInt();

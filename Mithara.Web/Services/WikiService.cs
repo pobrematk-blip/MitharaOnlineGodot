@@ -17,6 +17,20 @@ public partial class WikiService
     private static readonly ConcurrentDictionary<int, string> _itemIconCache = new();
     private static bool _iconCacheBuilt = false;
     private static readonly object _iconCacheLock = new();
+    private static readonly Dictionary<string, string> _mobImages = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["slime"] = "/images/mobs/slime.png",
+        ["slimeElite"] = "/images/mobs/slime-elite.png",
+        ["slimeBoss"] = "/images/mobs/slime-boss.png",
+        ["goblin"] = "/images/mobs/goblin.png",
+        ["wolf"] = "/images/mobs/wolf.png",
+        ["skeleton"] = "/images/mobs/skeleton.png",
+        ["cogumelo"] = "/images/mobs/cogumelo.png",
+        ["cogumeloElite"] = "/images/mobs/cogumelo-elite.png",
+        ["plantaCarnivora"] = "/images/mobs/planta-carnivora.png",
+        ["plantaCarnivoraElite"] = "/images/mobs/planta-carnivora-elite.png",
+        ["boss_demon"] = "/images/mobs/boss-demon.png",
+    };
 
     private static readonly Dictionary<string, string> _manualIcons = new()
     {
@@ -124,6 +138,11 @@ public partial class WikiService
                 sb.Append(c);
         }
         return sb.ToString().Normalize(System.Text.NormalizationForm.FormC);
+    }
+
+    private static string GetMobImageUrl(string prefabId)
+    {
+        return _mobImages.TryGetValue(prefabId, out var imageUrl) ? imageUrl : "";
     }
 
     private NpgsqlConnection CreateGameConnection()
@@ -474,6 +493,25 @@ public partial class WikiService
 
         _db.WikiDrops.AddRange(drops);
         await _db.SaveChangesAsync();
+    }
+
+    public async Task EnsureMobImagesAsync()
+    {
+        var mobs = await _db.WikiMobs.ToListAsync();
+        var changed = false;
+
+        foreach (var mob in mobs)
+        {
+            var imageUrl = GetMobImageUrl(mob.PrefabId);
+            if (!string.IsNullOrEmpty(imageUrl) && mob.ImageUrl != imageUrl)
+            {
+                mob.ImageUrl = imageUrl;
+                changed = true;
+            }
+        }
+
+        if (changed)
+            await _db.SaveChangesAsync();
     }
 
     private ItemSummary ParseItemSummary(int id, string name, int type, string defData)

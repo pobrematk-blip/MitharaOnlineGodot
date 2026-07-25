@@ -1,0 +1,75 @@
+@model MarketplaceIndexViewModel
+@{
+    ViewData["Title"] = "Mercado de Jogadores";
+}
+
+<section class="market-hero">
+    <div>
+        <span class="eyebrow">Economia dos jogadores</span>
+        <h1>Mercado de Jogadores</h1>
+        <p>Itens e gold anunciados pelos aventureiros de Mithara. As compras por PIX sao exclusivas de vendedores VIP, nao possuem reembolso e so sao entregues apos confirmacao segura.</p>
+    </div>
+</section>
+
+<section class="market-rules">
+    <strong>Regra do leilao:</strong>
+    vendas por gold pagam taxa de 20% no momento da venda. Anuncios por PIX ficam sob conferencia segura antes de qualquer entrega.
+</section>
+
+<section class="market-panel">
+    <form method="get" class="market-filter">
+        <input type="search" name="search" value="@Model.Search" placeholder="Pesquisar item ou vendedor" />
+        <select name="type">
+            <option value="-1" selected="@(Model.ItemType == -1)">Todas as categorias</option>
+            <option value="1" selected="@(Model.ItemType == 1)">Armas</option>
+            <option value="2" selected="@(Model.ItemType == 2)">Escudos</option>
+            <option value="3" selected="@(Model.ItemType == 3)">Capacetes</option>
+            <option value="4" selected="@(Model.ItemType == 4)">Peitorais</option>
+            <option value="8" selected="@(Model.ItemType == 8)">Botas</option>
+            <option value="17" selected="@(Model.ItemType == 17)">Consumiveis</option>
+            <option value="18" selected="@(Model.ItemType == 18)">Materiais</option>
+        </select>
+        <button type="submit">Buscar</button>
+    </form>
+
+    @if (Model.Listings.Count == 0)
+    {
+        <div class="empty-state">Nenhum anuncio ativo encontrado.</div>
+    }
+    else
+    {
+        <div class="market-grid">
+            @foreach (var item in Model.Listings)
+            {
+                <article class="market-card">
+                    <div class="market-icon">
+                        <img src="@item.IconUrl" alt="@item.ItemName" onerror="this.style.display='none'" />
+                    </div>
+                    <div class="market-info">
+                        <h2>
+                            @(item.ListingType == 2 ? $"{item.GoldAmount:N0} Gold" : item.ItemName)
+                            @if (item.RefineLevel > 0)
+                            {
+                                <span>+@item.RefineLevel</span>
+                            }
+                        </h2>
+                        <p>@item.ItemTypeName · Qtde. @item.Quantity</p>
+                        <p>Vendedor: @item.SellerName</p>
+                    </div>
+                    <div class="market-price">
+                        @if (item.CurrencyType == 1)
+                        {
+                            <strong>@item.PricePerUnitGold.ToString("N0") gold</strong>
+                            <span>por unidade</span>
+                        }
+                        else
+                        {
+                            <strong>R$ @((item.PriceTotalCents / 100m).ToString("N2"))</strong>
+                            <span>PIX, sem reembolso</span>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

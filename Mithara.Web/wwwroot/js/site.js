@@ -48,4 +48,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }, 5000);
     });
+
+    var statusBox = document.querySelector('[data-site-status]');
+    var statusText = document.querySelector('[data-site-status-text]');
+
+    function updateStatus(snapshot) {
+        if (!statusBox || !statusText || !snapshot) return;
+        statusBox.classList.remove('offline');
+        statusBox.classList.add('online');
+        statusText.textContent = snapshot.onlinePlayers + ' online | ' +
+            snapshot.totalCharacters + ' personagens';
+    }
+
+    function setStatusOffline() {
+        if (!statusBox || !statusText) return;
+        statusBox.classList.remove('online');
+        statusBox.classList.add('offline');
+        statusText.textContent = 'Status indisponivel';
+    }
+
+    if (statusBox && window.EventSource) {
+        var source = new EventSource('/api/site-status/stream');
+        source.addEventListener('status', function(event) {
+            try {
+                updateStatus(JSON.parse(event.data));
+            } catch {
+                setStatusOffline();
+            }
+        });
+        source.onerror = function() {
+            setStatusOffline();
+        };
+    } else if (statusBox) {
+        fetch('/api/site-status')
+            .then(function(response) { return response.json(); })
+            .then(updateStatus)
+            .catch(setStatusOffline);
+    }
 });

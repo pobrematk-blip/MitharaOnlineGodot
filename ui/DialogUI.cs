@@ -28,6 +28,7 @@ public partial class DialogUI : Control
             _gameNet.OnOpenGuildForm += AbrirCriacaoGuilda;
             _gameNet.OnOpenRefine += AbrirRefine;
             _gameNet.OnOpenLojinha += AbrirLojinha;
+            _gameNet.OnOpenMarketplace += AbrirMercado;
         }
 
         _closeButton.Pressed += Fechar;
@@ -163,6 +164,26 @@ public partial class DialogUI : Control
         hud.AddChild(ui);
     }
 
+    private void AbrirMercado(string title, string rules)
+    {
+        Fechar();
+        var hud = GetTree().Root.FindChild("HUD", true, false);
+        Node parent = hud ?? GetTree().CurrentScene;
+        if (parent == null) return;
+
+        var existing = parent.FindChild("MarketplaceUI", true, false) as MarketplaceUI;
+        if (existing != null)
+        {
+            existing.Configure(title, rules);
+            existing.Visible = true;
+            return;
+        }
+
+        var ui = new MarketplaceUI { Name = "MarketplaceUI" };
+        parent.AddChild(ui);
+        ui.Configure(title, rules);
+    }
+
     private void AbrirRefine()
     {
         var hud = GetTree().Root.FindChild("HUD", true, false);
@@ -217,6 +238,7 @@ public partial class DialogUI : Control
             _gameNet.OnOpenGuildForm -= AbrirCriacaoGuilda;
             _gameNet.OnOpenRefine -= AbrirRefine;
             _gameNet.OnOpenLojinha -= AbrirLojinha;
+            _gameNet.OnOpenMarketplace -= AbrirMercado;
         }
     }
 }

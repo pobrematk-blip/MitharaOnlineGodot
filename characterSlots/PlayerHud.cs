@@ -1,5 +1,8 @@
 ﻿using Godot;
 
+using System.Globalization;
+using System.Text;
+
 public partial class PlayerHud : Control
 {
     private ProgressBar _healthBar;
@@ -84,19 +87,67 @@ public partial class PlayerHud : Control
     {
         var escolhido = GetNodeOrNull<PersonagemEscolhido>("/root/PersonagemEscolhido");
         string classe = escolhido?.ClasseBase?.NomeClasse ?? "";
-        string iconPath = classe.ToLowerInvariant() switch
+        int itemId = ObterItemClasseNivel100(classe);
+
+        if (itemId > 0 && GetNodeOrNull<ItemDatabase>("/root/ItemDatabase") is ItemDatabase itemDb)
         {
-            "arqueiro" => "res://Itens/Incones/Arco 1.png",
-            "assassino" or "ladino" => "res://Itens/Incones/Adaga 1.png",
-            "guerreiro" => "res://Itens/Incones/Machados Perdisos 1.png",
-            "berserker" => "res://Itens/Incones/Machados Perdisos 2.png",
-            "mago" => "res://Itens/Incones/Cajado 6.png",
-            "clerigo" => "res://Itens/Incones/Martelo quebrada.png",
-            "guardiao" => "res://Itens/Incones/Escudo de Goglin.png",
-            _ => "res://Itens/Incones/Bag 3.png",
-        };
+            var item = itemDb.GetItem(itemId);
+            if (item?.Icone != null)
+            {
+                _portraitIcon.Texture = item.Icone;
+                return;
+            }
+        }
+
+        string iconPath = ObterIconeClasseFallback(classe);
         if (!string.IsNullOrEmpty(iconPath) && ResourceLoader.Exists(iconPath))
             _portraitIcon.Texture = ResourceLoader.Load<Texture2D>(iconPath);
+    }
+
+    private static int ObterItemClasseNivel100(string classe)
+    {
+        string normalizada = NormalizarClasse(classe);
+        return normalizada switch
+        {
+            "arqueiro" or "cacador" or "sniper" or "ranger" => 1010,
+            "assassino" or "assasino" or "ladino" or "sombra" => 1021,
+            "berserker" or "berseker" or "barbaro" => 1043,
+            "guardiao" or "protetor" or "tank" or "tankudo" => 1065,
+            "mago" or "elementalista" => 1076,
+            "clerigo" or "sacerdote" or "healer" or "curandeiro" => 1087,
+            _ => 0,
+        };
+    }
+
+    private static string ObterIconeClasseFallback(string classe)
+    {
+        string normalizada = NormalizarClasse(classe);
+        return normalizada switch
+        {
+            "arqueiro" or "cacador" or "sniper" or "ranger" => "res://Itens/Incones/Arco 1.png",
+            "assassino" or "assasino" or "ladino" or "sombra" => "res://Itens/Incones/Adaga 1.png",
+            "berserker" or "berseker" or "barbaro" => "res://Itens/Incones/Machados Perdisos 2.png",
+            "mago" => "res://Itens/Incones/Cajado 6.png",
+            "clerigo" => "res://Itens/Incones/Martelo quebrada.png",
+            "guardiao" or "protetor" or "tank" or "tankudo" => "res://Itens/Incones/Escudo de Goglin.png",
+            _ => "res://Itens/Incones/Bag 3.png",
+        };
+    }
+
+    private static string NormalizarClasse(string classe)
+    {
+        if (string.IsNullOrWhiteSpace(classe))
+            return "";
+
+        string decomposed = classe.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(decomposed.Length);
+        foreach (char c in decomposed)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                builder.Append(c);
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
     }
 
     private void ConectarProgressao()

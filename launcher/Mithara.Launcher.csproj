@@ -15,5 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\mithara_launcher_background.png" LogicalName="MitharaLauncherBackground.png" />
+    <EmbeddedResource Include="assets\mithara_launcher_icon.ico" LogicalName="MitharaLauncherIcon.ico" />
   </ItemGroup>
 </Project>

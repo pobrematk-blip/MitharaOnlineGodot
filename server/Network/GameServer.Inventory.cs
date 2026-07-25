@@ -552,6 +552,81 @@ partial class GameServer
         return -1;
     }
 
+    private static int FindNextEmptyInventorySlot(PlayerEntity player, int fromSlot)
+    {
+        int limit = GetInventorySlotLimit(player);
+        for (int slot = fromSlot + 1; slot < limit; slot++)
+        {
+            if (!player.Items.Any(item => item.Slot == slot))
+                return slot;
+        }
+
+        for (int slot = 0; slot < fromSlot && slot < limit; slot++)
+        {
+            if (!player.Items.Any(item => item.Slot == slot))
+                return slot;
+        }
+
+        return -1;
+    }
+
+    private void HandleSplitItemStack(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel?.GetEntity(session.EntityId) is not PlayerEntity player)
+            return;
+
+        int fromSlot = reader.GetInt();
+        if (!IsValidInventorySlot(player, fromSlot))
+        {
+            SendSystemMessage(peer, "Slot de inventario invalido.");
+            SendInventoryData(peer, player);
+            return;
+        }
+
+        var item = player.Items.FirstOrDefault(i => i.Slot == fromSlot);
+        if (item == null || item.Quantity <= 1)
+            return;
+
+        if (!IsStackableInventoryItem(item.Definition))
+        {
+            SendSystemMessage(peer, "Este item nao pode ser dividido.");
+            return;
+        }
+
+        int emptySlot = FindNextEmptyInventorySlot(player, fromSlot);
+        if (emptySlot < 0)
+        {
+            SendSystemMessage(peer, "Inventario cheio. Nao ha slot vazio para dividir este item.");
+            SendInventoryData(peer, player);
+            return;
+        }
+
+        int newQuantity = item.Quantity / 2;
+        int remainingQuantity = item.Quantity - newQuantity;
+        if (newQuantity <= 0)
+            return;
+
+        item.Quantity = remainingQuantity;
+        var splitItem = new ItemInstance
+        {
+            Slot = emptySlot,
+            ItemId = item.ItemId,
+            Quantity = newQuantity,
+            RefineLevel = item.RefineLevel,
+            Roll = item.Roll,
+        };
+
+        player.Items.Add(splitItem);
+        _db.SaveItem(session.SelectedCharacter.Id, item);
+        _db.SaveItem(session.SelectedCharacter.Id, splitItem);
+        SendInventoryData(peer, player);
+        SendSystemMessage(peer, $"{item.Name} dividido: {remainingQuantity} no slot original e {newQuantity} no slot vazio.");
+    }
+
     private void HandleMoveItem(NetPeer peer, NetDataReader reader)
     {
         if (!_sessions.TryGetValue(peer, out var session)) return;
@@ -769,6 +844,7 @@ partial class GameServer
             {
                 player.Items.Remove(item);
                 _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+                ClearConsumableShortcutIfDepleted(peer, player, session.SelectedCharacter.Id, item.ItemId);
             }
             else
             {
@@ -817,6 +893,7 @@ partial class GameServer
             {
                 player.Items.Remove(item);
                 _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+                ClearConsumableShortcutIfDepleted(peer, player, session.SelectedCharacter.Id, item.ItemId);
             }
             else
             {
@@ -861,6 +938,7 @@ partial class GameServer
             {
                 player.Items.Remove(item);
                 _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+                ClearConsumableShortcutIfDepleted(peer, player, session.SelectedCharacter.Id, item.ItemId);
             }
             else
             {
@@ -881,6 +959,7 @@ partial class GameServer
         {
             player.Items.Remove(item);
             _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+            ClearConsumableShortcutIfDepleted(peer, player, session.SelectedCharacter.Id, item.ItemId);
         }
         else
         {
@@ -900,6 +979,30 @@ partial class GameServer
         result.Put(item.ItemId);
         result.Put((float)PotionUseCooldownSeconds);
         peer.Send(result, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void ClearConsumableShortcutIfDepleted(NetPeer peer, PlayerEntity player, int characterId, int itemId)
+    {
+        if (player.Items.Any(item => item.ItemId == itemId && item.Quantity > 0))
+            return;
+
+        if (player.SkillBarSlots == null || player.SkillBarSlots.Length == 0)
+            return;
+
+        int shortcutValue = -Math.Abs(itemId);
+        bool changed = false;
+        for (int i = 0; i < player.SkillBarSlots.Length; i++)
+        {
+            if (player.SkillBarSlots[i] != shortcutValue)
+                continue;
+
+            player.SkillBarSlots[i] = 0;
+            _db.SaveCharacterSkillSlot(characterId, i, 0);
+            changed = true;
+        }
+
+        if (changed)
+            SendSkillBarData(peer, player);
     }
 
     private bool TryConsumePotionCooldown(NetPeer peer, PlayerEntity player, string cooldownKey, string potionName)

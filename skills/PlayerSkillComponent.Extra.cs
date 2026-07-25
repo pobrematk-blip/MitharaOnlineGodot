@@ -546,7 +546,18 @@ public partial class PlayerSkillComponent
         int inventorySlot = ItemSlotIndexes != null && slotIndex < ItemSlotIndexes.Length ? ItemSlotIndexes[slotIndex] : -1;
         if (inventorySlot < 0)
         {
-            GD.PrintErr("[SKILLCOMP] Slot de inventario do item da barra nao encontrado.");
+            inventorySlot = EncontrarSlotInventarioDoItem(item.ItemID);
+            if (ItemSlotIndexes != null && slotIndex < ItemSlotIndexes.Length)
+                ItemSlotIndexes[slotIndex] = inventorySlot;
+        }
+
+        if (inventorySlot < 0)
+        {
+            GD.PrintErr($"[SKILLCOMP] Consumivel '{item.Nome}' nao encontrado no inventario. Limpando atalho local.");
+            ItemSlots[slotIndex] = null;
+            if (ItemSlotIndexes != null && slotIndex < ItemSlotIndexes.Length)
+                ItemSlotIndexes[slotIndex] = -1;
+            NotificarSkillBarSlotLimpo(slotIndex);
             return;
         }
 
@@ -566,6 +577,23 @@ public partial class PlayerSkillComponent
 
         gameNet.SendUseItem(inventorySlot);
         GD.Print($"[SKILLCOMP] Pedido ao servidor para usar '{item.Nome}' do inventario slot {inventorySlot}.");
+    }
+
+    private int EncontrarSlotInventarioDoItem(int itemId)
+    {
+        var inventario = _player?.FindChild("InventarioComponent", true, false) as InventarioComponent
+            ?? GetTree()?.CurrentScene?.FindChild("InventarioComponent", true, false) as InventarioComponent;
+        if (inventario?.Slots == null)
+            return -1;
+
+        for (int i = 0; i < inventario.Slots.Count; i++)
+        {
+            var slot = inventario.Slots[i];
+            if (slot?.Item != null && slot.Item.ItemID == itemId && slot.Quantidade > 0)
+                return i;
+        }
+
+        return -1;
     }
 
 

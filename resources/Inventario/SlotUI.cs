@@ -345,6 +345,13 @@ public partial class SlotUI : Control
 
         if (mouseEvent.ButtonIndex == MouseButton.Left)
         {
+            if (mouseEvent.CtrlPressed && _mouseSobre)
+            {
+                DividirStackDoSlot();
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             double agora = Time.GetTicksMsec();
             bool duploClique = (agora - _ultimoCliqueEsquerdo) < IntervaloDuploClique;
             _ultimoCliqueEsquerdo = agora;
@@ -364,7 +371,7 @@ public partial class SlotUI : Control
                 return;
             }
 
-            if (EnviarParaTrocaSeAberta(mouseEvent.ShiftPressed))
+            if (EnviarParaTrocaSeAberta(false))
             {
                 GetViewport().SetInputAsHandled();
                 return;
@@ -403,6 +410,25 @@ public partial class SlotUI : Control
             UsarItemNoSlot();
             GetViewport().SetInputAsHandled();
         }
+    }
+
+    private void DividirStackDoSlot()
+    {
+        if (ObterContainerUi() != TipoContainerUi.Inventario)
+            return;
+
+        if (EhQualquerSlotBolsa || SlotInterno?.Item == null || SlotInterno.Quantidade <= 1)
+            return;
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.PrintErr("[INVENTARIO] Dividir item bloqueado. Conecte ao servidor.");
+            return;
+        }
+
+        gameNet.SendSplitItemStack(SlotIndex);
+        GD.Print($"[INVENTARIO] Pedido para dividir stack do slot {SlotIndex} enviado ao servidor.");
     }
 
     private bool EnviarParaTrocaSeAberta(bool dividirStack)

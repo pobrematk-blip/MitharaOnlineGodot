@@ -35,7 +35,7 @@ public sealed class LauncherForm : Form
         _http.Timeout = TimeSpan.FromMinutes(30);
 
         Text = "Mithara Online Launcher";
-        Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon;
+        Icon = LoadEmbeddedIcon("MitharaLauncherIcon.ico") ?? Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? Icon;
         ClientSize = new Size(760, 430);
         MinimumSize = new Size(680, 390);
         StartPosition = FormStartPosition.CenterScreen;
@@ -80,26 +80,47 @@ public sealed class LauncherForm : Form
             Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
         };
 
+        var demoBadge = new Label
+        {
+            Text = "DEMONSTRACAO EM DESENVOLVIMENTO",
+            Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+            ForeColor = Color.FromArgb(255, 218, 112),
+            BackColor = Color.Transparent,
+            AutoSize = true,
+            Location = new Point(42, 148),
+        };
+
+        var demoMessage = new Label
+        {
+            Text = "Mithara Online esta em desenvolvimento ativo. Esta versao e uma demonstracao jogavel do mundo, dos sistemas e das aventuras que estamos construindo.",
+            Font = new Font("Segoe UI", 10.5f, FontStyle.Regular),
+            ForeColor = Color.FromArgb(235, 233, 222),
+            BackColor = Color.Transparent,
+            Location = new Point(40, 172),
+            Size = new Size(680, 44),
+            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+        };
+
         _status.Text = "Preparando launcher...";
-        _status.Location = new Point(40, 170);
-        _status.Size = new Size(680, 50);
+        _status.Location = new Point(40, 232);
+        _status.Size = new Size(680, 34);
         _status.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         _status.ForeColor = Color.FromArgb(220, 220, 228);
         _status.BackColor = Color.Transparent;
 
         _version.Text = "Versão local: verificando";
-        _version.Location = new Point(40, 218);
+        _version.Location = new Point(40, 270);
         _version.Size = new Size(680, 24);
         _version.ForeColor = Color.FromArgb(145, 148, 165);
         _version.BackColor = Color.Transparent;
 
-        _progress.Location = new Point(40, 260);
+        _progress.Location = new Point(40, 306);
         _progress.Size = new Size(680, 24);
         _progress.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         _progress.Style = ProgressBarStyle.Continuous;
 
         _retryButton.Text = "Verificar novamente";
-        _retryButton.Location = new Point(40, 330);
+        _retryButton.Location = new Point(40, 352);
         _retryButton.Size = new Size(170, 46);
         _retryButton.BackColor = Color.FromArgb(24, 25, 35);
         _retryButton.ForeColor = Color.White;
@@ -109,7 +130,7 @@ public sealed class LauncherForm : Form
         _retryButton.Click += async (_, _) => await CheckAndUpdateAsync();
 
         _playButton.Text = "JOGAR";
-        _playButton.Location = new Point(550, 330);
+        _playButton.Location = new Point(550, 352);
         _playButton.Size = new Size(170, 46);
         _playButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         _playButton.BackColor = Color.FromArgb(156, 100, 26);
@@ -122,7 +143,7 @@ public sealed class LauncherForm : Form
 
         Controls.AddRange(new Control[]
         {
-            title, subtitle, separator, _status, _version, _progress, _retryButton, _playButton,
+            title, subtitle, separator, demoBadge, demoMessage, _status, _version, _progress, _retryButton, _playButton,
         });
     }
 
@@ -319,6 +340,12 @@ public sealed class LauncherForm : Form
     {
         using Stream? stream = typeof(LauncherForm).Assembly.GetManifestResourceStream(resourceName);
         return stream is null ? null : Image.FromStream(stream);
+    }
+
+    private static Icon? LoadEmbeddedIcon(string resourceName)
+    {
+        using Stream? stream = typeof(LauncherForm).Assembly.GetManifestResourceStream(resourceName);
+        return stream is null ? null : (Icon)new Icon(stream).Clone();
     }
 
     private async Task<T?> GetJsonAsync<T>(string url)

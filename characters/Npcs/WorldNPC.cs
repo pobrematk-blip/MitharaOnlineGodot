@@ -9,6 +9,8 @@ public partial class WorldNPC : CharacterBody2D
     [Export] public string DialogId { get; set; } = "";
     [Export] public string PrefabId { get; set; } = "";
 
+    private static Font _boldFont;
+
     public override void _Ready()
     {
         AddToGroup("NPC");
@@ -82,15 +84,13 @@ public partial class WorldNPC : CharacterBody2D
         {
             Name = "NameLabel",
             Text = NpcName,
-            Position = new Vector2(-60, -60),
+            Position = new Vector2(-70, -68),
             ZIndex = 2,
-            Size = new Vector2(120, 0),
+            Size = new Vector2(140, 24),
             HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
         };
-        labelName.AddThemeFontSizeOverride("font_size", 14);
-        labelName.AddThemeColorOverride("font_color", Colors.White);
-        labelName.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
-        labelName.AddThemeConstantOverride("outline_size", 2);
+        AplicarEstiloNomeNpc(labelName);
         AddChild(labelName);
 
         var prompt = new Label();
@@ -106,5 +106,38 @@ public partial class WorldNPC : CharacterBody2D
         prompt.AddThemeConstantOverride("outline_size", 2);
         prompt.Visible = false;
         AddChild(prompt);
+    }
+
+    private static void AplicarEstiloNomeNpc(Label label)
+    {
+        label.AddThemeFontOverride("font", GetBoldFont());
+        label.AddThemeFontSizeOverride("font_size", 16);
+        label.AddThemeColorOverride("font_color", new Color(1.0f, 0.86f, 0.16f, 1f));
+        label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1f));
+        label.AddThemeConstantOverride("outline_size", 5);
+        label.AddThemeConstantOverride("shadow_offset_x", 1);
+        label.AddThemeConstantOverride("shadow_offset_y", 1);
+        label.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
+    }
+
+    private static Font GetBoldFont()
+    {
+        if (_boldFont != null)
+            return _boldFont;
+
+        var fnt = ResourceLoader.Load<Font>("res://fonts/Montserrat-Variable.ttf");
+        if (fnt != null)
+        {
+            var variation = new FontVariation();
+            variation.SetBaseFont(fnt);
+            variation.SetVariationEmbolden(1.0f);
+            _boldFont = variation;
+        }
+        else
+        {
+            _boldFont = ThemeDB.GetProjectTheme().DefaultFont;
+        }
+
+        return _boldFont;
     }
 }

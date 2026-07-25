@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public partial class PartyHUD : Control
 {
-    private const string PartyXpIconPath = "res://Itens/Incones/Fragmento Estelar.png";
+    private const string PartyXpIconPath = "res://Itens/Incones/Incone de Xp.png";
     private const float PartyXpIconSize = 18f;
 
     private VBoxContainer _container = null!;

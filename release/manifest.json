@@ -1,0 +1,966 @@
+﻿{
+    "version":  "v0.1.41",
+    "archive":  "MitharaOnline_Update.zip",
+    "archiveSha256":  "37EE35B3DAC78B8119788B044FDA4C4148D572F35CA488FC0222E24FF602EE22",
+    "gameExecutable":  "MitharaOnlineTeste.exe",
+    "files":  [
+                  {
+                      "path":  "data_Mithara_windows_x86_64/clretwrc.dll",
+                      "size":  311048,
+                      "sha256":  "01AA7D74D16AE2FF436AE7AC84B87B2F15782BC0967B614A39A104966D703FC3"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/clrgc.dll",
+                      "size":  668464,
+                      "sha256":  "965F6C73773166A6F83CD90D8BAE7D6F110B0C833763944486B60C37D1E98052"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/clrjit.dll",
+                      "size":  1778440,
+                      "sha256":  "35B450153B686E94821D3AA82EF6669F57F60088C1D0CC4AF9D967107A7179F9"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/coreclr.dll",
+                      "size":  4995376,
+                      "sha256":  "36E658CED657F4B29526D0ABF8A2B8E208C20A2730512F25B80D3EEC7955920F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/createdump.exe",
+                      "size":  71992,
+                      "sha256":  "42FEC70D833344AE2939DD357B57D756505B6054C23C788EC400EA0EE4A5C933"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/GodotSharp.dll",
+                      "size":  5613568,
+                      "sha256":  "0E4897ECDFB31456A97C7D8028DFB8D7DBDC632E2F73FC9B438D7B266A139289"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/hostfxr.dll",
+                      "size":  366856,
+                      "sha256":  "AAA156793B9B22ECE28553B21A414036DA1ABA7121EA9BC01FF481D1FB25911C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/hostpolicy.dll",
+                      "size":  407312,
+                      "sha256":  "A0B14A705C5AE27D83DE5736A2B45AA0D0EBC7F497340301749BF9E44A1C338F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/LiteNetLib.dll",
+                      "size":  126464,
+                      "sha256":  "67E3D477E5835083882AA7A7B4756EA96CDA520E0906939F79C0BB3CF061FB56"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Microsoft.CSharp.dll",
+                      "size":  1005880,
+                      "sha256":  "8E87BCD435B594E74FD3DD1C4529E98FEF9F2BA23BCF83C00CAD34C9C8466467"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Microsoft.DiaSymReader.Native.amd64.dll",
+                      "size":  2195504,
+                      "sha256":  "315A61C47C41B8D4C815F4274BB6584C1D24B4640C7EEDC354ED5B03A9A1361E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Microsoft.VisualBasic.Core.dll",
+                      "size":  1247536,
+                      "sha256":  "528ED5611575DF89016D4256931D376E4AD2674132E07675218B1E3031DBF2BC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Microsoft.VisualBasic.dll",
+                      "size":  17672,
+                      "sha256":  "619A238EE68ABA30DF14631CACCD55391A7A90E7FDFECC00A5E0854DD84E2B29"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Microsoft.Win32.Primitives.dll",
+                      "size":  15672,
+                      "sha256":  "633D05A5B8362B4831321D575FDB21A5E4C06D10682B60FA9343950D54496D27"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Microsoft.Win32.Registry.dll",
+                      "size":  121096,
+                      "sha256":  "D154B6A674B3D56C6A7D12ADDF15C310D754EEAC3126A40A35E501CA823D167F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Mithara.deps.json",
+                      "size":  28135,
+                      "sha256":  "DA31681F5B538F3D2FF3CED48F6FE01FC141E31E9F050532CDDD1B05622D079D"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Mithara.dll",
+                      "size":  2326016,
+                      "sha256":  "0142296D16E3EA7F728AAFE1A94EF076AE88E098CE92B9020BD70731AD97CEEB"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Mithara.pdb",
+                      "size":  1525464,
+                      "sha256":  "869CDE5FAA9A821AE721284E5AFBF2EFA2D6DF5FA29705ADE6F72DACA848D5D7"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/Mithara.runtimeconfig.json",
+                      "size":  372,
+                      "sha256":  "5939A15BB1369D2508FCC698D9981FE46DE430397512EF362A9BB6E34E9CB646"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/mscordaccore.dll",
+                      "size":  1346392,
+                      "sha256":  "C4C706A25775AC5D611BE3936CEF45539652A59FBA8526A9F21B25AA13848018"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/mscordaccore_amd64_amd64_8.0.2225.52707.dll",
+                      "size":  1346392,
+                      "sha256":  "C4C706A25775AC5D611BE3936CEF45539652A59FBA8526A9F21B25AA13848018"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/mscordbi.dll",
+                      "size":  1234264,
+                      "sha256":  "623EABED437E266785A6CEE0BE2BFB2D73F0800B04A96019936ECB2F1C6303F6"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/mscorlib.dll",
+                      "size":  59704,
+                      "sha256":  "9D967F5302BFDA3259296D0041D6DA729698083BF5BA33D01D48CAD92D31AA82"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/mscorrc.dll",
+                      "size":  137016,
+                      "sha256":  "021FCBC1ED477E345CADF77611017EC423CF4DCD95FBDFA20EAC9FCAA944F1EF"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/msquic.dll",
+                      "size":  529480,
+                      "sha256":  "B2B7FD2DC05B0009ACD3F0DE7BA443C660C87B1308774A5811FDB8873A76DE78"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/netstandard.dll",
+                      "size":  101176,
+                      "sha256":  "42AC89969DFAA4899496DFE43A71F2C7FB9CD9AFE7A63D925EB66CA2DD82E3EF"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.AppContext.dll",
+                      "size":  15664,
+                      "sha256":  "CA7052F6ED6EE6FAD1270F308AF1F1BA4103020E77ECA4873D501EE586B38E18"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Buffers.dll",
+                      "size":  15664,
+                      "sha256":  "73729D26E25C3973A221B408D94F087C0643663ED3A0F31759CCD3E3CD794497"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Collections.Concurrent.dll",
+                      "size":  276744,
+                      "sha256":  "103A05C9C77B66368E5A3E5AEDCE5B1C7D973F73975D67C67B1B09A3B7255C8F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Collections.dll",
+                      "size":  260360,
+                      "sha256":  "EBBD44A284DC848732F126ECF235BFE0B11B708250140ED74645500F08DB3756"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Collections.Immutable.dll",
+                      "size":  837904,
+                      "sha256":  "B8FB86D6C7E020A3B74B96E91C8964E3E67D039612B48887B8A7192888458B04"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Collections.NonGeneric.dll",
+                      "size":  104720,
+                      "sha256":  "D86D173A169633A52A3814AE99DC985AB41EC922C8E10D713E675C62A2888F2E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Collections.Specialized.dll",
+                      "size":  104752,
+                      "sha256":  "B8417B1E463E49AD0AB4024EE5B2B204A37F737AAACDA4AB001701B08C2204C0"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ComponentModel.Annotations.dll",
+                      "size":  203016,
+                      "sha256":  "48C78DB05964D243D3AAF2B4A75EF841749ABF17E47607013A1135C0E4B3C29C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ComponentModel.DataAnnotations.dll",
+                      "size":  17200,
+                      "sha256":  "384C2D62F61CB348A6C722DC34FDB5835A8744125EBD5F6F51F20BB44CFDEDDC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ComponentModel.dll",
+                      "size":  30992,
+                      "sha256":  "EC200B8A9D52D88B37640E94BB1F2622E2F8D6F40DE7E7D8A73BB4E95997A307"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ComponentModel.EventBasedAsync.dll",
+                      "size":  47368,
+                      "sha256":  "FF50F5F17CCC09459D5C479EC0D18A965E7B87880779E8A49773FC693F36E773"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ComponentModel.Primitives.dll",
+                      "size":  80136,
+                      "sha256":  "8975F93099AE6B4F67277D3DA41B189D706FB151705FF55A12453B33E34B6760"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ComponentModel.TypeConverter.dll",
+                      "size":  747784,
+                      "sha256":  "EEBDBEB13E62C967D3860AAC7B34D49EA835BEDE99A2392D70716B7AD453D3E8"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Configuration.dll",
+                      "size":  19720,
+                      "sha256":  "C743DD84AD94C197F74E0F2DADABA47682E7CD116DF311FF588D81567CCA99EB"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Console.dll",
+                      "size":  174352,
+                      "sha256":  "EB300CB3C1C06FDF983E44E2DE1BC04E26E9A19D6CC834446D8DDC201DFF829F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Core.dll",
+                      "size":  23816,
+                      "sha256":  "7219F4E21F5E761C9B3806C0BAF83226B5873A8CC6FA7B1CA456EC6D5FF8591B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Data.Common.dll",
+                      "size":  2861360,
+                      "sha256":  "1FBBDD53757E62F4CF74B962CDB38957EA7AF99F5844890EE280F8184F407EBE"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Data.DataSetExtensions.dll",
+                      "size":  16136,
+                      "sha256":  "F33A9BD2738F6CCFE4993ED8604F3CD5BE8B82EF779B5CE7A99A5D643115BA10"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Data.dll",
+                      "size":  25352,
+                      "sha256":  "C25FC51718EBDFA355FEE9D15216E488E692B97A882DB44D5B2172CCB11A9F73"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.Contracts.dll",
+                      "size":  16648,
+                      "sha256":  "9CD9143BA125F2CA685EEEB195507EFECF457AD39BF3C94104AF99D2FBA2597F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.Debug.dll",
+                      "size":  16136,
+                      "sha256":  "DA092F2A630BEFD96ABC9037A49453B6A95776FD36DD117C0D08AC20C763C1CC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.DiagnosticSource.dll",
+                      "size":  416048,
+                      "sha256":  "BACB7DBE6927EDF2978A8F29394109ADE5C0EB369B10961EB50F8D0F4BFDBE96"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.FileVersionInfo.dll",
+                      "size":  47368,
+                      "sha256":  "1B52E97E528875462DCC687C817EDB2CDEE7E8A89942E12223167FB19B6A8710"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.Process.dll",
+                      "size":  338184,
+                      "sha256":  "BB9BC38A6E5AD771B2647F077DC79169839CB16D18D759FB787F9C25DB1E7B64"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.StackTrace.dll",
+                      "size":  47376,
+                      "sha256":  "F76EEC9BE7B113374A437B33D69D6875EF461F2F67799F4DB190B145367C0513"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.TextWriterTraceListener.dll",
+                      "size":  67848,
+                      "sha256":  "DCF62921EB0625BCDF806F1F24C0A9E828493075D458B0B187720B89C4B63230"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.Tools.dll",
+                      "size":  15624,
+                      "sha256":  "E9331144A653498298FB4A2E722171D7092084F40460E0C01786DB73F0F49737"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.TraceSource.dll",
+                      "size":  145712,
+                      "sha256":  "AFF93BB59BA6112B02F46D30FB264523DE4DF3E4693918D6987065318FD0E3D9"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Diagnostics.Tracing.dll",
+                      "size":  16648,
+                      "sha256":  "156B282D0557F223598E4F5966AEC7F674DC3FEC7110246198249C96F8DB946F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.dll",
+                      "size":  50440,
+                      "sha256":  "AD3C870F3E9B4B9A3BA993C0882FF43733BEEDE3A1D8DCB29E3D984590A72FDD"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Drawing.dll",
+                      "size":  20744,
+                      "sha256":  "50262A5B8994428D4301581D1C0E5F625179F65184B6A626805929FCEF4B46F5"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Drawing.Primitives.dll",
+                      "size":  133384,
+                      "sha256":  "BEAC7156D11693D2CF53B685DE105747201C6B8183A10C79DE41E130D8BC878B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Dynamic.Runtime.dll",
+                      "size":  16696,
+                      "sha256":  "7ADB7DDBC3CE33A08FB0293B6229F5C8880F25D1FA19B64D21D7174548AB1760"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Formats.Asn1.dll",
+                      "size":  243976,
+                      "sha256":  "8C275B80FEC0A8B1643EA91E30F701BA9069BB3A6A70F3C133B4A09F147913BA"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Formats.Tar.dll",
+                      "size":  272648,
+                      "sha256":  "171EA04304897C12BD953525E3D0FC24C04AAB28A71A96761DDE848AAFD5DB8E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Globalization.Calendars.dll",
+                      "size":  16184,
+                      "sha256":  "B907964743090DB489CBEE7886BFE0ACDA903595B8B8CD607CDC131318953A94"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Globalization.dll",
+                      "size":  16144,
+                      "sha256":  "AF70174B2CF14362DD8F9D4FCFE1EFD0C036ACB22C415A6D30F44A0E40888B0A"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Globalization.Extensions.dll",
+                      "size":  15624,
+                      "sha256":  "B97907AD401897FB3A16BED49C7E63C2D829F3DF8820A8219E15EDD3C8DBFAC3"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Compression.Brotli.dll",
+                      "size":  84232,
+                      "sha256":  "CDEBAA37498F4E8002E74D139C664E0E71442EC05D914542740D299B8E62D3E1"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Compression.dll",
+                      "size":  264456,
+                      "sha256":  "905CABEBD5652D3F015C3AC40BD1C512D4FC663E9A35CB57B16DF1D2606D42C8"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Compression.FileSystem.dll",
+                      "size":  15624,
+                      "sha256":  "B2D5FE28380EAB43A21E6697206055E0B2C494173264D2EB92D8BFCDF8B87B8F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Compression.Native.dll",
+                      "size":  829192,
+                      "sha256":  "93045A2D6B619B6E838E0F25889E4A39B771A2FE17E3749E189FB0B54A7B4172"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Compression.ZipFile.dll",
+                      "size":  55560,
+                      "sha256":  "171C7C767E9F951B0E41F9D954C0C14730795B9A1055462D58575579E294DE12"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.dll",
+                      "size":  16184,
+                      "sha256":  "CB4D0D15F7116EBB68E3A5281494922DC228512BA7418A6F273566AE053CA4B9"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.FileSystem.AccessControl.dll",
+                      "size":  104752,
+                      "sha256":  "1A08099521C074E3F44CFA1693E32B4420BA3A6DAE5A13705573D21B4A8088FE"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.FileSystem.dll",
+                      "size":  16136,
+                      "sha256":  "2D362D56919F84F6F68473A1421E06CA15F18048BD3453A44785EDDF4AD82ED0"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.FileSystem.DriveInfo.dll",
+                      "size":  55560,
+                      "sha256":  "557E7AE08DBA217BFA198B86F22193FCABE0B9BC282D7CE857511DD34B790478"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.FileSystem.Primitives.dll",
+                      "size":  15624,
+                      "sha256":  "40398149313EE76D80EDA2F06251642B3739809264DDA5EEDEFB45F20D25124C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.FileSystem.Watcher.dll",
+                      "size":  88368,
+                      "sha256":  "F5C54F9F1E789B33FFD3F78C2C3FA9770F409238DDCAAF5A5FE586646A8A8D1B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.IsolatedStorage.dll",
+                      "size":  92424,
+                      "sha256":  "8BFC8F4AB04BEFD2A81E2E059026EE7D5171EE9078FE7B9C3CDA0B2CCCCE49BC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.MemoryMappedFiles.dll",
+                      "size":  84280,
+                      "sha256":  "024BDD08DA3477B766B7954244BB3B8D81EFF7578036D06BB5B6F255D78AB99C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Pipes.AccessControl.dll",
+                      "size":  16648,
+                      "sha256":  "9A17C5A992A6B89FA4947138CF5E17D84620166FBBD61C29FC185ADAC75F5195"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.Pipes.dll",
+                      "size":  166192,
+                      "sha256":  "57C34ECCA5349E9D58B907BE56E40E85D99FF219A8C28C43ADD06CC0CEA80645"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.IO.UnmanagedMemoryStream.dll",
+                      "size":  15664,
+                      "sha256":  "90F2F71C55F00960EA0A89486863F1BD817C6EBBBE30DD6858C2CC30534D28C4"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Linq.dll",
+                      "size":  542984,
+                      "sha256":  "DCB04B4A036E50E7CE055D8CE5EB9A0302D2E7C5698FC89190CA6E9F78F65A6E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Linq.Expressions.dll",
+                      "size":  3676464,
+                      "sha256":  "353C0828FCA2C9DEFA39A48DD1A5BD05F0E6AC5720813DB9A1795192BFBFC4F0"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Linq.Parallel.dll",
+                      "size":  805128,
+                      "sha256":  "F9C6A3B4009D9E6B8E87AB1628A4A871D094A92033FDADFAF35CEF6BC3B70FE3"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Linq.Queryable.dll",
+                      "size":  174392,
+                      "sha256":  "ED18B4DEDF29E43E524CC86BE6FFEC4F640234C12C16AD0EADF73514DC2E50D5"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Memory.dll",
+                      "size":  157960,
+                      "sha256":  "AEFBEED3C73BD2D2219BB43B17D6684C31E0A7A6CC977BC12BB58ECC10305089"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.dll",
+                      "size":  17672,
+                      "sha256":  "E1062AEE5C3A4657F297474D8FBF36DC18E5C605C6AC3FFF351DEFBD7F96399E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Http.dll",
+                      "size":  1730824,
+                      "sha256":  "D40F4A2D7DA5F03BC22CFA6302CDCFB66694674867557E9A5A56CDB64DFD0071"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Http.Json.dll",
+                      "size":  129328,
+                      "sha256":  "34F4AC8C183635167D72B184D8587EFA860A190898ABA4F4EE70BC383FD5B856"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.HttpListener.dll",
+                      "size":  551176,
+                      "sha256":  "43B24F780F0D129AFEF70B825C71AE54B33E2AA256F82250B9EFCC096B9A03C2"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Mail.dll",
+                      "size":  432392,
+                      "sha256":  "F4782BEC59F6A562E126E7D2938C236AF66454AB31B392389CC4F5C4EEC6C612"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.NameResolution.dll",
+                      "size":  112904,
+                      "sha256":  "09824B9B9817B840D43E4EED8797B36C3C854BF2966641F4CB2CDAEF6AE3E9BB"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.NetworkInformation.dll",
+                      "size":  158000,
+                      "sha256":  "530E910C6AA5CD19AA3D64DD0728C82EC0F8B83053BA311F5066775E4596AADE"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Ping.dll",
+                      "size":  96560,
+                      "sha256":  "41C3D713E62A5A7AA2478048B358CB3A5ED55021EEFE9D3EDFF6C7BEDA2C8E37"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Primitives.dll",
+                      "size":  231736,
+                      "sha256":  "ABEADEEEA26E96543E2F0924CA3923B61D763ED1061700823FC6185AF449BA78"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Quic.dll",
+                      "size":  284936,
+                      "sha256":  "B1929F52F13C2683C2BC7322A65F0D0F982899E956A0D4FBB64F822887CFE216"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Requests.dll",
+                      "size":  346384,
+                      "sha256":  "8EBCD91D1FD09332995DF9C9E6E7954B71E938C8315520F9CD1BB1F179BD2AB0"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Security.dll",
+                      "size":  669960,
+                      "sha256":  "898BECA59DA3ACBCA8DF3C5E27B24C74B0518A22FE58EF2DC507562F7751FEAD"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.ServicePoint.dll",
+                      "size":  47408,
+                      "sha256":  "6A8E88FF4093B27249F260A280EEF062E8BB4C9EE97EAA4DC33D92FAC3E2595B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.Sockets.dll",
+                      "size":  547080,
+                      "sha256":  "9442CA5B9F0B518B6B745CEFFA960E0EE326270CE8C7FE055779BEC8E327660A"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.WebClient.dll",
+                      "size":  170248,
+                      "sha256":  "1CC54F1D96B5D08A6F0D02C64DA6D05522AC5AB1666F71A38AE23B3FFB9834A1"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.WebHeaderCollection.dll",
+                      "size":  67848,
+                      "sha256":  "4239E648BCA9315CD12D19902F8C199288C4D53BAF107F0A537128EFE444A205"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.WebProxy.dll",
+                      "size":  43312,
+                      "sha256":  "8CED89438BB9A4AABB1E0F557C4C6AEBC8AD863A48F3CEFD7114C68E2B2097E7"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.WebSockets.Client.dll",
+                      "size":  100624,
+                      "sha256":  "7262DE3339E75783D16696DA0B37F642D110543682A96C21DE6140A7A62BF470"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Net.WebSockets.dll",
+                      "size":  190728,
+                      "sha256":  "0912788B9835C26DFC6794E444A5C3A9FF69BA21C731D020380D001B6C299B07"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Numerics.dll",
+                      "size":  15664,
+                      "sha256":  "D14F34081D7E25D86F7F6FCFC8CA22C870B1ABA6FD56DB814B18897CC3BF246D"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Numerics.Vectors.dll",
+                      "size":  16144,
+                      "sha256":  "0244EC7C43EDCD3AAA089FD78F2D8907103F2CF7EBE4D632DAED9FBB0A5ACDBD"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ObjectModel.dll",
+                      "size":  80136,
+                      "sha256":  "ADA7CC5633DA6AC70F8257D7FCBE73A825C14A5F07DE837FD59F9E08BCA4718B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Private.CoreLib.dll",
+                      "size":  13175048,
+                      "sha256":  "F0F155A48D45462AB814111B91159AA3AB3DBA1312522D4ED344A63E48152100"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Private.DataContractSerialization.dll",
+                      "size":  2083080,
+                      "sha256":  "1ED22A67A45BAFB32001C5A37DD223131CA2CD5EE65592AF7F269A281E6ACFAD"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Private.Uri.dll",
+                      "size":  260360,
+                      "sha256":  "6AAECF177911DBE56D49BF8554FEB76E5CB79C19E5DBE977E6B3C845473040C3"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Private.Xml.dll",
+                      "size":  7997704,
+                      "sha256":  "40010F68FB45B319FD79BF1B745607DD4ED1E1CD7727C49B7608C5E11BCC1140"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Private.Xml.Linq.dll",
+                      "size":  403720,
+                      "sha256":  "410A6194BB14CAC4B1982656234466D963DB8660BE60E3E333430829C2BB4A63"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.DispatchProxy.dll",
+                      "size":  76040,
+                      "sha256":  "A0C38E58756068204CD7E8EDF5E64E8597DE2185EAF2591B9A8FA7CDC2BB03EC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.dll",
+                      "size":  16648,
+                      "sha256":  "F0D998C9B00FBEAEA810D2936A15FB18560711475349169D13D4C4A5F2DFB40C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.Emit.dll",
+                      "size":  129288,
+                      "sha256":  "A01CFFEC422959BA1B75C471C64E56212662F61A4C9C0265011B7F6C3F8B1293"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.Emit.ILGeneration.dll",
+                      "size":  16136,
+                      "sha256":  "D9121FFBB57DBA67E09AE2FC5B432DC8566D857AD24AA2134B529EAE53A1C7F9"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.Emit.Lightweight.dll",
+                      "size":  16136,
+                      "sha256":  "F8A50BC178DBFE9F2E960C2E5DF748D47ECDE8AE7EB7D87B65D4CDEA9D76FB03"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.Extensions.dll",
+                      "size":  15624,
+                      "sha256":  "478272825ECB72FD272A1E82580C496C0EFF2AD52F6A3DA2CF9C816CEB58EBA6"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.Metadata.dll",
+                      "size":  1116424,
+                      "sha256":  "D7C1BF2AE8CC1A78FFE4BCAE888C348B80FCFCC728B833735716BC154A0D9F28"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.Primitives.dll",
+                      "size":  16136,
+                      "sha256":  "5A1AB366FEFE772871DC8F569C6EB0F6C09B54B0078B2078E742DB879B5D0550"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Reflection.TypeExtensions.dll",
+                      "size":  43272,
+                      "sha256":  "4E02827DF1877935FBD220022F15FB7E3BF60F07DB77FDDD5DBA3F73B519CEA6"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Resources.Reader.dll",
+                      "size":  15672,
+                      "sha256":  "52F2846C444C057D0A1DED35F7AAC66E7D4454FABFA23F2CC312EC90CD7BE017"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Resources.ResourceManager.dll",
+                      "size":  16136,
+                      "sha256":  "501957973F2CFF08A729FFF9BCD8E824BEA5B1A8FBDDEE1960E9A55284FA07CE"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Resources.Writer.dll",
+                      "size":  51512,
+                      "sha256":  "0034C29B1EBABB5E288DCA92DE32FC93E58365A245D3BFBE43C3298FF8B2AB8F"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.CompilerServices.Unsafe.dll",
+                      "size":  15664,
+                      "sha256":  "5BB3C735581F1F6D7E699905F167A833F5EC164A372B47B2423DD66C2865BAEE"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.CompilerServices.VisualC.dll",
+                      "size":  30984,
+                      "sha256":  "DFD36A29AF778F8F5B20D5A90A59D3B5ED0708A680C6B24379B862037E3C733C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.dll",
+                      "size":  43792,
+                      "sha256":  "494C89ACAFA429F017422E62ECB1FEAAA662224DDE51373703534410075D2AEB"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Extensions.dll",
+                      "size":  18184,
+                      "sha256":  "F0E483E9C8F8FEAD535E09590B373C44F5BC863E5005161F194B489E675A4CAC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Handles.dll",
+                      "size":  15624,
+                      "sha256":  "322B0FD0DFD077C4C635C1E1924248A0A7D3C73A02EF24F87ACCCB00B12B1CEF"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.InteropServices.dll",
+                      "size":  96528,
+                      "sha256":  "7CA4F481F828EF16D58EDD67C72A124E388CBF74A0D2BC9D6D6D4851B4C6A0A5"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.InteropServices.JavaScript.dll",
+                      "size":  51512,
+                      "sha256":  "3F720D3F2611F5370C68291397BDC0C6E3D3AB01262DB684EC867C0FF200D068"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.InteropServices.RuntimeInformation.dll",
+                      "size":  15624,
+                      "sha256":  "B8DD80EB90EAAA2FA2CD8D83E462C4005C2075B79E11F871A035E3ED0EF08B27"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Intrinsics.dll",
+                      "size":  17200,
+                      "sha256":  "628755C89267E652FB4D4F49CE3557035596DF454A3744E6DE5BA1CF80C2C911"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Loader.dll",
+                      "size":  16136,
+                      "sha256":  "BA29F7BE5F6F0DFA92AC6366FD2DBF844F0152675D58A0A77ABBF1139CA97FA2"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Numerics.dll",
+                      "size":  330040,
+                      "sha256":  "F7EA858EEFAE352340D35AF803378ACDEF520E1D73E317EC2A484A4FE750FD96"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Serialization.dll",
+                      "size":  17160,
+                      "sha256":  "93143D08F84764E13603913301AE73EB54C8D69CC3F3DFFFF21904BB214121AA"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Serialization.Formatters.dll",
+                      "size":  309512,
+                      "sha256":  "3591F43BADE4E16B1ABAFFEF71B1A83D7E45AF9C7CE520DDB77C40A8513F9D98"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Serialization.Json.dll",
+                      "size":  16144,
+                      "sha256":  "54C234E7A63B0361A123DDCA5B504BC58E0FC071C046A96F1052EF43C0D220EA"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Serialization.Primitives.dll",
+                      "size":  39176,
+                      "sha256":  "2D6E3C19776E690FB5A3DD2400347B9EFF1A6F52C7D19E38BC1BA220AAFEE34B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Runtime.Serialization.Xml.dll",
+                      "size":  17200,
+                      "sha256":  "85E2B0FE2963F9EACF5D156AC2AD9EAE2013B6B1BD1B33014CD59D109D7AF8DB"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.AccessControl.dll",
+                      "size":  231728,
+                      "sha256":  "356FD9D026CAA7B4DBBA23127B56EC0214CED9288EABDA83BDD3075BBC1C028C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Claims.dll",
+                      "size":  100664,
+                      "sha256":  "1B907205B5B8D89147B0D91F454921757552CC8E8FC5AFDDBFC1B36FEA25B74E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.Algorithms.dll",
+                      "size":  17712,
+                      "sha256":  "EA64DBB22973738F6329E6161F0D2ECF1CA561AF68FB551CFC1084E462EF4C85"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.Cng.dll",
+                      "size":  16648,
+                      "sha256":  "F56A6D27D14EFDE8F316668C3A4D57CA29597D1426C6E28A5BD42B90ECFF6D96"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.Csp.dll",
+                      "size":  16144,
+                      "sha256":  "708EBCDAB083D868BBA68B222245365E962E069924605C87AAE2F64576E8CFCA"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.dll",
+                      "size":  2050312,
+                      "sha256":  "EE0B5E1B61F752F6E4762AD12226975609C698D0982568A9593DCBBCF1A975AC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.Encoding.dll",
+                      "size":  16136,
+                      "sha256":  "8C067DDD6D124A8D07BB28C94A6E2F77646C8C8DA265D5613E2A8B2D50FF7D88"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.OpenSsl.dll",
+                      "size":  15664,
+                      "sha256":  "63120EF4CDAB3C1E2CD035247D202CC33670EAFE40B8E99E3FE8250C0363D86E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.Primitives.dll",
+                      "size":  16136,
+                      "sha256":  "7D082686CDFA56123C3E5EF49E533AC24F26CCDC0850BC3E1924504F3281527B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.X509Certificates.dll",
+                      "size":  17208,
+                      "sha256":  "7D50AE1A6CAA82B9F58FEAE3B52B3DEC0D262B8815F153C34ACD2EEF3AEB34C3"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.dll",
+                      "size":  18696,
+                      "sha256":  "9A8FAA3B4BDE7A1CB5EA9632974D9E0D3401ABDA4C254B0CBC75FABF6E3F30B8"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Principal.dll",
+                      "size":  15632,
+                      "sha256":  "1428A471453A608782E87D60707575CBE6E6DEDC5FD4383661E6A18EF079E442"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.Principal.Windows.dll",
+                      "size":  186632,
+                      "sha256":  "E9309BA5EE4B589EB01136529AACF1547A0BC886298A0A76EDD70759387F6A1E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Security.SecureString.dll",
+                      "size":  15624,
+                      "sha256":  "4512557FC1DF782C67B7A3F4AF9CBE05BA80757BBFB535BB51E00B3405D5AE41"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ServiceModel.Web.dll",
+                      "size":  17160,
+                      "sha256":  "2FEB6A39915462F33141832909FFD6EC0C649825FA8009AD1BDA7EFB2A9E57AA"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ServiceProcess.dll",
+                      "size":  16136,
+                      "sha256":  "A8063D8926558169CB3D488F45FE5867506073EDEED531A1839E75704FAEE791"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Text.Encoding.CodePages.dll",
+                      "size":  862472,
+                      "sha256":  "1F4BBD7A5DED11D740BA5DCDF37EFFDD3CE968B914203D943FF48BDB36339A4D"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Text.Encoding.dll",
+                      "size":  16184,
+                      "sha256":  "5EBD36FFA042BDB59356682717EB93266D13585FE76C53F08334B0F1F5B905FC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Text.Encoding.Extensions.dll",
+                      "size":  16136,
+                      "sha256":  "2AA4CA320DF65917C47404D63E48D745BC0B00298E8F59B8FA97E5202B0241E9"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Text.Encodings.Web.dll",
+                      "size":  133384,
+                      "sha256":  "3B9469953577608EFB04E9D09CAD83F01C54D7E184E1A51EBC62EF0C583D6ECF"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Text.Json.dll",
+                      "size":  1501448,
+                      "sha256":  "F4C2FFC806BE38245AD31CEECCBA90A70D28AFE05447A6E9DFDF876D5467CB7C"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Text.RegularExpressions.dll",
+                      "size":  1022216,
+                      "sha256":  "1449400FD356CEF52462E96686A154EC461C368A4DD3ACB10DD6A78D7696C5F7"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Channels.dll",
+                      "size":  133424,
+                      "sha256":  "77030D42A44882E44794E8D779DAC02FB67D53DD05DE7CA8B5EE59387AD92A56"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.dll",
+                      "size":  84272,
+                      "sha256":  "0FCBA972ADFECCE7E5400D2B7BC69E781B0191015F033DF168B11157B0172E67"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Overlapped.dll",
+                      "size":  16136,
+                      "sha256":  "9B62E305D885392B7E3210C2EE4D68DB89C48612F8BF827D91953F6F808B100B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Tasks.Dataflow.dll",
+                      "size":  489736,
+                      "sha256":  "E3215B38968659E55BAAA10B07DD8DA3CA02D216407D16897F2BBFB45984321B"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Tasks.dll",
+                      "size":  17168,
+                      "sha256":  "22058540DCCE0C2BDDFA26A51D3ADD895448B968E923722C21B34618DDCD34DB"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Tasks.Extensions.dll",
+                      "size":  16136,
+                      "sha256":  "EC784334CC0F56B8A5E8CE700B58266D9DC69C54CF08C1B0483BD6E30C0995D3"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Tasks.Parallel.dll",
+                      "size":  133384,
+                      "sha256":  "0EC05D26FFF7EC38D30525A4AF45BE4C9790AFB68BEAD9321EE737E56BCAD257"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Thread.dll",
+                      "size":  16184,
+                      "sha256":  "7FFE111FEECA81C2EB99AE30E799CBE6EFF1D63091171ADE74F5C7D0D9A517B2"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.ThreadPool.dll",
+                      "size":  16184,
+                      "sha256":  "C170164D25B40A572F5BAC0EDCF08B337D592FFF90E32B37989FFBBE4A029BD4"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Threading.Timer.dll",
+                      "size":  15664,
+                      "sha256":  "0129CD3EE2F8B8AAA97D1F9246135C2F6D9971A1DEB22464858973E4E4AB5928"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Transactions.dll",
+                      "size":  16648,
+                      "sha256":  "058290D42CE2BCBCF88DBAA8144383488B715CE02A54FB9FC3061318D65AD4B9"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Transactions.Local.dll",
+                      "size":  661808,
+                      "sha256":  "78EB78047C8D15F4FA36AA168785D4916F126F2E047E8E5C995B6B626451C1AC"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.ValueTuple.dll",
+                      "size":  15632,
+                      "sha256":  "03FD0091D7120FD318C6981702A43A6BF64D02EE604162261E115811FBDB6E8A"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Web.dll",
+                      "size":  15664,
+                      "sha256":  "4B0716EA48ACCB31D1F914D6D46A61B76BA369AEDE9BC19A82799C5703F51096"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Web.HttpUtility.dll",
+                      "size":  59704,
+                      "sha256":  "F060A522E3F1E5E18243208CD991289E0258EB94558ABE7AE6F8A4F86C26392E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Windows.dll",
+                      "size":  16176,
+                      "sha256":  "3FB75ECC4113D671C964DD6D4BD42DADE67E4951F8D1D94CDD54F51118AAAB67"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.dll",
+                      "size":  23856,
+                      "sha256":  "ED300CEDA165B65E07E724C2CB3D3CD6E13396B2CA2B54441EA829F0B8F2C0C5"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.Linq.dll",
+                      "size":  16136,
+                      "sha256":  "31219AF411434C48828BECE7231814CFF9C3CDB046C461D8BBF665F0FF78843E"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.ReaderWriter.dll",
+                      "size":  22328,
+                      "sha256":  "CDE5F47FC3D777AAF4DA5BC8AA4DF354854C4FA40859626F19EDEE774BF95244"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.Serialization.dll",
+                      "size":  16696,
+                      "sha256":  "E93C8DD1B3229917279C7C8059631283337FFFDCD195DFC000768C3ADE7C3C56"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.XDocument.dll",
+                      "size":  16136,
+                      "sha256":  "1F8D0D31C4EA660A31C1894AE660FD252DE90744BC00231AE7ECFD4DDCD4FD28"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.XmlDocument.dll",
+                      "size":  16184,
+                      "sha256":  "36AC1587F10DC0833815A91FB8395EA0537E656F405DB097C2E470C7F0718853"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.XmlSerializer.dll",
+                      "size":  18184,
+                      "sha256":  "54818979D6AB862B3EA80E4B2FF398E08C5D1AC5C8C7AB4FEC3BBC0E74906B04"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.XPath.dll",
+                      "size":  16176,
+                      "sha256":  "CF79D7053F53420710223199D50CCCD6228446E1D18B92AE4369AF0C194C0F34"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/System.Xml.XPath.XDocument.dll",
+                      "size":  30984,
+                      "sha256":  "3E9495AABAC3696A5707B0C56A8AEFFAD8F7B1A9C6E3B3C07E1D316DD23B2BF8"
+                  },
+                  {
+                      "path":  "data_Mithara_windows_x86_64/WindowsBase.dll",
+                      "size":  16648,
+                      "sha256":  "30E0E90F918D9EF63B229C5CD830B1348B488421ED9E675D045389351602886E"
+                  },
+                  {
+                      "path":  "MitharaOnlineTeste.exe",
+                      "size":  96864768,
+                      "sha256":  "8426E352BA3B8AE83D8BB2B617F448A3D7D9CD7158978F4D7227C566B2692468"
+                  },
+                  {
+                      "path":  "MitharaOnlineTeste.pck",
+                      "size":  292470176,
+                      "sha256":  "8CEADE9E492F3AB4EF38FC0407458DE2C1FAC208601B92F9DEC801187EFE89ED"
+                  },
+                  {
+                      "path":  "server_endpoint.json",
+                      "size":  46,
+                      "sha256":  "4930534D31DC83C6496707C6AC81071670FEDF28AB5E1F97EEED7F45133F7917"
+                  }
+              ],
+    "remove":  [
+
+               ]
+}

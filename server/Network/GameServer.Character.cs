@@ -759,7 +759,15 @@ partial class GameServer
 
         if (!ServerTalentCatalog.SpecializationAllowed(player.CharacterClass, node, player.UnlockedTalents, out string lockedSpec))
         {
-            SendSystemMessage(peer, $"Voce ja escolheu a especializacao {lockedSpec}. Use um Pergaminho de Reset de Talentos para trocar.");
+            if (lockedSpec.StartsWith("beta:", StringComparison.OrdinalIgnoreCase))
+            {
+                string betaSpec = lockedSpec["beta:".Length..];
+                SendSystemMessage(peer, $"No beta, somente a especializacao {betaSpec} esta liberada para esta classe.");
+            }
+            else
+            {
+                SendSystemMessage(peer, $"Voce ja escolheu a especializacao {lockedSpec}. Use um Pergaminho de Reset de Talentos para trocar.");
+            }
             SendTalentData(peer, player);
             return;
         }
@@ -812,8 +820,26 @@ partial class GameServer
                 return;
             }
         }
+        else if (skillId < 0)
+        {
+            int itemId = Math.Abs(skillId);
+            var itemDef = ItemDefinitions.Get(itemId);
+            if (itemDef == null || itemDef.Type != ItemType.Consumable)
+            {
+                SendSystemMessage(peer, "Somente consumiveis podem ser colocados na barra.");
+                SendSkillBarData(peer, player);
+                return;
+            }
 
-        player.SkillBarSlots[slotIndex] = Math.Max(0, skillId);
+            if (!player.Items.Any(i => i.ItemId == itemId && i.Quantity > 0))
+            {
+                SendSystemMessage(peer, "Voce nao possui este consumivel no inventario.");
+                SendSkillBarData(peer, player);
+                return;
+            }
+        }
+
+        player.SkillBarSlots[slotIndex] = skillId;
         _db.SaveCharacterSkillSlot(session.SelectedCharacter.Id, slotIndex, player.SkillBarSlots[slotIndex]);
         SendSkillBarData(peer, player);
     }
@@ -846,8 +872,17 @@ partial class GameServer
         for (int i = 0; i < player.SkillBarSlots.Length; i++)
         {
             int skillId = player.SkillBarSlots[i];
-            if (skillId <= 0)
+            if (skillId == 0)
                 continue;
+
+            if (skillId < 0)
+            {
+                int itemId = Math.Abs(skillId);
+                var itemDef = ItemDefinitions.Get(itemId);
+                if (itemDef == null || itemDef.Type != ItemType.Consumable || !player.Items.Any(item => item.ItemId == itemId && item.Quantity > 0))
+                    player.SkillBarSlots[i] = 0;
+                continue;
+            }
 
             var skill = ServerSkillCatalog.Get(skillId);
             if (skill == null
@@ -882,6 +917,15 @@ internal sealed class ServerTalentNode
 internal static class ServerTalentCatalog
 {
     private static readonly Lazy<Dictionary<string, Dictionary<string, ServerTalentNode>>> Trees = new(LoadAll);
+    private static readonly Dictionary<string, (string Key, string Display)> BetaSpecializationByPrefix = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["arq"] = ("sniper", "Sniper"),
+        ["pri"] = ("sacerdote", "Sacerdote"),
+        ["ber"] = ("barbaro", "Barbaro"),
+        ["gua"] = ("protetor", "Protetor"),
+        ["lad"] = ("assassino", "Assassino"),
+        ["mag"] = ("elementalista", "Elementalista"),
+    };
 
     public static ServerTalentNode? GetNodeForClass(string className, string nodeId)
     {
@@ -898,7 +942,11 @@ internal static class ServerTalentCatalog
         int total = 0;
         foreach (string nodeId in unlocked)
             if (tree.TryGetValue(nodeId, out var node))
+            {
+                if (!BetaSpecializationAllowed(node, out _))
+                    continue;
                 total += Math.Max(0, node.CustoPontos);
+            }
         return total;
     }
 
@@ -918,6 +966,12 @@ internal static class ServerTalentCatalog
         if (string.IsNullOrWhiteSpace(node.SpecializationKey))
             return true;
 
+        if (!BetaSpecializationAllowed(node, out string betaAllowedSpec))
+        {
+            lockedSpec = $"beta:{betaAllowedSpec}";
+            return false;
+        }
+
         var tree = GetTreeForClass(className);
         if (tree == null) return false;
 
@@ -926,6 +980,8 @@ internal static class ServerTalentCatalog
             if (!tree.TryGetValue(unlockedNodeId, out var unlockedNode))
                 continue;
             if (string.IsNullOrWhiteSpace(unlockedNode.SpecializationKey))
+                continue;
+            if (!BetaSpecializationAllowed(unlockedNode, out _))
                 continue;
             if (string.Equals(unlockedNode.SpecializationKey, node.SpecializationKey, StringComparison.OrdinalIgnoreCase))
                 return true;
@@ -937,6 +993,24 @@ internal static class ServerTalentCatalog
         return true;
     }
 
+    private static bool BetaSpecializationAllowed(ServerTalentNode node, out string allowedSpec)
+    {
+        allowedSpec = "";
+        if (node == null || string.IsNullOrWhiteSpace(node.NodeId) || string.IsNullOrWhiteSpace(node.SpecializationKey))
+            return true;
+
+        string[] parts = node.NodeId.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length < 3)
+            return true;
+
+        string prefix = parts[0];
+        if (!BetaSpecializationByPrefix.TryGetValue(prefix, out var allowed))
+            return true;
+
+        allowedSpec = allowed.Display;
+        return string.Equals(node.SpecializationKey, allowed.Key, StringComparison.OrdinalIgnoreCase);
+    }
+
     public static bool IsSkillUnlocked(string className, HashSet<string> unlocked, int skillId)
     {
         if (skillId <= 0) return false;
@@ -944,7 +1018,7 @@ internal static class ServerTalentCatalog
         if (tree == null) return false;
 
         foreach (var node in tree.Values)
-            if (node.SkillId == skillId && unlocked.Contains(node.NodeId))
+            if (node.SkillId == skillId && unlocked.Contains(node.NodeId) && BetaSpecializationAllowed(node, out _))
                 return true;
 
         return false;
@@ -962,11 +1036,12 @@ internal static class ServerTalentCatalog
         {
             foreach (var node in tree.Values)
             {
-                if (node.SkillId == skillId && unlocked.Contains(node.NodeId))
+                if (node.SkillId == skillId && unlocked.Contains(node.NodeId) && BetaSpecializationAllowed(node, out _))
                     return true;
 
                 if (node.SkillId > 0
                     && unlocked.Contains(node.NodeId)
+                    && BetaSpecializationAllowed(node, out _)
                     && !string.IsNullOrWhiteSpace(requestedName)
                     && NormalizeSkillName(node.Nome) == requestedName)
                 {

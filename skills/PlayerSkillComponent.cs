@@ -88,13 +88,24 @@ public partial class PlayerSkillComponent : Node
 
         for (int i = 0; i < SkillSlots.Length; i++)
         {
-            int skillId = i < skillIds.Count ? skillIds[i] : 0;
-            SkillSlots[i] = skillId > 0 ? ObterSkillPorId(skillId) : null;
-            if (SkillSlots[i] != null && ItemSlots != null && i < ItemSlots.Length)
+            int slotValue = i < skillIds.Count ? skillIds[i] : 0;
+            SkillSlots[i] = slotValue > 0 ? ObterSkillPorId(slotValue) : null;
+            if (ItemSlots != null && i < ItemSlots.Length)
             {
-                ItemSlots[i] = null;
-                if (ItemSlotIndexes != null && i < ItemSlotIndexes.Length)
-                    ItemSlotIndexes[i] = -1;
+                if (slotValue < 0)
+                {
+                    int itemId = System.Math.Abs(slotValue);
+                    var itemDb = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
+                    ItemSlots[i] = itemDb?.GetItem(itemId);
+                    if (ItemSlotIndexes != null && i < ItemSlotIndexes.Length)
+                        ItemSlotIndexes[i] = -1;
+                }
+                else
+                {
+                    ItemSlots[i] = null;
+                    if (ItemSlotIndexes != null && i < ItemSlotIndexes.Length)
+                        ItemSlotIndexes[i] = -1;
+                }
             }
         }
 

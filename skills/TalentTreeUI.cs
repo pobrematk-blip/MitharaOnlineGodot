@@ -49,9 +49,19 @@ public partial class TalentTreeUI : Control
     private static readonly Color CorDisponivel = new(0.35f, 0.2f, 0.45f);
     private static readonly Color CorNormal = new(0.08f, 0.08f, 0.12f);
     private static readonly Color CorDesbloqueado = new(0.35f, 0.5f, 0.9f);
+    private static readonly Color CorBetaBloqueado = new(0.95f, 0.12f, 0.12f);
     private static readonly Dictionary<string, List<SkillResource>> SkillCatalogByName = new();
     private static readonly Dictionary<string, Dictionary<string, string>> TreeIconPathCache = new();
     private static readonly Dictionary<string, string> SkillIconPathCache = new();
+    private static readonly Dictionary<string, (string Key, string Display)> BetaSpecializationByPrefix = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["arq"] = ("sniper", "Sniper"),
+        ["pri"] = ("sacerdote", "Sacerdote"),
+        ["ber"] = ("barbaro", "Barbaro"),
+        ["gua"] = ("protetor", "Protetor"),
+        ["lad"] = ("assassino", "Assassino"),
+        ["mag"] = ("elementalista", "Elementalista"),
+    };
     private static bool _skillCatalogLoaded;
     private TextureButton _toggleButton;
 
@@ -463,12 +473,16 @@ public partial class TalentTreeUI : Control
             if (!positions.ContainsKey(id)) continue;
             bool unlocked = _talentTreeComponent.TemNoDesbloqueado(id);
             bool canUnlock = !unlocked && _talentTreeComponent.PodeDesbloquear(id, _playerNivel);
+            bool betaLocked = IsBetaTalentLocked(id, out string betaAllowedSpecialization);
+            bool betaRouteLocked = IsBetaSpecializationLocked(id, out _);
+            if (betaLocked)
+                canUnlock = false;
             Vector2 nodeDimensions = ObterDimensaoNo(node, tree);
             var slot = new TalentNodeSlotUI
             {
                 NodeData = node,
                 IsUnlocked = unlocked,
-                CanDragSkill = unlocked && (node.HabilidadeAtiva != null || node.NodeType == TalentNodeType.Skill),
+                CanDragSkill = unlocked && !betaLocked && (node.HabilidadeAtiva != null || node.NodeType == TalentNodeType.Skill),
                 MouseFilter = MouseFilterEnum.Stop,
             };
             slot.GuiInput += inputEvent => OnTalentNodeGuiInput(inputEvent, id);
@@ -478,13 +492,13 @@ public partial class TalentTreeUI : Control
                 node.HabilidadeAtiva = nodeSkill;
             bool isSkillNode = nodeSkill != null || node.NodeType == TalentNodeType.Skill;
             slot.DragSkill = nodeSkill;
-            slot.CanDragSkill = unlocked && isSkillNode;
-            if (unlocked && isSkillNode)
+            slot.CanDragSkill = unlocked && isSkillNode && !betaLocked;
+            if (unlocked && isSkillNode && !betaLocked)
                 slot.MouseDefaultCursorShape = CursorShape.Move;
             else if (!unlocked)
                 slot.MouseDefaultCursorShape = CursorShape.PointingHand;
             var choiceSource = isSkillNode ? ObterEscolhaParaSkill(node, nodes) : null;
-            slot.CustomTooltipText = CriarTooltip(node, unlocked, canUnlock, nodeSkill, choiceSource);
+            slot.CustomTooltipText = CriarTooltip(node, unlocked, canUnlock, nodeSkill, choiceSource, betaLocked, betaAllowedSpecialization);
             slot.TooltipText = "";
             slot.AnchorLeft = 0;
             slot.AnchorTop = 0;
@@ -510,7 +524,8 @@ public partial class TalentTreeUI : Control
 
                 Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
                 Color bg = CorNormal;
-                if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
+                if (betaLocked) { bg = new Color(0.18f, 0.04f, 0.04f); border = CorBetaBloqueado; }
+                else if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
                 else if (canUnlock) { bg = new Color(0.28f, 0.18f, 0.4f); border = CorDisponivel; }
 
                 var skillFrame = new PanelContainer
@@ -543,12 +558,12 @@ public partial class TalentTreeUI : Control
                     slot.AddChild(icon);
                 }
 
-                if (!unlocked)
+                if (!unlocked || betaLocked)
                 {
                     float iconPadding = 6f;
                     var darkOverlay = new ColorRect
                     {
-                        Color = canUnlock ? new Color(0f, 0f, 0f, 0.34f) : new Color(0f, 0f, 0f, 0.58f),
+                        Color = betaLocked ? new Color(0.25f, 0f, 0f, 0.62f) : canUnlock ? new Color(0f, 0f, 0f, 0.34f) : new Color(0f, 0f, 0f, 0.58f),
                         MouseFilter = MouseFilterEnum.Ignore,
                         TooltipText = "",
                         ZIndex = 22,
@@ -565,9 +580,13 @@ public partial class TalentTreeUI : Control
             {
                 Color border = TalentNodeResource.ObterCorTipo(node.NodeType).Darkened(0.35f);
                 Color bg = CorNormal;
-                if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
+                if (betaLocked) { bg = new Color(0.18f, 0.04f, 0.04f); border = CorBetaBloqueado; }
+                else if (unlocked) { bg = new Color(0.16f, 0.24f, 0.48f); border = CorDesbloqueado; }
                 else if (canUnlock) { bg = new Color(0.28f, 0.18f, 0.4f); border = CorDisponivel; }
                 Estilo(slot, bg, border, nodeDimensions.Y);
+
+                if (betaRouteLocked)
+                    CriarMarcadorBetaBloqueado(slot, nodeDimensions);
             }
 
             slot.Position = positions[id] - nodeDimensions * 0.5f;
@@ -653,7 +672,8 @@ public partial class TalentTreeUI : Control
 
         var node = _talentTreeComponent.TalentTree?.ObterNo(nodeId);
         bool unlocked = _talentTreeComponent.TemNoDesbloqueado(nodeId);
-        bool isUnlockedSkill = unlocked && (node?.HabilidadeAtiva != null || ObterSkillDoNo(node) != null || node?.NodeType == TalentNodeType.Skill);
+        bool betaLocked = IsBetaTalentLocked(nodeId, out string betaAllowedSpecialization);
+        bool isUnlockedSkill = unlocked && !betaLocked && (node?.HabilidadeAtiva != null || ObterSkillDoNo(node) != null || node?.NodeType == TalentNodeType.Skill);
         if (isUnlockedSkill)
         {
             _draggingBoard = false;
@@ -661,6 +681,12 @@ public partial class TalentTreeUI : Control
         }
 
         GetViewport().SetInputAsHandled();
+        if (betaLocked)
+        {
+            MostrarAvisoBetaEspecializacao(betaAllowedSpecialization);
+            return;
+        }
+
         GD.Print($"[TALENT UI] Solicitando desbloqueio do talento: {nodeId}");
         _talentTreeComponent.SolicitarDesbloqueioServidor(nodeId);
     }
@@ -1258,6 +1284,51 @@ public partial class TalentTreeUI : Control
         };
     }
 
+    private static bool IsBetaSpecializationLocked(string nodeId, out string allowedSpecialization)
+    {
+        if (!IsBetaTalentLocked(nodeId, out allowedSpecialization))
+            return false;
+        return nodeId.EndsWith("_rota", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsBetaTalentLocked(string nodeId, out string allowedSpecialization)
+    {
+        allowedSpecialization = "";
+        if (string.IsNullOrWhiteSpace(nodeId))
+            return false;
+
+        string[] parts = nodeId.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length < 3)
+            return false;
+
+        string prefix = parts[0];
+        string specialization = parts[1];
+        if (!BetaSpecializationByPrefix.TryGetValue(prefix, out var allowed))
+            return false;
+
+        allowedSpecialization = allowed.Display;
+        return !string.Equals(specialization, allowed.Key, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void MostrarAvisoBetaEspecializacao(string allowedSpecialization)
+    {
+        var dialog = GetNodeOrNull<AcceptDialog>("BetaSpecializationDialog");
+        if (dialog == null)
+        {
+            dialog = new AcceptDialog
+            {
+                Name = "BetaSpecializationDialog",
+                Title = "Beta Mithara",
+                Exclusive = false,
+                Unresizable = true,
+            };
+            AddChild(dialog);
+        }
+
+        dialog.DialogText = $"No beta, somente a especializacao {allowedSpecialization} esta liberada para esta classe.";
+        dialog.PopupCentered(new Vector2I(460, 150));
+    }
+
     private static string NormalizarChave(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -1386,16 +1457,21 @@ public partial class TalentTreeUI : Control
         bool unlocked,
         bool canUnlock,
         SkillResource resolvedSkill,
-        TalentNodeResource choiceSource = null)
+        TalentNodeResource choiceSource = null,
+        bool betaLocked = false,
+        string betaAllowedSpecialization = "")
     {
         var linhas = new List<string>
         {
             node.Nome,
             TalentNodeResource.ObterRotuloTipo(node.NodeType),
-            unlocked ? "Status: liberada" : canUnlock ? "Status: disponivel para liberar" : "Status: bloqueada",
+            betaLocked ? "Status: indisponivel no beta" : unlocked ? "Status: liberada" : canUnlock ? "Status: disponivel para liberar" : "Status: bloqueada",
             $"Custo para liberar: {node.CustoPontos} ponto(s)",
             $"Nivel necessario: {node.NivelMinimo}",
         };
+
+        if (betaLocked)
+            linhas.Add($"No beta, somente a especializacao {betaAllowedSpecialization} esta liberada para esta classe.");
 
         if (!string.IsNullOrWhiteSpace(node.Descricao))
             linhas.Add(node.Descricao);
@@ -1423,6 +1499,46 @@ public partial class TalentTreeUI : Control
         return new Color(0.32f, 0.32f, 0.38f, 0.72f);
     }
 
+    private static void CriarMarcadorBetaBloqueado(Control slot, Vector2 nodeDimensions)
+    {
+        const float size = 24f;
+        var badge = new Panel
+        {
+            Position = (nodeDimensions - Vector2.One * size) * 0.5f,
+            Size = Vector2.One * size,
+            CustomMinimumSize = Vector2.One * size,
+            MouseFilter = MouseFilterEnum.Ignore,
+            ZIndex = 90,
+        };
+        badge.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = new Color(0.9f, 0.03f, 0.03f, 0.95f),
+            BorderColor = new Color(0.05f, 0.01f, 0.01f, 1f),
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            CornerRadiusTopLeft = 12,
+            CornerRadiusTopRight = 12,
+            CornerRadiusBottomLeft = 12,
+            CornerRadiusBottomRight = 12,
+        });
+
+        var xLabel = new Label
+        {
+            Text = "X",
+            Position = Vector2.Zero,
+            Size = Vector2.One * size,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore,
+            ZIndex = 91,
+        };
+        xLabel.AddThemeFontSizeOverride("font_size", 15);
+        xLabel.AddThemeColorOverride("font_color", Colors.White);
+        badge.AddChild(xLabel);
+        slot.AddChild(badge);
+    }
 
     private void CriarRotuloCaminho(TalentNodeResource node, Vector2 center)
     {

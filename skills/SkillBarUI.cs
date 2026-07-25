@@ -1357,10 +1357,17 @@ public partial class SkillBarUI : Control
             if (comp.ItemSlotIndexes != null && idx < comp.ItemSlotIndexes.Length)
                 comp.ItemSlotIndexes[idx] = inventorySlot;
             _slots[row, col]?.SetItem(item, inventorySlot);
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet == null || !gameNet.IsConnected)
+            {
+                GD.PrintErr("[SKILL BAR] Sem conexao. Atribuicao de item so pode ser feita pelo servidor.");
+                return;
+            }
+
+            gameNet.SendSetSkillSlot(idx, item != null ? -Math.Abs(item.ItemID) : 0);
             if (hadSkill)
             {
-                var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
-                gameNet?.SendSetSkillSlot(idx, 0);
+                GD.Print($"[SKILL BAR] Skill anterior substituida por consumivel no slot {row},{col}.");
             }
             GD.Print($"[SKILL BAR] Item '{item?.Nome}' atribuido ao slot {row},{col} (idx {idx}) usando inventario slot {inventorySlot}.");
         }
@@ -1384,7 +1391,7 @@ public partial class SkillBarUI : Control
             if (comp.ItemSlotIndexes != null && idx < comp.ItemSlotIndexes.Length)
                 comp.ItemSlotIndexes[idx] = -1;
             _slots[row, col]?.SetSkill(null);
-            if (hadSkill)
+            if (hadSkill || hadItem)
             {
                 var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
                 gameNet?.SendSetSkillSlot(idx, 0);
@@ -1869,6 +1876,8 @@ public partial class StatusEffectIconUI : Panel
 
 public partial class PartyXpIconUI : Panel
 {
+    private const string PartyXpIconPath = "res://Itens/Incones/Incone de Xp.png";
+
     private int _percent;
     private Label _label;
 
@@ -1895,6 +1904,21 @@ public partial class PartyXpIconUI : Panel
             CornerRadiusTopLeft = 4,
             CornerRadiusTopRight = 4,
         });
+
+        Texture2D texture = ResourceLoader.Exists(PartyXpIconPath)
+            ? ResourceLoader.Load<Texture2D>(PartyXpIconPath)
+            : null;
+
+        var icon = new TextureRect
+        {
+            Texture = texture,
+            MouseFilter = MouseFilterEnum.Ignore,
+            ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+            Position = new Vector2(3, 3),
+            Size = new Vector2(28, 28),
+        };
+        AddChild(icon);
 
         _label = new Label
         {

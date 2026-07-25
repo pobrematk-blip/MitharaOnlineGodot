@@ -1,4 +1,4 @@
-@model WikiItemsViewModel
+@model WikiMobsViewModel
 @{
     ViewData["Title"] = "Monstros";
 }
@@ -19,27 +19,34 @@
             </form>
         </div>
 
-        @if (Model.Items.Count == 0)
+        @if (Model.Mobs.Count == 0)
         {
             <p class="empty-state">Nenhum monstro encontrado.</p>
         }
         else
         {
             <div class="wiki-mob-grid">
-                @foreach (var mob in Model.Items)
+                @foreach (var mob in Model.Mobs)
                 {
                     <a href="/Wiki/Mob/@mob.Id" class="wiki-mob-card">
-                        <div class="wiki-mob-card-header @(mob.IsElite ? "elite" : "")">
-                            <span class="wiki-mob-level">Nv. @mob.RequiredLevel</span>
-                            @if (mob.IsElite)
-                            {
-                                <span class="wiki-mob-tag elite-tag">ELITE</span>
-                            }
+                        <div class="wiki-mob-card-header @(mob.IsBoss ? "boss" : mob.IsElite ? "elite" : "")">
+                            <span class="wiki-mob-level">Nv. @mob.Level</span>
+                            @if (mob.IsBoss) { <span class="wiki-mob-tag boss-tag">BOSS</span> }
+                            else if (mob.IsElite) { <span class="wiki-mob-tag elite-tag">ELITE</span> }
                         </div>
                         <div class="wiki-mob-card-body">
-                            <div class="wiki-mob-avatar">@mob.Name[0]</div>
+                            <div class="wiki-mob-portrait">
+                                @if (!string.IsNullOrEmpty(mob.ImageUrl))
+                                {
+                                    <img src="@mob.ImageUrl" alt="@mob.Name" />
+                                }
+                                else
+                                {
+                                    <span>@mob.Name[0]</span>
+                                }
+                            </div>
                             <h4>@mob.Name</h4>
-                            <p class="text-muted">@mob.TypeName</p>
+                            <p>HP: @mob.Health | ATK: @mob.AttackDamage</p>
                         </div>
                     </a>
                 }

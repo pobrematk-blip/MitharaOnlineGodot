@@ -366,6 +366,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_UseItem:
                 HandleUseItem(peer, reader);
                 break;
+            case PacketId.C2S_SplitItemStack:
+                HandleSplitItemStack(peer, reader);
+                break;
             case PacketId.C2S_Attack:
                 HandleAttack(peer, reader);
                 break;
@@ -563,6 +566,21 @@ public partial class GameServer : INetEventListener
                 break;
             case PacketId.C2S_SceneTeleport:
                 HandleSceneTeleport(peer, reader);
+                break;
+            case PacketId.C2S_MarketplaceListRequest:
+                HandleMarketplaceListRequest(peer, reader);
+                break;
+            case PacketId.C2S_MarketplaceCreateItemListing:
+                HandleMarketplaceCreateItemListing(peer, reader);
+                break;
+            case PacketId.C2S_MarketplaceCreateGoldListing:
+                HandleMarketplaceCreateGoldListing(peer, reader);
+                break;
+            case PacketId.C2S_MarketplaceCancelListing:
+                HandleMarketplaceCancelListing(peer, reader);
+                break;
+            case PacketId.C2S_MarketplaceBuyListing:
+                HandleMarketplaceBuyListing(peer, reader);
                 break;
 
             case PacketId.C2S_MapEditorPlaceTile:
