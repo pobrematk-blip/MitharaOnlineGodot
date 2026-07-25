@@ -1,0 +1,34 @@
+using Godot;
+
+public partial class MarketplaceDropSlot : Panel
+{
+    [Signal]
+    public delegate void OnMarketplaceItemDroppedEventHandler(int inventorySlot, int quantity);
+
+    public override bool _CanDropData(Vector2 atPosition, Variant data)
+    {
+        return TryReadInventoryDrop(data, out _, out _);
+    }
+
+    public override void _DropData(Vector2 atPosition, Variant data)
+    {
+        if (TryReadInventoryDrop(data, out int inventorySlot, out int quantity))
+            EmitSignal(SignalName.OnMarketplaceItemDropped, inventorySlot, quantity);
+    }
+
+    private static bool TryReadInventoryDrop(Variant data, out int inventorySlot, out int quantity)
+    {
+        inventorySlot = -1;
+        quantity = 0;
+
+        var slot = data.AsGodotObject() as SlotUI ?? data.Obj as SlotUI;
+        if (slot?.SlotInterno?.Item != null && slot.SlotInterno.Quantidade > 0)
+        {
+            inventorySlot = slot.SlotIndex;
+            quantity = slot.SlotInterno.Quantidade;
+            return inventorySlot >= 0;
+        }
+
+        return false;
+    }
+}

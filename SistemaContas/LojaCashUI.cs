@@ -138,11 +138,13 @@ public partial class LojaCashUI : Control
             card.AddThemeStyleboxOverride("panel", MitharaUiTheme.Inner(0.74f, 5));
             card.CustomMinimumSize = CardSize;
             card.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+            card.ClipContents = true;
 
             var vbox = new VBoxContainer();
             vbox.CustomMinimumSize = CardSize;
             vbox.AddThemeConstantOverride("separation", 5);
             vbox.ThemeTypeVariation = "VBoxContainer";
+            vbox.ClipContents = true;
             card.AddChild(vbox);
 
             string nome = !string.IsNullOrEmpty(entry.NomeExibicao) ? entry.NomeExibicao : $"Item #{entry.ItemID}";
@@ -173,20 +175,27 @@ public partial class LojaCashUI : Control
             var iconContainer = new CenterContainer();
             iconContainer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             iconContainer.CustomMinimumSize = new Vector2(86, 66);
+            iconContainer.ClipContents = true;
             vbox.AddChild(iconContainer);
 
             var iconSlot = new Panel();
             iconSlot.CustomMinimumSize = new Vector2(58, 58);
+            iconSlot.Size = new Vector2(58, 58);
+            iconSlot.ClipContents = true;
             iconSlot.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
             iconContainer.AddChild(iconSlot);
 
             var iconRect = new TextureRect();
             iconRect.Texture = itemIcon;
-            iconRect.CustomMinimumSize = new Vector2(48, 48);
-            iconRect.Size = new Vector2(48, 48);
-            iconRect.Position = new Vector2(5, 5);
+            iconRect.SetAnchorsPreset(LayoutPreset.FullRect);
+            iconRect.OffsetLeft = 5;
+            iconRect.OffsetTop = 5;
+            iconRect.OffsetRight = -5;
+            iconRect.OffsetBottom = -5;
+            iconRect.CustomMinimumSize = Vector2.Zero;
             iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
             iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+            iconRect.MouseFilter = MouseFilterEnum.Ignore;
             iconSlot.AddChild(iconRect);
 
             var precoContainer = new HBoxContainer();

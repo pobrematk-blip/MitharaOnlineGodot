@@ -12,12 +12,16 @@
 <section class="content-section">
     <div class="container container-small">
         <form asp-action="Login" method="post" class="auth-form">
-                @Html.AntiForgeryToken()
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+            <p class="auth-note">
+                Use a mesma conta do jogo. O site e o jogo compartilham o mesmo cadastro para compras, vendas e personagens.
+            </p>
+
             <div class="form-group">
-                <label asp-for="Username">Usu�rio</label>
-                <input asp-for="Username" class="form-control" placeholder="Seu usu�rio" autofocus />
+                <label asp-for="Username">Usuario</label>
+                <input asp-for="Username" class="form-control" placeholder="Seu usuario do jogo" autofocus />
                 <span asp-validation-for="Username" class="text-danger"></span>
             </div>
 
@@ -36,7 +40,7 @@
 
             <button type="submit" class="btn btn-primary btn-full">Entrar</button>
 
-            <p class="auth-link">N�o tem conta? <a href="/Account/Register">Cadastre-se</a></p>
+            <p class="auth-link">Nao tem conta? <a href="/Account/Register">Cadastre-se</a></p>
         </form>
     </div>
 </section>

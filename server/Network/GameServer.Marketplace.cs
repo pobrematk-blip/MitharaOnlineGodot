@@ -10,12 +10,14 @@ partial class GameServer
 {
     private const int MarketplaceMaxGoldPricePerUnit = 1_000_000_000;
     private const int MarketplaceMaxPixCents = 10_000_000;
+    private const int MarketplaceGoldPackAmount = 1_000_000;
 
     private void HandleMarketplaceListRequest(NetPeer peer, NetDataReader reader)
     {
         string search = reader.GetString();
         int itemType = reader.GetInt();
-        SendMarketplaceList(peer, search, itemType);
+        bool ownOnly = reader.AvailableBytes >= 1 && reader.GetBool();
+        SendMarketplaceList(peer, search, itemType, ownOnly);
     }
 
     private void HandleMarketplaceCreateItemListing(NetPeer peer, NetDataReader reader)
@@ -28,6 +30,7 @@ partial class GameServer
         var currencyType = (MarketplaceCurrencyType)Math.Clamp(reader.GetInt(), 1, 2);
         int pricePerUnitGold = Math.Clamp(reader.GetInt(), 0, MarketplaceMaxGoldPricePerUnit);
         int priceTotalCents = Math.Clamp(reader.GetInt(), 0, MarketplaceMaxPixCents);
+        int durationHours = reader.AvailableBytes >= 4 ? reader.GetInt() : 24;
 
         var item = player.Items.FirstOrDefault(i => i.Slot == invSlot);
         if (item == null)
@@ -51,6 +54,7 @@ partial class GameServer
             currencyType,
             pricePerUnitGold,
             priceTotalCents,
+            durationHours,
             out _,
             out string message);
 
@@ -72,8 +76,15 @@ partial class GameServer
         if (!TryGetPlayer(peer, out var player, out _)) return;
         if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null) return;
 
-        int goldAmount = Math.Clamp(reader.GetInt(), 1, 1_000_000_000);
+        int goldAmount = reader.GetInt();
         int priceTotalCents = Math.Clamp(reader.GetInt(), 100, MarketplaceMaxPixCents);
+        int durationHours = reader.AvailableBytes >= 4 ? reader.GetInt() : 24;
+
+        if (goldAmount != MarketplaceGoldPackAmount)
+        {
+            SendMarketplaceActionResult(peer, false, "Gold so pode ser anunciado em pacote fechado de 1.000.000.");
+            return;
+        }
 
         bool ok = _db.TryCreateMarketplaceGoldListing(
             session.AccountId,
@@ -81,6 +92,7 @@ partial class GameServer
             player.Name,
             goldAmount,
             priceTotalCents,
+            durationHours,
             out _,
             out int remainingGold,
             out string message);
@@ -96,6 +108,30 @@ partial class GameServer
         SendMarketplaceActionResult(peer, ok, message);
     }
 
+    private void HandleMarketplaceClaimGold(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var player, out _)) return;
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null) return;
+
+        long listingId = reader.GetLong();
+        bool ok = _db.TryClaimMarketplaceGoldProceeds(
+            session.AccountId,
+            session.SelectedCharacter.Id,
+            listingId,
+            out int newGold,
+            out string message);
+
+        if (ok)
+        {
+            player.Gold = newGold;
+            session.SelectedCharacter.Gold = newGold;
+            SendGoldUpdate(peer, player.Gold);
+            SendMarketplaceList(peer, ownOnly: true);
+        }
+
+        SendMarketplaceActionResult(peer, ok, message);
+    }
+
     private void HandleMarketplaceCancelListing(NetPeer peer, NetDataReader reader)
     {
         if (!TryGetPlayer(peer, out var player, out _)) return;
@@ -103,13 +139,10 @@ partial class GameServer
 
         long listingId = reader.GetLong();
         int returnSlot = FindFreeInventorySlot(player);
-        if (returnSlot < 0)
-        {
-            SendMarketplaceActionResult(peer, false, "Inventario cheio. Libere espaco antes de cancelar.");
-            return;
-        }
 
         bool ok = _db.TryCancelMarketplaceListing(session.AccountId, session.SelectedCharacter.Id, listingId, returnSlot, out var listing, out string message);
+        if (!ok && message.Contains("slot", StringComparison.OrdinalIgnoreCase) && returnSlot < 0)
+            message = "Inventario cheio. Libere espaco antes de cancelar item.";
         if (ok && listing != null)
         {
             if (listing.ListingType == MarketplaceListingType.Gold)
@@ -188,17 +221,21 @@ partial class GameServer
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
-    private void SendMarketplaceList(NetPeer peer, string search = "", int itemType = -1)
+    private void SendMarketplaceList(NetPeer peer, string search = "", int itemType = -1, bool ownOnly = false)
     {
-        var listings = _db.LoadMarketplaceListings(search, itemType);
+        int sellerCharacterId = 0;
+        if (ownOnly && _sessions.TryGetValue(peer, out var session) && session.SelectedCharacter != null)
+            sellerCharacterId = session.SelectedCharacter.Id;
+
+        var listings = _db.LoadMarketplaceListings(search, itemType, sellerCharacterId: sellerCharacterId, ownOnly: ownOnly);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_MarketplaceListResult);
         writer.Put(listings.Count);
         foreach (var listing in listings)
-            WriteMarketplaceListing(writer, listing);
+            WriteMarketplaceListing(writer, listing, sellerCharacterId);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
-    private static void WriteMarketplaceListing(NetDataWriter writer, MarketplaceListing listing)
+    private static void WriteMarketplaceListing(NetDataWriter writer, MarketplaceListing listing, int viewerCharacterId)
     {
         writer.Put(listing.Id);
         writer.Put(listing.SellerName);
@@ -214,6 +251,11 @@ partial class GameServer
         writer.Put(listing.RefineLevel);
         writer.Put(listing.RollData);
         writer.Put(listing.Status);
+        writer.Put(listing.ExpiresAt.ToBinary());
+        writer.Put(listing.SellerCharacterId == viewerCharacterId);
+        writer.Put(listing.ProceedsGold);
+        writer.Put(listing.ProceedsClaimed);
+        writer.Put(listing.PaymentStatus);
     }
 
     private void SendMarketplaceActionResult(NetPeer peer, bool success, string message)

@@ -1,4 +1,4 @@
-using Mithara.Server.Entities;
+﻿using Mithara.Server.Entities;
 
 namespace Mithara.Server.World;
 
@@ -55,7 +55,7 @@ public class NpcManager
             PrefabId = "banqueiro",
             Name = "Banqueiro",
             DialogId = "banco",
-            Race = "Secretaria",
+            Race = "Banqueiro",
             AnimPrefix = "padrao",
             FactionId = "solari",
         });
@@ -63,9 +63,9 @@ public class NpcManager
         RegisterTemplate(new NpcTemplate
         {
             PrefabId = "guarda_solareth",
-            Name = "Guardião de Solareth",
+            Name = "GuardiÃ£o de Solareth",
             DialogId = "guilda",
-            Race = "Cidadão",
+            Race = "GuardiÃ£o de solaret",
             AnimPrefix = "mago",
             FactionId = "solari",
         });
@@ -86,7 +86,7 @@ public class NpcManager
             PrefabId = "refiner",
             Name = "Refinador",
             DialogId = "refino",
-            Race = "Cidadão",
+            Race = "CidadÃ£o",
             AnimPrefix = "padrao",
             FactionId = "solari",
         });
@@ -96,7 +96,7 @@ public class NpcManager
             PrefabId = "merchant_auctioneer",
             Name = "Mercador Leiloeiro",
             DialogId = "leilao",
-            Race = "Mercador",
+            Race = "Eventos",
             AnimPrefix = "padrao",
             FactionId = "solari",
         });
@@ -117,30 +117,30 @@ public class NpcManager
             Options = new List<DialogOption>
             {
                 new() { Text = "Sim, abrir banco", Action = "bank", ActionData = "open" },
-                new() { Text = "Não, depois", Action = "close" },
+                new() { Text = "NÃ£o, depois", Action = "close" },
             },
         };
 
         _dialogs["guilda"] = new DialogNode
         {
             Id = "guilda",
-            Text = "Bem-vindo, aventureiro! Já ouviu falar de Solareth? " +
-                   "Dizem que é uma terra próspera onde aventureiros audaciosos " +
-                   "fundaram sua própria guilda. Você tem coragem de começar essa jornada? " +
-                   "(Para fundar uma guilda é preciso ter 10.000 moedas de ouro " +
-                   "ou um Pergaminho de Criação de Clã.)",
+            Text = "Bem-vindo, aventureiro! JÃ¡ ouviu falar de Solareth? " +
+                   "Dizem que Ã© uma terra prÃ³spera onde aventureiros audaciosos " +
+                   "fundaram sua prÃ³pria guilda. VocÃª tem coragem de comeÃ§ar essa jornada? " +
+                   "(Para fundar uma guilda Ã© preciso ter 10.000 moedas de ouro " +
+                   "ou um Pergaminho de CriaÃ§Ã£o de ClÃ£.)",
             Options = new List<DialogOption>
             {
                 new() { Text = "Quero fundar uma guilda em Solareth!", Action = "guild_open_form", ActionData = "" },
-                new() { Text = "Ainda não estou pronto", Action = "close" },
+                new() { Text = "Ainda nÃ£o estou pronto", Action = "close" },
             },
         };
 
         _dialogs["general_merchant"] = new DialogNode
         {
             Id = "general_merchant",
-            Text = "Bem-vindo à loja geral! Compro itens de aventureiros e vendo suprimentos. " +
-                   "O que você deseja?",
+            Text = "Bem-vindo Ã  loja geral! Compro itens de aventureiros e vendo suprimentos. " +
+                   "O que vocÃª deseja?",
             Options = new List<DialogOption>
             {
                 new() { Text = "Comprar itens", Action = "shop", ActionData = "general_merchant_shop" },
@@ -163,8 +163,8 @@ public class NpcManager
         _dialogs["refino"] = new DialogNode
         {
             Id = "refino",
-            Text = "Bem-vindo à forja! Posso refinar seu equipamento para torná-lo mais poderoso. " +
-                   "Cada nível de refino aumenta os atributos do item permanentemente!",
+            Text = "Bem-vindo Ã  forja! Posso refinar seu equipamento para tornÃ¡-lo mais poderoso. " +
+                   "Cada nÃ­vel de refino aumenta os atributos do item permanentemente!",
             Options = new List<DialogOption>
             {
                 new() { Text = "Abrir Forja de Refino", Action = "open_refine", ActionData = "" },

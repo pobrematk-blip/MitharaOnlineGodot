@@ -198,6 +198,12 @@ public class DatabaseManager
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 sold_at TIMESTAMP NULL,
+                expires_at TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '24 hours'),
+                proceeds_gold INT NOT NULL DEFAULT 0,
+                proceeds_claimed SMALLINT NOT NULL DEFAULT 0,
+                mercado_pago_preference_id VARCHAR(255) NOT NULL DEFAULT '',
+                mercado_pago_payment_id VARCHAR(255) NOT NULL DEFAULT '',
+                payment_status VARCHAR(64) NOT NULL DEFAULT '',
                 FOREIGN KEY (seller_account_id) REFERENCES accounts(id) ON DELETE CASCADE,
                 FOREIGN KEY (seller_character_id) REFERENCES characters(id) ON DELETE CASCADE
             );
@@ -274,6 +280,12 @@ public class DatabaseManager
             ("characters", "barba_path", "TEXT NOT NULL DEFAULT ''"),
             ("characters", "cabelo_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
             ("characters", "barba_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
+            ("marketplace_listings", "expires_at", "TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '24 hours')"),
+            ("marketplace_listings", "proceeds_gold", "INT NOT NULL DEFAULT 0"),
+            ("marketplace_listings", "proceeds_claimed", "SMALLINT NOT NULL DEFAULT 0"),
+            ("marketplace_listings", "mercado_pago_preference_id", "VARCHAR(255) NOT NULL DEFAULT ''"),
+            ("marketplace_listings", "mercado_pago_payment_id", "VARCHAR(255) NOT NULL DEFAULT ''"),
+            ("marketplace_listings", "payment_status", "VARCHAR(64) NOT NULL DEFAULT ''"),
         };
 
         foreach (var (table, column, type) in columns)
@@ -914,18 +926,21 @@ public class DatabaseManager
         return Convert.ToBoolean(cmd.ExecuteScalar() ?? false);
     }
 
-    public List<MarketplaceListing> LoadMarketplaceListings(string search = "", int itemType = -1, int limit = 80)
+    public List<MarketplaceListing> LoadMarketplaceListings(string search = "", int itemType = -1, int limit = 80, int sellerCharacterId = 0, bool ownOnly = false)
     {
         var result = new List<MarketplaceListing>();
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
+        ExpireMarketplaceListings(conn);
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
             SELECT id, seller_account_id, seller_character_id, seller_name, listing_type, currency_type,
                    item_db_id, item_id, item_name, item_type, quantity, price_per_unit_gold,
-                   price_total_cents, gold_amount, refine_level, roll_data, status, created_at
+                   price_total_cents, gold_amount, refine_level, roll_data, status, created_at,
+                   expires_at, proceeds_gold, proceeds_claimed, mercado_pago_preference_id, mercado_pago_payment_id, payment_status
             FROM marketplace_listings
-            WHERE status IN ('active', 'pending_payment')
+            WHERE (@own = 1 OR status IN ('active', 'pending_payment'))
+              AND (@own = 0 OR seller_character_id = @seller)
               AND (@type < 0 OR item_type = @type)
               AND (@search = '' OR LOWER(item_name) LIKE LOWER(@like) OR LOWER(seller_name) LIKE LOWER(@like))
             ORDER BY created_at DESC
@@ -935,6 +950,8 @@ public class DatabaseManager
         cmd.Parameters.AddWithValue("@search", search.Trim());
         cmd.Parameters.AddWithValue("@like", "%" + search.Trim() + "%");
         cmd.Parameters.AddWithValue("@limit", Math.Clamp(limit, 1, 200));
+        cmd.Parameters.AddWithValue("@seller", sellerCharacterId);
+        cmd.Parameters.AddWithValue("@own", ownOnly ? 1 : 0);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
             result.Add(ReadMarketplaceListing(reader));
@@ -950,6 +967,7 @@ public class DatabaseManager
         MarketplaceCurrencyType currencyType,
         int pricePerUnitGold,
         int priceTotalCents,
+        int durationHours,
         out MarketplaceListing? listing,
         out string message)
     {
@@ -978,6 +996,8 @@ public class DatabaseManager
             message = "Somente jogadores VIP podem anunciar por dinheiro real.";
             return false;
         }
+
+        durationHours = NormalizeMarketplaceDuration(durationHours);
 
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
@@ -1045,9 +1065,9 @@ public class DatabaseManager
                 INSERT INTO marketplace_listings
                     (seller_account_id, seller_character_id, seller_name, listing_type, currency_type,
                      item_db_id, item_id, item_name, item_type, quantity, price_per_unit_gold,
-                     price_total_cents, refine_level, roll_data, status)
+                     price_total_cents, refine_level, roll_data, status, expires_at)
                 VALUES
-                    (@sa, @sc, @sn, @lt, @ct, @db, @ii, @name, @type, @q, @gold, @cents, @refine, @roll, 'active')
+                    (@sa, @sc, @sn, @lt, @ct, @db, @ii, @name, @type, @q, @gold, @cents, @refine, @roll, 'active', CURRENT_TIMESTAMP + (@hours * INTERVAL '1 hour'))
                 RETURNING id
                 """;
             insert.Parameters.AddWithValue("@sa", sellerAccountId);
@@ -1064,6 +1084,7 @@ public class DatabaseManager
             insert.Parameters.AddWithValue("@cents", priceTotalCents);
             insert.Parameters.AddWithValue("@refine", refineLevel);
             insert.Parameters.AddWithValue("@roll", rollData);
+            insert.Parameters.AddWithValue("@hours", durationHours);
             long listingId = Convert.ToInt64(insert.ExecuteScalar());
 
             AddMarketplaceAudit(conn, tx, listingId, sellerAccountId, sellerCharacterId, "create_item_listing",
@@ -1088,6 +1109,7 @@ public class DatabaseManager
         string sellerName,
         int goldAmount,
         int priceTotalCents,
+        int durationHours,
         out MarketplaceListing? listing,
         out int remainingGold,
         out string message)
@@ -1095,9 +1117,15 @@ public class DatabaseManager
         listing = null;
         remainingGold = 0;
         message = "";
-        if (goldAmount <= 0 || priceTotalCents < 100)
+        if (goldAmount != 1_000_000)
         {
-            message = "Quantidade de gold ou valor em PIX invalido.";
+            message = "Gold so pode ser vendido em pacote fechado de 1.000.000.";
+            return false;
+        }
+
+        if (priceTotalCents < 100)
+        {
+            message = "Valor em PIX invalido.";
             return false;
         }
 
@@ -1106,6 +1134,8 @@ public class DatabaseManager
             message = "Somente jogadores VIP podem vender gold por dinheiro real.";
             return false;
         }
+
+        durationHours = NormalizeMarketplaceDuration(durationHours);
 
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
@@ -1138,9 +1168,9 @@ public class DatabaseManager
             insert.CommandText = """
                 INSERT INTO marketplace_listings
                     (seller_account_id, seller_character_id, seller_name, listing_type, currency_type,
-                     item_name, quantity, price_total_cents, gold_amount, status)
+                     item_name, quantity, price_total_cents, gold_amount, status, expires_at)
                 VALUES
-                    (@sa, @sc, @sn, @lt, @ct, 'Gold Mithara', 1, @cents, @goldAmount, 'active')
+                    (@sa, @sc, @sn, @lt, @ct, 'Gold Mithara', 1, @cents, @goldAmount, 'active', CURRENT_TIMESTAMP + (@hours * INTERVAL '1 hour'))
                 RETURNING id
                 """;
             insert.Parameters.AddWithValue("@sa", sellerAccountId);
@@ -1150,6 +1180,7 @@ public class DatabaseManager
             insert.Parameters.AddWithValue("@ct", (short)MarketplaceCurrencyType.PixReal);
             insert.Parameters.AddWithValue("@cents", priceTotalCents);
             insert.Parameters.AddWithValue("@goldAmount", goldAmount);
+            insert.Parameters.AddWithValue("@hours", durationHours);
             long listingId = Convert.ToInt64(insert.ExecuteScalar());
 
             AddMarketplaceAudit(conn, tx, listingId, sellerAccountId, sellerCharacterId, "create_gold_listing",
@@ -1178,7 +1209,7 @@ public class DatabaseManager
         try
         {
             listing = LoadMarketplaceListingForUpdate(conn, tx, listingId);
-            if (listing == null || listing.Status != MarketplaceStatus.Active)
+            if (listing == null || (listing.Status != MarketplaceStatus.Active && listing.Status != MarketplaceStatus.PendingPayment && listing.Status != MarketplaceStatus.Expired))
             {
                 message = "Anuncio nao encontrado ou indisponivel.";
                 tx.Rollback();
@@ -1188,6 +1219,13 @@ public class DatabaseManager
             if (listing.SellerAccountId != accountId || listing.SellerCharacterId != characterId)
             {
                 message = "Este anuncio nao pertence a voce.";
+                tx.Rollback();
+                return false;
+            }
+
+            if (listing.ListingType == MarketplaceListingType.Item && returnSlot < 0)
+            {
+                message = "Inventario cheio. Libere espaco antes de cancelar item.";
                 tx.Rollback();
                 return false;
             }
@@ -1288,15 +1326,6 @@ public class DatabaseManager
                 buyerGold = Convert.ToInt32(goldResult);
             }
 
-            using (var pay = conn.CreateCommand())
-            {
-                pay.Transaction = tx;
-                pay.CommandText = "UPDATE characters SET gold = gold + @amount WHERE id = @seller";
-                pay.Parameters.AddWithValue("@seller", listing.SellerCharacterId);
-                pay.Parameters.AddWithValue("@amount", sellerReceives);
-                pay.ExecuteNonQuery();
-            }
-
             InsertInventoryItem(conn, tx, buyerCharacterId, destinationSlot, listing.ItemId, listing.Quantity, listing.RefineLevel, listing.RollData);
 
             using (var sold = conn.CreateCommand())
@@ -1308,6 +1337,8 @@ public class DatabaseManager
                         buyer_account_id = @ba,
                         buyer_character_id = @bc,
                         buyer_name = @bn,
+                        proceeds_gold = @proceeds,
+                        proceeds_claimed = 0,
                         updated_at = CURRENT_TIMESTAMP,
                         sold_at = CURRENT_TIMESTAMP
                     WHERE id = @id
@@ -1316,6 +1347,7 @@ public class DatabaseManager
                 sold.Parameters.AddWithValue("@ba", buyerAccountId);
                 sold.Parameters.AddWithValue("@bc", buyerCharacterId);
                 sold.Parameters.AddWithValue("@bn", buyerName);
+                sold.Parameters.AddWithValue("@proceeds", sellerReceives);
                 sold.ExecuteNonQuery();
             }
 
@@ -1333,6 +1365,67 @@ public class DatabaseManager
         }
     }
 
+    public bool TryClaimMarketplaceGoldProceeds(int accountId, int characterId, long listingId, out int newGold, out string message)
+    {
+        newGold = 0;
+        message = "";
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var tx = conn.BeginTransaction();
+        try
+        {
+            var listing = LoadMarketplaceListingForUpdate(conn, tx, listingId);
+            if (listing == null || listing.Status != MarketplaceStatus.Sold || listing.CurrencyType != MarketplaceCurrencyType.Gold)
+            {
+                message = "Venda em gold nao encontrada.";
+                tx.Rollback();
+                return false;
+            }
+
+            if (listing.SellerAccountId != accountId || listing.SellerCharacterId != characterId)
+            {
+                message = "Esta venda nao pertence a voce.";
+                tx.Rollback();
+                return false;
+            }
+
+            if (listing.ProceedsClaimed || listing.ProceedsGold <= 0)
+            {
+                message = "Gold desta venda ja foi retirado.";
+                tx.Rollback();
+                return false;
+            }
+
+            using (var pay = conn.CreateCommand())
+            {
+                pay.Transaction = tx;
+                pay.CommandText = "UPDATE characters SET gold = gold + @amount WHERE id = @c RETURNING gold";
+                pay.Parameters.AddWithValue("@c", characterId);
+                pay.Parameters.AddWithValue("@amount", listing.ProceedsGold);
+                newGold = Convert.ToInt32(pay.ExecuteScalar());
+            }
+
+            using (var update = conn.CreateCommand())
+            {
+                update.Transaction = tx;
+                update.CommandText = "UPDATE marketplace_listings SET proceeds_claimed = 1, updated_at = CURRENT_TIMESTAMP WHERE id = @id";
+                update.Parameters.AddWithValue("@id", listingId);
+                update.ExecuteNonQuery();
+            }
+
+            AddMarketplaceAudit(conn, tx, listingId, accountId, characterId, "claim_gold_proceeds", $"gold={listing.ProceedsGold}");
+            tx.Commit();
+            message = $"Voce retirou {listing.ProceedsGold} gold da venda.";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            tx.Rollback();
+            message = $"Falha ao retirar gold: {ex.Message}";
+            return false;
+        }
+    }
+
     private MarketplaceListing? LoadMarketplaceListing(long listingId)
     {
         using var conn = new NpgsqlConnection(_connectionString);
@@ -1341,7 +1434,8 @@ public class DatabaseManager
         cmd.CommandText = """
             SELECT id, seller_account_id, seller_character_id, seller_name, listing_type, currency_type,
                    item_db_id, item_id, item_name, item_type, quantity, price_per_unit_gold,
-                   price_total_cents, gold_amount, refine_level, roll_data, status, created_at
+                   price_total_cents, gold_amount, refine_level, roll_data, status, created_at,
+                   expires_at, proceeds_gold, proceeds_claimed, mercado_pago_preference_id, mercado_pago_payment_id, payment_status
             FROM marketplace_listings WHERE id = @id
             """;
         cmd.Parameters.AddWithValue("@id", listingId);
@@ -1356,7 +1450,8 @@ public class DatabaseManager
         cmd.CommandText = """
             SELECT id, seller_account_id, seller_character_id, seller_name, listing_type, currency_type,
                    item_db_id, item_id, item_name, item_type, quantity, price_per_unit_gold,
-                   price_total_cents, gold_amount, refine_level, roll_data, status, created_at
+                   price_total_cents, gold_amount, refine_level, roll_data, status, created_at,
+                   expires_at, proceeds_gold, proceeds_claimed, mercado_pago_preference_id, mercado_pago_payment_id, payment_status
             FROM marketplace_listings WHERE id = @id FOR UPDATE
             """;
         cmd.Parameters.AddWithValue("@id", listingId);
@@ -1386,7 +1481,38 @@ public class DatabaseManager
             RollData = reader.GetString(15),
             Status = reader.GetString(16),
             CreatedAt = reader.GetDateTime(17),
+            ExpiresAt = reader.GetDateTime(18),
+            ProceedsGold = reader.GetInt32(19),
+            ProceedsClaimed = reader.GetInt16(20) != 0,
+            MercadoPagoPreferenceId = reader.GetString(21),
+            MercadoPagoPaymentId = reader.GetString(22),
+            PaymentStatus = reader.GetString(23),
         };
+    }
+
+    private static int NormalizeMarketplaceDuration(int hours)
+    {
+        return hours switch
+        {
+            24 or 48 or 168 => hours,
+            _ => 24,
+        };
+    }
+
+    private static void ExpireMarketplaceListings(NpgsqlConnection conn)
+    {
+        try
+        {
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = """
+                UPDATE marketplace_listings
+                SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+                WHERE status IN ('active', 'pending_payment')
+                  AND expires_at <= CURRENT_TIMESTAMP
+                """;
+            cmd.ExecuteNonQuery();
+        }
+        catch { }
     }
 
     private static void InsertInventoryItem(NpgsqlConnection conn, NpgsqlTransaction tx, int characterId, int slot, int itemId, int quantity, int refineLevel, string rollData)

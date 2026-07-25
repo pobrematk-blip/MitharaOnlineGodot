@@ -2396,6 +2396,36 @@ a.wiki-drop-entry:hover {
     margin-bottom: 56px;
 }
 
+.market-alert {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.market-alert-ok {
+    border: 1px solid rgba(87, 210, 128, 0.42);
+    background: rgba(19, 78, 48, 0.5);
+    color: #b7ffd0;
+}
+
+.market-alert-error {
+    border: 1px solid rgba(255, 92, 92, 0.42);
+    background: rgba(92, 18, 24, 0.52);
+    color: #ffb3b3;
+}
+
+.auth-note {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid rgba(220, 178, 74, 0.34);
+    border-radius: 6px;
+    background: rgba(12, 12, 18, 0.78);
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
 .market-filter {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) 220px 120px;
@@ -2470,6 +2500,43 @@ a.wiki-drop-entry:hover {
 
 .market-price strong {
     color: var(--accent-gold);
+}
+
+.market-price form {
+    margin: 0;
+}
+
+.market-pix-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.market-pix-form select {
+    min-height: 34px;
+    max-width: 160px;
+}
+
+.market-buy-pix {
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid rgba(220, 178, 74, 0.45);
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(220, 178, 74, 0.95), rgba(159, 102, 31, 0.95));
+    color: #16100a;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.market-buy-pix:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+}
+
+.market-login-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
 }
 
 @media (max-width: 768px) {

@@ -12,14 +12,18 @@
 <section class="content-section">
     <div class="container container-small">
         <form asp-action="Register" method="post" class="auth-form">
-                @Html.AntiForgeryToken()
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+            <p class="auth-note">
+                Esta conta sera usada no jogo e no site. Seus personagens, compras e vendas ficam vinculados ao mesmo cadastro.
+            </p>
+
             <div class="form-group">
-                <label asp-for="Username">Usu�rio</label>
-                <input asp-for="Username" class="form-control" placeholder="Escolha um usu�rio" autofocus />
+                <label asp-for="Username">Usuario</label>
+                <input asp-for="Username" class="form-control" placeholder="Escolha um usuario" autofocus />
                 <span asp-validation-for="Username" class="text-danger"></span>
-                <small>Apenas letras, n�meros e underscore</small>
+                <small>Apenas letras, numeros e underscore</small>
             </div>
 
             <div class="form-group">
@@ -30,7 +34,7 @@
 
             <div class="form-group">
                 <label asp-for="Password">Senha</label>
-                <input asp-for="Password" class="form-control" placeholder="M�nimo 6 caracteres" />
+                <input asp-for="Password" class="form-control" placeholder="Minimo 6 caracteres" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
@@ -42,7 +46,7 @@
 
             <button type="submit" class="btn btn-primary btn-full">Criar Conta</button>
 
-            <p class="auth-link">J� tem conta? <a href="/Account/Login">Entrar</a></p>
+            <p class="auth-link">Ja tem conta? <a href="/Account/Login">Entrar</a></p>
         </form>
     </div>
 </section>

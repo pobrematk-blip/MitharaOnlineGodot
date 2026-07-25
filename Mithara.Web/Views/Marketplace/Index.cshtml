@@ -13,10 +13,19 @@
 
 <section class="market-rules">
     <strong>Regra do leilao:</strong>
-    vendas por gold pagam taxa de 20% no momento da venda. Anuncios por PIX ficam sob conferencia segura antes de qualquer entrega.
+    vendas por gold pagam taxa de 20% no momento da venda. Anuncios por PIX tambem pagam 20%, valor retido pelo servidor/site, e ficam sob conferencia segura antes de qualquer entrega.
 </section>
 
 <section class="market-panel">
+    @if (TempData["MarketplaceInfo"] is string info)
+    {
+        <div class="market-alert market-alert-ok">@info</div>
+    }
+    @if (TempData["MarketplaceError"] is string error)
+    {
+        <div class="market-alert market-alert-error">@error</div>
+    }
+
     <form method="get" class="market-filter">
         <input type="search" name="search" value="@Model.Search" placeholder="Pesquisar item ou vendedor" />
         <select name="type">
@@ -47,14 +56,15 @@
                     </div>
                     <div class="market-info">
                         <h2>
-                            @(item.ListingType == 2 ? $"{item.GoldAmount:N0} Gold" : item.ItemName)
+                            @(item.IsGoldListing ? $"{item.GoldAmount:N0} Gold" : item.ItemName)
                             @if (item.RefineLevel > 0)
                             {
                                 <span>+@item.RefineLevel</span>
                             }
                         </h2>
-                        <p>@item.ItemTypeName · Qtde. @item.Quantity</p>
+                        <p>@item.ItemTypeName - Qtde. @item.Quantity</p>
                         <p>Vendedor: @item.SellerName</p>
+                        <p>Expira em: @item.ExpiresAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
                     </div>
                     <div class="market-price">
                         @if (item.CurrencyType == 1)
@@ -66,6 +76,23 @@
                         {
                             <strong>R$ @((item.PriceTotalCents / 100m).ToString("N2"))</strong>
                             <span>PIX, sem reembolso</span>
+                            @if (Model.IsAuthenticated && Model.Characters.Count > 0)
+                            {
+                                <form asp-controller="Marketplace" asp-action="BuyPix" method="post" class="market-pix-form">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <select name="characterId" required>
+                                        @foreach (var character in Model.Characters)
+                                        {
+                                            <option value="@character.Id">@character.Name - Nv. @character.Level</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="market-buy-pix" disabled="@(!item.CanBuyWithPix)">Comprar via Mercado Pago</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <a class="market-buy-pix market-login-link" href="/Account/Login">Entrar para comprar</a>
+                            }
                         }
                     </div>
                 </article>

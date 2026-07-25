@@ -5,16 +5,17 @@ using Mithara.Network;
 
 public partial class GameNetwork
 {
-    public void SendMarketplaceListRequest(string search = "", int itemType = -1)
+    public void SendMarketplaceListRequest(string search = "", int itemType = -1, bool ownOnly = false)
     {
         _client?.SendPacket(PacketId.C2S_MarketplaceListRequest, w =>
         {
             w.Put(search ?? "");
             w.Put(itemType);
+            w.Put(ownOnly);
         });
     }
 
-    public void SendMarketplaceCreateItemListing(int invSlot, int quantity, int currencyType, int pricePerUnitGold, int priceTotalCents)
+    public void SendMarketplaceCreateItemListing(int invSlot, int quantity, int currencyType, int pricePerUnitGold, int priceTotalCents, int durationHours)
     {
         _client?.SendPacket(PacketId.C2S_MarketplaceCreateItemListing, w =>
         {
@@ -23,15 +24,17 @@ public partial class GameNetwork
             w.Put(currencyType);
             w.Put(pricePerUnitGold);
             w.Put(priceTotalCents);
+            w.Put(durationHours);
         });
     }
 
-    public void SendMarketplaceCreateGoldListing(int goldAmount, int priceTotalCents)
+    public void SendMarketplaceCreateGoldListing(int goldAmount, int priceTotalCents, int durationHours)
     {
         _client?.SendPacket(PacketId.C2S_MarketplaceCreateGoldListing, w =>
         {
             w.Put(goldAmount);
             w.Put(priceTotalCents);
+            w.Put(durationHours);
         });
     }
 
@@ -43,6 +46,11 @@ public partial class GameNetwork
     public void SendMarketplaceBuyListing(long listingId)
     {
         _client?.SendPacket(PacketId.C2S_MarketplaceBuyListing, w => w.Put(listingId));
+    }
+
+    public void SendMarketplaceClaimGold(long listingId)
+    {
+        _client?.SendPacket(PacketId.C2S_MarketplaceClaimGold, w => w.Put(listingId));
     }
 
     private void HandleOpenMarketplace(NetDataReader r)
@@ -74,6 +82,11 @@ public partial class GameNetwork
                 ["refine_level"] = r.GetInt(),
                 ["roll_data"] = r.GetString(),
                 ["status"] = r.GetString(),
+                ["expires_at"] = r.AvailableBytes >= 8 ? r.GetLong() : 0L,
+                ["is_mine"] = r.AvailableBytes >= 1 && r.GetBool(),
+                ["proceeds_gold"] = r.AvailableBytes >= 4 ? r.GetInt() : 0,
+                ["proceeds_claimed"] = r.AvailableBytes >= 1 && r.GetBool(),
+                ["payment_status"] = r.AvailableBytes > 0 ? r.GetString() : "",
             };
             listings.Add(dict);
         }

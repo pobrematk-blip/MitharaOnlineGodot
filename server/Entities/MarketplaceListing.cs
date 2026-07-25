@@ -18,6 +18,7 @@ public static class MarketplaceStatus
     public const string PendingPayment = "pending_payment";
     public const string Sold = "sold";
     public const string Cancelled = "cancelled";
+    public const string Expired = "expired";
 }
 
 public sealed class MarketplaceListing
@@ -40,4 +41,10 @@ public sealed class MarketplaceListing
     public string RollData { get; set; } = "";
     public string Status { get; set; } = MarketplaceStatus.Active;
     public DateTime CreatedAt { get; set; }
+    public DateTime ExpiresAt { get; set; }
+    public int ProceedsGold { get; set; }
+    public bool ProceedsClaimed { get; set; }
+    public string MercadoPagoPreferenceId { get; set; } = "";
+    public string MercadoPagoPaymentId { get; set; } = "";
+    public string PaymentStatus { get; set; } = "";
 }

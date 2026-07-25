@@ -67,6 +67,8 @@ builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<WikiService>(sp => new WikiService(sp.GetRequiredService<WebDbContext>(), gameConnStr));
 builder.Services.AddScoped<MarketplaceService>(_ => new MarketplaceService(gameConnStr));
+builder.Services.Configure<MercadoPagoOptions>(builder.Configuration.GetSection("MercadoPago"));
+builder.Services.AddHttpClient<MercadoPagoCheckoutService>();
 
 var app = builder.Build();
 
@@ -118,11 +120,13 @@ using (var scope = app.Services.CreateScope())
     var forumService = scope.ServiceProvider.GetRequiredService<ForumService>();
     var storeService = scope.ServiceProvider.GetRequiredService<StoreService>();
     var wikiService = scope.ServiceProvider.GetRequiredService<WikiService>();
+    var marketplaceService = scope.ServiceProvider.GetRequiredService<MarketplaceService>();
     await db.EnsureTablesCreatedAsync();
     await forumService.EnsureDefaultCategoriesAsync();
     await storeService.EnsureDefaultProductsAsync();
     await wikiService.EnsureDefaultDataAsync();
     await wikiService.EnsureMobImagesAsync();
+    await marketplaceService.EnsureMarketplacePaymentTablesAsync();
     var gameDb = app.Services.GetRequiredService<GameDbService>();
     gameDb.EnsureAdminColumn();
 }

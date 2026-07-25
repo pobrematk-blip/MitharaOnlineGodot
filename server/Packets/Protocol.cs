@@ -93,6 +93,7 @@ public enum PacketId : ushort
     C2S_MarketplaceCancelListing = 0x01A3,
     C2S_MarketplaceBuyListing = 0x01A4,
     C2S_MarketplaceCreateGoldListing = 0x01A5,
+    C2S_MarketplaceClaimGold = 0x01A6,
 
     C2S_MapEditorPlaceTile = 0x01B0,
     C2S_MapEditorRequestTiles = 0x01B1,

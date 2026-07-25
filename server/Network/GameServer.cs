@@ -576,6 +576,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_MarketplaceCreateGoldListing:
                 HandleMarketplaceCreateGoldListing(peer, reader);
                 break;
+            case PacketId.C2S_MarketplaceClaimGold:
+                HandleMarketplaceClaimGold(peer, reader);
+                break;
             case PacketId.C2S_MarketplaceCancelListing:
                 HandleMarketplaceCancelListing(peer, reader);
                 break;
