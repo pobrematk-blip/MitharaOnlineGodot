@@ -36,6 +36,18 @@ public class GameDbService
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
+    private static string HashToken(string token)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static string GenerateResetToken()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(32);
+        return Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+    }
+
     public (int? id, string? error) CreateAccount(string username, string email, string password)
     {
         using var conn = CreateConnection();
@@ -78,6 +90,99 @@ public class GameDbService
             return (null, "Usu\u00E1rio ou senha inv\u00E1lidos.");
 
         return (reader.GetInt32(0), null);
+    }
+
+    public (string token, string email, string username)? CreatePasswordResetRequest(string usernameOrEmail)
+    {
+        using var conn = CreateConnection();
+
+        using var find = conn.CreateCommand();
+        find.CommandText = """
+            SELECT id, username, email
+            FROM accounts
+            WHERE LOWER(username) = LOWER(@v) OR LOWER(email) = LOWER(@v)
+            LIMIT 1
+            """;
+        find.Parameters.AddWithValue("@v", usernameOrEmail.Trim());
+
+        using var reader = find.ExecuteReader();
+        if (!reader.Read())
+            return null;
+
+        int accountId = reader.GetInt32(0);
+        string username = reader.GetString(1);
+        string email = reader.GetString(2);
+        reader.Close();
+
+        string token = GenerateResetToken();
+        string tokenHash = HashToken(token);
+
+        using var revoke = conn.CreateCommand();
+        revoke.CommandText = """
+            UPDATE account_password_resets
+            SET used_at = NOW()
+            WHERE account_id = @a AND used_at IS NULL
+            """;
+        revoke.Parameters.AddWithValue("@a", accountId);
+        revoke.ExecuteNonQuery();
+
+        using var insert = conn.CreateCommand();
+        insert.CommandText = """
+            INSERT INTO account_password_resets (account_id, token_hash, expires_at)
+            VALUES (@a, @t, NOW() + INTERVAL '30 minutes')
+            """;
+        insert.Parameters.AddWithValue("@a", accountId);
+        insert.Parameters.AddWithValue("@t", tokenHash);
+        insert.ExecuteNonQuery();
+
+        return (token, email, username);
+    }
+
+    public bool ResetPasswordWithToken(string token, string newPassword)
+    {
+        if (string.IsNullOrWhiteSpace(token) || newPassword.Length < 6)
+            return false;
+
+        using var conn = CreateConnection();
+        using var tx = conn.BeginTransaction();
+
+        using var find = conn.CreateCommand();
+        find.Transaction = tx;
+        find.CommandText = """
+            SELECT id, account_id
+            FROM account_password_resets
+            WHERE token_hash = @t
+              AND used_at IS NULL
+              AND expires_at > NOW()
+            FOR UPDATE
+            """;
+        find.Parameters.AddWithValue("@t", HashToken(token.Trim()));
+
+        using var reader = find.ExecuteReader();
+        if (!reader.Read())
+            return false;
+
+        int resetId = reader.GetInt32(0);
+        int accountId = reader.GetInt32(1);
+        reader.Close();
+
+        string salt = GenerateSalt();
+        using var updateAccount = conn.CreateCommand();
+        updateAccount.Transaction = tx;
+        updateAccount.CommandText = "UPDATE accounts SET password_hash = @p, salt = @s WHERE id = @a";
+        updateAccount.Parameters.AddWithValue("@p", HashPassword(newPassword, salt));
+        updateAccount.Parameters.AddWithValue("@s", salt);
+        updateAccount.Parameters.AddWithValue("@a", accountId);
+        updateAccount.ExecuteNonQuery();
+
+        using var markUsed = conn.CreateCommand();
+        markUsed.Transaction = tx;
+        markUsed.CommandText = "UPDATE account_password_resets SET used_at = NOW() WHERE id = @i";
+        markUsed.Parameters.AddWithValue("@i", resetId);
+        markUsed.ExecuteNonQuery();
+
+        tx.Commit();
+        return true;
     }
 
     public AccountInfo? GetAccountInfo(int accountId)
@@ -272,6 +377,30 @@ public class GameDbService
                     ALTER TABLE accounts ADD COLUMN online_character_name VARCHAR(255) NOT NULL DEFAULT '';
                 END IF;
             END $$;
+            """;
+        cmd.ExecuteNonQuery();
+    }
+
+    public void EnsurePasswordResetTables()
+    {
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            CREATE TABLE IF NOT EXISTS account_password_resets (
+                id SERIAL PRIMARY KEY,
+                account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+                token_hash VARCHAR(128) NOT NULL UNIQUE,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                expires_at TIMESTAMP NOT NULL,
+                used_at TIMESTAMP NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS ix_account_password_resets_account
+                ON account_password_resets(account_id);
+
+            CREATE INDEX IF NOT EXISTS ix_account_password_resets_valid
+                ON account_password_resets(token_hash, expires_at)
+                WHERE used_at IS NULL;
             """;
         cmd.ExecuteNonQuery();
     }

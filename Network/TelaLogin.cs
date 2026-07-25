@@ -3,6 +3,7 @@ using Godot;
 
 public partial class TelaLogin : CanvasLayer
 {
+    private const string SiteBaseUrl = "https://mithara.online";
     private LineEdit _username = null!;
     private LineEdit _password = null!;
     private Button _loginBtn = null!;
@@ -185,14 +186,14 @@ public partial class TelaLogin : CanvasLayer
             Flat = true,
             FocusMode = Control.FocusModeEnum.None,
         };
-        recuperar.Pressed += MostrarRecover;
+        recuperar.Pressed += AbrirRecuperacaoNoSite;
         view.AddChild(recuperar);
 
         _loginBtn = AddInvisibleButton(view, new Rect2(449, 792, 482, 70));
         _loginBtn.Pressed += OnLoginPressed;
 
         var criarConta = AddInvisibleButton(view, new Rect2(449, 925, 482, 70));
-        criarConta.Pressed += MostrarRegister;
+        criarConta.Pressed += AbrirCadastroNoSite;
 
         _status = CriarStatusLabel(new Rect2(434, 1005, 520, 34));
         view.AddChild(_status);
@@ -609,6 +610,18 @@ public partial class TelaLogin : CanvasLayer
         _recoverView.Visible = true;
         _recPerguntaLabel.Text = "";
         _recStatus.Text = "";
+    }
+
+    private void AbrirCadastroNoSite()
+    {
+        _status.Text = "Abrindo cadastro no site...";
+        OS.ShellOpen($"{SiteBaseUrl}/Account/Register");
+    }
+
+    private void AbrirRecuperacaoNoSite()
+    {
+        _status.Text = "Abrindo recuperacao de senha no site...";
+        OS.ShellOpen($"{SiteBaseUrl}/Account/ForgotPassword");
     }
 
     private void AbrirOpcoes()

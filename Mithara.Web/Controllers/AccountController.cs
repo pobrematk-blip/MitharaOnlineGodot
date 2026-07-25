@@ -11,10 +11,14 @@ namespace Mithara.Web.Controllers;
 public class AccountController : Controller
 {
     private readonly GameDbService _gameDb;
+    private readonly EmailService _emailService;
+    private readonly ILogger<AccountController> _logger;
 
-    public AccountController(GameDbService gameDb)
+    public AccountController(GameDbService gameDb, EmailService emailService, ILogger<AccountController> logger)
     {
         _gameDb = gameDb;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public IActionResult Login()
@@ -94,6 +98,66 @@ public class AccountController : Controller
 
         TempData["Success"] = "Conta criada com sucesso! Bem-vindo ao Mithara Online.";
         return RedirectToAction("Index", "Home");
+    }
+
+    public IActionResult ForgotPassword()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return RedirectToAction("Profile");
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var request = _gameDb.CreatePasswordResetRequest(model.UsernameOrEmail);
+        if (request != null)
+        {
+            string resetLink = Url.Action("ResetPassword", "Account", new { token = request.Value.token }, Request.Scheme)
+                ?? $"{Request.Scheme}://{Request.Host}/Account/ResetPassword?token={Uri.EscapeDataString(request.Value.token)}";
+            try
+            {
+                await _emailService.SendPasswordResetAsync(request.Value.email, request.Value.username, resetLink);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Falha ao enviar e-mail de recuperacao para {Email}", request.Value.email);
+            }
+        }
+
+        TempData["Success"] = "Se a conta existir, enviaremos um link de recuperacao para o e-mail cadastrado.";
+        return RedirectToAction("ForgotPassword");
+    }
+
+    public IActionResult ResetPassword(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return RedirectToAction("Login");
+
+        return View(new ResetPasswordViewModel { Token = token });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [EnableRateLimiting("auth")]
+    public IActionResult ResetPassword(ResetPasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        if (!_gameDb.ResetPasswordWithToken(model.Token, model.Password))
+        {
+            ModelState.AddModelError("", "Link invalido, expirado ou ja utilizado.");
+            return View(model);
+        }
+
+        TempData["Success"] = "Senha alterada com sucesso. Voce ja pode entrar no site e no jogo.";
+        return RedirectToAction("Login");
     }
 
     public async Task<IActionResult> Logout()

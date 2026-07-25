@@ -34,52 +34,12 @@ partial class GameServer
     private void HandleRegister(NetPeer peer, NetDataReader reader)
     {
         string username = reader.GetString();
-        string email = reader.GetString();
-        string password = reader.GetString();
-        string securityQuestion = reader.GetString();
-        string securityAnswer = reader.GetString();
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_RegisterResult);
-
-        if (!CheckRateLimit(_loginAttempts, _loginCooldowns, peer.Address.ToString(), _gameTime, out var limitMsg))
-        {
-            writer.Put(false);
-            writer.Put(limitMsg);
-            peer.Send(writer, DeliveryMethod.ReliableOrdered);
-            return;
-        }
-
-        if (username.Length < 3 || password.Length < 3)
-        {
-            writer.Put(false);
-            writer.Put("Usuario e senha devem ter pelo menos 3 caracteres.");
-            peer.Send(writer, DeliveryMethod.ReliableOrdered);
-            return;
-        }
-
-        if (!email.Contains('@') || email.Length < 6)
-        {
-            writer.Put(false);
-            writer.Put("E-mail invalido.");
-            peer.Send(writer, DeliveryMethod.ReliableOrdered);
-            return;
-        }
-
-        int? accountId = _db.CreateAccount(username, email, password, securityQuestion, securityAnswer);
-        if (accountId == null)
-        {
-            writer.Put(false);
-            writer.Put("Usuario ou e-mail ja existe.");
-        }
-        else
-        {
-            _loginAttempts.Remove(peer.Address.ToString());
-            writer.Put(true);
-            writer.Put("Conta criada com sucesso!");
-            Logger.Info($"Conta registrada: {username} / {email} (id={accountId})");
-        }
-
+        writer.Put(false);
+        writer.Put("A criacao de conta agora e feita somente pelo site oficial: https://mithara.online");
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        Logger.Info($"Registro recusado pelo jogo para '{username}'. Cadastro permitido somente pelo site.");
     }
 
     private void HandleGetSecurityQuestion(NetPeer peer, NetDataReader reader)
@@ -87,53 +47,21 @@ partial class GameServer
         string email = reader.GetString();
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_SecurityQuestion);
-        if (!email.Contains('@') || email.Length < 6)
-        {
-            writer.Put(false);
-            writer.Put("Digite um e-mail valido.");
-        }
-        else if (!_db.AccountEmailExists(email))
-        {
-            writer.Put(false);
-            writer.Put("E-mail nao encontrado.");
-        }
-        else
-        {
-            writer.Put(true);
-            writer.Put("E-mail encontrado. O envio de instrucoes por e-mail depende de SMTP configurado no servidor.");
-            Logger.Info($"Recuperacao solicitada para e-mail: {email}");
-        }
+        writer.Put(false);
+        writer.Put("Recupere sua senha pelo site oficial: https://mithara.online/Account/ForgotPassword");
+        Logger.Info($"Recuperacao recusada pelo jogo para '{email}'. Recuperacao permitida somente pelo site.");
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
     private void HandleRecoverPassword(NetPeer peer, NetDataReader reader)
     {
-        string username = reader.GetString();
-        string answer = reader.GetString();
-        string newPassword = reader.GetString();
+        _ = reader.GetString();
+        _ = reader.GetString();
+        _ = reader.GetString();
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_RecoverResult);
-
-        if (newPassword.Length < 3)
-        {
-            writer.Put(false);
-            writer.Put("A nova senha deve ter pelo menos 3 caracteres.");
-            peer.Send(writer, DeliveryMethod.ReliableOrdered);
-            return;
-        }
-
-        bool ok = _db.RecoverPassword(username, answer, newPassword);
-        if (ok)
-        {
-            writer.Put(true);
-            writer.Put("Senha redefinida com sucesso!");
-            Logger.Info($"Senha recuperada: {username}");
-        }
-        else
-        {
-            writer.Put(false);
-            writer.Put("Resposta secreta invalida.");
-        }
+        writer.Put(false);
+        writer.Put("Recupere sua senha pelo site oficial: https://mithara.online/Account/ForgotPassword");
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 

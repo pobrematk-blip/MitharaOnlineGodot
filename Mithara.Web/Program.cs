@@ -68,6 +68,8 @@ builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<WikiService>(sp => new WikiService(sp.GetRequiredService<WebDbContext>(), gameConnStr));
 builder.Services.AddScoped<MarketplaceService>(_ => new MarketplaceService(gameConnStr));
 builder.Services.Configure<MercadoPagoOptions>(builder.Configuration.GetSection("MercadoPago"));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddHttpClient<MercadoPagoCheckoutService>();
 
 var app = builder.Build();
@@ -129,6 +131,7 @@ using (var scope = app.Services.CreateScope())
     await marketplaceService.EnsureMarketplacePaymentTablesAsync();
     var gameDb = app.Services.GetRequiredService<GameDbService>();
     gameDb.EnsureAdminColumn();
+    gameDb.EnsurePasswordResetTables();
 }
 
 Console.WriteLine($"Mithara Online - Site rodando em {app.Urls.FirstOrDefault() ?? "http://localhost:5000"}");
