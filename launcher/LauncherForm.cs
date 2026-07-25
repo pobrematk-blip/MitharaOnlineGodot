@@ -24,6 +24,7 @@ public sealed class LauncherForm : Form
     private readonly ProgressBar _progress = new();
     private readonly Button _playButton = new();
     private readonly Button _retryButton = new();
+    private readonly Button _shortcutButton = new();
     private UpdateManifest? _activeManifest;
 
     private string GameDirectory => Path.Combine(AppContext.BaseDirectory, "Game");
@@ -46,7 +47,11 @@ public sealed class LauncherForm : Form
         Font = new Font("Segoe UI", 10f);
 
         BuildInterface();
-        Shown += async (_, _) => await CheckAndUpdateAsync();
+        Shown += async (_, _) =>
+        {
+            TryCreateDesktopShortcut(silent: true);
+            await CheckAndUpdateAsync();
+        };
         FormClosed += (_, _) => _http.Dispose();
     }
 
@@ -121,13 +126,22 @@ public sealed class LauncherForm : Form
 
         _retryButton.Text = "Verificar novamente";
         _retryButton.Location = new Point(40, 352);
-        _retryButton.Size = new Size(170, 46);
+        _retryButton.Size = new Size(165, 46);
         _retryButton.BackColor = Color.FromArgb(24, 25, 35);
         _retryButton.ForeColor = Color.White;
         _retryButton.FlatStyle = FlatStyle.Flat;
         _retryButton.FlatAppearance.BorderColor = Color.FromArgb(126, 97, 47);
         _retryButton.Enabled = false;
         _retryButton.Click += async (_, _) => await CheckAndUpdateAsync();
+
+        _shortcutButton.Text = "Criar atalho";
+        _shortcutButton.Location = new Point(220, 352);
+        _shortcutButton.Size = new Size(145, 46);
+        _shortcutButton.BackColor = Color.FromArgb(24, 25, 35);
+        _shortcutButton.ForeColor = Color.White;
+        _shortcutButton.FlatStyle = FlatStyle.Flat;
+        _shortcutButton.FlatAppearance.BorderColor = Color.FromArgb(126, 97, 47);
+        _shortcutButton.Click += (_, _) => TryCreateDesktopShortcut(silent: false);
 
         _playButton.Text = "JOGAR";
         _playButton.Location = new Point(550, 352);
@@ -143,7 +157,7 @@ public sealed class LauncherForm : Form
 
         Controls.AddRange(new Control[]
         {
-            title, subtitle, separator, demoBadge, demoMessage, _status, _version, _progress, _retryButton, _playButton,
+            title, subtitle, separator, demoBadge, demoMessage, _status, _version, _progress, _retryButton, _shortcutButton, _playButton,
         });
     }
 
@@ -348,6 +362,39 @@ public sealed class LauncherForm : Form
         return stream is null ? null : (Icon)new Icon(stream).Clone();
     }
 
+    private void TryCreateDesktopShortcut(bool silent)
+    {
+        try
+        {
+            string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            string shortcutPath = Path.Combine(desktop, "Mithara Online.lnk");
+            string launcherPath = Application.ExecutablePath;
+
+            if (silent && File.Exists(shortcutPath))
+                return;
+
+            Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
+            if (shellType == null)
+                throw new InvalidOperationException("Criador de atalhos do Windows indisponivel.");
+
+            dynamic shell = Activator.CreateInstance(shellType)!;
+            dynamic shortcut = shell.CreateShortcut(shortcutPath);
+            shortcut.TargetPath = launcherPath;
+            shortcut.WorkingDirectory = AppContext.BaseDirectory;
+            shortcut.IconLocation = $"{launcherPath},0";
+            shortcut.Description = "Atualizar e jogar Mithara Online";
+            shortcut.Save();
+
+            if (!silent)
+                _status.Text = "Atalho criado na Area de Trabalho.";
+        }
+        catch (Exception ex)
+        {
+            if (!silent)
+                _status.Text = $"Nao foi possivel criar o atalho: {ex.Message}";
+        }
+    }
+
     private async Task<T?> GetJsonAsync<T>(string url)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -391,6 +438,7 @@ public sealed class LauncherForm : Form
     private void SetBusy(bool busy)
     {
         _retryButton.Enabled = !busy;
+        _shortcutButton.Enabled = !busy;
         if (busy) _playButton.Enabled = false;
         UseWaitCursor = busy;
     }
