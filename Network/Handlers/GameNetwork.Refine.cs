@@ -5,12 +5,13 @@ using Mithara.Network;
 
 partial class GameNetwork
 {
-    public void SendRefineItem(int slot, int itemId)
+    public void SendRefineItem(int slot, int itemId, int protectionSlot = -1)
     {
         _client?.SendPacket(PacketId.C2S_RefineItem, w =>
         {
             w.Put(slot);
             w.Put(itemId);
+            w.Put(protectionSlot);
         });
     }
 

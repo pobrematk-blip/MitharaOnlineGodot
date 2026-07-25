@@ -11,13 +11,14 @@ partial class GameServer
     private static ItemDefinition? GetItemDef(int id) => ItemDefinitions.Get(id);
     private const float NpcInteractionRange = 180f;
 
-    private static bool IsNearNpc(Channel channel, Entity player, string prefabId)
+    private static bool IsNearNpc(Channel channel, Entity player, string prefabId, string currentMap)
     {
         float maxDistanceSq = NpcInteractionRange * NpcInteractionRange;
         return channel.GetAllEntities().Values
             .OfType<NPCEntity>()
             .Any(npc => npc.Health > 0
                 && npc.PrefabId == prefabId
+                && string.Equals(NormalizeMapName(npc.Map), NormalizeMapName(currentMap), StringComparison.OrdinalIgnoreCase)
                 && ((npc.X - player.X) * (npc.X - player.X)
                     + (npc.Y - player.Y) * (npc.Y - player.Y)) <= maxDistanceSq);
     }
@@ -29,6 +30,8 @@ partial class GameServer
             Logger.Info("HandleNpcInteract: TryGetPlayer falhou");
             return;
         }
+        if (!_sessions.TryGetValue(peer, out var session))
+            return;
 
         ulong npcEntityId = reader.GetULong();
         Logger.Info($"HandleNpcInteract: npcEntityId={npcEntityId} player={player.Name} pos=({player.X},{player.Y})");
@@ -42,6 +45,11 @@ partial class GameServer
         if (npcEntity.Health <= 0)
         {
             Logger.Info($"NPC {npcEntity.Name} esta morto");
+            return;
+        }
+        if (!IsEntityVisibleToSession(npcEntity, session))
+        {
+            Logger.Info($"NPC {npcEntity.Name} ignorado: mapa do jogador={session.CurrentMap}, mapa do NPC={npcEntity.Map}");
             return;
         }
 
@@ -95,6 +103,7 @@ partial class GameServer
     private void HandleNpcSelectOption(NetPeer peer, NetDataReader reader)
     {
         if (!TryGetPlayer(peer, out var player, out var channel)) return;
+        if (!_sessions.TryGetValue(peer, out var session)) return;
 
         string action = reader.GetString();
         string actionData = reader.GetString();
@@ -113,7 +122,7 @@ partial class GameServer
                 break;
 
             case "shop":
-                if (!IsNearNpc(channel, player, "general_merchant"))
+                if (!IsNearNpc(channel, player, "general_merchant", session.CurrentMap))
                 {
                     SendSystemMessage(peer, "Aproxime-se do General Merchante para abrir a loja.");
                     break;
@@ -132,7 +141,6 @@ partial class GameServer
                 break;
 
             case "bank":
-                if (!_sessions.TryGetValue(peer, out var session)) return;
                 var ch = session.SelectedCharacter;
                 if (ch == null) return;
                 int bankGold = ch.BankGold;
@@ -166,7 +174,7 @@ partial class GameServer
                 break;
 
             case "merchant_sell":
-                if (!IsNearNpc(channel, player, "general_merchant"))
+                if (!IsNearNpc(channel, player, "general_merchant", session.CurrentMap))
                 {
                     SendSystemMessage(peer, "Aproxime-se do General Merchante para vender itens.");
                     break;
@@ -177,7 +185,7 @@ partial class GameServer
                 break;
 
             case "open_refine":
-                bool nearRefiner = IsNearNpc(channel, player, "refiner");
+                bool nearRefiner = IsNearNpc(channel, player, "refiner", session.CurrentMap);
 
                 if (!nearRefiner)
                 {
@@ -190,7 +198,7 @@ partial class GameServer
                 break;
 
             case "leilao_list":
-                if (!IsNearNpc(channel, player, "merchant_auctioneer"))
+                if (!IsNearNpc(channel, player, "merchant_auctioneer", session.CurrentMap))
                 {
                     SendSystemMessage(peer, "Aproxime-se do Mercador Leiloeiro para ver os itens.");
                     break;
@@ -200,7 +208,7 @@ partial class GameServer
                 break;
 
             case "marketplace_open":
-                if (!IsNearNpc(channel, player, "merchant_auctioneer"))
+                if (!IsNearNpc(channel, player, "merchant_auctioneer", session.CurrentMap))
                 {
                     SendSystemMessage(peer, "Aproxime-se do Mercador Leiloeiro para abrir o mercado.");
                     break;
@@ -219,12 +227,13 @@ partial class GameServer
     private void HandleNpcBuyItem(NetPeer peer, NetDataReader reader)
     {
         if (!TryGetPlayer(peer, out var player, out var channel)) return;
+        if (!_sessions.TryGetValue(peer, out var session)) return;
 
         string shopId = reader.GetString();
         int itemId = reader.GetInt();
         int quantity = reader.GetInt();
 
-        if (!IsNearNpc(channel, player, "general_merchant"))
+        if (!IsNearNpc(channel, player, "general_merchant", session.CurrentMap))
         {
             SendNpcBuyResult(peer, false, "Você está longe do General Merchante.");
             return;
@@ -270,16 +279,16 @@ partial class GameServer
             return;
         }
 
-        if (!_sessions.TryGetValue(peer, out var buySession) || buySession.SelectedCharacter == null)
+        if (session.SelectedCharacter == null)
             return;
-        if (!TryAddItemToInventory(player, buySession.SelectedCharacter.Id, itemId, quantity))
+        if (!TryAddItemToInventory(player, session.SelectedCharacter.Id, itemId, quantity))
         {
             SendNpcBuyResult(peer, false, "Inventário cheio.");
             return;
         }
 
         player.Gold -= totalCost;
-        _db.SaveCharacterGold(buySession.SelectedCharacter.Id, player.Gold);
+        _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
 
         if (entry.Stock > 0)
             entry.Stock -= quantity;
@@ -292,11 +301,12 @@ partial class GameServer
     private void HandleNpcSellItem(NetPeer peer, NetDataReader reader)
     {
         if (!TryGetPlayer(peer, out var player, out var channel)) return;
+        if (!_sessions.TryGetValue(peer, out var session)) return;
 
         int slot = reader.GetInt();
         int quantity = reader.GetInt();
 
-        if (!IsNearNpc(channel, player, "general_merchant"))
+        if (!IsNearNpc(channel, player, "general_merchant", session.CurrentMap))
         {
             SendNpcSellResult(peer, false, "Você está longe do General Merchante.");
             return;

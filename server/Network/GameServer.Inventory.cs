@@ -1369,7 +1369,7 @@ partial class GameServer
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 
-    private static readonly int[] RefineSuccessRates = { 100, 80, 70, 60, 50, 40, 30, 20, 10, 5 };
+    private static readonly int[] RefineSuccessRates = { 100, 90, 80, 70, 60, 35, 25, 15, 8, 3 };
 
     private void HandleRefineItem(NetPeer peer, NetDataReader reader)
     {
@@ -1380,6 +1380,16 @@ partial class GameServer
 
         int slot = reader.GetInt();
         int itemId = reader.GetInt();
+        int protectionSlot = reader.AvailableBytes >= 4 ? reader.GetInt() : -1;
+
+        if (HandleRefineItemV2(peer, player, channel, session, slot, itemId, protectionSlot))
+            return;
+
+        if (!IsNearNpc(channel, player, "refiner", session.CurrentMap))
+        {
+            SendRefineResult(peer, false, 0, "Aproxime-se do Refinador para usar a forja.");
+            return;
+        }
 
         var item = player.Items.FirstOrDefault(i => i.Slot == slot && i.ItemId == itemId);
         if (item == null)
@@ -1466,6 +1476,181 @@ partial class GameServer
         SendInventoryData(peer, player);
         SendGoldUpdate(peer, player.Gold);
     }
+
+    private bool HandleRefineItemV2(
+        NetPeer peer,
+        PlayerEntity player,
+        Channel channel,
+        PlayerSession session,
+        int slot,
+        int itemId,
+        int protectionSlot)
+    {
+        if (!IsNearNpc(channel, player, "refiner", session.CurrentMap))
+        {
+            SendRefineResult(peer, false, 0, "Aproxime-se do Refinador para usar a forja.");
+            return true;
+        }
+
+        var item = player.Items.FirstOrDefault(i => i.Slot == slot && i.ItemId == itemId);
+        if (item == null)
+        {
+            SendRefineResult(peer, false, 0, "Item nao encontrado no inventario.");
+            return true;
+        }
+
+        var def = ItemDefinitions.Get(itemId);
+        if (def == null)
+        {
+            SendRefineResult(peer, false, 0, "Item invalido.");
+            return true;
+        }
+
+        int type = (int)def.Type;
+        if (type < 1 || type > 13)
+        {
+            SendRefineResult(peer, false, 0, "Este item nao pode ser refinado.");
+            return true;
+        }
+
+        if (item.RefineLevel >= 10)
+        {
+            SendRefineResult(peer, false, item.RefineLevel, "Item ja esta no nivel maximo (+10).");
+            return true;
+        }
+
+        var cost = GetRefineCost(def, item.RefineLevel);
+        if (player.Gold < cost.GoldCost)
+        {
+            SendRefineResult(peer, false, item.RefineLevel, $"Gold insuficiente. Necessario: {cost.GoldCost}");
+            return true;
+        }
+
+        int materialTotal = player.Items
+            .Where(i => i.ItemId == cost.MaterialItemId)
+            .Sum(i => i.Quantity);
+
+        if (materialTotal < cost.MaterialCost)
+        {
+            SendRefineResult(peer, false, item.RefineLevel, $"{cost.MaterialName} insuficiente. Necessario: {cost.MaterialCost}");
+            return true;
+        }
+
+        ItemInstance? protectionItem = null;
+        if (protectionSlot >= 0)
+        {
+            protectionItem = player.Items.FirstOrDefault(i => i.Slot == protectionSlot
+                && i.ItemId == ItemDefinitions.OrbeSeguranca
+                && i.Quantity > 0);
+            if (protectionItem == null)
+            {
+                SendRefineResult(peer, false, item.RefineLevel, "Orbe de Seguranca invalida.");
+                return true;
+            }
+        }
+
+        bool success = Random.Shared.Next(100) < cost.Chance;
+
+        player.Gold -= cost.GoldCost;
+        _db.SaveCharacterGold(session.SelectedCharacter!.Id, player.Gold);
+        ConsumeRefineInventoryItem(player, session.SelectedCharacter.Id, cost.MaterialItemId, cost.MaterialCost);
+
+        if (success)
+        {
+            item.RefineLevel++;
+        }
+        else if (protectionItem != null)
+        {
+            ConsumeRefineInventoryItem(player, session.SelectedCharacter.Id, protectionItem, 1);
+        }
+        else if (item.RefineLevel > 0)
+        {
+            item.RefineLevel--;
+        }
+
+        _db.SaveItem(session.SelectedCharacter.Id, item);
+        RecalculatePlayerStats(player);
+        player.Health = Math.Min(player.Health, player.MaxHealth);
+        player.Mana = Math.Min(player.Mana, player.MaxMana);
+        SendStatUpdate(peer, player);
+
+        SendRefineResult(peer, success, item.RefineLevel, success
+            ? "Refino bem-sucedido!"
+            : protectionItem != null
+                ? "Refino falhou. A orbe protegeu o item."
+                : "Refino falhou. O item perdeu um nivel.");
+        SendInventoryData(peer, player);
+        SendGoldUpdate(peer, player.Gold);
+        return true;
+    }
+
+    private static RefineCostInfo GetRefineCost(ItemDefinition def, int currentRefineLevel)
+    {
+        int targetLevel = currentRefineLevel + 1;
+        int itemTier = GetItemRefineTier(def);
+        int materialItemId = targetLevel <= 5 ? ItemDefinitions.PoeiraEstelar : ItemDefinitions.CristalEstelar;
+        string materialName = materialItemId == ItemDefinitions.CristalEstelar ? "Cristal Estelar" : "Poeira Estelar";
+        int goldBase = targetLevel <= 5 ? 120 : 350;
+        int materialCost = targetLevel <= 5
+            ? targetLevel + Math.Max(0, (itemTier - 1) / 2)
+            : (targetLevel - 5) * 2 + Math.Max(0, (itemTier - 1) / 2);
+
+        return new RefineCostInfo(
+            targetLevel,
+            RefineSuccessRates[Math.Min(currentRefineLevel, RefineSuccessRates.Length - 1)],
+            Math.Max(1, goldBase * targetLevel * itemTier),
+            materialItemId,
+            materialName,
+            Math.Max(1, materialCost));
+    }
+
+    private static int GetItemRefineTier(ItemDefinition def)
+    {
+        int requiredLevel = Math.Max(1, def.RequiredLevel);
+        return 1 + Math.Max(0, (requiredLevel - 1) / 10);
+    }
+
+    private void ConsumeRefineInventoryItem(PlayerEntity player, int characterId, int itemId, int quantity)
+    {
+        int remaining = quantity;
+        foreach (var item in player.Items.Where(i => i.ItemId == itemId).OrderBy(i => i.Slot).ToList())
+        {
+            if (remaining <= 0)
+                break;
+
+            int take = Math.Min(remaining, item.Quantity);
+            ConsumeRefineInventoryItem(player, characterId, item, take);
+            remaining -= take;
+        }
+    }
+
+    private void ConsumeRefineInventoryItem(PlayerEntity player, int characterId, ItemInstance item, int quantity)
+    {
+        if (quantity <= 0)
+            return;
+
+        item.Quantity -= quantity;
+        if (item.Quantity <= 0)
+        {
+            player.Items.Remove(item);
+            if (item.DbId > 0)
+                _db.DeleteItem(characterId, item.DbId);
+            else
+                _db.DeleteItemBySlot(characterId, item.Slot);
+        }
+        else
+        {
+            _db.SaveItem(characterId, item);
+        }
+    }
+
+    private readonly record struct RefineCostInfo(
+        int TargetLevel,
+        int Chance,
+        int GoldCost,
+        int MaterialItemId,
+        string MaterialName,
+        int MaterialCost);
 
     private void SendRefineResult(NetPeer peer, bool success, int newLevel, string message)
     {

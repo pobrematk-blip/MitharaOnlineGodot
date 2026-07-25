@@ -22,6 +22,8 @@ public partial class SlotUI : Control
     private ColorRect _fundoEscuro;
     private ColorRect _rarityGlow;
     private const float IconPadding = 2f;
+    private static readonly Color SlotBackgroundEmpty = Color.FromHtml("#030610f2");
+    private static readonly Color SlotBackgroundFilled = Color.FromHtml("#07101cf7");
 
     public SlotInventario SlotInterno { get; private set; }
     public int SlotIndex { get; set; }
@@ -85,14 +87,22 @@ public partial class SlotUI : Control
         _fundoEscuro = new ColorRect();
         _fundoEscuro.Name = "FundoEscuro";
         _fundoEscuro.MouseFilter = MouseFilterEnum.Ignore;
-        _fundoEscuro.Size = new Vector2(42, 42);
-        _fundoEscuro.Position = new Vector2(0, 0);
         _fundoEscuro.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
         _fundoEscuro.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-        _fundoEscuro.Color = new Color(0.06f, 0.06f, 0.08f, 0.85f);
+        _fundoEscuro.Color = SlotBackgroundEmpty;
 
         AddChild(_fundoEscuro);
         MoveChild(_fundoEscuro, 0);
+        AtualizarDimensoesFundo();
+    }
+
+    private void AtualizarDimensoesFundo()
+    {
+        if (_fundoEscuro == null) return;
+
+        Vector2 slotSize = ObterTamanhoSlot();
+        _fundoEscuro.Position = Vector2.Zero;
+        _fundoEscuro.Size = slotSize;
     }
 
     private void AtualizarGlow(ItemResource item)
@@ -256,6 +266,8 @@ public partial class SlotUI : Control
 
         Visible = true;
         _icone.Visible = true;
+        if (_fundoEscuro != null)
+            _fundoEscuro.Color = slotLogico?.Item == null ? SlotBackgroundEmpty : SlotBackgroundFilled;
 
         if (slotLogico == null || slotLogico.Item == null)
         {
@@ -314,6 +326,13 @@ public partial class SlotUI : Control
 
     public override void _Notification(int what)
     {
+        if (what == NotificationResized)
+        {
+            AtualizarDimensoesFundo();
+            AtualizarDimensoesIcone();
+            return;
+        }
+
         if (what != NotificationDragEnd || !_draggingFromThisSlot)
             return;
 

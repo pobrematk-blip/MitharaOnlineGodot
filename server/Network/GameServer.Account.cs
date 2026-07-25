@@ -183,6 +183,7 @@ partial class GameServer
         if (_sessions.TryGetValue(peer, out var session))
             session.AccountId = accountId.Value;
         _activeAccounts[accountId.Value] = peer;
+        _db.UpdateAccountLastSeen(accountId.Value);
 
         var chars = _db.GetCharacters(accountId.Value);
 

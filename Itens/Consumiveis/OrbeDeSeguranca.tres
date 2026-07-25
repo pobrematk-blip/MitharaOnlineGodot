@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Fragmento Estelar.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 120
+Nome = "Orbe de Segurança"
+Descricao = "Protege o equipamento contra perda de nivel quando um refino falha."
+Icone = ExtResource("2_icon")
+Acumulavel = true
+Tipo = 17
+Valor = 500

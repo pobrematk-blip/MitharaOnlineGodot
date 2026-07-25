@@ -102,6 +102,8 @@ partial class GameServer
     private const double EspinhosTickInterval = 0.5;
     private const double EspinhosSlowDuration = 3.0;
     private const int SegundoFolegoTickCount = 5;
+    private const int SegundoFolegoFixedTotalHealth = 100;
+    private const int SegundoFolegoFixedTotalMana = 100;
     private const double SegundoFolegoTickInterval = 0.5;
     private const float BastiaoRadius = TileSize * 3f;
     private const int BastiaoMaxHits = 8;
@@ -3273,8 +3275,8 @@ partial class GameServer
 
     private void ScheduleSegundoFolegoTicks(Channel channel, PlayerEntity caster, PlayerEntity target, ServerSkillDefinition skill)
     {
-        int totalHealth = Math.Max(SegundoFolegoTickCount, (int)MathF.Round(target.MaxHealth * Math.Max(1, skill.Valor) / 100f));
-        int totalMana = Math.Max(SegundoFolegoTickCount, (int)MathF.Round(target.MaxMana * Math.Max(1, skill.Valor) / 100f));
+        int totalHealth = SegundoFolegoFixedTotalHealth;
+        int totalMana = SegundoFolegoFixedTotalMana;
         int baseHealthTick = Math.Max(1, totalHealth / SegundoFolegoTickCount);
         int baseManaTick = Math.Max(1, totalMana / SegundoFolegoTickCount);
         int healthRemainder = Math.Max(0, totalHealth - baseHealthTick * SegundoFolegoTickCount);

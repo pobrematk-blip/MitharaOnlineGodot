@@ -22,18 +22,26 @@ db.Initialize();
 db.SeedItemDefinitions();
 ItemDefinitions.LoadFromDatabase(db);
 
-if (!ItemDefinitions.Exists(ItemDefinitions.PoeiraEstelar))
+void RegisterMaterialItem(int id, string nome, int buyPrice)
 {
-    ItemDefinitions.Register(new ItemDefinition
+    if (!ItemDefinitions.Exists(id))
     {
-        Id = ItemDefinitions.PoeiraEstelar,
-        Name = "Poeira Estelar",
-        Type = ItemType.Material,
-        MaxStack = 99,
-        IsStackable = true,
-    });
-    Logger.Info("Poeira Estelar (ID 107) registrada como item built-in.");
+        ItemDefinitions.Register(new ItemDefinition
+        {
+            Id = id,
+            Name = nome,
+            Type = ItemType.Material,
+            MaxStack = 99,
+            IsStackable = true,
+            BuyPrice = buyPrice,
+        });
+        Logger.Info($"{nome} (ID {id}) registrado como item built-in.");
+    }
 }
+
+RegisterMaterialItem(ItemDefinitions.PoeiraEstelar, "Poeira Estelar", 50);
+RegisterMaterialItem(ItemDefinitions.CristalEstelar, "Cristal Estelar", 250);
+RegisterMaterialItem(ItemDefinitions.OrbeSeguranca, "Orbe de Segurança", 500);
 
 void RegisterLojinhaItem(int id, string nome)
 {

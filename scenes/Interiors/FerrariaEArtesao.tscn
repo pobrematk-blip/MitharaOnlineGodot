@@ -2728,3 +2728,7 @@ editor_description = "[Teleporte Casal] PairId=2"
 position = Vector2(117.59999, 269.2)
 PairId = 2
 DestinationOffset = Vector2(0, -32)
+
+[node name="NpcSpawn_Refinador" type="Marker2D" parent="."]
+editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao global aproximada no server_config.json: X=850, Y=470."
+position = Vector2(340, 188)

@@ -251,6 +251,7 @@ public class NpcManager
             Race = template.Race,
             AnimPrefix = template.AnimPrefix,
             FactionId = template.FactionId,
+            Map = string.IsNullOrWhiteSpace(point.Map) ? "main" : point.Map,
             X = point.X,
             Y = point.Y,
         };

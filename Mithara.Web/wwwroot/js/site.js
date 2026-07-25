@@ -56,8 +56,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!statusBox || !statusText || !snapshot) return;
         statusBox.classList.remove('offline');
         statusBox.classList.add('online');
-        statusText.textContent = snapshot.onlinePlayers + ' online | ' +
+        var names = Array.isArray(snapshot.onlinePlayerNames) ? snapshot.onlinePlayerNames : [];
+        var visibleNames = names.slice(0, 3).join(', ');
+        var extraNames = names.length > 3 ? ' +' + (names.length - 3) : '';
+        var onlineLabel = visibleNames
+            ? snapshot.onlinePlayers + ' online: ' + visibleNames + extraNames
+            : snapshot.onlinePlayers + ' online';
+        statusText.textContent = onlineLabel + ' | ' +
             snapshot.totalCharacters + ' personagens';
+        statusBox.title = names.length ? 'Online: ' + names.join(', ') : '';
     }
 
     function setStatusOffline() {

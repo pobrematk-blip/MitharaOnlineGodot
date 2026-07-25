@@ -21,7 +21,7 @@ anchors_preset = 0
 offset_left = 280.0
 offset_top = 160.0
 offset_right = 740.0
-offset_bottom = 560.0
+offset_bottom = 620.0
 mouse_filter = 2
 theme = ExtResource("3_window_theme")
 script = ExtResource("1_wmhio")
@@ -30,7 +30,7 @@ script = ExtResource("1_wmhio")
 offset_left = 0.0
 offset_top = 0.0
 offset_right = 460.0
-offset_bottom = 400.0
+offset_bottom = 460.0
 
 [node name="TituloLabel" type="Label" parent="Panel"]
 offset_left = 8.0
@@ -127,11 +127,50 @@ theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = ""
 
-[node name="InfoContainer" type="VBoxContainer" parent="Panel"]
+[node name="OrbeSlot" type="Panel" parent="Panel"]
 offset_left = 20.0
 offset_top = 176.0
+offset_right = 62.0
+offset_bottom = 218.0
+custom_minimum_size = Vector2(42, 42)
+mouse_filter = 0
+script = ExtResource("2_dropzone")
+theme_override_styles/panel = SubResource("slot_bg")
+
+[node name="OrbeIcone" type="TextureRect" parent="Panel/OrbeSlot"]
+visible = false
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 41.0
+offset_bottom = 41.0
+custom_minimum_size = Vector2(40, 40)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OrbeNome" type="Label" parent="Panel/OrbeSlot"]
+offset_left = 54.0
+offset_top = 0.0
+offset_right = 400.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Orbe de Seguranca (opcional)"
+vertical_alignment = 1
+
+[node name="OrbeQtd" type="Label" parent="Panel/OrbeSlot"]
+offset_left = 54.0
+offset_top = 20.0
+offset_right = 400.0
+offset_bottom = 42.0
+theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = ""
+
+[node name="InfoContainer" type="VBoxContainer" parent="Panel"]
+offset_left = 20.0
+offset_top = 236.0
 offset_right = 440.0
-offset_bottom = 284.0
+offset_bottom = 344.0
 
 [node name="ChanceRow" type="HBoxContainer" parent="Panel/InfoContainer"]
 offset_right = 420.0
@@ -162,7 +201,7 @@ offset_right = 420.0
 offset_bottom = 80.0
 
 [node name="Label" type="Label" parent="Panel/InfoContainer/PoeiraRow"]
-text = "Custo Poeira Estelar:"
+text = "Custo Material:"
 theme_override_colors/font_color = Color(1, 1, 1, 0.8)
 
 [node name="CustoPoeira" type="Label" parent="Panel/InfoContainer/PoeiraRow"]
@@ -170,18 +209,18 @@ text = ""
 
 [node name="FeedbackLabel" type="Label" parent="Panel"]
 offset_left = 20.0
-offset_top = 296.0
+offset_top = 356.0
 offset_right = 440.0
-offset_bottom = 324.0
+offset_bottom = 384.0
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 text = ""
 
 [node name="ButtonRow" type="HBoxContainer" parent="Panel"]
 offset_left = 60.0
-offset_top = 332.0
+offset_top = 392.0
 offset_right = 400.0
-offset_bottom = 388.0
+offset_bottom = 448.0
 
 [node name="RefinarBtn" type="Button" parent="Panel/ButtonRow"]
 offset_right = 160.0

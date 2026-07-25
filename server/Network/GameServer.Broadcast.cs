@@ -93,6 +93,8 @@ partial class GameServer
 
                 var peer = ch.GetPlayerPeer(kv.Key);
                 if (peer == null) continue;
+                if (!_sessions.TryGetValue(peer, out var session)) continue;
+                if (!IsEntityVisibleToSession(entity, session)) continue;
 
                 // Send spawn regardless of distance — client handles visual culling
                 var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
@@ -125,7 +127,14 @@ partial class GameServer
 
                 var aoi = channel.GetEntitiesInAoi(playerEntity.X, playerEntity.Y);
 
-                var aoiSet = new HashSet<ulong>(aoi);
+                var aoiSet = new HashSet<ulong>();
+                foreach (ulong aoiEntityId in aoi)
+                {
+                    if (!entities.TryGetValue(aoiEntityId, out var visibleCandidate))
+                        continue;
+                    if (IsEntityVisibleToSession(visibleCandidate, session))
+                        aoiSet.Add(aoiEntityId);
+                }
 
                 // Send spawn packets for new entities entering AOI
                 foreach (var aoiEid in aoiSet)
@@ -160,6 +169,38 @@ partial class GameServer
                 FlushEntityUpdates(peer, entities, aoiSet, eid, maxPayload);
             }
         }
+    }
+
+    private bool IsEntityVisibleToSession(Entity entity, PlayerSession session)
+    {
+        return string.Equals(GetEntityMapName(entity), GetSessionMapName(session), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetEntityMapName(Entity entity)
+    {
+        if (entity is NPCEntity npc)
+            return NormalizeMapName(npc.Map);
+
+        if (entity.Type == EntityType.Player)
+        {
+            foreach (var kv in _sessions)
+            {
+                if (kv.Value.EntityId == entity.Id)
+                    return GetSessionMapName(kv.Value);
+            }
+        }
+
+        return MainSceneName;
+    }
+
+    private static string GetSessionMapName(PlayerSession session)
+    {
+        return NormalizeMapName(session.CurrentMap);
+    }
+
+    private static string NormalizeMapName(string? map)
+    {
+        return string.IsNullOrWhiteSpace(map) ? MainSceneName : map.Trim().ToLowerInvariant();
     }
 
     private static bool IsLootInAoi(LootEntity loot, float x, float y)

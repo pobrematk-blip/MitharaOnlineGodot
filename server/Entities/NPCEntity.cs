@@ -7,6 +7,7 @@ public class NPCEntity : Entity
     public string ShopId { get; set; } = "";
     public string Race { get; set; } = "";
     public string AnimPrefix { get; set; } = "";
+    public string Map { get; set; } = "main";
 
     public NPCEntity()
     {

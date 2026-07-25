@@ -18,6 +18,8 @@ public partial class LojaCashUI : Control
 
     private static readonly Vector2 WindowSize = new(640, 440);
     private static readonly Vector2 CardSize = new(126, 150);
+    private static readonly Vector2 IconSlotSize = new(58, 58);
+    private static readonly Vector2 ItemIconSize = new(44, 44);
     private static readonly string LojaDataPath = "res://SistemaContas/LojaCashData.tres";
     private static readonly string CoinIconPath = "res://Itens/Incones/loja de cash.png";
 
@@ -172,31 +174,7 @@ public partial class LojaCashUI : Control
             nomeLabel.MaxLinesVisible = 2;
             vbox.AddChild(nomeLabel);
 
-            var iconContainer = new CenterContainer();
-            iconContainer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            iconContainer.CustomMinimumSize = new Vector2(86, 66);
-            iconContainer.ClipContents = true;
-            vbox.AddChild(iconContainer);
-
-            var iconSlot = new Panel();
-            iconSlot.CustomMinimumSize = new Vector2(58, 58);
-            iconSlot.Size = new Vector2(58, 58);
-            iconSlot.ClipContents = true;
-            iconSlot.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
-            iconContainer.AddChild(iconSlot);
-
-            var iconRect = new TextureRect();
-            iconRect.Texture = itemIcon;
-            iconRect.SetAnchorsPreset(LayoutPreset.FullRect);
-            iconRect.OffsetLeft = 5;
-            iconRect.OffsetTop = 5;
-            iconRect.OffsetRight = -5;
-            iconRect.OffsetBottom = -5;
-            iconRect.CustomMinimumSize = Vector2.Zero;
-            iconRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-            iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            iconRect.MouseFilter = MouseFilterEnum.Ignore;
-            iconSlot.AddChild(iconRect);
+            vbox.AddChild(CriarIconeItem(itemIcon));
 
             var precoContainer = new HBoxContainer();
             precoContainer.Alignment = BoxContainer.AlignmentMode.Center;
@@ -268,6 +246,42 @@ public partial class LojaCashUI : Control
         return ResourceLoader.Exists(path)
             ? ResourceLoader.Load<Texture2D>(path)
             : ResourceLoader.Load<Texture2D>("res://Itens/Incones/bagitem.png");
+    }
+
+    private static Control CriarIconeItem(Texture2D itemIcon)
+    {
+        var center = new CenterContainer();
+        center.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        center.CustomMinimumSize = new Vector2(86, 66);
+        center.ClipContents = true;
+
+        var iconSlot = new PanelContainer();
+        iconSlot.CustomMinimumSize = IconSlotSize;
+        iconSlot.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+        iconSlot.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+        iconSlot.ClipContents = true;
+        iconSlot.MouseFilter = MouseFilterEnum.Ignore;
+        iconSlot.AddThemeStyleboxOverride("panel", MitharaUiTheme.Slot());
+        center.AddChild(iconSlot);
+
+        var innerCenter = new CenterContainer();
+        innerCenter.CustomMinimumSize = IconSlotSize;
+        innerCenter.ClipContents = true;
+        innerCenter.MouseFilter = MouseFilterEnum.Ignore;
+        iconSlot.AddChild(innerCenter);
+
+        var iconRect = new TextureRect();
+        iconRect.Texture = itemIcon;
+        iconRect.CustomMinimumSize = ItemIconSize;
+        iconRect.Size = ItemIconSize;
+        iconRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+        iconRect.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+        iconRect.ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional;
+        iconRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        iconRect.MouseFilter = MouseFilterEnum.Ignore;
+        innerCenter.AddChild(iconRect);
+
+        return center;
     }
 
     private void OnComprarItem(int itemId, int preco)

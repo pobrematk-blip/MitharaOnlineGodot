@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 1
 Nome = "Segundo Fôlego"
-Descricao = "O aventureiro reúne suas forças e restaura parte de sua Vida e Mana."
+Descricao = "O aventureiro reúne suas forças e restaura 100 de Vida e 100 de Mana em 5 pulsos."
 Icone = ExtResource("2_icon")
-Valor = 15
-CustoMana = 15
+Valor = 100
+CustoMana = 5
 ClasseRestrita = ""
-Cooldown = 60.0
+Cooldown = 30.0
 TargetType = 0
 EffectType = 1

@@ -78604,10 +78604,6 @@ position = Vector2(1557, 762)
 editor_description = "Spawn visual de NPC do servidor: PrefabId=general_merchant. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
 position = Vector2(710, 780)
 
-[node name="NpcSpawn_Refinador" type="Marker2D" parent="World"]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
-position = Vector2(1287, 775)
-
 [node name="NpcSpawn_Leiloeiro" type="Marker2D" parent="World"]
 editor_description = "Spawn visual de NPC do servidor: PrefabId=merchant_auctioneer. Copie esta posicao para server/server_config.json em NpcSpawnPoints."
 position = Vector2(901, 779)

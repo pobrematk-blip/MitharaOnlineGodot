@@ -1,5 +1,6 @@
 using Mithara.Web.Models.ViewModels;
 using Npgsql;
+using System.Text.RegularExpressions;
 
 namespace Mithara.Web.Services;
 
@@ -7,6 +8,8 @@ public sealed class MarketplaceService
 {
     private readonly string _connectionString;
     private const int DefaultInventorySlots = 30;
+    private static readonly object ItemIconCacheLock = new();
+    private static Dictionary<int, string>? _itemIconCache;
 
     public MarketplaceService(string connectionString)
     {
@@ -25,6 +28,7 @@ public sealed class MarketplaceService
                    status, created_at, expires_at, payment_status
             FROM marketplace_listings
             WHERE status IN ('active', 'pending_payment')
+              AND currency_type = 2
               AND expires_at > CURRENT_TIMESTAMP
               AND (@type < 0 OR item_type = @type)
               AND (@search = '' OR LOWER(item_name) LIKE LOWER(@like) OR LOWER(seller_name) LIKE LOWER(@like))
@@ -487,16 +491,135 @@ public sealed class MarketplaceService
         await cmd.ExecuteNonQueryAsync();
     }
 
+    public string? FindItemIconPath(int itemId)
+    {
+        if (itemId <= 0)
+            return null;
+
+        string? staticPath = FindStaticItemIconPath(itemId);
+        if (!string.IsNullOrWhiteSpace(staticPath))
+            return staticPath;
+
+        var cache = GetItemIconCache();
+        return cache.TryGetValue(itemId, out string? path) && File.Exists(path)
+            ? path
+            : null;
+    }
+
     private static string GetItemIconUrl(int itemId, string itemName, int listingType)
     {
         if (listingType == 2)
             return "/images/items/Moeda de Gold.png";
 
-        string safeName = itemName.Trim();
-        if (!string.IsNullOrWhiteSpace(safeName))
-            return $"/images/items/{Uri.EscapeDataString(safeName)}.png";
+        return $"/Marketplace/ItemIcon/{itemId}";
+    }
 
-        return $"/images/items/{itemId}.png";
+    private static string? FindStaticItemIconPath(int itemId)
+    {
+        foreach (string root in GetCandidateRoots())
+        {
+            foreach (string extension in new[] { ".png", ".webp", ".jpg", ".jpeg" })
+            {
+                string path = Path.Combine(root, "wwwroot", "images", "items", itemId + extension);
+                if (File.Exists(path))
+                    return path;
+            }
+        }
+
+        return null;
+    }
+
+    private static Dictionary<int, string> GetItemIconCache()
+    {
+        lock (ItemIconCacheLock)
+        {
+            _itemIconCache ??= BuildItemIconCache();
+            return _itemIconCache;
+        }
+    }
+
+    private static Dictionary<int, string> BuildItemIconCache()
+    {
+        var result = new Dictionary<int, string>();
+        foreach (string root in GetCandidateRoots().Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            string itensRoot = Path.Combine(root, "Itens");
+            if (!Directory.Exists(itensRoot))
+                continue;
+
+            foreach (string tresPath in Directory.EnumerateFiles(itensRoot, "*.tres", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    string text = File.ReadAllText(tresPath);
+                    var itemIdMatch = Regex.Match(text, @"(?m)^\s*ItemID\s*=\s*(\d+)\s*$");
+                    if (!itemIdMatch.Success || !int.TryParse(itemIdMatch.Groups[1].Value, out int itemId))
+                        continue;
+
+                    var iconRefMatch = Regex.Match(text, @"(?m)^\s*Icone\s*=\s*ExtResource\(""([^""]+)""\)\s*$");
+                    if (!iconRefMatch.Success)
+                        continue;
+
+                    string iconRef = iconRefMatch.Groups[1].Value;
+                    foreach (Match ext in Regex.Matches(text, @"\[ext_resource\s+type=""Texture2D""\s+path=""([^""]+)""\s+id=""([^""]+)""\]"))
+                    {
+                        if (!string.Equals(ext.Groups[2].Value, iconRef, StringComparison.Ordinal))
+                            continue;
+
+                        string? resolved = ResolveGodotResourcePath(root, ext.Groups[1].Value);
+                        if (!string.IsNullOrWhiteSpace(resolved) && File.Exists(resolved))
+                        {
+                            result[itemId] = resolved;
+                        }
+                        break;
+                    }
+                }
+                catch
+                {
+                    // Icone ausente nao pode derrubar a pagina do mercado.
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static string? ResolveGodotResourcePath(string root, string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return null;
+
+        if (resourcePath.StartsWith("res://", StringComparison.OrdinalIgnoreCase))
+        {
+            string relativePath = resourcePath["res://".Length..].Replace('/', Path.DirectorySeparatorChar);
+            return Path.GetFullPath(Path.Combine(root, relativePath));
+        }
+
+        return Path.GetFullPath(Path.Combine(root, resourcePath.Replace('/', Path.DirectorySeparatorChar)));
+    }
+
+    private static IEnumerable<string> GetCandidateRoots()
+    {
+        foreach (string? start in new[]
+        {
+            Environment.GetEnvironmentVariable("MITHARA_PROJECT_ROOT"),
+            Directory.GetCurrentDirectory(),
+            AppContext.BaseDirectory,
+        })
+        {
+            if (string.IsNullOrWhiteSpace(start) || !Directory.Exists(start))
+                continue;
+
+            var dir = new DirectoryInfo(start);
+            for (int i = 0; i < 8 && dir != null; i++, dir = dir.Parent)
+            {
+                if (File.Exists(Path.Combine(dir.FullName, "project.godot")) ||
+                    Directory.Exists(Path.Combine(dir.FullName, "Itens")))
+                {
+                    yield return dir.FullName;
+                }
+            }
+        }
     }
 
     private static string GetItemTypeName(int type)

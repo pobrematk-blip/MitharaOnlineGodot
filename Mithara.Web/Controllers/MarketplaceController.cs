@@ -45,6 +45,17 @@ public sealed class MarketplaceController : Controller
         });
     }
 
+    [HttpGet("Marketplace/ItemIcon/{itemId:int}")]
+    [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client)]
+    public IActionResult ItemIcon(int itemId)
+    {
+        string? path = _marketplace.FindItemIconPath(itemId);
+        if (string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
+            return NotFound();
+
+        return PhysicalFile(path, GetImageContentType(path));
+    }
+
     [Authorize]
     [HttpPost]
     public async Task<IActionResult> BuyPix(long id, int characterId, CancellationToken cancellationToken)
@@ -119,5 +130,15 @@ public sealed class MarketplaceController : Controller
         if (root.TryGetProperty("id", out var rootId))
             return rootId.ToString();
         return "";
+    }
+
+    private static string GetImageContentType(string path)
+    {
+        return Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".webp" => "image/webp",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            _ => "image/png",
+        };
     }
 }

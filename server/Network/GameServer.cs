@@ -50,7 +50,9 @@ public partial class GameServer : INetEventListener
     internal volatile bool _running;
     internal double _gameTime;
     private const double AutoSaveInterval = 60.0;
+    private const double PresenceUpdateInterval = 30.0;
     private double _lastAutoSaveTime;
+    private double _nextPresenceUpdateTime;
 
     public WorldManager World => _world;
 
@@ -169,6 +171,7 @@ public partial class GameServer : INetEventListener
         ProcessPendingAreaSkillTicks();
         ProcessActiveBastionAreas();
         ProcessActiveDuels();
+        UpdateOnlinePresence();
 
         foreach (var ch in _world.GetAllChannels())
         {
@@ -222,6 +225,30 @@ public partial class GameServer : INetEventListener
                         session.SelectedCharacter.StatPoints = player.StatPoints;
                     }
                 }
+            }
+        }
+    }
+
+    private void UpdateOnlinePresence()
+    {
+        if (_gameTime < _nextPresenceUpdateTime)
+            return;
+
+        _nextPresenceUpdateTime = _gameTime + PresenceUpdateInterval;
+
+        foreach (int accountId in _sessions.Values
+                     .Where(s => s.AccountId > 0)
+                     .Select(s => s.AccountId)
+                     .Distinct())
+        {
+            try
+            {
+                string characterName = _sessions.Values.FirstOrDefault(s => s.AccountId == accountId)?.SelectedCharacter?.Name ?? "";
+                _db.UpdateAccountLastSeen(accountId, characterName);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("UpdateOnlinePresence", ex);
             }
         }
     }

@@ -45,6 +45,8 @@ public class DatabaseManager
                 salt VARCHAR(255) NOT NULL DEFAULT '',
                 cash_balance INT NOT NULL DEFAULT 100,
                 character_slots INT NOT NULL DEFAULT 3,
+                last_seen TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
+                online_character_name VARCHAR(255) NOT NULL DEFAULT '',
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -265,6 +267,8 @@ public class DatabaseManager
             ("accounts", "salt", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "cash_balance", "INT NOT NULL DEFAULT 100"),
             ("accounts", "character_slots", "INT NOT NULL DEFAULT 3"),
+            ("accounts", "last_seen", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
+            ("accounts", "online_character_name", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("guilds", "tag", "VARCHAR(12) NOT NULL DEFAULT ''"),
             ("guilds", "emblem", "INT NOT NULL DEFAULT -1"),
             ("items", "refine_level", "INT NOT NULL DEFAULT 0"),
@@ -401,6 +405,21 @@ public class DatabaseManager
         if (hash != HashPassword(password, salt)) return null;
 
         return reader.GetInt32(0);
+    }
+
+    public void UpdateAccountLastSeen(int accountId, string onlineCharacterName = "")
+    {
+        if (accountId <= 0)
+            return;
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE accounts SET last_seen = NOW(), online_character_name = @n WHERE id = @a";
+        cmd.Parameters.AddWithValue("@a", accountId);
+        cmd.Parameters.AddWithValue("@n", onlineCharacterName ?? "");
+        cmd.ExecuteNonQuery();
     }
 
     public bool CharacterNameExists(string name)
@@ -2625,6 +2644,9 @@ public class DatabaseManager
             new() { Id = ItemDefinitions.Bolsa12Slots, Name = "Bolsa de 12 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 12, BuyPrice = 0 },
             new() { Id = ItemDefinitions.Bolsa18Slots, Name = "Bolsa de 18 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 18, BuyPrice = 0 },
             new() { Id = ItemDefinitions.Bolsa24Slots, Name = "Bolsa de 24 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 24, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.PoeiraEstelar, Name = "Poeira Estelar", Type = ItemType.Material, MaxStack = 99, IsStackable = true, BuyPrice = 50 },
+            new() { Id = ItemDefinitions.CristalEstelar, Name = "Cristal Estelar", Type = ItemType.Material, MaxStack = 99, IsStackable = true, BuyPrice = 250 },
+            new() { Id = ItemDefinitions.OrbeSeguranca, Name = "Orbe de Segurança", Type = ItemType.Material, MaxStack = 99, IsStackable = true, BuyPrice = 500 },
             new() { Id = 1000, Name = "Arco da Primeira Caçada", Type = ItemType.Weapon, RequiredLevel = 1, IsElite = false, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 1, DestrezaMin = 1, DestrezaMax = 2, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 3, BaseAttackMin = 2, BaseAttackMax = 4, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 10, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
             new() { Id = 11000, Name = "Arco da Primeira Caçada", Type = ItemType.Weapon, RequiredLevel = 1, IsElite = true, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 1, DestrezaMin = 1, DestrezaMax = 2, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 3, BaseAttackMin = 2, BaseAttackMax = 5, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 10, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
             new() { Id = 1001, Name = "Arco do Vento Verde", Type = ItemType.Weapon, RequiredLevel = 10, IsElite = false, AllowedClasses = "Arqueiro", Forca = 0, ForcaMin = 0, ForcaMax = 0, Agilidade = 0, AgilidadeMin = 0, AgilidadeMax = 0, Destreza = 5, DestrezaMin = 4, DestrezaMax = 6, Inteligencia = 0, InteligenciaMin = 0, InteligenciaMax = 0, BaseAttack = 13, BaseAttackMin = 11, BaseAttackMax = 15, Defense = 0, DefenseMin = 0, DefenseMax = 0, MagicDefenseMin = 0, MagicDefenseMax = 0, HpMin = 0, HpMax = 0, BuyPrice = 100, AffixPool = new List<string>("ChanceCritica,DanoCriticoBonus,Precisao,VelocidadeAtaque,Agilidade,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },

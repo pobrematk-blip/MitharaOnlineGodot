@@ -9,7 +9,7 @@
   "PgPort": 5432,
   "PgDatabase": "mithara_db",
   "PgUser": "mithara",
-  "PgPassword": "Tk7142536@",
+  "PgPassword": "CHANGE_ME",
   "NoMobZones": [
     {
       "Points": [
@@ -262,10 +262,10 @@
       "Enabled": true
     },
     {
-      "X": 1287,
-      "Y": 775,
+      "X": 850,
+      "Y": 470,
       "PrefabId": "refiner",
-      "Map": "main",
+      "Map": "ferrariaeartesao",
       "Direction": "down",
       "Enabled": true
     },

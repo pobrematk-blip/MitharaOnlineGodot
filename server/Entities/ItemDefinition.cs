@@ -94,6 +94,8 @@ public static class ItemDefinitions
     public const int Bolsa12Slots = 116;
     public const int Bolsa18Slots = 117;
     public const int Bolsa24Slots = 118;
+    public const int CristalEstelar = 119;
+    public const int OrbeSeguranca = 120;
 
     public static int GetLojinhaMaxSlots(int itemId) => itemId switch
     {

@@ -265,6 +265,12 @@ public class GameDbService
                 ) THEN
                     ALTER TABLE accounts ADD COLUMN last_seen TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00';
                 END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'accounts' AND column_name = 'online_character_name'
+                ) THEN
+                    ALTER TABLE accounts ADD COLUMN online_character_name VARCHAR(255) NOT NULL DEFAULT '';
+                END IF;
             END $$;
             """;
         cmd.ExecuteNonQuery();
@@ -287,11 +293,31 @@ public class GameDbService
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 
+    public List<string> GetOnlinePlayerNames()
+    {
+        var names = new List<string>();
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            SELECT DISTINCT online_character_name
+            FROM accounts
+            WHERE last_seen > NOW() - INTERVAL '5 minutes'
+              AND online_character_name <> ''
+            ORDER BY online_character_name
+            LIMIT 20
+            """;
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            names.Add(reader.GetString(0));
+        return names;
+    }
+
     public SiteStatusSnapshot GetSiteStatusSnapshot()
     {
         return new SiteStatusSnapshot
         {
             OnlinePlayers = GetOnlinePlayerCount(),
+            OnlinePlayerNames = GetOnlinePlayerNames(),
             TotalAccounts = GetTotalAccounts(),
             TotalCharacters = GetTotalCharacters(),
             TotalGuilds = GetTotalGuilds(),
