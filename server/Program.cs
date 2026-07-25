@@ -8,6 +8,7 @@ Logger.Info("=== Mithara MMO Server ===");
 Logger.Info("");
 
 var config = ConfigLoader.Load();
+ApplyEnvironmentOverrides(config);
 Logger.Info($"Porta: {config.Port}");
 Logger.Info($"Canais: {config.ChannelCount}");
 Logger.Info($"Tick Rate: {config.TickRate} Hz");
@@ -108,3 +109,23 @@ while (server.IsRunning)
 }
 
 Logger.Info("Server finalizado.");
+
+static void ApplyEnvironmentOverrides(ServerConfig config)
+{
+    string? pgHost = Environment.GetEnvironmentVariable("MITHARA_PG_HOST");
+    string? pgPort = Environment.GetEnvironmentVariable("MITHARA_PG_PORT");
+    string? pgDatabase = Environment.GetEnvironmentVariable("MITHARA_PG_DATABASE");
+    string? pgUser = Environment.GetEnvironmentVariable("MITHARA_PG_USER");
+    string? pgPassword = Environment.GetEnvironmentVariable("MITHARA_PG_PASSWORD");
+
+    if (!string.IsNullOrWhiteSpace(pgHost))
+        config.PgHost = pgHost;
+    if (int.TryParse(pgPort, out int parsedPgPort))
+        config.PgPort = parsedPgPort;
+    if (!string.IsNullOrWhiteSpace(pgDatabase))
+        config.PgDatabase = pgDatabase;
+    if (!string.IsNullOrWhiteSpace(pgUser))
+        config.PgUser = pgUser;
+    if (!string.IsNullOrWhiteSpace(pgPassword))
+        config.PgPassword = pgPassword;
+}

@@ -35,6 +35,13 @@ dotnet publish (Join-Path $root 'server\Mithara.Server.csproj') `
     -p:RestoreIgnoreFailedSources=true `
     -o $serverOut
 
+$publishedConfig = Join-Path $serverOut 'server_config.json'
+if (Test-Path -LiteralPath $publishedConfig) {
+    $json = Get-Content -LiteralPath $publishedConfig -Raw | ConvertFrom-Json
+    $json.PgPassword = 'CHANGE_ME'
+    $json | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $publishedConfig -Encoding UTF8
+}
+
 $dataOut = Join-Path $serverOut 'data'
 New-Item -ItemType Directory -Path $dataOut -Force | Out-Null
 
@@ -81,7 +88,13 @@ Como atualizar na VPS:
 3. Copie/substitua o conteudo da pasta Servidor em:
    C:\MitharaServer\Servidor
 4. Mantenha o PostgreSQL e o banco mithara_db como estao.
-5. Inicie o servidor:
+5. Configure a senha do PostgreSQL antes de iniciar:
+
+   setx MITHARA_PG_PASSWORD "SUA_SENHA_DO_POSTGRES"
+
+   Feche e abra o terminal de novo depois do setx.
+
+6. Inicie o servidor:
 
    cd C:\MitharaServer\Servidor
    dotnet Mithara.Server.dll
