@@ -864,7 +864,7 @@ public class DatabaseManager
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, item_id, slot, quantity, refine_level, roll_data FROM items WHERE character_id = @c ORDER BY slot";
+        cmd.CommandText = "SELECT id, item_id, slot, quantity, refine_level, roll_data FROM items WHERE character_id = @c AND slot < 1000 ORDER BY slot";
         cmd.Parameters.AddWithValue("@c", characterId);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -2373,7 +2373,7 @@ public class DatabaseManager
             using (var del = conn.CreateCommand())
             {
                 del.Transaction = tx;
-                del.CommandText = "DELETE FROM items WHERE character_id = @c";
+                del.CommandText = "DELETE FROM items WHERE character_id = @c AND slot < 1000";
                 del.Parameters.AddWithValue("@c", characterId);
                 del.ExecuteNonQuery();
             }
