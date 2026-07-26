@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/16.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12403
-Nome = "Nuvem Tóxica"
-Descricao = "Cria uma nuvem venenosa em uma área."
+Nome = "Nuvem TÃ³xica"
+Descricao = "Cria uma nuvem venenosa em uma Ã¡rea."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Ladino"
 Cooldown = 18
 Duracao = 6
@@ -19,11 +19,11 @@ EffectType = 24
 Especializacao = "Gatuno"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
-Tipo = "Área / Veneno"
-EfeitoPrincipal = "Causa dano contínuo em área e aplica veneno."
-DanoEscala = "Dano contínuo em área"
-BuffDebuff = "Veneno em área"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Ãrea / Veneno"
+EfeitoPrincipal = "Causa dano contÃ­nuo em Ã¡rea e aplica veneno."
+DanoEscala = "Dano contÃ­nuo em Ã¡rea"
+BuffDebuff = "Veneno em Ã¡rea"
 DuracaoTexto = "6s"
-Progressao = "Dano e duração podem escalar levemente."
+Progressao = "Dano e duraÃ§Ã£o podem escalar levemente."
 Observacoes = ""

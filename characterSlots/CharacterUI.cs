@@ -199,7 +199,7 @@ public partial class CharacterUI : Control
 
         _petDetalhesPanel = new Panel();
         _petDetalhesPanel.Name = "PetDetalhes";
-        _petDetalhesPanel.CustomMinimumSize = new Vector2(0, 160);
+        _petDetalhesPanel.CustomMinimumSize = new Vector2(0, 128);
         _petDetalhesPanel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         ((Panel)_petDetalhesPanel).AddThemeStyleboxOverride("panel", CriarPetStyle(new Color(0.02f, 0.025f, 0.036f, 0.90f), PetPanelBorder, 6, 1));
 
@@ -214,7 +214,7 @@ public partial class CharacterUI : Control
         detalhesScroll.AddChild(detalhesHBox);
 
         _petDetalhesIcone = new TextureRect();
-        _petDetalhesIcone.CustomMinimumSize = new Vector2(64, 64);
+        _petDetalhesIcone.CustomMinimumSize = new Vector2(76, 76);
         _petDetalhesIcone.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         detalhesHBox.AddChild(_petDetalhesIcone);
 
@@ -236,6 +236,7 @@ public partial class CharacterUI : Control
         _petDetalhesStats = new Label();
         _petDetalhesStats.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         _petDetalhesStats.AddThemeColorOverride("font_color", new Color(0.95f, 0.82f, 0.24f, 1f));
+        _petDetalhesStats.Visible = false;
         detalhesVBox.AddChild(_petDetalhesStats);
 
         _petDetalhesPanel.Visible = false;
@@ -311,8 +312,9 @@ public partial class CharacterUI : Control
 
             var icon = new TextureRect();
             icon.CustomMinimumSize = new Vector2(48, 48);
+            icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
             icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-            icon.Texture = entry.Recurso?.Icone;
+            icon.Texture = ObterIconePet(entry);
 
             var nome = new Label();
             nome.Text = entry.Nome;
@@ -351,9 +353,9 @@ public partial class CharacterUI : Control
 
         if (entry == null) return;
 
-        _petDetalhesIcone.Texture = entry.Recurso?.Icone;
+        _petDetalhesIcone.Texture = ObterIconePet(entry);
         _petDetalhesNome.Text = entry.Nome;
-        _petDetalhesDescricao.Text = entry.Recurso?.Descricao ?? "Sem descri??o";
+        _petDetalhesDescricao.Text = entry.Recurso?.Descricao ?? "Sem descricao";
 
         if (entry.Recurso != null)
         {
@@ -362,10 +364,18 @@ public partial class CharacterUI : Control
                 $"HP: {r.HP}  |  Dano: {r.AttackDamage}\n" +
                 $"Forca: {r.Forca}  Agilidade: {r.Agilidade}  Destreza: {r.Destreza}  Intel: {r.Inteligencia}\n" +
                 $"Velocidade: {r.Speed}  Alcance: {r.AttackRange}";
+            _petDetalhesPanel.TooltipText =
+                $"{r.Nome} | Nv. {r.Level}\n" +
+                $"Tipo: {(r.Tipo == TipoPet.Combate ? "Combate" : "Coleta")}\n" +
+                $"Vida: {r.HP} | Mana: {r.Mana} | Defesa: {r.Defense}\n" +
+                $"Dano: {r.AttackDamage} | Alcance: {r.AttackRange:0} | Cooldown: {r.AttackCooldown:0.0}s\n" +
+                $"Forca: {r.Forca} | Agilidade: {r.Agilidade} | Destreza: {r.Destreza} | Inteligencia: {r.Inteligencia}\n" +
+                $"Velocidade: {r.Speed:0} | Coleta: {r.ColetaRange:0}";
         }
         else
         {
             _petDetalhesStats.Text = "";
+            _petDetalhesPanel.TooltipText = $"{entry.Nome}\nDados do pet ainda nao carregados.";
         }
 
         _petDetalhesPanel.Visible = true;
@@ -435,7 +445,7 @@ public partial class CharacterUI : Control
             ItemID = 200 + entry.PetID,
             Nome = entry.Nome,
             Descricao = entry.Recurso?.Descricao ?? $"Pet: {entry.Nome}",
-            Icone = entry.Recurso?.Icone,
+            Icone = ObterIconePet(entry),
             Tipo = TipoEquipamento.Pet,
             Acumulavel = false,
             QuantidadeMaximaPorSlot = 1,
@@ -474,6 +484,27 @@ public partial class CharacterUI : Control
         style.CornerRadiusBottomLeft = radius;
         style.CornerRadiusBottomRight = radius;
         return style;
+    }
+
+    private static Texture2D ObterIconePet(PetColecaoComponent.PetColecaoEntry entry)
+    {
+        var recurso = entry?.Recurso;
+        if (recurso == null)
+            return null;
+
+        if (recurso.Icone != null)
+            return recurso.Icone;
+
+        if (recurso.SpriteAtlas == null)
+            return null;
+
+        float w = Mathf.Min(64f, recurso.SpriteAtlas.GetWidth());
+        float h = Mathf.Min(64f, recurso.SpriteAtlas.GetHeight());
+        return new AtlasTexture
+        {
+            Atlas = recurso.SpriteAtlas,
+            Region = new Rect2(0, 0, w, h)
+        };
     }
 
     private void OnCloseButtonPressed()

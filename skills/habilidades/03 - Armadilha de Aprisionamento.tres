@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/26.png" id="2_icon"]
@@ -7,11 +7,12 @@
 script = ExtResource("1_sk")
 SkillId = 3
 Nome = "Armadilha de Aprisionamento"
-Descricao = "Posiciona uma armadilha invisível que prende o primeiro inimigo que pisar nela."
+Descricao = "Posiciona uma armadilha invisÃ­vel que prende o primeiro inimigo que pisar nela."
 Icone = ExtResource("2_icon")
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Arqueiro"
 Cooldown = 18.0
 Duracao = 3
 TargetType = 2
 EffectType = 13
+

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/41.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 12102
 Nome = "Passo Sombrio"
-Descricao = "O Ladino avança rapidamente pelas sombras, desaparecendo da visão inimiga por poucos segundos."
+Descricao = "O Ladino avanÃ§a rapidamente pelas sombras, desaparecendo da visÃ£o inimiga por poucos segundos."
 Icone = ExtResource("2_icon")
 Valor = 5
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Ladino"
 Cooldown = 18
 Duracao = 5
@@ -21,9 +21,10 @@ NivelRequerido = 1
 Ordem = 2
 Escopo = "Universal do Ladino"
 Tipo = "Mobilidade / Invisibilidade"
-EfeitoPrincipal = "Avança até 3 tiles e fica invisível por 5 segundos. A invisibilidade quebra ao atacar."
+EfeitoPrincipal = "AvanÃ§a atÃ© 3 tiles e fica invisÃ­vel por 5 segundos. A invisibilidade quebra ao atacar."
 DanoEscala = ""
-BuffDebuff = "Invisibilidade por 5s; próximo ataque pode receber bônus de abertura."
+BuffDebuff = "Invisibilidade por 5s; prÃ³ximo ataque pode receber bÃ´nus de abertura."
 DuracaoTexto = "5s"
-Progressao = "Recarga pode reduzir levemente com nível da skill ou talentos."
-Observacoes = "Disponível apenas para as três especializações do Ladino."
+Progressao = "Recarga pode reduzir levemente com nÃ­vel da skill ou talentos."
+Observacoes = "DisponÃ­vel apenas para as trÃªs especializaÃ§Ãµes do Ladino."
+

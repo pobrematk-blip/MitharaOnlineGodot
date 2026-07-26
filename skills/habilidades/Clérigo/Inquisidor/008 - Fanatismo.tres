@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/40.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15308
 Nome = "Fanatismo"
-Descricao = "Tomado por fervor absoluto, o Inquisidor aumenta sua velocidade de conjuração e o poder de suas punições sagradas."
+Descricao = "Tomado por fervor absoluto, o Inquisidor aumenta sua velocidade de conjuraÃ§Ã£o e o poder de suas puniÃ§Ãµes sagradas."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 55
-ClasseRestrita = "Clérigo"
+CustoMana = 28
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 60
 Duracao = 15
 TargetType = 0
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Inquisidor"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff"
-EfeitoPrincipal = "Aumenta dano sagrado e velocidade de ataque/conjuração."
+EfeitoPrincipal = "Aumenta dano sagrado e velocidade de ataque/conjuraÃ§Ã£o."
 DanoEscala = ""
-BuffDebuff = "+15% → +30% dano sagrado"
+BuffDebuff = "+15% â†’ +30% dano sagrado"
 DuracaoTexto = "15s"
 Progressao = "Lv1 = +15%; Lv10 = +30%."
 Observacoes = "Buff ofensivo principal."

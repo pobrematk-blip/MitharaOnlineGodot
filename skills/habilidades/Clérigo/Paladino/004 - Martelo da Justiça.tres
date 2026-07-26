@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/27.png" id="2_icon"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15204
-Nome = "Martelo da Justiça"
-Descricao = "Um golpe pesado carregado com energia divina atinge o inimigo com tanta força que interrompe seus movimentos."
+Nome = "Martelo da JustiÃ§a"
+Descricao = "Um golpe pesado carregado com energia divina atinge o inimigo com tanta forÃ§a que interrompe seus movimentos."
 Icone = ExtResource("2_icon")
 Valor = 150
-CustoMana = 35
-ClasseRestrita = "Clérigo"
+CustoMana = 18
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 20
 Duracao = 2
 TargetType = 2
@@ -19,11 +19,11 @@ EffectType = 8
 Especializacao = "Paladino"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Controle"
 EfeitoPrincipal = "Causa dano e atordoa o alvo."
-DanoEscala = "150% → 250% do dano da arma"
+DanoEscala = "150% â†’ 250% do dano da arma"
 BuffDebuff = "Stun"
 DuracaoTexto = "2s"
 Progressao = "Lv1 = 150%; Lv10 = 250%."
-Observacoes = "Bosses são imunes ao stun; pode aplicar lentidão."
+Observacoes = "Bosses sÃ£o imunes ao stun; pode aplicar lentidÃ£o."

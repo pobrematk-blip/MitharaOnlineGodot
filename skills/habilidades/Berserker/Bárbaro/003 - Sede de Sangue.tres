@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/44.png" id="2_icon"]
@@ -7,23 +7,24 @@
 script = ExtResource("1_sk")
 SkillId = 13103
 Nome = "Sede de Sangue"
-Descricao = "O cheiro de sangue alimenta o instinto do Bárbaro. Cada golpe acertado fortalece sua vontade de continuar lutando."
+Descricao = "O cheiro de sangue alimenta o instinto do BÃ¡rbaro. Cada golpe acertado fortalece sua vontade de continuar lutando."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Berserker"
 Cooldown = 25
 Duracao = 12
 TargetType = 0
 EffectType = 3
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff / Roubo de Vida"
 EfeitoPrincipal = "Concede Roubo de Vida enquanto o buff estiver ativo."
 DanoEscala = ""
-BuffDebuff = "+5% → +15% Roubo de Vida"
+BuffDebuff = "+5% â†’ +15% Roubo de Vida"
 DuracaoTexto = "12s"
-Progressao = "Skill possui 10 níveis. Roubo de Vida escala de +5% até +15%, respeitando o cap global."
-Observacoes = "Combina muito bem com Fúria, ajudando a compensar a perda de HP por segundo."
+Progressao = "Skill possui 10 nÃ­veis. Roubo de Vida escala de +5% atÃ© +15%, respeitando o cap global."
+Observacoes = "Combina muito bem com FÃºria, ajudando a compensar a perda de HP por segundo."
+

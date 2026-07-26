@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/42.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 13201
 Nome = "Corte Devastador"
-Descricao = "O Slayer concentra toda sua força em um corte pesado, feito para rasgar armaduras e derrubar inimigos resistentes."
+Descricao = "O Slayer concentra toda sua forÃ§a em um corte pesado, feito para rasgar armaduras e derrubar inimigos resistentes."
 Icone = ExtResource("2_icon")
 Valor = 130
-CustoMana = 15
+CustoMana = 8
 ClasseRestrita = "Berserker"
 Cooldown = 6
 Duracao = 0
@@ -19,11 +19,11 @@ EffectType = 7
 Especializacao = "Slayer"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
-Tipo = "Dano Alvo Único"
-EfeitoPrincipal = "Causa dano físico alto em um único alvo."
-DanoEscala = "130% → 240% do dano da arma"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano Alvo Ãšnico"
+EfeitoPrincipal = "Causa dano fÃ­sico alto em um Ãºnico alvo."
+DanoEscala = "130% â†’ 240% do dano da arma"
 BuffDebuff = ""
-DuracaoTexto = "Instantâneo"
-Progressao = "Skill possui 10 níveis. Dano escala de 130% até 240%."
-Observacoes = "Skill principal da rotação do Slayer."
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Skill possui 10 nÃ­veis. Dano escala de 130% atÃ© 240%."
+Observacoes = "Skill principal da rotaÃ§Ã£o do Slayer."

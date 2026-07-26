@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/40.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15205
 Nome = "Aura da Coragem"
-Descricao = "Uma aura dourada envolve o Paladino e seus aliados, fortalecendo a determinação do grupo diante de qualquer ameaça."
+Descricao = "Uma aura dourada envolve o Paladino e seus aliados, fortalecendo a determinaÃ§Ã£o do grupo diante de qualquer ameaÃ§a."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 40
-ClasseRestrita = "Clérigo"
+CustoMana = 20
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 45
 Duracao = 15
 TargetType = 0
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Paladino"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff"
-EfeitoPrincipal = "Aumenta defesa dos aliados próximos."
+EfeitoPrincipal = "Aumenta defesa dos aliados prÃ³ximos."
 DanoEscala = ""
-BuffDebuff = "+5% → +15% defesas"
+BuffDebuff = "+5% â†’ +15% defesas"
 DuracaoTexto = "15s"
 Progressao = "Lv1 = +5%; Lv10 = +15%."
 Observacoes = "Buff de grupo defensivo."

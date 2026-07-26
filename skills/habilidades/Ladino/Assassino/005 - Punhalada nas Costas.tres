@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/37.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Punhalada nas Costas"
 Descricao = "Uma facada brutal nas costas que atinge pontos vitais."
 Icone = ExtResource("2_icon")
 Valor = 170
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Ladino"
 Cooldown = 10
 Duracao = 0
@@ -19,11 +19,12 @@ EffectType = 7
 Especializacao = "Assassino"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
-Tipo = "Dano / Perfuração"
-EfeitoPrincipal = "Causa alto dano e ignora parte da defesa se acertar por trás."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano / PerfuraÃ§Ã£o"
+EfeitoPrincipal = "Causa alto dano e ignora parte da defesa se acertar por trÃ¡s."
 DanoEscala = "170% do dano da arma"
-BuffDebuff = "Ignora 20% da Defesa Física quando usado pelas costas."
+BuffDebuff = "Ignora 20% da Defesa FÃ­sica quando usado pelas costas."
 DuracaoTexto = ""
-Progressao = "Lv1 170% → Lv10 320%; ignorar defesa 20% → 35%"
-Observacoes = "Skill central da árvore Assassino."
+Progressao = "Lv1 170% â†’ Lv10 320%; ignorar defesa 20% â†’ 35%"
+Observacoes = "Skill central da Ã¡rvore Assassino."
+

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/44.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 12409
 Nome = "Praga do Submundo"
-Descricao = "Espalha uma praga tóxica devastadora que corrói os inimigos afetados."
+Descricao = "Espalha uma praga tÃ³xica devastadora que corrÃ³i os inimigos afetados."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 80
+CustoMana = 40
 ClasseRestrita = "Ladino"
 Cooldown = 120
 Duracao = 10
@@ -19,11 +19,11 @@ EffectType = 1
 Especializacao = "Gatuno"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
-EfeitoPrincipal = "Aplica veneno poderoso em área e reduz cura recebida."
-DanoEscala = "Dano contínuo massivo em área"
-BuffDebuff = "Veneno forte + redução de cura"
+EfeitoPrincipal = "Aplica veneno poderoso em Ã¡rea e reduz cura recebida."
+DanoEscala = "Dano contÃ­nuo massivo em Ã¡rea"
+BuffDebuff = "Veneno forte + reduÃ§Ã£o de cura"
 DuracaoTexto = "10s"
-Progressao = "Lv1 forte → Lv5 muito forte"
-Observacoes = "Ultimate da árvore."
+Progressao = "Lv1 forte â†’ Lv5 muito forte"
+Observacoes = "Ultimate da Ã¡rvore."

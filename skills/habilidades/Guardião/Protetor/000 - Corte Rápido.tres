@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/5.png" id="1_0etr5"]
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14100
-Nome = "Corte Rápido"
-Descricao = "O Guardião executa um único corte veloz contra o alvo, causando dano imediato."
+Nome = "Corte RÃ¡pido"
+Descricao = "O GuardiÃ£o executa um Ãºnico corte veloz contra o alvo, causando dano imediato."
 Icone = ExtResource("1_0etr5")
-CustoMana = 15
-ClasseRestrita = "Guardião"
+CustoMana = 8
+ClasseRestrita = "GuardiÃ£o"
 EfeitoVisualPath = "res://skills/Animacao/8a.png"
 CenaEfeitoNoAlvo = "res://skills/Animacao/8a.png"
 Cooldown = 6.0
@@ -18,10 +18,11 @@ TargetType = 2
 EffectType = 7
 Especializacao = "Protetor"
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Dano"
-EfeitoPrincipal = "Causa dano direto em alvo único com um corte rápido."
+EfeitoPrincipal = "Causa dano direto em alvo Ãºnico com um corte rÃ¡pido."
 DanoEscala = "120% do ataque"
-DuracaoTexto = "Instantâneo"
-Progressao = "Aumenta o dano por nível."
-Observacoes = "Substitui Segundo Fôlego dentro da rota Protetor."
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Aumenta o dano por nÃ­vel."
+Observacoes = "Substitui Segundo FÃ´lego dentro da rota Protetor."
+

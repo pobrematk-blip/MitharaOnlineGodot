@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/18.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13104
-Nome = "Força Brutal"
-Descricao = "O Bárbaro abandona qualquer postura defensiva e concentra toda sua força nos ataques, trocando segurança por poder destrutivo."
+Nome = "ForÃ§a Brutal"
+Descricao = "O BÃ¡rbaro abandona qualquer postura defensiva e concentra toda sua forÃ§a nos ataques, trocando seguranÃ§a por poder destrutivo."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Berserker"
 Cooldown = 25
 Duracao = 12
 TargetType = 0
 EffectType = 3
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
-Tipo = "Buff / Sacrifício Defensivo"
-EfeitoPrincipal = "Aumenta o ataque, mas reduz a defesa física e mágica durante a duração."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Buff / SacrifÃ­cio Defensivo"
+EfeitoPrincipal = "Aumenta o ataque, mas reduz a defesa fÃ­sica e mÃ¡gica durante a duraÃ§Ã£o."
 DanoEscala = ""
-BuffDebuff = "+25% → +45% Ataque; -20% Defesa"
+BuffDebuff = "+25% â†’ +45% Ataque; -20% Defesa"
 DuracaoTexto = "12s"
-Progressao = "Skill possui 10 níveis. Bônus de ataque escala de +25% até +45%."
-Observacoes = "Skill de alto risco. Ideal para momentos em que o inimigo está controlado ou próximo de morrer."
+Progressao = "Skill possui 10 nÃ­veis. BÃ´nus de ataque escala de +25% atÃ© +45%."
+Observacoes = "Skill de alto risco. Ideal para momentos em que o inimigo estÃ¡ controlado ou prÃ³ximo de morrer."

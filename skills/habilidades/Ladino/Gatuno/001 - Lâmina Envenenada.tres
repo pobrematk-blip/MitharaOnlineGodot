@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/33.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12401
-Nome = "Lâmina Envenenada"
+Nome = "LÃ¢mina Envenenada"
 Descricao = "Reveste a adaga com veneno antes de atacar."
 Icone = ExtResource("2_icon")
 Valor = 100
-CustoMana = 15
+CustoMana = 8
 ClasseRestrita = "Ladino"
 Cooldown = 6
 Duracao = 8
@@ -19,11 +19,11 @@ EffectType = 24
 Especializacao = "Gatuno"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
-Tipo = "Dano Contínuo"
-EfeitoPrincipal = "Causa dano físico e aplica veneno."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano ContÃ­nuo"
+EfeitoPrincipal = "Causa dano fÃ­sico e aplica veneno."
 DanoEscala = "100% do dano da arma"
 BuffDebuff = "Veneno por 8s"
 DuracaoTexto = "8s"
-Progressao = "Dano Lv1 100% → Lv10 180%; veneno escala com nível."
+Progressao = "Dano Lv1 100% â†’ Lv10 180%; veneno escala com nÃ­vel."
 Observacoes = ""

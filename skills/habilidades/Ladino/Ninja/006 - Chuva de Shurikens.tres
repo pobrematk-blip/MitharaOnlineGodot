@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/28.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 12306
 Nome = "Chuva de Shurikens"
-Descricao = "Lança várias shurikens ao redor em rápida sucessão."
+Descricao = "LanÃ§a vÃ¡rias shurikens ao redor em rÃ¡pida sucessÃ£o."
 Icone = ExtResource("2_icon")
 Valor = 160
-CustoMana = 35
+CustoMana = 18
 ClasseRestrita = "Ladino"
 Cooldown = 14
 Duracao = 0
@@ -19,11 +19,11 @@ EffectType = 7
 Especializacao = "Ninja"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "Especialização"
-Tipo = "Área"
-EfeitoPrincipal = "Causa dano em área ao redor do alvo ou do Ninja."
-DanoEscala = "160% do dano da arma em área"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Ãrea"
+EfeitoPrincipal = "Causa dano em Ã¡rea ao redor do alvo ou do Ninja."
+DanoEscala = "160% do dano da arma em Ã¡rea"
 BuffDebuff = ""
 DuracaoTexto = ""
-Progressao = "Lv1 160% → Lv10 300%"
+Progressao = "Lv1 160% â†’ Lv10 300%"
 Observacoes = ""

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/43.png" id="2_icon"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15208
-Nome = "Guardião Sagrado"
-Descricao = "O Paladino assume uma postura sagrada de proteção, tornando-se uma muralha viva entre seus aliados e os inimigos."
+Nome = "GuardiÃ£o Sagrado"
+Descricao = "O Paladino assume uma postura sagrada de proteÃ§Ã£o, tornando-se uma muralha viva entre seus aliados e os inimigos."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 60
-ClasseRestrita = "Clérigo"
+CustoMana = 30
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 60
 Duracao = 15
 TargetType = 0
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Paladino"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff"
-EfeitoPrincipal = "Aumenta HP, Defesa Física e Defesa Mágica do Paladino."
+EfeitoPrincipal = "Aumenta HP, Defesa FÃ­sica e Defesa MÃ¡gica do Paladino."
 DanoEscala = ""
-BuffDebuff = "+20% → +40% defesas"
+BuffDebuff = "+20% â†’ +40% defesas"
 DuracaoTexto = "15s"
 Progressao = "Lv1 = +20%; Lv10 = +40%."
 Observacoes = "Reduz um pouco o dano causado enquanto ativo, se quiser balancear."

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/47.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15209
 Nome = "Avatar da Luz"
-Descricao = "O Paladino se torna um campeão da luz, irradiando poder sagrado e protegendo todos ao seu redor."
+Descricao = "O Paladino se torna um campeÃ£o da luz, irradiando poder sagrado e protegendo todos ao seu redor."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 80
-ClasseRestrita = "Clérigo"
+CustoMana = 40
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 120
 Duracao = 20
 TargetType = 0
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Paladino"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
-EfeitoPrincipal = "Aumenta atributos defensivos, dano sagrado e resistência a controle."
+EfeitoPrincipal = "Aumenta atributos defensivos, dano sagrado e resistÃªncia a controle."
 DanoEscala = "Grande buff pessoal"
 BuffDebuff = "Buff"
 DuracaoTexto = "20s"
-Progressao = "Ultimate Lv1 = bônus alto; Lv5 = bônus máximo."
-Observacoes = "Ultimate do Paladino; possui 5 níveis."
+Progressao = "Ultimate Lv1 = bÃ´nus alto; Lv5 = bÃ´nus mÃ¡ximo."
+Observacoes = "Ultimate do Paladino; possui 5 nÃ­veis."

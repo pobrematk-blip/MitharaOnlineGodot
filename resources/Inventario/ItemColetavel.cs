@@ -30,7 +30,9 @@ public partial class ItemColetavel : Area2D
         if (ItemContido != null)
             rarityColor = RarityColors.GetValueOrDefault(ItemContido.Raridade, Color.FromHtml("#ffffff"));
 
-        ZIndex = -1;
+        // Loot fica acima do chao, mas abaixo de personagens/mobs/NPCs.
+        ZIndex = 0;
+        ZAsRelative = true;
         Scale = Vector2.Zero;
 
         var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);

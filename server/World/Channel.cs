@@ -332,7 +332,7 @@ public class Channel
     {
         const double outOfCombatDelay = 18.0;
         const float healthRegenPercentPerSecond = 0.003f;
-        const float manaRegenPercentPerSecond = 0.006f;
+        const float manaRegenPercentPerSecond = 0.010f;
 
         foreach (var kv in _entities)
         {
@@ -345,7 +345,9 @@ public class Channel
                     continue;
                 }
 
-                if (gameTime - player.LastCombatTime >= outOfCombatDelay)
+                bool outOfCombat = gameTime - player.LastCombatTime >= outOfCombatDelay;
+
+                if (outOfCombat)
                 {
                     if (player.Health < player.MaxHealth)
                     {
@@ -361,25 +363,24 @@ public class Channel
                     {
                         player.HealthRegenAccumulator = 0;
                     }
-
-                    if (player.Mana < player.MaxMana)
-                    {
-                        player.ManaRegenAccumulator += ((player.MaxMana * manaRegenPercentPerSecond) + player.ManaRegenBonus) * dt;
-                        int manaRegen = (int)player.ManaRegenAccumulator;
-                        if (manaRegen > 0)
-                        {
-                            player.Mana = Math.Min(player.MaxMana, player.Mana + manaRegen);
-                            player.ManaRegenAccumulator -= manaRegen;
-                        }
-                    }
-                    else
-                    {
-                        player.ManaRegenAccumulator = 0;
-                    }
                 }
                 else
                 {
                     player.HealthRegenAccumulator = 0;
+                }
+
+                if (player.Mana < player.MaxMana)
+                {
+                    player.ManaRegenAccumulator += ((player.MaxMana * manaRegenPercentPerSecond) + player.ManaRegenBonus) * dt;
+                    int manaRegen = (int)player.ManaRegenAccumulator;
+                    if (manaRegen > 0)
+                    {
+                        player.Mana = Math.Min(player.MaxMana, player.Mana + manaRegen);
+                        player.ManaRegenAccumulator -= manaRegen;
+                    }
+                }
+                else
+                {
                     player.ManaRegenAccumulator = 0;
                 }
             }

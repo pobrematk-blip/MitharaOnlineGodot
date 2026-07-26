@@ -57,7 +57,18 @@ public partial class MarketplaceUI : Control
         {
             _title.Text = title;
             _rules.Text = rules;
+            RefreshMarketplaceOnOpen();
         }
+    }
+
+    public void RefreshMarketplaceOnOpen()
+    {
+        if (_net != null)
+        {
+            RequestList();
+            _net.SendInventoryRequest();
+        }
+        CallDeferred(nameof(AbrirInventarioAoLado));
     }
 
     private void BuildUi()
@@ -230,27 +241,27 @@ public partial class MarketplaceUI : Control
         _category.AddItem(text, id);
     }
 
-    private void OnMarketplaceItemDropped(int inventorySlot, int quantity)
+    private void OnMarketplaceItemDropped(int inventorySlot, int quantity, int itemId)
     {
-        SelectInventorySlot(inventorySlot, quantity);
+        SelectInventorySlot(inventorySlot, quantity, itemId);
     }
 
-    public bool TrySelectInventorySlotForListing(int inventorySlot, int quantity)
+    public bool TrySelectInventorySlotForListing(int inventorySlot, int quantity, int itemId = 0)
     {
-        if (!Visible || inventorySlot < 0 || quantity <= 0)
+        if (!IsInsideTree() || !Visible || inventorySlot < 0 || quantity <= 0)
             return false;
 
-        SelectInventorySlot(inventorySlot, quantity);
+        SelectInventorySlot(inventorySlot, quantity, itemId);
         MoveToFront();
         _panel?.MoveToFront();
         return true;
     }
 
-    private void SelectInventorySlot(int inventorySlot, int quantity)
+    private void SelectInventorySlot(int inventorySlot, int quantity, int fallbackItemId = 0)
     {
         _selectedInventorySlot = inventorySlot;
         _selectedQuantity = Math.Max(1, quantity);
-        _selectedItemId = 0;
+        _selectedItemId = Math.Max(0, fallbackItemId);
         foreach (var entry in _inventoryCache)
         {
             if (!entry.ContainsKey("slot") || entry["slot"].AsInt32() != inventorySlot)
@@ -268,6 +279,10 @@ public partial class MarketplaceUI : Control
         _selectedItemLabel.AddThemeColorOverride("font_color", MitharaUiTheme.Text);
         _quantity.MaxValue = _selectedQuantity;
         _quantity.Value = _selectedQuantity;
+        _feedback.Text = item != null
+            ? $"{item.Nome} pronto para anunciar."
+            : $"Slot {_selectedInventorySlot} pronto para anunciar.";
+        _feedback.AddThemeColorOverride("font_color", MitharaUiTheme.Accent);
     }
 
     private void AnunciarItem(int currencyType)
@@ -428,6 +443,12 @@ public partial class MarketplaceUI : Control
         GD.Print($"[MERCADO] {(success ? "OK" : "ERRO")}: {message}");
         if (success)
         {
+            if (message.Contains("anunciado", StringComparison.OrdinalIgnoreCase))
+            {
+                _ownOnly = true;
+                if (_myListingsButton != null)
+                    _myListingsButton.ButtonPressed = true;
+            }
             LimparItemSelecionado();
             _net?.SendInventoryRequest();
             RequestList();

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/47.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Mira Apurada"
 Descricao = "Aumenta foco."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Arqueiro"
 Cooldown = 20
 Duracao = 15
@@ -19,11 +19,12 @@ EffectType = 3
 Especializacao = "Sniper"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff"
-EfeitoPrincipal = "Precisão e crítico"
+EfeitoPrincipal = "PrecisÃ£o e crÃ­tico"
 DanoEscala = ""
 BuffDebuff = "+5%-15%"
 DuracaoTexto = "15s"
 Progressao = ""
 Observacoes = ""
+

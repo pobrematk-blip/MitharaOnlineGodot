@@ -7,6 +7,7 @@ namespace Mithara.Web.Services;
 
 public class GameDbService
 {
+    private const int StartingCashBalance = 500;
     private readonly string _connectionString;
 
     public GameDbService(string connectionString)
@@ -63,13 +64,14 @@ public class GameDbService
         using var cmd = conn.CreateCommand();
         string salt = GenerateSalt();
         cmd.CommandText = """
-            INSERT INTO accounts (username, email, password_hash, salt)
-            VALUES (@u, @e, @p, @s) RETURNING id
+            INSERT INTO accounts (username, email, password_hash, salt, cash_balance)
+            VALUES (@u, @e, @p, @s, @cash) RETURNING id
             """;
         cmd.Parameters.AddWithValue("@u", username);
         cmd.Parameters.AddWithValue("@e", email);
         cmd.Parameters.AddWithValue("@p", HashPassword(password, salt));
         cmd.Parameters.AddWithValue("@s", salt);
+        cmd.Parameters.AddWithValue("@cash", StartingCashBalance);
         return (Convert.ToInt32(cmd.ExecuteScalar()), null);
     }
 

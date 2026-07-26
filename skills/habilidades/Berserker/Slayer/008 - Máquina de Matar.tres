@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/38.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13208
-Nome = "Máquina de Matar"
-Descricao = "O Slayer entra em um estado frio e implacável, eliminando distrações e focando apenas em destruir o alvo marcado."
+Nome = "MÃ¡quina de Matar"
+Descricao = "O Slayer entra em um estado frio e implacÃ¡vel, eliminando distraÃ§Ãµes e focando apenas em destruir o alvo marcado."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 40
+CustoMana = 20
 ClasseRestrita = "Berserker"
 Cooldown = 60
 Duracao = 15
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Slayer"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff Ofensivo"
-EfeitoPrincipal = "Aumenta Chance Crítica e Dano contra o alvo atual."
+EfeitoPrincipal = "Aumenta Chance CrÃ­tica e Dano contra o alvo atual."
 DanoEscala = ""
-BuffDebuff = "+15% → +30% Crítico; +10% → +20% Dano"
+BuffDebuff = "+15% â†’ +30% CrÃ­tico; +10% â†’ +20% Dano"
 DuracaoTexto = "15s"
-Progressao = "Skill possui 10 níveis. Bônus escalam e respeitam o cap global de crítico."
-Observacoes = "Fortíssimo quando usado após Marca da Morte."
+Progressao = "Skill possui 10 nÃ­veis. BÃ´nus escalam e respeitam o cap global de crÃ­tico."
+Observacoes = "FortÃ­ssimo quando usado apÃ³s Marca da Morte."

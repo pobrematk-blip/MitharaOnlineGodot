@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/48.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15303
 Nome = "Exorcismo"
-Descricao = "Uma explosão de energia sagrada atravessa o alvo, expulsando forças malignas e causando dano severo."
+Descricao = "Uma explosÃ£o de energia sagrada atravessa o alvo, expulsando forÃ§as malignas e causando dano severo."
 Icone = ExtResource("2_icon")
 Valor = 150
-CustoMana = 25
-ClasseRestrita = "Clérigo"
+CustoMana = 13
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 8
 Duracao = 0
 TargetType = 2
@@ -19,11 +19,11 @@ EffectType = 7
 Especializacao = "Inquisidor"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Dano"
-EfeitoPrincipal = "Causa dano alto; dano extra contra mortos-vivos/demônios se existirem."
-DanoEscala = "150% → 280% do Poder Mágico"
+EfeitoPrincipal = "Causa dano alto; dano extra contra mortos-vivos/demÃ´nios se existirem."
+DanoEscala = "150% â†’ 280% do Poder MÃ¡gico"
 BuffDebuff = ""
-DuracaoTexto = "Instantâneo"
+DuracaoTexto = "InstantÃ¢neo"
 Progressao = "Lv1 = 150%; Lv10 = 280%."
-Observacoes = "Pode ter bônus contra tipos de monstros no futuro."
+Observacoes = "Pode ter bÃ´nus contra tipos de monstros no futuro."

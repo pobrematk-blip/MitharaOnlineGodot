@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/2.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13309
-Nome = "Titã Ancestral"
-Descricao = "O Berserker desperta o sangue dos gigantes antigos e se transforma em uma muralha viva de carne, aço e fúria."
+Nome = "TitÃ£ Ancestral"
+Descricao = "O Berserker desperta o sangue dos gigantes antigos e se transforma em uma muralha viva de carne, aÃ§o e fÃºria."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 80
+CustoMana = 40
 ClasseRestrita = "Berserker"
 Cooldown = 120
 Duracao = 20
 TargetType = 0
 EffectType = 3
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
-EfeitoPrincipal = "Aumenta HP, defesas e regeneração de forma massiva."
+EfeitoPrincipal = "Aumenta HP, defesas e regeneraÃ§Ã£o de forma massiva."
 DanoEscala = ""
-BuffDebuff = "+50% HP, +50% Defesas, Regeneração elevada"
+BuffDebuff = "+50% HP, +50% Defesas, RegeneraÃ§Ã£o elevada"
 DuracaoTexto = "20s"
-Progressao = "Ultimate possui 5 níveis. Pode escalar duração ou reduzir cooldown."
-Observacoes = "Ultimate defensiva. Ideal para momentos críticos de dungeon, raid ou PvP."
+Progressao = "Ultimate possui 5 nÃ­veis. Pode escalar duraÃ§Ã£o ou reduzir cooldown."
+Observacoes = "Ultimate defensiva. Ideal para momentos crÃ­ticos de dungeon, raid ou PvP."

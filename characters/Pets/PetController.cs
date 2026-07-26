@@ -9,7 +9,9 @@ public partial class PetController : Node
     private EquipamentoComponent _equipamento;
     private Panel _hudPanel;
     private Panel _hudTitleBar;
+    private TextureRect _hudPetIcon;
     private Label _hudNameLabel;
+    private Label _hudModeLabel;
     private Button _btnSeguir;
     private Button _btnGuarda;
     private Button _btnAtacar;
@@ -22,6 +24,12 @@ public partial class PetController : Node
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
     private CanvasLayer _hudLayer;
+
+    private static readonly Color HudBg = new(0.015f, 0.018f, 0.026f, 0.92f);
+    private static readonly Color HudTitleBg = new(0.025f, 0.032f, 0.046f, 0.96f);
+    private static readonly Color HudBorder = new(0.20f, 0.60f, 0.86f, 0.95f);
+    private static readonly Color HudBorderHot = new(1.0f, 0.84f, 0.18f, 1f);
+    private static readonly Color HudText = new(0.86f, 0.91f, 1f, 1f);
 
     public bool TemPetAtivo => _petNode != null && IsInstanceValid(_petNode) && _petNode.Ativo;
 
@@ -71,8 +79,10 @@ public partial class PetController : Node
 
         _hudPanel = new Panel();
         _hudPanel.Name = "PetHUD";
-        _hudPanel.CustomMinimumSize = new Vector2(200, 0);
+        _hudPanel.CustomMinimumSize = new Vector2(254, 150);
         _hudPanel.Visible = false;
+        _hudPanel.AddThemeStyleboxOverride("panel", CriarStyle(HudBg, HudBorder, 7, 1));
+        _hudPanel.MouseFilter = Control.MouseFilterEnum.Stop;
 
         _hudLayer = ObterHudLayer();
         if (_hudLayer != null)
@@ -84,58 +94,99 @@ public partial class PetController : Node
             AddChild(_hudPanel);
 
         var vbox = new VBoxContainer();
-        vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 4);
+        vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 6);
+        vbox.AddThemeConstantOverride("separation", 6);
         _hudPanel.AddChild(vbox);
 
         _hudTitleBar = new Panel();
-        _hudTitleBar.CustomMinimumSize = new Vector2(0, 24);
+        _hudTitleBar.CustomMinimumSize = new Vector2(0, 26);
         _hudTitleBar.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _hudTitleBar.MouseDefaultCursorShape = Control.CursorShape.Move;
         _hudTitleBar.GuiInput += OnTitleBarGuiInput;
+        _hudTitleBar.AddThemeStyleboxOverride("panel", CriarStyle(HudTitleBg, HudBorder, 6, 1));
         vbox.AddChild(_hudTitleBar);
 
         var titleHBox = new HBoxContainer();
-        titleHBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 2);
+        titleHBox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 4);
         _hudTitleBar.AddChild(titleHBox);
 
         _hudNameLabel = new Label();
         _hudNameLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        _hudNameLabel.AddThemeFontSizeOverride("font_size", 12);
+        _hudNameLabel.VerticalAlignment = VerticalAlignment.Center;
+        _hudNameLabel.AddThemeFontSizeOverride("font_size", 13);
+        _hudNameLabel.AddThemeColorOverride("font_color", HudText);
         titleHBox.AddChild(_hudNameLabel);
 
         var btnFechar = new Button();
         btnFechar.Text = "X";
         btnFechar.CustomMinimumSize = new Vector2(20, 20);
         btnFechar.SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd;
+        AplicarBotaoPequeno(btnFechar);
         btnFechar.Pressed += () => _hudPanel.Visible = false;
         titleHBox.AddChild(btnFechar);
 
+        var bodyHBox = new HBoxContainer();
+        bodyHBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        bodyHBox.AddThemeConstantOverride("separation", 8);
+        vbox.AddChild(bodyHBox);
+
+        var iconPanel = new Panel();
+        iconPanel.CustomMinimumSize = new Vector2(70, 70);
+        iconPanel.AddThemeStyleboxOverride("panel", CriarStyle(new Color(0.01f, 0.012f, 0.018f, 0.95f), HudBorder, 6, 1));
+        bodyHBox.AddChild(iconPanel);
+
+        _hudPetIcon = new TextureRect();
+        _hudPetIcon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 6);
+        _hudPetIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _hudPetIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        iconPanel.AddChild(_hudPetIcon);
+
+        var rightVBox = new VBoxContainer();
+        rightVBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        rightVBox.AddThemeConstantOverride("separation", 5);
+        bodyHBox.AddChild(rightVBox);
+
         var modeHBox = new HBoxContainer();
         modeHBox.Alignment = BoxContainer.AlignmentMode.Center;
-        vbox.AddChild(modeHBox);
+        modeHBox.AddThemeConstantOverride("separation", 4);
+        rightVBox.AddChild(modeHBox);
 
         _btnSeguir = new Button();
         _btnSeguir.Text = "Seguir";
+        _btnSeguir.CustomMinimumSize = new Vector2(58, 28);
+        AplicarBotaoModo(_btnSeguir);
         _btnSeguir.Pressed += () => DefinirModo(PetMode.Seguir);
         modeHBox.AddChild(_btnSeguir);
 
         _btnGuarda = new Button();
         _btnGuarda.Text = "Parado";
+        _btnGuarda.CustomMinimumSize = new Vector2(58, 28);
+        AplicarBotaoModo(_btnGuarda);
         _btnGuarda.Pressed += () => DefinirModo(PetMode.Guarda);
         modeHBox.AddChild(_btnGuarda);
 
         _btnAtacar = new Button();
         _btnAtacar.Text = "Atacar";
+        _btnAtacar.CustomMinimumSize = new Vector2(58, 28);
+        AplicarBotaoModo(_btnAtacar);
         _btnAtacar.Pressed += () => DefinirModo(PetMode.Atacar);
         modeHBox.AddChild(_btnAtacar);
+
+        _hudModeLabel = new Label();
+        _hudModeLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        _hudModeLabel.AddThemeFontSizeOverride("font_size", 10);
+        _hudModeLabel.AddThemeColorOverride("font_color", new Color(0.98f, 0.84f, 0.26f, 1f));
+        rightVBox.AddChild(_hudModeLabel);
 
         _coletaRow = new HBoxContainer();
         _coletaRow.Alignment = BoxContainer.AlignmentMode.Center;
         _coletaRow.Visible = false;
-        vbox.AddChild(_coletaRow);
+        rightVBox.AddChild(_coletaRow);
 
         var coletaLabel = new Label();
         coletaLabel.Text = "Coleta";
+        coletaLabel.AddThemeFontSizeOverride("font_size", 11);
+        coletaLabel.AddThemeColorOverride("font_color", HudText);
         _coletaRow.AddChild(coletaLabel);
 
         _chkColeta = new CheckBox();
@@ -145,10 +196,13 @@ public partial class PetController : Node
 
         var coleiraRow = new HBoxContainer();
         coleiraRow.Alignment = BoxContainer.AlignmentMode.Center;
+        coleiraRow.AddThemeConstantOverride("separation", 8);
         vbox.AddChild(coleiraRow);
 
         _coleiraSlot = new PetCollarSlot();
-        _coleiraSlot.CustomMinimumSize = new Vector2(42, 42);
+        _coleiraSlot.CustomMinimumSize = new Vector2(48, 48);
+        _coleiraSlot.AddThemeStyleboxOverride("panel", CriarStyle(new Color(0.01f, 0.012f, 0.018f, 0.95f), HudBorder, 5, 1));
+        _coleiraSlot.TooltipText = "Arraste uma Coleira de Pet para ativar a coleta automatica.";
         _coleiraSlot.OnPetCollarDropped += OnColeiraDropped;
         coleiraRow.AddChild(_coleiraSlot);
 
@@ -160,7 +214,10 @@ public partial class PetController : Node
 
         _coleiraStatusLabel = new Label();
         _coleiraStatusLabel.Text = "Sem coleira";
-        _coleiraStatusLabel.AddThemeFontSizeOverride("font_size", 10);
+        _coleiraStatusLabel.VerticalAlignment = VerticalAlignment.Center;
+        _coleiraStatusLabel.AddThemeFontSizeOverride("font_size", 11);
+        _coleiraStatusLabel.AddThemeColorOverride("font_color", HudText);
+        _coleiraStatusLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         coleiraRow.AddChild(_coleiraStatusLabel);
 
         _coleiraTimer = new Timer();
@@ -588,6 +645,9 @@ public partial class PetController : Node
         if (_petNode == null) return;
 
         _hudNameLabel.Text = _petNode.NomePet;
+        if (_hudPetIcon != null)
+            _hudPetIcon.Texture = ObterIconePet(_petResource);
+        AtualizarTooltipPet();
 
         _coletaRow.Visible = true;
         AtualizarColeiraHUD();
@@ -614,6 +674,9 @@ public partial class PetController : Node
         _btnSeguir.Modulate = modo == PetMode.Seguir ? Colors.Yellow : Colors.White;
         _btnGuarda.Modulate = modo == PetMode.Guarda ? Colors.Yellow : Colors.White;
         _btnAtacar.Modulate = modo == PetMode.Atacar ? Colors.Yellow : Colors.White;
+        if (_hudModeLabel != null)
+            _hudModeLabel.Text = $"Modo: {NomeModo(modo)}";
+        AtualizarTooltipPet();
 
         GD.Print($"[PET] Modo alterado para: {modo}");
     }
@@ -671,6 +734,104 @@ public partial class PetController : Node
 
         if (_petNode != null && IsInstanceValid(_petNode))
             _petNode.ColetaAtiva = ativa && (_chkColeta?.ButtonPressed ?? true);
+
+        AtualizarTooltipPet();
+    }
+
+    private void AtualizarTooltipPet()
+    {
+        if (_hudPanel == null)
+            return;
+
+        if (_petNode == null || !IsInstanceValid(_petNode))
+        {
+            _hudPanel.TooltipText = "";
+            return;
+        }
+
+        int level = _petResource?.Level ?? 1;
+        int mana = _petResource?.Mana ?? 0;
+        int forca = _petResource?.Forca ?? 0;
+        int agilidade = _petResource?.Agilidade ?? 0;
+        int destreza = _petResource?.Destreza ?? 0;
+        int inteligencia = _petResource?.Inteligencia ?? 0;
+        bool coleta = _petNode.ColetaAtiva;
+        string tipo = (_petResource?.Tipo ?? _petNode.TipoPet) == TipoPet.Combate ? "Combate" : "Coleta";
+
+        _hudPanel.TooltipText =
+            $"{_petNode.NomePet} | Nv. {level}\n" +
+            $"Tipo: {tipo} | Modo: {NomeModo(_petNode.ModoAtual)}\n" +
+            $"Vida: {_petNode.VidaAtual}/{_petNode.VidaMaxima} | Mana: {mana}\n" +
+            $"Dano: {_petNode.AtaqueDano} | Defesa: {_petNode.Defesa}\n" +
+            $"Forca: {forca} | Agilidade: {agilidade} | Destreza: {destreza} | Inteligencia: {inteligencia}\n" +
+            $"Velocidade: {_petNode.Velocidade:0} | Alcance: {_petNode.AtaqueRange:0}\n" +
+            $"Coleta automatica: {(coleta ? "Ativa" : "Inativa")}";
+    }
+
+    private static string NomeModo(PetMode modo)
+    {
+        return modo switch
+        {
+            PetMode.Seguir => "Seguir",
+            PetMode.Guarda => "Parado",
+            PetMode.Atacar => "Atacar",
+            _ => modo.ToString()
+        };
+    }
+
+    private static Texture2D ObterIconePet(PetResource resource)
+    {
+        if (resource == null)
+            return null;
+        if (resource.Icone != null)
+            return resource.Icone;
+        if (resource.SpriteAtlas == null)
+            return null;
+
+        float w = Mathf.Min(64f, resource.SpriteAtlas.GetWidth());
+        float h = Mathf.Min(64f, resource.SpriteAtlas.GetHeight());
+        return new AtlasTexture
+        {
+            Atlas = resource.SpriteAtlas,
+            Region = new Rect2(0, 0, w, h)
+        };
+    }
+
+    private static void AplicarBotaoModo(Button button)
+    {
+        button.AddThemeFontSizeOverride("font_size", 10);
+        button.AddThemeStyleboxOverride("normal", CriarStyle(new Color(0.025f, 0.032f, 0.046f, 0.94f), new Color(0.18f, 0.34f, 0.48f, 0.95f), 5, 1));
+        button.AddThemeStyleboxOverride("hover", CriarStyle(new Color(0.05f, 0.07f, 0.095f, 0.98f), HudBorder, 5, 1));
+        button.AddThemeStyleboxOverride("pressed", CriarStyle(new Color(0.08f, 0.075f, 0.035f, 1f), HudBorderHot, 5, 1));
+    }
+
+    private static void AplicarBotaoPequeno(Button button)
+    {
+        button.AddThemeFontSizeOverride("font_size", 11);
+        button.AddThemeStyleboxOverride("normal", CriarStyle(new Color(0.10f, 0.02f, 0.025f, 0.95f), new Color(0.55f, 0.12f, 0.16f, 0.9f), 4, 1));
+        button.AddThemeStyleboxOverride("hover", CriarStyle(new Color(0.20f, 0.035f, 0.045f, 1f), new Color(1f, 0.25f, 0.30f, 1f), 4, 1));
+    }
+
+    private static StyleBoxFlat CriarStyle(Color bg, Color border, int radius, int borderWidth)
+    {
+        var style = new StyleBoxFlat
+        {
+            BgColor = bg,
+            BorderColor = border,
+            BorderWidthTop = borderWidth,
+            BorderWidthBottom = borderWidth,
+            BorderWidthLeft = borderWidth,
+            BorderWidthRight = borderWidth,
+            CornerRadiusTopLeft = radius,
+            CornerRadiusTopRight = radius,
+            CornerRadiusBottomLeft = radius,
+            CornerRadiusBottomRight = radius,
+            ContentMarginLeft = 4,
+            ContentMarginRight = 4,
+            ContentMarginTop = 3,
+            ContentMarginBottom = 3,
+        };
+        return style;
     }
 
     private void NotificarServidorPetInvocado(int petId, string petNome, string animPrefix)

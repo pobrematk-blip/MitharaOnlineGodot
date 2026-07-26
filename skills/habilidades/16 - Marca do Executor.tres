@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/17.png" id="2_icon"]
@@ -7,12 +7,13 @@
 script = ExtResource("1_sk")
 SkillId = 16
 Nome = "Marca do Executor"
-Descricao = "Marca a vítima para receber dano aumentado das habilidades do Sniper."
+Descricao = "Marca a vÃ­tima para receber dano aumentado das habilidades do Sniper."
 Icone = ExtResource("2_icon")
 Valor = 10
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Arqueiro"
 Cooldown = 15.0
 Duracao = 12
 TargetType = 2
 EffectType = 24
+

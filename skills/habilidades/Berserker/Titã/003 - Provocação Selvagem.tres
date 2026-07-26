@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/19.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13303
-Nome = "Provocação Selvagem"
-Descricao = "O Titã ruge com violência, atraindo a atenção dos inimigos próximos para si."
+Nome = "ProvocaÃ§Ã£o Selvagem"
+Descricao = "O TitÃ£ ruge com violÃªncia, atraindo a atenÃ§Ã£o dos inimigos prÃ³ximos para si."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Berserker"
 Cooldown = 15
 Duracao = 4
 TargetType = 2
 EffectType = 7
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Controle / Taunt"
-EfeitoPrincipal = "Provoca inimigos em área."
+EfeitoPrincipal = "Provoca inimigos em Ã¡rea."
 DanoEscala = ""
 BuffDebuff = "Taunt"
 DuracaoTexto = "4s"
-Progressao = "Skill possui 10 níveis. Pode aumentar alcance ou reduzir cooldown."
+Progressao = "Skill possui 10 nÃ­veis. Pode aumentar alcance ou reduzir cooldown."
 Observacoes = "Ferramenta de tank para segurar grupos."

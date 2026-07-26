@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/24.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Invocar Golem"
 Descricao = "Invoca golem."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 45
+CustoMana = 23
 ClasseRestrita = "Mago"
 Cooldown = 35
 Duracao = 20
@@ -19,10 +19,10 @@ EffectType = 5
 Especializacao = "Summoner"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
-Tipo = "Invocação"
-EfeitoPrincipal = "Tanque temporário"
-DanoEscala = "Escala com nível"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "InvocaÃ§Ã£o"
+EfeitoPrincipal = "Tanque temporÃ¡rio"
+DanoEscala = "Escala com nÃ­vel"
 BuffDebuff = ""
 DuracaoTexto = "20s"
 Progressao = ""

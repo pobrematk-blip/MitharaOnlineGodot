@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/45.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13204
-Nome = "Execução"
+Nome = "ExecuÃ§Ã£o"
 Descricao = "O Slayer desfere um golpe cruel que se torna mais mortal contra inimigos enfraquecidos."
 Icone = ExtResource("2_icon")
 Valor = 180
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Berserker"
 Cooldown = 15
 Duracao = 0
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Slayer"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
-Tipo = "Dano de Finalização"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano de FinalizaÃ§Ã£o"
 EfeitoPrincipal = "Causa dano aumentado contra alvos com pouca vida."
-DanoEscala = "180% → 320% do dano da arma"
+DanoEscala = "180% â†’ 320% do dano da arma"
 BuffDebuff = "+50% dano se alvo abaixo de 30% HP"
-DuracaoTexto = "Instantâneo"
-Progressao = "Skill possui 10 níveis. Dano base escala de 180% até 320%."
-Observacoes = "Não deve matar instantaneamente bosses; apenas recebe o bônus de dano."
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Skill possui 10 nÃ­veis. Dano base escala de 180% atÃ© 320%."
+Observacoes = "NÃ£o deve matar instantaneamente bosses; apenas recebe o bÃ´nus de dano."

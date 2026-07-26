@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/25.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13105
-Nome = "Machado Giratório"
-Descricao = "Girando seu machado com força absurda, o Bárbaro atinge todos os inimigos próximos em uma demonstração de pura violência."
+Nome = "Machado GiratÃ³rio"
+Descricao = "Girando seu machado com forÃ§a absurda, o BÃ¡rbaro atinge todos os inimigos prÃ³ximos em uma demonstraÃ§Ã£o de pura violÃªncia."
 Icone = ExtResource("2_icon")
 Valor = 150
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Berserker"
 Cooldown = 12
 Duracao = 0
 TargetType = 2
 EffectType = 7
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
-Tipo = "Dano em Área"
-EfeitoPrincipal = "Causa dano físico em área ao redor do personagem."
-DanoEscala = "150% → 280% do dano da arma"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano em Ãrea"
+EfeitoPrincipal = "Causa dano fÃ­sico em Ã¡rea ao redor do personagem."
+DanoEscala = "150% â†’ 280% do dano da arma"
 BuffDebuff = ""
-DuracaoTexto = "Instantâneo"
-Progressao = "Skill possui 10 níveis. Dano escala de 150% até 280%."
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Skill possui 10 nÃ­veis. Dano escala de 150% atÃ© 280%."
 Observacoes = "Principal skill de limpeza de grupos pequenos."

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/21.png" id="2_icon"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14108
-Nome = "Bastião"
-Descricao = "O Guardião cria uma formação defensiva fixa no mapa, reduzindo o dano recebido por aliados da party próximos."
+Nome = "BastiÃ£o"
+Descricao = "O GuardiÃ£o cria uma formaÃ§Ã£o defensiva fixa no mapa, reduzindo o dano recebido por aliados da party prÃ³ximos."
 Icone = ExtResource("2_icon")
 Valor = 10
-CustoMana = 40
-ClasseRestrita = "Guardião"
+CustoMana = 20
+ClasseRestrita = "GuardiÃ£o"
 Cooldown = 60
 Duracao = 15
 TargetType = 0
@@ -19,11 +19,12 @@ EffectType = 7
 Especializacao = "Protetor"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
-Tipo = "Suporte em Área"
-EfeitoPrincipal = "Cria uma área fixa de 3 tiles. Aliados da party dentro dela recebem 10% de redução de dano; o escudo avança frames ao absorver impactos até quebrar."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Suporte em Ãrea"
+EfeitoPrincipal = "Cria uma Ã¡rea fixa de 3 tiles. Aliados da party dentro dela recebem 10% de reduÃ§Ã£o de dano; o escudo avanÃ§a frames ao absorver impactos atÃ© quebrar."
 DanoEscala = ""
-BuffDebuff = "Redução de dano do grupo 10% → 20%"
+BuffDebuff = "ReduÃ§Ã£o de dano do grupo 10% â†’ 20%"
 DuracaoTexto = "15s"
 Progressao = "Lv1 = 10%; Lv10 = 20%."
-Observacoes = "Não acumula com outro Bastião do mesmo Guardião."
+Observacoes = "NÃ£o acumula com outro BastiÃ£o do mesmo GuardiÃ£o."
+

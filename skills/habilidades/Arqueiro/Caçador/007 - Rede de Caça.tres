@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/25.png" id="2_icon"]
@@ -6,22 +6,22 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10107
-Nome = "Rede de Caça"
+Nome = "Rede de CaÃ§a"
 Descricao = "Reduz movimento."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Arqueiro"
 Cooldown = 16
 Duracao = 5
 TargetType = 2
 EffectType = 12
-Especializacao = "Caçador"
+Especializacao = "CaÃ§ador"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Controle"
-EfeitoPrincipal = "Lentidão"
+EfeitoPrincipal = "LentidÃ£o"
 DanoEscala = ""
 BuffDebuff = "Slow"
 DuracaoTexto = "5s"

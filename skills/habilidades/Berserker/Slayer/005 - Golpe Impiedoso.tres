@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/4.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Golpe Impiedoso"
 Descricao = "Um ataque direto e cruel feito para atravessar defesas e atingir o corpo do inimigo sem piedade."
 Icone = ExtResource("2_icon")
 Valor = 170
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Berserker"
 Cooldown = 12
 Duracao = 0
@@ -19,11 +19,11 @@ EffectType = 7
 Especializacao = "Slayer"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
-Tipo = "Dano / Penetração"
-EfeitoPrincipal = "Causa dano e ignora parte da defesa física."
-DanoEscala = "170% → 300% do dano da arma"
-BuffDebuff = "Ignora 10% → 30% Defesa Física"
-DuracaoTexto = "Instantâneo"
-Progressao = "Skill possui 10 níveis. Dano e penetração escalam."
-Observacoes = "Respeita cap global de Penetração de Armadura."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano / PenetraÃ§Ã£o"
+EfeitoPrincipal = "Causa dano e ignora parte da defesa fÃ­sica."
+DanoEscala = "170% â†’ 300% do dano da arma"
+BuffDebuff = "Ignora 10% â†’ 30% Defesa FÃ­sica"
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Skill possui 10 nÃ­veis. Dano e penetraÃ§Ã£o escalam."
+Observacoes = "Respeita cap global de PenetraÃ§Ã£o de Armadura."

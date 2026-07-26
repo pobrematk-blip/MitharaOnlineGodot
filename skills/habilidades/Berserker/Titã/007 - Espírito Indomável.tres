@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/37.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13307
-Nome = "Espírito Indomável"
-Descricao = "Mesmo cercado e ferido, o Titã se recusa a cair. Sua vontade reduz a força dos golpes recebidos."
+Nome = "EspÃ­rito IndomÃ¡vel"
+Descricao = "Mesmo cercado e ferido, o TitÃ£ se recusa a cair. Sua vontade reduz a forÃ§a dos golpes recebidos."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 35
+CustoMana = 18
 ClasseRestrita = "Berserker"
 Cooldown = 40
 Duracao = 12
 TargetType = 0
 EffectType = 3
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "Especialização"
-Tipo = "Buff de Sobrevivência"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Buff de SobrevivÃªncia"
 EfeitoPrincipal = "Reduz dano recebido."
 DanoEscala = ""
-BuffDebuff = "-15% → -30% dano recebido"
+BuffDebuff = "-15% â†’ -30% dano recebido"
 DuracaoTexto = "12s"
-Progressao = "Skill possui 10 níveis. Redução escala até 30%."
-Observacoes = "Excelente para sobreviver a mecânicas perigosas."
+Progressao = "Skill possui 10 nÃ­veis. ReduÃ§Ã£o escala atÃ© 30%."
+Observacoes = "Excelente para sobreviver a mecÃ¢nicas perigosas."

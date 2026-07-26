@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/43.png" id="2_icon"]
@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 13108
 Nome = "Berserk"
-Descricao = "O Bárbaro perde completamente o medo da morte e entra em um estado de destruição absoluta, atacando com velocidade e força assustadoras."
+Descricao = "O BÃ¡rbaro perde completamente o medo da morte e entra em um estado de destruiÃ§Ã£o absoluta, atacando com velocidade e forÃ§a assustadoras."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 40
+CustoMana = 20
 ClasseRestrita = "Berserker"
 Cooldown = 60
 Duracao = 15
 TargetType = 0
 EffectType = 3
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff Ofensivo Maior"
 EfeitoPrincipal = "Aumenta Dano e Velocidade de Ataque."
 DanoEscala = ""
-BuffDebuff = "+20% → +35% Dano; +20% → +35% Velocidade de Ataque"
+BuffDebuff = "+20% â†’ +35% Dano; +20% â†’ +35% Velocidade de Ataque"
 DuracaoTexto = "15s"
-Progressao = "Skill possui 10 níveis. Ambos os bônus aumentam gradualmente até +35%."
-Observacoes = "Pode ser combinada com Fúria para janelas de burst, mas deixa o jogador exposto."
+Progressao = "Skill possui 10 nÃ­veis. Ambos os bÃ´nus aumentam gradualmente atÃ© +35%."
+Observacoes = "Pode ser combinada com FÃºria para janelas de burst, mas deixa o jogador exposto."

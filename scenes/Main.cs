@@ -42,7 +42,7 @@ public partial class Main : Node2D
         Vector2 globalPosition = player.GlobalPosition;
         player.Reparent(world);
         player.GlobalPosition = globalPosition;
-        player.ZIndex = 0;
+        player.ZIndex = 1;
         player.ZAsRelative = true;
         GD.Print("[YSORT] Player movido para World para participar da ordenacao por Y.");
     }

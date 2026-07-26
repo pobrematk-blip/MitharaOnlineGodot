@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/18.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11203
-Nome = "Raio Estático"
-Descricao = "Raio elétrico."
+Nome = "Raio EstÃ¡tico"
+Descricao = "Raio elÃ©trico."
 Icone = ExtResource("2_icon")
 Valor = 150
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Mago"
 Cooldown = 18
 Duracao = 1.5
@@ -19,7 +19,7 @@ EffectType = 8
 Especializacao = "Elementalista"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Controle"
 EfeitoPrincipal = "Stun"
 DanoEscala = "150%-260%"
@@ -27,3 +27,4 @@ BuffDebuff = "Stun"
 DuracaoTexto = "1.5s"
 Progressao = ""
 Observacoes = ""
+

@@ -176,6 +176,8 @@ public partial class DialogUI : Control
         {
             existing.Configure(title, rules);
             existing.Visible = true;
+            existing.MoveToFront();
+            existing.RefreshMarketplaceOnOpen();
             return;
         }
 

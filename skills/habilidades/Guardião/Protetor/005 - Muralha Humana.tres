@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/43.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 14105
 Nome = "Espinhos"
-Descricao = "O Protetor faz espinhos surgirem sob os pés dos inimigos próximos, causando dano em quatro pulsos rápidos e reduzindo a velocidade deles."
+Descricao = "O Protetor faz espinhos surgirem sob os pÃ©s dos inimigos prÃ³ximos, causando dano em quatro pulsos rÃ¡pidos e reduzindo a velocidade deles."
 Icone = ExtResource("2_icon")
 Valor = 100
-CustoMana = 25
-ClasseRestrita = "Guardião"
+CustoMana = 13
+ClasseRestrita = "GuardiÃ£o"
 Cooldown = 24
 Duracao = 3
 TargetType = 0
@@ -19,11 +19,12 @@ EffectType = 6
 Especializacao = "Protetor"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
-Tipo = "Dano em Área"
-EfeitoPrincipal = "Causa dano em área ao redor do Protetor em 4 ticks, um a cada 0,5s."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano em Ãrea"
+EfeitoPrincipal = "Causa dano em Ã¡rea ao redor do Protetor em 4 ticks, um a cada 0,5s."
 DanoEscala = "100% do ataque total dividido em 4 ticks"
 BuffDebuff = "Slow 40% por 3s"
 DuracaoTexto = "2s de dano; 3s de slow"
-Progressao = "O dano total é dividido em 4 ticks."
-Observacoes = "Os espinhos aparecem nos pés dos inimigos atingidos."
+Progressao = "O dano total Ã© dividido em 4 ticks."
+Observacoes = "Os espinhos aparecem nos pÃ©s dos inimigos atingidos."
+

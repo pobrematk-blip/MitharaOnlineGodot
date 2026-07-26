@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/16.png" id="2_icon"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14109
-Nome = "Muralha Inabalável"
-Descricao = "O Protetor desperta sua determinação máxima e se torna uma fortaleza impossível de ignorar."
+Nome = "Muralha InabalÃ¡vel"
+Descricao = "O Protetor desperta sua determinaÃ§Ã£o mÃ¡xima e se torna uma fortaleza impossÃ­vel de ignorar."
 Icone = ExtResource("2_icon")
 Valor = 50
-CustoMana = 80
-ClasseRestrita = "Guardião"
+CustoMana = 40
+ClasseRestrita = "GuardiÃ£o"
 Cooldown = 120
 Duracao = 20
 TargetType = 0
@@ -19,11 +19,12 @@ EffectType = 3
 Especializacao = "Protetor"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
-EfeitoPrincipal = "Aumenta HP Máximo, Defesa Física e Defesa Mágica drasticamente."
+EfeitoPrincipal = "Aumenta HP MÃ¡ximo, Defesa FÃ­sica e Defesa MÃ¡gica drasticamente."
 DanoEscala = ""
-BuffDebuff = "+50% HP; +50% Def Física; +50% Def Mágica"
+BuffDebuff = "+50% HP; +50% Def FÃ­sica; +50% Def MÃ¡gica"
 DuracaoTexto = "20s"
-Progressao = "Ultimate possui 5 níveis; bônus pode escalar até +70%."
-Observacoes = "Ultimate defensiva para bosses e emergências."
+Progressao = "Ultimate possui 5 nÃ­veis; bÃ´nus pode escalar atÃ© +70%."
+Observacoes = "Ultimate defensiva para bosses e emergÃªncias."
+

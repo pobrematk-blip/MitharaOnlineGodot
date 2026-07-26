@@ -49,7 +49,7 @@ public partial class Inimigo : CharacterBody2D
         MotionMode = MotionModeEnum.Floating;
         FloorStopOnSlope = false;
         Velocity = Vector2.Zero;
-        ZIndex = 0;
+        ZIndex = 1;
         ZAsRelative = true;
         ConfigurarColisaoViva();
 

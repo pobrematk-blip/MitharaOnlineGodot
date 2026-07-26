@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/2.png" id="1_xefl0"]
@@ -10,17 +10,18 @@ Nome = "Raio Sagrado"
 Descricao = "O Sacerdote concentra luz divina em um raio direto, atingindo um inimigo com dano sagrado para conseguir lutar mesmo sozinho."
 Icone = ExtResource("1_xefl0")
 Valor = 115
-CustoMana = 18
-ClasseRestrita = "Clérigo"
+CustoMana = 5
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 4.0
 TargetType = 2
 EffectType = 7
 Especializacao = "Sacerdote"
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Dano Sagrado"
 EfeitoPrincipal = "Causa dano sagrado em um inimigo."
-DanoEscala = "Dano: 115% -> 230% do Poder Mágico"
-DuracaoTexto = "Instantâneo"
-Progressao = "Aumenta o dano conforme o nível da skill."
-Observacoes = "Skill ofensiva básica do Sacerdote para upar solo."
+DanoEscala = "Dano: 115% -> 230% do Poder MÃ¡gico"
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Aumenta o dano conforme o nÃ­vel da skill."
+Observacoes = "Skill ofensiva bÃ¡sica do Sacerdote para upar solo."
+

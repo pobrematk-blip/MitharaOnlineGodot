@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/32.png" id="2_icon"]
@@ -6,12 +6,13 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 5
-Nome = "Instinto de Sobrevivência"
-Descricao = "O caçador utiliza sua experiência em ambientes hostis para recuperar suas energias."
+Nome = "Instinto de SobrevivÃªncia"
+Descricao = "O caÃ§ador utiliza sua experiÃªncia em ambientes hostis para recuperar suas energias."
 Icone = ExtResource("2_icon")
 Valor = 20
-CustoMana = 15
+CustoMana = 8
 ClasseRestrita = "Arqueiro"
 Cooldown = 45.0
 TargetType = 0
 EffectType = 1
+

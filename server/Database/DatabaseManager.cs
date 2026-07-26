@@ -7,7 +7,8 @@ namespace Mithara.Server.Database;
 
 public class DatabaseManager
 {
-    private const int StartingCashBalance = 100;
+    private const int StartingCashBalance = 500;
+    private const int ExistingAccountMinimumCashBalance = 400;
     private readonly string _connectionString;
 
     public DatabaseManager(string host, int port, string database, string user, string password)
@@ -43,7 +44,7 @@ public class DatabaseManager
                 security_question VARCHAR(255) NOT NULL DEFAULT '',
                 security_answer VARCHAR(255) NOT NULL DEFAULT '',
                 salt VARCHAR(255) NOT NULL DEFAULT '',
-                cash_balance INT NOT NULL DEFAULT 100,
+                cash_balance INT NOT NULL DEFAULT 500,
                 character_slots INT NOT NULL DEFAULT 3,
                 last_seen TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
                 online_character_name VARCHAR(255) NOT NULL DEFAULT '',
@@ -221,6 +222,11 @@ public class DatabaseManager
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS database_flags (
+                key VARCHAR(120) PRIMARY KEY,
+                applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+
             ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS max_slots INT NOT NULL DEFAULT 5;
             ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS shop_name VARCHAR(255) NOT NULL DEFAULT '';
             ALTER TABLE lojinhas ADD COLUMN IF NOT EXISTS owner_class VARCHAR(80) NOT NULL DEFAULT '';
@@ -266,7 +272,7 @@ public class DatabaseManager
             ("accounts", "security_answer", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "email", "VARCHAR(255) NOT NULL DEFAULT ''"),
             ("accounts", "salt", "VARCHAR(255) NOT NULL DEFAULT ''"),
-            ("accounts", "cash_balance", "INT NOT NULL DEFAULT 100"),
+            ("accounts", "cash_balance", "INT NOT NULL DEFAULT 500"),
             ("accounts", "character_slots", "INT NOT NULL DEFAULT 3"),
             ("accounts", "last_seen", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
             ("accounts", "online_character_name", "VARCHAR(255) NOT NULL DEFAULT ''"),
@@ -307,6 +313,53 @@ public class DatabaseManager
             {
                 Logger.Info($"N?o foi poss?vel adicionar coluna '{column}' em '{table}': {ex.Message}");
             }
+        }
+
+        TryApplyAccountCashGrant(conn);
+    }
+
+    private void TryApplyAccountCashGrant(NpgsqlConnection conn)
+    {
+        const string flagKey = "account_cash_minimum_400_20260726";
+
+        try
+        {
+            using var ensure = conn.CreateCommand();
+            ensure.CommandText = """
+                ALTER TABLE accounts ALTER COLUMN cash_balance SET DEFAULT 500;
+                CREATE TABLE IF NOT EXISTS database_flags (
+                    key VARCHAR(120) PRIMARY KEY,
+                    applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                """;
+            ensure.ExecuteNonQuery();
+
+            using var check = conn.CreateCommand();
+            check.CommandText = "SELECT 1 FROM database_flags WHERE key = @key";
+            check.Parameters.AddWithValue("@key", flagKey);
+            if (check.ExecuteScalar() != null)
+                return;
+
+            using var tx = conn.BeginTransaction();
+            using var grant = conn.CreateCommand();
+            grant.Transaction = tx;
+            grant.CommandText = """
+                UPDATE accounts
+                SET cash_balance = GREATEST(cash_balance, @minimum)
+                WHERE cash_balance < @minimum;
+
+                INSERT INTO database_flags (key) VALUES (@key);
+                """;
+            grant.Parameters.AddWithValue("@minimum", ExistingAccountMinimumCashBalance);
+            grant.Parameters.AddWithValue("@key", flagKey);
+            grant.ExecuteNonQuery();
+            tx.Commit();
+
+            Logger.Info($"Cash inicial ajustado: novas contas={StartingCashBalance}, contas antigas minimo={ExistingAccountMinimumCashBalance}.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Info($"Nao foi possivel aplicar ajuste de cash inicial: {ex.Message}");
         }
     }
 

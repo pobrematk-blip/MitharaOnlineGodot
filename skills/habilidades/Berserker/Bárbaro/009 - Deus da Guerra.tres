@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/26.png" id="2_icon"]
@@ -7,23 +7,24 @@
 script = ExtResource("1_sk")
 SkillId = 13109
 Nome = "Deus da Guerra"
-Descricao = "O Bárbaro libera toda sua ferocidade e se torna uma força imparável no campo de batalha, lutando como se cada golpe fosse o último."
+Descricao = "O BÃ¡rbaro libera toda sua ferocidade e se torna uma forÃ§a imparÃ¡vel no campo de batalha, lutando como se cada golpe fosse o Ãºltimo."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 80
+CustoMana = 40
 ClasseRestrita = "Berserker"
 Cooldown = 120
 Duracao = 20
 TargetType = 0
 EffectType = 3
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
 EfeitoPrincipal = "Aumenta drasticamente Dano, Velocidade de Ataque e Roubo de Vida."
 DanoEscala = ""
 BuffDebuff = "+50% Dano, +50% Velocidade de Ataque, +15% Roubo de Vida"
 DuracaoTexto = "20s"
-Progressao = "Ultimate possui 5 níveis. Bônus podem escalar levemente ou reduzir cooldown conforme o nível."
-Observacoes = "Ultimate ofensiva do Bárbaro. Deve respeitar caps globais de Velocidade de Ataque e Roubo de Vida."
+Progressao = "Ultimate possui 5 nÃ­veis. BÃ´nus podem escalar levemente ou reduzir cooldown conforme o nÃ­vel."
+Observacoes = "Ultimate ofensiva do BÃ¡rbaro. Deve respeitar caps globais de Velocidade de Ataque e Roubo de Vida."
+

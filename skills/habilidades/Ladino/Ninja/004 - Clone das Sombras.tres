@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/43.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 12304
 Nome = "Clone das Sombras"
-Descricao = "Cria um clone ilusório que confunde os inimigos."
+Descricao = "Cria um clone ilusÃ³rio que confunde os inimigos."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 35
+CustoMana = 18
 ClasseRestrita = "Ladino"
 Cooldown = 35
 Duracao = 8
@@ -19,11 +19,11 @@ EffectType = 5
 Especializacao = "Ninja"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Utilidade / Defesa"
-EfeitoPrincipal = "Invoca um clone temporário que pode distrair ou receber ataques."
+EfeitoPrincipal = "Invoca um clone temporÃ¡rio que pode distrair ou receber ataques."
 DanoEscala = ""
-BuffDebuff = "Clone temporário"
+BuffDebuff = "Clone temporÃ¡rio"
 DuracaoTexto = "8s"
-Progressao = "Duração Lv1 8s → Lv10 14s"
+Progressao = "DuraÃ§Ã£o Lv1 8s â†’ Lv10 14s"
 Observacoes = "O clone causa pouco ou nenhum dano, conforme balanceamento."

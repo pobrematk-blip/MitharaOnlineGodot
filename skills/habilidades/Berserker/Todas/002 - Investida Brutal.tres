@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/17.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 13002
 Nome = "Investida Brutal"
-Descricao = "O Berserker baixa o ombro e avança como uma fera, usando o peso do corpo e da armadura para romper a distância até o inimigo."
+Descricao = "O Berserker baixa o ombro e avanÃ§a como uma fera, usando o peso do corpo e da armadura para romper a distÃ¢ncia atÃ© o inimigo."
 Icone = ExtResource("2_icon")
 Valor = 80
-CustoMana = 15
+CustoMana = 8
 ClasseRestrita = "Berserker"
 Cooldown = 15
 Duracao = 0
@@ -20,10 +20,11 @@ Especializacao = "Todas"
 NivelRequerido = 1
 Ordem = 2
 Escopo = "Compartilhada da Classe"
-Tipo = "Mobilidade / Iniciação"
-EfeitoPrincipal = "Avança 10 tiles em linha reta e causa dano ao primeiro inimigo atingido. A animação de impacto só aparece se acertar o alvo."
-DanoEscala = "80% → 150% do dano da arma"
-BuffDebuff = "Interrupção curta"
-DuracaoTexto = "Instantâneo"
-Progressao = "Skill possui 10 níveis. O dano escala de 80% no Lv1 até 150% no Lv10."
-Observacoes = "Não atravessa paredes. Em bosses, não interrompe habilidades especiais."
+Tipo = "Mobilidade / IniciaÃ§Ã£o"
+EfeitoPrincipal = "AvanÃ§a 10 tiles em linha reta e causa dano ao primeiro inimigo atingido. A animaÃ§Ã£o de impacto sÃ³ aparece se acertar o alvo."
+DanoEscala = "80% â†’ 150% do dano da arma"
+BuffDebuff = "InterrupÃ§Ã£o curta"
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Skill possui 10 nÃ­veis. O dano escala de 80% no Lv1 atÃ© 150% no Lv10."
+Observacoes = "NÃ£o atravessa paredes. Em bosses, nÃ£o interrompe habilidades especiais."
+

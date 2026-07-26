@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/35.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11104
-Nome = "Transferência Vital"
+Nome = "TransferÃªncia Vital"
 Descricao = "Transfere vida."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 45
+CustoMana = 23
 ClasseRestrita = "Mago"
 Cooldown = 35
 Duracao = 0
@@ -19,9 +19,9 @@ EffectType = 5
 Especializacao = "Summoner"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Suporte"
-EfeitoPrincipal = "Cura invocação"
+EfeitoPrincipal = "Cura invocaÃ§Ã£o"
 DanoEscala = ""
 BuffDebuff = "Cura"
 DuracaoTexto = ""

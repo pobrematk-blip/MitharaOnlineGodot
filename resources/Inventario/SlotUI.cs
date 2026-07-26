@@ -494,7 +494,7 @@ public partial class SlotUI : Control
         if (mercado == null || !mercado.Visible)
             return false;
 
-        bool selecionado = mercado.TrySelectInventorySlotForListing(SlotIndex, SlotInterno.Quantidade);
+        bool selecionado = mercado.TrySelectInventorySlotForListing(SlotIndex, SlotInterno.Quantidade, SlotInterno.Item.ItemID);
         if (selecionado)
             GD.Print($"[MERCADO] Slot {SlotIndex} selecionado para anuncio por duplo clique. Quantidade={SlotInterno.Quantidade}");
         return selecionado;

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/35.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13206
-Nome = "Caçador de Gigantes"
-Descricao = "O Slayer entra em estado de concentração absoluta contra inimigos poderosos, estudando seus movimentos para atacar com precisão brutal."
+Nome = "CaÃ§ador de Gigantes"
+Descricao = "O Slayer entra em estado de concentraÃ§Ã£o absoluta contra inimigos poderosos, estudando seus movimentos para atacar com precisÃ£o brutal."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Berserker"
 Cooldown = 40
 Duracao = 15
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Slayer"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff Anti-Boss"
 EfeitoPrincipal = "Aumenta dano contra monstros Elite, Bosses e World Bosses."
 DanoEscala = ""
-BuffDebuff = "+10% → +25% dano contra alvos poderosos"
+BuffDebuff = "+10% â†’ +25% dano contra alvos poderosos"
 DuracaoTexto = "15s"
-Progressao = "Skill possui 10 níveis. Bônus escala de +10% até +25%."
+Progressao = "Skill possui 10 nÃ­veis. BÃ´nus escala de +10% atÃ© +25%."
 Observacoes = "Identidade de boss killer do Slayer."

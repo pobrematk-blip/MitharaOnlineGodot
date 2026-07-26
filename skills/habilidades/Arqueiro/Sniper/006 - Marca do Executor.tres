@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro +/48.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Marca do Executor"
 Descricao = "Marca o alvo com veneno executor. O dano da habilidade e dividido em 3 ticks, causando dano uma vez por segundo."
 Icone = ExtResource("2_icon")
 Valor = 25
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Arqueiro"
 Cooldown = 15
 Duracao = 12
@@ -19,7 +19,7 @@ EffectType = 24
 Especializacao = "Sniper"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "DoT"
 EfeitoPrincipal = "Envenena o alvo e aumenta o dano recebido"
 DanoEscala = "10%-25%"
@@ -27,3 +27,4 @@ BuffDebuff = "Veneno: 3 ticks / +10%-25% dano recebido"
 DuracaoTexto = "3s de veneno; marca por 12s"
 Progressao = "O dano total da skill e dividido em 3 ticks."
 Observacoes = "Cada tick toca a animacao EDIT _ toxic gas no alvo."
+

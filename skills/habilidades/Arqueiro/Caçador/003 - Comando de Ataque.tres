@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/31.png" id="2_icon"]
@@ -10,16 +10,16 @@ Nome = "Comando de Ataque"
 Descricao = "Ordena ataque."
 Icone = ExtResource("2_icon")
 Valor = 120
-CustoMana = 10
+CustoMana = 5
 ClasseRestrita = "Arqueiro"
 Cooldown = 4
 Duracao = 0
 TargetType = 2
 EffectType = 7
-Especializacao = "Caçador"
+Especializacao = "CaÃ§ador"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Pet"
 EfeitoPrincipal = "Ataque do pet"
 DanoEscala = "120%-250%"

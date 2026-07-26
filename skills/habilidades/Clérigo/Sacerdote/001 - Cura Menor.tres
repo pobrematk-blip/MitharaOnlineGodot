@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/38.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15101
 Nome = "Cura Menor"
-Descricao = "O Sacerdote canaliza uma pequena quantidade de luz divina nas mãos, fechando ferimentos recentes e restaurando a força de um aliado."
+Descricao = "O Sacerdote canaliza uma pequena quantidade de luz divina nas mÃ£os, fechando ferimentos recentes e restaurando a forÃ§a de um aliado."
 Icone = ExtResource("2_icon")
 Valor = 120
-CustoMana = 15
-ClasseRestrita = "Clérigo"
+CustoMana = 8
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 4
 Duracao = 0
 TargetType = 1
@@ -19,11 +19,12 @@ EffectType = 1
 Especializacao = "Sacerdote"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Cura"
 EfeitoPrincipal = "Cura um alvo aliado selecionado."
-DanoEscala = "Cura: 120% → 250% do Poder Mágico"
+DanoEscala = "Cura: 120% â†’ 250% do Poder MÃ¡gico"
 BuffDebuff = "Cura"
-DuracaoTexto = "Instantâneo"
+DuracaoTexto = "InstantÃ¢neo"
 Progressao = "Lv1 = 120%; Lv10 = 250%."
-Observacoes = "Principal cura rápida do Sacerdote."
+Observacoes = "Principal cura rÃ¡pida do Sacerdote."
+

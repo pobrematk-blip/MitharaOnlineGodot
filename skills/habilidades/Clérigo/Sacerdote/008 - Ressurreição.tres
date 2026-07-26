@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/48.png" id="2_icon"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15108
-Nome = "Ressurreição"
-Descricao = "O Sacerdote chama a alma de um aliado caído de volta ao corpo, permitindo que ele retorne à batalha sob a graça divina."
+Nome = "RessurreiÃ§Ã£o"
+Descricao = "O Sacerdote chama a alma de um aliado caÃ­do de volta ao corpo, permitindo que ele retorne Ã  batalha sob a graÃ§a divina."
 Icone = ExtResource("2_icon")
 Valor = 20
-CustoMana = 100
-ClasseRestrita = "Clérigo"
+CustoMana = 50
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 180
 Duracao = 0
 TargetType = 1
@@ -19,11 +19,11 @@ EffectType = 0
 Especializacao = "Sacerdote"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Suporte"
 EfeitoPrincipal = "Revive um aliado derrotado."
-DanoEscala = "Revive com 20% → 60% HP e Mana"
+DanoEscala = "Revive com 20% â†’ 60% HP e Mana"
 BuffDebuff = "Suporte"
-DuracaoTexto = "Conjuração"
+DuracaoTexto = "ConjuraÃ§Ã£o"
 Progressao = "Lv1 = 20%; Lv10 = 60%."
-Observacoes = "Não deve funcionar em certos modos PvP, se o design bloquear."
+Observacoes = "NÃ£o deve funcionar em certos modos PvP, se o design bloquear."

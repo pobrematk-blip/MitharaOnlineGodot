@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/15.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12402
-Nome = "Bomba de Fumaça"
-Descricao = "Lança uma bomba de fumaça que atrapalha os inimigos próximos."
+Nome = "Bomba de FumaÃ§a"
+Descricao = "LanÃ§a uma bomba de fumaÃ§a que atrapalha os inimigos prÃ³ximos."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Ladino"
 Cooldown = 30
 Duracao = 6
@@ -19,11 +19,11 @@ EffectType = 25
 Especializacao = "Gatuno"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "Especialização"
-Tipo = "Controle / Sobrevivência"
-EfeitoPrincipal = "Reduz precisão dos inimigos na área."
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Controle / SobrevivÃªncia"
+EfeitoPrincipal = "Reduz precisÃ£o dos inimigos na Ã¡rea."
 DanoEscala = ""
-BuffDebuff = "-15% Precisão dos inimigos"
+BuffDebuff = "-15% PrecisÃ£o dos inimigos"
 DuracaoTexto = "6s"
-Progressao = "Lv1 -15% → Lv10 -30%"
-Observacoes = "Não é invisibilidade; é zona de controle."
+Progressao = "Lv1 -15% â†’ Lv10 -30%"
+Observacoes = "NÃ£o Ã© invisibilidade; Ã© zona de controle."

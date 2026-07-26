@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Assasino/10.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Chute na Virilha"
 Descricao = "Um golpe baixo e certeiro que interrompe o alvo por alguns segundos."
 Icone = ExtResource("2_icon")
 Valor = 90
-CustoMana = 25
+CustoMana = 13
 ClasseRestrita = "Ladino"
 Cooldown = 18
 Duracao = 2
@@ -27,3 +27,4 @@ BuffDebuff = "Stun por 2s"
 DuracaoTexto = "2s"
 Progressao = "Dano Lv1 90% -> Lv10 160%; stun mantem 2s"
 Observacoes = "Substitui Passo Sombrio dentro da rota Assassino."
+

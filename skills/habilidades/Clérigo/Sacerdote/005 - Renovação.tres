@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/5.png" id="1_63ohm"]
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15105
-Nome = "Renovação"
-Descricao = "Uma bênção persistente envolve o aliado selecionado e o Sacerdote, restaurando vida e mana enquanto a luz divina permanece ativa."
+Nome = "RenovaÃ§Ã£o"
+Descricao = "Uma bÃªnÃ§Ã£o persistente envolve o aliado selecionado e o Sacerdote, restaurando vida e mana enquanto a luz divina permanece ativa."
 Icone = ExtResource("1_63ohm")
 Valor = 180
-CustoMana = 30
-ClasseRestrita = "Clérigo"
+CustoMana = 15
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 15.0
 Duracao = 10.0
 TargetType = 1
@@ -19,11 +19,12 @@ EffectType = 1
 Especializacao = "Sacerdote"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Cura e Mana"
 EfeitoPrincipal = "Restaura HP e Mana do aliado selecionado e do Sacerdote."
-DanoEscala = "Cura e mana: 180% -> 360% do Poder Mágico"
+DanoEscala = "Cura e mana: 180% -> 360% do Poder MÃ¡gico"
 BuffDebuff = "Restaura HP e Mana"
 DuracaoTexto = "10s"
 Progressao = "Lv1 = 180% total; Lv10 = 360% total."
 Observacoes = "Ideal para manter aliados vivos e com mana em lutas longas."
+

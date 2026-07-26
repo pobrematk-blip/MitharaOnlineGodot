@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/46.png" id="2_icon"]
@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 13306
 Nome = "Tremor de Guerra"
-Descricao = "O Titã causa um tremor violento ao seu redor, desestabilizando todos os inimigos próximos."
+Descricao = "O TitÃ£ causa um tremor violento ao seu redor, desestabilizando todos os inimigos prÃ³ximos."
 Icone = ExtResource("2_icon")
 Valor = 180
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Berserker"
 Cooldown = 18
 Duracao = 0
 TargetType = 2
 EffectType = 7
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "Especialização"
-Tipo = "Dano em Área"
-EfeitoPrincipal = "Causa dano físico em área."
-DanoEscala = "180% → 300% do dano da arma"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano em Ãrea"
+EfeitoPrincipal = "Causa dano fÃ­sico em Ã¡rea."
+DanoEscala = "180% â†’ 300% do dano da arma"
 BuffDebuff = ""
-DuracaoTexto = "Instantâneo"
-Progressao = "Skill possui 10 níveis. Dano escala de 180% até 300%."
-Observacoes = "Área ofensiva da árvore tank."
+DuracaoTexto = "InstantÃ¢neo"
+Progressao = "Skill possui 10 nÃ­veis. Dano escala de 180% atÃ© 300%."
+Observacoes = "Ãrea ofensiva da Ã¡rvore tank."

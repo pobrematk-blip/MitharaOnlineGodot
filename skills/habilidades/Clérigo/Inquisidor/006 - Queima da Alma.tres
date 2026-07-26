@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/35.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15306
 Nome = "Queima da Alma"
-Descricao = "Chamas invisíveis consomem a essência do alvo, causando dano contínuo que ignora parte de sua resistência espiritual."
+Descricao = "Chamas invisÃ­veis consomem a essÃªncia do alvo, causando dano contÃ­nuo que ignora parte de sua resistÃªncia espiritual."
 Icone = ExtResource("2_icon")
 Valor = 180
-CustoMana = 35
-ClasseRestrita = "Clérigo"
+CustoMana = 18
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 16
 Duracao = 10
 TargetType = 2
@@ -19,10 +19,10 @@ EffectType = 7
 Especializacao = "Inquisidor"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "DoT"
 EfeitoPrincipal = "Aplica dano sagrado ao longo do tempo."
-DanoEscala = "Dano total: 180% → 360%"
+DanoEscala = "Dano total: 180% â†’ 360%"
 BuffDebuff = "DoT"
 DuracaoTexto = "10s"
 Progressao = "Lv1 = 180%; Lv10 = 360% total."

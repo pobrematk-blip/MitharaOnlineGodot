@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/47.png" id="2_icon"]
@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 14301
 Nome = "Golpe Sagrado"
-Descricao = "O Templário canaliza energia sagrada na lâmina e desfere um golpe purificador contra o inimigo."
+Descricao = "O TemplÃ¡rio canaliza energia sagrada na lÃ¢mina e desfere um golpe purificador contra o inimigo."
 Icone = ExtResource("2_icon")
 Valor = 120
-CustoMana = 15
-ClasseRestrita = "Guardião"
+CustoMana = 8
+ClasseRestrita = "GuardiÃ£o"
 Cooldown = 6
 Duracao = 0
 TargetType = 2
 EffectType = 7
-Especializacao = "Templário"
+Especializacao = "TemplÃ¡rio"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Dano Sagrado"
-EfeitoPrincipal = "Causa dano físico/sagrado em alvo único."
-DanoEscala = "120% → 220% do dano da arma"
+EfeitoPrincipal = "Causa dano fÃ­sico/sagrado em alvo Ãºnico."
+DanoEscala = "120% â†’ 220% do dano da arma"
 BuffDebuff = ""
-DuracaoTexto = "Instantâneo"
+DuracaoTexto = "InstantÃ¢neo"
 Progressao = "Lv1 = 120%; Lv10 = 220%."
-Observacoes = "Escala com arma e bônus sagrados."
+Observacoes = "Escala com arma e bÃ´nus sagrados."

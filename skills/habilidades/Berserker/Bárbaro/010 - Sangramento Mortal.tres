@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/28.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Sangramento Mortal"
 Descricao = "O Barbaro arremessa um machado brutal contra o alvo, abrindo um ferimento mortal que causa 5 ticks de dano."
 Icone = ExtResource("2_icon")
 Valor = 180
-CustoMana = 28
+CustoMana = 14
 ClasseRestrita = "Berserker"
 EfeitoVisualPath = "res://skills/Animacao/193.png"
 CenaEfeitoNoAlvo = "res://skills/Animacao/193.png"
@@ -30,3 +30,4 @@ BuffDebuff = "Sangramento Mortal"
 DuracaoTexto = "5s"
 Progressao = "O dano total escala com a arma e e dividido em 5 ticks, um por segundo."
 Observacoes = "Substitui Segundo Folego dentro da rota Barbaro."
+

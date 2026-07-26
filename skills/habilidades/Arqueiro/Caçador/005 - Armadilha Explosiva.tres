@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/44.png" id="2_icon"]
@@ -10,18 +10,18 @@ Nome = "Armadilha Explosiva"
 Descricao = "Armadilha explosiva."
 Icone = ExtResource("2_icon")
 Valor = 140
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Arqueiro"
 Cooldown = 15
 Duracao = 0
 TargetType = 2
 EffectType = 7
-Especializacao = "Caçador"
+Especializacao = "CaÃ§ador"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "Especialização"
-Tipo = "Área"
-EfeitoPrincipal = "Dano em área"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Ãrea"
+EfeitoPrincipal = "Dano em Ã¡rea"
 DanoEscala = "140%-260%"
 BuffDebuff = ""
 DuracaoTexto = ""

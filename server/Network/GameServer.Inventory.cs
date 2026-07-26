@@ -1233,8 +1233,11 @@ partial class GameServer
         player.Agilidade = player.BaseAgilidade + bonusAgi;
         player.Destreza = player.BaseDestreza + bonusDes;
         player.Inteligencia = player.BaseInteligencia + bonusInt;
-        player.MaxHealth = 80 + player.Forca * 2 + player.Level * 10 + bonusHp;
-        player.MaxMana = 30 + player.Inteligencia * 3 + player.Level * 5 + bonusMana;
+        float levelVitalityMultiplier = 1f + Math.Max(0, player.Level - 1) * 0.02f;
+        int baseMaxHealth = 80 + player.Forca * 2 + player.Level * 10 + bonusHp;
+        int baseMaxMana = 30 + player.Inteligencia * 3 + player.Level * 5 + bonusMana;
+        player.MaxHealth = Math.Max(1, (int)MathF.Round(baseMaxHealth * levelVitalityMultiplier));
+        player.MaxMana = Math.Max(1, (int)MathF.Round(baseMaxMana * levelVitalityMultiplier));
     }
 
     private static int Refined(float value, int refineLevel, double multiplier)

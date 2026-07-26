@@ -448,6 +448,8 @@ public partial class Player : CharacterBody2D
         CurrentMana = MaxMana;
         CurrentStamina = MaxStamina;
         AddToGroup("player");
+        ZIndex = 1;
+        ZAsRelative = true;
         InitClass();
 
         CriarSombra();
@@ -1193,11 +1195,62 @@ public partial class Player : CharacterBody2D
     {
         if (overlay == null || !overlay.Visible) return;
         if (overlay.SpriteFrames == null) return;
-        if (!overlay.SpriteFrames.HasAnimation(anim)) return;
-        if (overlay.Animation.ToString() != anim)
-            overlay.Play(anim);
-        overlay.Frame = frame;
+
+        string animOverlay = ResolverAnimacaoOverlay(overlay.SpriteFrames, anim);
+        if (string.IsNullOrEmpty(animOverlay)) return;
+
+        if (overlay.Animation.ToString() != animOverlay)
+            overlay.Play(animOverlay);
+
+        int frameCount = overlay.SpriteFrames.GetFrameCount(animOverlay);
+        overlay.Frame = frameCount > 0 ? Math.Clamp(frame, 0, frameCount - 1) : 0;
         overlay.SpeedScale = speed;
+    }
+
+    private static string ResolverAnimacaoOverlay(SpriteFrames frames, string anim)
+    {
+        if (frames == null || string.IsNullOrWhiteSpace(anim))
+            return "";
+
+        if (frames.HasAnimation(anim))
+            return anim;
+
+        string dir = ExtrairDirecaoAnimacao(anim);
+        if (string.IsNullOrEmpty(dir))
+            return "";
+
+        if (anim.StartsWith("walk_", StringComparison.Ordinal) && frames.HasAnimation($"walk_{dir}"))
+            return $"walk_{dir}";
+
+        if (anim.StartsWith("run_", StringComparison.Ordinal) && frames.HasAnimation($"run_{dir}"))
+            return $"run_{dir}";
+
+        if (anim.StartsWith("idle_", StringComparison.Ordinal) && frames.HasAnimation($"idle_{dir}"))
+            return $"idle_{dir}";
+
+        if (anim.StartsWith("jump_", StringComparison.Ordinal) && frames.HasAnimation($"jump_{dir}"))
+            return $"jump_{dir}";
+
+        if (anim.Contains("_attack_", StringComparison.Ordinal))
+        {
+            foreach (StringName name in frames.GetAnimationNames())
+            {
+                string candidate = name.ToString();
+                if (candidate.EndsWith($"_attack_{dir}", StringComparison.Ordinal))
+                    return candidate;
+            }
+        }
+
+        return "";
+    }
+
+    private static string ExtrairDirecaoAnimacao(string anim)
+    {
+        if (anim.EndsWith("_down", StringComparison.Ordinal)) return "down";
+        if (anim.EndsWith("_up", StringComparison.Ordinal)) return "up";
+        if (anim.EndsWith("_left", StringComparison.Ordinal)) return "left";
+        if (anim.EndsWith("_right", StringComparison.Ordinal)) return "right";
+        return "";
     }
 
     public void AplicarOverlayCabelo(string spritesheetPath, Color cor)
@@ -1920,8 +1973,19 @@ public partial class Player : CharacterBody2D
         if (item == null)
             return false;
 
-        return item.Tipo != TipoEquipamento.Arma &&
-            (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null);
+        if (item.Tipo == TipoEquipamento.Arma)
+            return false;
+
+        if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
+            return true;
+
+        if (item.CategoriaPeso != PesoItem.Medio)
+            return false;
+
+        return item.Tipo is TipoEquipamento.Capacete
+            or TipoEquipamento.Peitoral
+            or TipoEquipamento.Calca
+            or TipoEquipamento.Botas;
     }
 
     private void UpdateAnimation(Vector2 velocity)

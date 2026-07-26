@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/42.png" id="2_icon"]
@@ -10,19 +10,19 @@ Nome = "Sherigan"
 Descricao = "Lobo espiritual companheiro."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 45
+CustoMana = 23
 ClasseRestrita = "Arqueiro"
 Cooldown = 35
 Duracao = 0
 TargetType = 0
 EffectType = 5
-Especializacao = "Caçador"
+Especializacao = "CaÃ§ador"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
-Tipo = "Invocação"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "InvocaÃ§Ã£o"
 EfeitoPrincipal = "Invoca Sherigan"
-DanoEscala = "Escala com nível"
+DanoEscala = "Escala com nÃ­vel"
 BuffDebuff = ""
 DuracaoTexto = "Permanente"
 Progressao = ""

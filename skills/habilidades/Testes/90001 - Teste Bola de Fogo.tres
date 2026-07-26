@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/19.png" id="2_icon"]
@@ -10,9 +10,9 @@ Nome = "Teste Bola de Fogo"
 Descricao = "Skill de teste para validar dano, icone e efeito visual pelo servidor."
 Icone = ExtResource("2_icon")
 Valor = 28
-CustoMana = 12
+CustoMana = 6
 ClasseRestrita = "Mago"
-EfeitoVisualPath = "res://skills/Animação/100.png"
+EfeitoVisualPath = "res://skills/AnimaÃ§Ã£o/100.png"
 Cooldown = 4.0
 TargetType = 2
 EffectType = 7
@@ -22,3 +22,4 @@ Tipo = "Ativa"
 EfeitoPrincipal = "Dano"
 DanoEscala = "Inteligencia"
 Observacoes = "Recurso temporario para testes da arvore de talentos."
+

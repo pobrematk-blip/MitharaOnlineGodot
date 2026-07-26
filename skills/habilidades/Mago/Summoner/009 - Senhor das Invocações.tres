@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/27.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11109
-Nome = "Senhor das Invocações"
-Descricao = "Fortalece todas as invocações."
+Nome = "Senhor das InvocaÃ§Ãµes"
+Descricao = "Fortalece todas as invocaÃ§Ãµes."
 Icone = ExtResource("2_icon")
 Valor = 50
-CustoMana = 80
+CustoMana = 40
 ClasseRestrita = "Mago"
 Cooldown = 120
 Duracao = 20
@@ -19,7 +19,7 @@ EffectType = 3
 Especializacao = "Summoner"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
 EfeitoPrincipal = "+50% HP e Dano"
 DanoEscala = ""

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/16.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Impacto Repulsor"
 Descricao = "Empurra alvo."
 Icone = ExtResource("2_icon")
 Valor = 140
-CustoMana = 35
+CustoMana = 18
 ClasseRestrita = "Arqueiro"
 Cooldown = 18
 Duracao = 0
@@ -19,7 +19,7 @@ EffectType = 7
 Especializacao = "Sniper"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Controle"
 EfeitoPrincipal = "Knockback 3 tiles"
 DanoEscala = "140%"

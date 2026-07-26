@@ -3,29 +3,31 @@ using Godot;
 public partial class MarketplaceDropSlot : Panel
 {
     [Signal]
-    public delegate void OnMarketplaceItemDroppedEventHandler(int inventorySlot, int quantity);
+    public delegate void OnMarketplaceItemDroppedEventHandler(int inventorySlot, int quantity, int itemId);
 
     public override bool _CanDropData(Vector2 atPosition, Variant data)
     {
-        return TryReadInventoryDrop(data, out _, out _);
+        return TryReadInventoryDrop(data, out _, out _, out _);
     }
 
     public override void _DropData(Vector2 atPosition, Variant data)
     {
-        if (TryReadInventoryDrop(data, out int inventorySlot, out int quantity))
-            EmitSignal(SignalName.OnMarketplaceItemDropped, inventorySlot, quantity);
+        if (TryReadInventoryDrop(data, out int inventorySlot, out int quantity, out int itemId))
+            EmitSignal(SignalName.OnMarketplaceItemDropped, inventorySlot, quantity, itemId);
     }
 
-    private static bool TryReadInventoryDrop(Variant data, out int inventorySlot, out int quantity)
+    private static bool TryReadInventoryDrop(Variant data, out int inventorySlot, out int quantity, out int itemId)
     {
         inventorySlot = -1;
         quantity = 0;
+        itemId = 0;
 
         var slot = data.AsGodotObject() as SlotUI ?? data.Obj as SlotUI;
         if (slot?.SlotInterno?.Item != null && slot.SlotInterno.Quantidade > 0)
         {
             inventorySlot = slot.SlotIndex;
             quantity = slot.SlotInterno.Quantidade;
+            itemId = slot.SlotInterno.Item.ItemID;
             return inventorySlot >= 0;
         }
 
@@ -49,6 +51,9 @@ public partial class MarketplaceDropSlot : Panel
                 quantity = GetInt(dict, "quantidade");
             if (quantity <= 0)
                 quantity = GetInt(dict, "count");
+            itemId = GetInt(dict, "item_id");
+            if (itemId <= 0)
+                itemId = GetInt(dict, "itemId");
 
             if (dict.ContainsKey("source") && dict["source"].VariantType == Variant.Type.Object)
             {
@@ -57,6 +62,7 @@ public partial class MarketplaceDropSlot : Panel
                 {
                     inventorySlot = slot.SlotIndex;
                     quantity = slot.SlotInterno.Quantidade;
+                    itemId = slot.SlotInterno.Item.ItemID;
                 }
             }
 
@@ -67,6 +73,7 @@ public partial class MarketplaceDropSlot : Panel
                 {
                     inventorySlot = slot.SlotIndex;
                     quantity = slot.SlotInterno.Quantidade;
+                    itemId = slot.SlotInterno.Item.ItemID;
                 }
             }
 

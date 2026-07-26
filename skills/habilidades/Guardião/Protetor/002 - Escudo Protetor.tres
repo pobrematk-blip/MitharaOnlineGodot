@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Guerreiro/11.png" id="2_icon"]
@@ -10,7 +10,7 @@ Nome = "Estocada"
 Descricao = "O Guardiao avanca para frente e estoca o primeiro inimigo na linha, causando dano com a espada."
 Icone = ExtResource("2_icon")
 Valor = 85
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Guardiao"
 EfeitoVisualPath = "res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/34"
 CenaEfeitoNoAlvo = "res://skills/Animacao/70 Animated Effects v12/70 Animated Effects v12/34"
@@ -29,3 +29,4 @@ BuffDebuff = ""
 DuracaoTexto = "Instantanea"
 Progressao = "Aumenta o dano da estocada conforme o valor da habilidade."
 Observacoes = "A skill so entra em cooldown se houver um alvo valido na linha do avanco."
+

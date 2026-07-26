@@ -175,7 +175,7 @@ public partial class EntityManager : Node
 
     private static void PrepararEntidadeYSort(Node2D node)
     {
-        node.ZIndex = 0;
+        node.ZIndex = 1;
         node.ZAsRelative = true;
         node.YSortEnabled = false;
     }
@@ -4920,8 +4920,8 @@ public partial class EntityManager : Node
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
         // Fica acima do chao e abaixo das entidades/personagens.
-        root.ZIndex = -1;
-        root.ZAsRelative = false;
+        root.ZIndex = 0;
+        root.ZAsRelative = true;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
         root.SetMeta("item_id", itemId);

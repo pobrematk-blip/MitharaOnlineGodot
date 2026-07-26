@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Buffs/PNG/48.png" id="2_icon"]
@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15207
-Nome = "Proteção Celestial"
-Descricao = "As bênçãos celestiais se espalham pelo campo, cobrindo aliados próximos com uma proteção luminosa."
+Nome = "ProteÃ§Ã£o Celestial"
+Descricao = "As bÃªnÃ§Ã£os celestiais se espalham pelo campo, cobrindo aliados prÃ³ximos com uma proteÃ§Ã£o luminosa."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 55
-ClasseRestrita = "Clérigo"
+CustoMana = 28
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 45
 Duracao = 10
 TargetType = 0
@@ -19,11 +19,11 @@ EffectType = 10
 Especializacao = "Paladino"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "Especialização"
-Tipo = "Defensiva em Área"
-EfeitoPrincipal = "Aplica escudo em aliados próximos."
-DanoEscala = "Absorção moderada"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Defensiva em Ãrea"
+EfeitoPrincipal = "Aplica escudo em aliados prÃ³ximos."
+DanoEscala = "AbsorÃ§Ã£o moderada"
 BuffDebuff = "Buff defensivo"
 DuracaoTexto = "10s"
-Progressao = "Escudo aumenta com o nível da skill."
-Observacoes = "Defesa em área para dungeons."
+Progressao = "Escudo aumenta com o nÃ­vel da skill."
+Observacoes = "Defesa em Ã¡rea para dungeons."

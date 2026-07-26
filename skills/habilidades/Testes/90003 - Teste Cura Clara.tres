@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Clerigo/1.png" id="2_icon"]
@@ -10,9 +10,9 @@ Nome = "Teste Cura Clara"
 Descricao = "Skill de teste para validar cura, icone e efeito visual."
 Icone = ExtResource("2_icon")
 Valor = 35
-CustoMana = 14
+CustoMana = 7
 ClasseRestrita = "Clerigo"
-EfeitoVisualPath = "res://skills/Animação/101.png"
+EfeitoVisualPath = "res://skills/AnimaÃ§Ã£o/101.png"
 Cooldown = 5.0
 TargetType = 0
 EffectType = 1
@@ -22,3 +22,4 @@ Tipo = "Ativa"
 EfeitoPrincipal = "Cura"
 DanoEscala = "Inteligencia"
 Observacoes = "Recurso temporario para testes da arvore de talentos."
+

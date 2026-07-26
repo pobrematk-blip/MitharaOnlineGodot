@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/29.png" id="2_icon"]
@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11302
-Nome = "Maldição da Fraqueza"
+Nome = "MaldiÃ§Ã£o da Fraqueza"
 Descricao = "Enfraquece alvo."
 Icone = ExtResource("2_icon")
 Valor = -20
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Mago"
 Cooldown = 30
 Duracao = 10
@@ -19,7 +19,7 @@ EffectType = 3
 Especializacao = "Mago Negro"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Debuff"
 EfeitoPrincipal = "-20% dano"
 DanoEscala = ""

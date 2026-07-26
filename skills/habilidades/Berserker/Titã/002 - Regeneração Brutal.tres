@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/33.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13302
-Nome = "Regeneração Brutal"
-Descricao = "Os ferimentos do Titã se fecham rapidamente, como se sua própria raiva costurasse carne e ossos."
+Nome = "RegeneraÃ§Ã£o Brutal"
+Descricao = "Os ferimentos do TitÃ£ se fecham rapidamente, como se sua prÃ³pria raiva costurasse carne e ossos."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Berserker"
 Cooldown = 25
 Duracao = 10
 TargetType = 2
 EffectType = 0
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "Especialização"
-Tipo = "Regeneração"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "RegeneraÃ§Ã£o"
 EfeitoPrincipal = "Regenera HP por segundo."
 DanoEscala = ""
-BuffDebuff = "Regenera 1% → 3% HP por segundo"
+BuffDebuff = "Regenera 1% â†’ 3% HP por segundo"
 DuracaoTexto = "10s"
-Progressao = "Skill possui 10 níveis. Regeneração escala até 3% por segundo."
-Observacoes = "Deve respeitar balanceamento para não substituir cura de Clérigo."
+Progressao = "Skill possui 10 nÃ­veis. RegeneraÃ§Ã£o escala atÃ© 3% por segundo."
+Observacoes = "Deve respeitar balanceamento para nÃ£o substituir cura de ClÃ©rigo."

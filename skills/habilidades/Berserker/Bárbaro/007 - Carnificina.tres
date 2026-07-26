@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/34.png" id="2_icon"]
@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 13107
 Nome = "Carnificina"
-Descricao = "O Bárbaro avança golpeando tudo ao seu redor em uma sequência brutal que transforma o campo de batalha em caos."
+Descricao = "O BÃ¡rbaro avanÃ§a golpeando tudo ao seu redor em uma sequÃªncia brutal que transforma o campo de batalha em caos."
 Icone = ExtResource("2_icon")
 Valor = 180
-CustoMana = 35
+CustoMana = 18
 ClasseRestrita = "Berserker"
 Cooldown = 18
 Duracao = 4
 TargetType = 2
 EffectType = 7
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "Especialização"
-Tipo = "Dano em Área / Sustentado"
-EfeitoPrincipal = "Causa dano físico contínuo em área por curta duração."
-DanoEscala = "180% → 320% do dano da arma total"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Dano em Ãrea / Sustentado"
+EfeitoPrincipal = "Causa dano fÃ­sico contÃ­nuo em Ã¡rea por curta duraÃ§Ã£o."
+DanoEscala = "180% â†’ 320% do dano da arma total"
 BuffDebuff = ""
 DuracaoTexto = "4s"
-Progressao = "Skill possui 10 níveis. Dano total escala de 180% até 320%."
-Observacoes = "Boa contra grupos, mas exige que o Berserker permaneça próximo dos inimigos."
+Progressao = "Skill possui 10 nÃ­veis. Dano total escala de 180% atÃ© 320%."
+Observacoes = "Boa contra grupos, mas exige que o Berserker permaneÃ§a prÃ³ximo dos inimigos."

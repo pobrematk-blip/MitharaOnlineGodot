@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/43.png" id="2_icon"]
@@ -7,12 +7,13 @@
 script = ExtResource("1_sk")
 SkillId = 23
 Nome = "Chuva de Flechas"
-Descricao = "Dispara dezenas de flechas para o céu. Área de dano contínuo durante 5 segundos."
+Descricao = "Dispara dezenas de flechas para o cÃ©u. Ãrea de dano contÃ­nuo durante 5 segundos."
 Icone = ExtResource("2_icon")
 Valor = 100
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Arqueiro"
 Cooldown = 15.0
 Duracao = 5
 TargetType = 2
 EffectType = 7
+

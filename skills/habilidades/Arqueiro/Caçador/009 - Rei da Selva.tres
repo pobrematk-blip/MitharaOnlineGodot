@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/23.png" id="2_icon"]
@@ -10,16 +10,16 @@ Nome = "Rei da Selva"
 Descricao = "Forma ancestral."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 80
+CustoMana = 40
 ClasseRestrita = "Arqueiro"
 Cooldown = 120
 Duracao = 15
 TargetType = 0
 EffectType = 3
-Especializacao = "Caçador"
+Especializacao = "CaÃ§ador"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Ultimate"
 EfeitoPrincipal = "Buff massivo no pet"
 DanoEscala = ""

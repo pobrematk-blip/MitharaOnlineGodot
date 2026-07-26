@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/40.png" id="2_icon"]
@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 13301
 Nome = "Pele de Ferro"
-Descricao = "O Titã endurece o corpo como metal, suportando golpes que derrubariam guerreiros comuns."
+Descricao = "O TitÃ£ endurece o corpo como metal, suportando golpes que derrubariam guerreiros comuns."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 15
+CustoMana = 8
 ClasseRestrita = "Berserker"
 Cooldown = 20
 Duracao = 12
 TargetType = 0
 EffectType = 3
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff Defensivo"
-EfeitoPrincipal = "Aumenta Defesa Física."
+EfeitoPrincipal = "Aumenta Defesa FÃ­sica."
 DanoEscala = ""
-BuffDebuff = "+20% → +40% Defesa Física"
+BuffDebuff = "+20% â†’ +40% Defesa FÃ­sica"
 DuracaoTexto = "12s"
-Progressao = "Skill possui 10 níveis. Bônus escala de +20% até +40%."
-Observacoes = "Base defensiva da árvore Titã."
+Progressao = "Skill possui 10 nÃ­veis. BÃ´nus escala de +20% atÃ© +40%."
+Observacoes = "Base defensiva da Ã¡rvore TitÃ£."

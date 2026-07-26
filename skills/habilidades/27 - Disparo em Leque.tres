@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/4.png" id="2_icon"]
@@ -10,8 +10,9 @@ Nome = "Disparo em Leque"
 Descricao = "Dispara uma rajada de 7 flechas em cone. 80% do dano da arma por flecha."
 Icone = ExtResource("2_icon")
 Valor = 80
-CustoMana = 35
+CustoMana = 18
 ClasseRestrita = "Arqueiro"
 Cooldown = 14.0
 TargetType = 2
 EffectType = 7
+

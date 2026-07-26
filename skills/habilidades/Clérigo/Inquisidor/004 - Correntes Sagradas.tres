@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Debuffs/3.png" id="2_icon"]
@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15304
 Nome = "Correntes Sagradas"
-Descricao = "Correntes de luz descem do alto e prendem o inimigo ao chão, impedindo sua fuga por alguns instantes."
+Descricao = "Correntes de luz descem do alto e prendem o inimigo ao chÃ£o, impedindo sua fuga por alguns instantes."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 30
-ClasseRestrita = "Clérigo"
+CustoMana = 15
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 20
 Duracao = 3
 TargetType = 2
@@ -19,11 +19,11 @@ EffectType = 13
 Especializacao = "Inquisidor"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Controle"
 EfeitoPrincipal = "Imobiliza o alvo."
 DanoEscala = ""
 BuffDebuff = "Root"
 DuracaoTexto = "3s"
-Progressao = "Duração pode aumentar levemente por nível."
-Observacoes = "Bosses recebem apenas lentidão."
+Progressao = "DuraÃ§Ã£o pode aumentar levemente por nÃ­vel."
+Observacoes = "Bosses recebem apenas lentidÃ£o."

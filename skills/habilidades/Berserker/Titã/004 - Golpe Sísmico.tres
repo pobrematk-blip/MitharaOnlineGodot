@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/34.png" id="2_icon"]
@@ -6,24 +6,24 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13304
-Nome = "Golpe Sísmico"
-Descricao = "O Titã golpeia o chão com tamanha força que o impacto se espalha como uma onda sísmica."
+Nome = "Golpe SÃ­smico"
+Descricao = "O TitÃ£ golpeia o chÃ£o com tamanha forÃ§a que o impacto se espalha como uma onda sÃ­smica."
 Icone = ExtResource("2_icon")
 Valor = 140
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Berserker"
 Cooldown = 12
 Duracao = 5
 TargetType = 2
 EffectType = 12
-Especializacao = "Titã"
+Especializacao = "TitÃ£"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "Especialização"
-Tipo = "Área / Controle"
-EfeitoPrincipal = "Causa dano em área e reduz velocidade dos inimigos."
-DanoEscala = "140% → 250% do dano da arma"
+Escopo = "EspecializaÃ§Ã£o"
+Tipo = "Ãrea / Controle"
+EfeitoPrincipal = "Causa dano em Ã¡rea e reduz velocidade dos inimigos."
+DanoEscala = "140% â†’ 250% do dano da arma"
 BuffDebuff = "Slow 30%"
 DuracaoTexto = "5s"
-Progressao = "Skill possui 10 níveis. Dano escala de 140% até 250%."
-Observacoes = "Boa para controlar grupos próximos."
+Progressao = "Skill possui 10 nÃ­veis. Dano escala de 140% atÃ© 250%."
+Observacoes = "Boa para controlar grupos prÃ³ximos."

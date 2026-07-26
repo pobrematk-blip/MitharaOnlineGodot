@@ -1,4 +1,4 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/41.png" id="1_5me6x"]
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11208
-Nome = "Fúria Elemental"
+Nome = "FÃºria Elemental"
 Descricao = "Amplifica elementos."
 Icone = ExtResource("1_5me6x")
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Mago"
 Cooldown = 30.0
 Duracao = 15.0
@@ -17,8 +17,9 @@ EffectType = 3
 Especializacao = "Elementalista"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff"
-EfeitoPrincipal = "+Dano mágico"
+EfeitoPrincipal = "+Dano mÃ¡gico"
 BuffDebuff = "+20%"
 DuracaoTexto = "15s"
+

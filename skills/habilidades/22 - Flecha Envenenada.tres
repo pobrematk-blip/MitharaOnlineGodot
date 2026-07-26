@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Arqueiro/37.png" id="2_icon"]
@@ -10,9 +10,10 @@ Nome = "Flecha Envenenada"
 Descricao = "Uma flecha coberta por toxinas naturais. 120% do dano da arma e veneno por 8 segundos."
 Icone = ExtResource("2_icon")
 Valor = 120
-CustoMana = 20
+CustoMana = 10
 ClasseRestrita = "Arqueiro"
 Cooldown = 8.0
 Duracao = 8
 TargetType = 2
 EffectType = 24
+

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Mage/19.png" id="2_icon"]
@@ -10,8 +10,8 @@ Nome = "Chama Sagrada"
 Descricao = "O Inquisidor conjura uma chama pura que queima o corpo e a alma do inimigo, causando dor sagrada imediata."
 Icone = ExtResource("2_icon")
 Valor = 120
-CustoMana = 12
-ClasseRestrita = "Clérigo"
+CustoMana = 6
+ClasseRestrita = "ClÃ©rigo"
 Cooldown = 4
 Duracao = 0
 TargetType = 2
@@ -19,11 +19,11 @@ EffectType = 7
 Especializacao = "Inquisidor"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Dano"
 EfeitoPrincipal = "Causa dano sagrado em um alvo."
-DanoEscala = "120% → 220% do Poder Mágico"
+DanoEscala = "120% â†’ 220% do Poder MÃ¡gico"
 BuffDebuff = ""
-DuracaoTexto = "Instantâneo"
+DuracaoTexto = "InstantÃ¢neo"
 Progressao = "Lv1 = 120%; Lv10 = 220%."
 Observacoes = "Skill base de dano do Inquisidor."

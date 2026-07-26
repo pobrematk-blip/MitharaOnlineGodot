@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Berseker/36.png" id="2_icon"]
@@ -7,23 +7,23 @@
 script = ExtResource("1_sk")
 SkillId = 13106
 Nome = "Frenesi"
-Descricao = "A batalha leva o Bárbaro a um estado de loucura controlada, fazendo seus ataques ficarem cada vez mais rápidos."
+Descricao = "A batalha leva o BÃ¡rbaro a um estado de loucura controlada, fazendo seus ataques ficarem cada vez mais rÃ¡pidos."
 Icone = ExtResource("2_icon")
 Valor = 0
-CustoMana = 30
+CustoMana = 15
 ClasseRestrita = "Berserker"
 Cooldown = 40
 Duracao = 15
 TargetType = 0
 EffectType = 3
-Especializacao = "Bárbaro"
+Especializacao = "BÃ¡rbaro"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Buff de Velocidade"
 EfeitoPrincipal = "Aumenta Velocidade de Ataque."
 DanoEscala = ""
-BuffDebuff = "+20% → +40% Velocidade de Ataque"
+BuffDebuff = "+20% â†’ +40% Velocidade de Ataque"
 DuracaoTexto = "15s"
-Progressao = "Skill possui 10 níveis. Bônus escala de +20% até +40%, respeitando o cap global."
+Progressao = "Skill possui 10 nÃ­veis. BÃ´nus escala de +20% atÃ© +40%, respeitando o cap global."
 Observacoes = "Sinergia forte com Sede de Sangue."

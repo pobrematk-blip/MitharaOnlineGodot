@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
+﻿[gd_resource type="Resource" script_class="SkillResource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://skills/SkillResource.cs" id="1_sk"]
 [ext_resource type="Texture2D" path="res://skills/Incone Skills/Dark Mage/19.png" id="2_icon"]
@@ -7,10 +7,10 @@
 script = ExtResource("1_sk")
 SkillId = 11301
 Nome = "Seta Sombria"
-Descricao = "Projétil sombrio."
+Descricao = "ProjÃ©til sombrio."
 Icone = ExtResource("2_icon")
 Valor = 120
-CustoMana = 15
+CustoMana = 8
 ClasseRestrita = "Mago"
 Cooldown = 5
 Duracao = 0
@@ -19,9 +19,9 @@ EffectType = 7
 Especializacao = "Mago Negro"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "Especialização"
+Escopo = "EspecializaÃ§Ã£o"
 Tipo = "Dano"
-EfeitoPrincipal = "Dano mágico"
+EfeitoPrincipal = "Dano mÃ¡gico"
 DanoEscala = "120%-220%"
 BuffDebuff = ""
 DuracaoTexto = ""
