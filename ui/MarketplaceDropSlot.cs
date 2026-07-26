@@ -60,6 +60,19 @@ public partial class MarketplaceDropSlot : Panel
                 }
             }
 
+            if (slot == null && dict.ContainsKey("slot") && dict["slot"].VariantType == Variant.Type.Object)
+            {
+                slot = dict["slot"].Obj as SlotUI ?? dict["slot"].AsGodotObject() as SlotUI;
+                if (slot?.SlotInterno?.Item != null)
+                {
+                    inventorySlot = slot.SlotIndex;
+                    quantity = slot.SlotInterno.Quantidade;
+                }
+            }
+
+            if (slot == null && dict.ContainsKey("item") && dict["item"].VariantType == Variant.Type.Object && quantity <= 0)
+                quantity = 1;
+
             return inventorySlot >= 0 && quantity > 0;
         }
 

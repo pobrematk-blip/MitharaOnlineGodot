@@ -1741,6 +1741,42 @@ partial class GameServer
         }
     }
 
+    private void BroadcastSkillVisualEffect(Channel channel, ulong casterId, ulong targetId, int skillId, float x, float y, float duration)
+    {
+        static NetDataWriter CreateWriter(ulong casterId, ulong targetId, int skillId, float x, float y, float duration)
+        {
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_SkillVisualEffect);
+            writer.Put(casterId);
+            writer.Put(targetId);
+            writer.Put(skillId);
+            writer.Put(x);
+            writer.Put(y);
+            writer.Put(duration);
+            return writer;
+        }
+
+        var recipients = channel.GetEntitiesInAoi(x, y);
+        if (channel.GetEntity(casterId) is { } caster)
+        {
+            recipients.Add(casterId);
+            recipients.UnionWith(channel.GetEntitiesInAoi(caster.X, caster.Y));
+        }
+        if (targetId != 0 && channel.GetEntity(targetId) is { } target)
+        {
+            recipients.Add(targetId);
+            recipients.UnionWith(channel.GetEntitiesInAoi(target.X, target.Y));
+        }
+
+        foreach (var eid in recipients)
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p == null)
+                continue;
+
+            p.Send(CreateWriter(casterId, targetId, skillId, x, y, duration), DeliveryMethod.ReliableOrdered);
+        }
+    }
+
     private void PullEntityIntoTornado(Channel channel, Entity target, float centerX, float centerY)
     {
         float dx = target.X - centerX;
@@ -3184,6 +3220,8 @@ partial class GameServer
             target.Health = Math.Min(target.MaxHealth, target.Health + amount);
             BroadcastCombatResult(channel, caster.Id, target.Id, -(target.Health - oldHealth), false, target.Health, target.MaxHealth, caster.X, caster.Y);
         }
+        if (skill.EffectType != 1 && skill.EffectType != 10)
+            BroadcastSkillVisualEffect(channel, caster.Id, target.Id, skill.SkillId, target.X, target.Y, duration);
         SendSystemMessage(peer, $"{skill.Nome}: efeito aplicado.");
         return true;
     }
@@ -4307,6 +4345,9 @@ partial class GameServer
 
         foreach (var loot in spawnedLoot)
         {
+            var recipients = aoi.ToHashSet();
+            recipients.Add(killer.Id);
+
             var w = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
             w.Put(loot.Id);
             w.Put(loot.X);
@@ -4314,10 +4355,16 @@ partial class GameServer
             w.Put(loot.ItemId);
             w.Put(loot.Quantity);
 
-            foreach (var eid in aoi)
+            foreach (var eid in recipients)
             {
                 var p = channel.GetPlayerPeer(eid);
-                p?.Send(w, DeliveryMethod.ReliableOrdered);
+                if (p == null)
+                    continue;
+
+                p.Send(w, DeliveryMethod.ReliableOrdered);
+                if (_sessions.TryGetValue(p, out var session))
+                    session.SpawnedLoot.Add(loot.Id);
+
                 w = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
                 w.Put(loot.Id);
                 w.Put(loot.X);

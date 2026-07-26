@@ -211,6 +211,7 @@ public class SpawnerManager
             {
                 new() { ItemId = ItemDefinitions.PoeiraEstelar, MinQuantity = 5, MaxQuantity = 10, DropChance = 0.25 },
                 new() { ItemId = ItemDefinitions.PergaminhoDoPet5, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.01 },
+                new() { ItemId = ItemDefinitions.ColeiraPet, MinQuantity = 1, MaxQuantity = 1, DropChance = 0.005 },
             },
         });
 

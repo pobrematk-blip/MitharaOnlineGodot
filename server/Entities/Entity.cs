@@ -6,6 +6,25 @@ public enum EntityType : byte
     Monster = 1,
     Boss = 2,
     NPC = 3,
+    Pet = 4,
+}
+
+public class PetEntity : Entity
+{
+    public ulong OwnerEntityId { get; set; }
+    public int PetId { get; set; }
+    public string AnimPrefix { get; set; } = "";
+    public string OwnerName { get; set; } = "";
+
+    public PetEntity()
+    {
+        Type = EntityType.Pet;
+        Speed = 260f;
+        MaxHealth = 1;
+        Health = 1;
+        MaxMana = 0;
+        Mana = 0;
+    }
 }
 
 public class Entity

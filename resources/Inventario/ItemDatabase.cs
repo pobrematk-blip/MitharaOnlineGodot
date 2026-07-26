@@ -176,6 +176,7 @@ public partial class ItemDatabase : Node
             113 => "res://Itens/Incones/Pergaminho de Criação de Guild.png",
             114 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
             115 or 116 or 117 or 118 => "res://Itens/Incones/Bag 3.png",
+            121 => "res://Itens/Incones/Pergaminho de Captura de Pet.png",
             _ => IconeEquipamentoFallback(itemId),
         };
 
@@ -199,6 +200,7 @@ public partial class ItemDatabase : Node
             116 => "Bolsa de 12 Slots",
             117 => "Bolsa de 18 Slots",
             118 => "Bolsa de 24 Slots",
+            121 => "Coleira de Pet (30 Dias)",
             _ => NomeDoArquivo(knownPath, itemId),
         };
 

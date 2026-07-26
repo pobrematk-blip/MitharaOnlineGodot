@@ -392,7 +392,6 @@ public partial class PetNode : Node2D
 
     private void OnItemEntrouNaArea(Area2D area)
     {
-        if (TipoPet != TipoPet.Loot) return;
         if (ModoAtual == PetMode.Atacar) return;
         if (!ColetaAtiva) return;
 
@@ -413,7 +412,7 @@ public partial class PetNode : Node2D
 
     private void OnColetaTimer()
     {
-        if (TipoPet != TipoPet.Loot || !Ativo || _player == null) return;
+        if (!Ativo || _player == null) return;
         if (ModoAtual == PetMode.Atacar) return;
         if (!ColetaAtiva) return;
 

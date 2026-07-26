@@ -95,7 +95,9 @@ public partial class PlayerSkillComponent : Node
                 if (slotValue < 0)
                 {
                     int itemId = System.Math.Abs(slotValue);
-                    var itemDb = GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
+                    var itemDb = GetNodeOrNull<ItemDatabase>("/root/GameNetwork/ItemDatabase")
+                        ?? GetNodeOrNull<GameNetwork>("/root/GameNetwork")?.ItemDB
+                        ?? GetNodeOrNull<ItemDatabase>("/root/ItemDatabase");
                     ItemSlots[i] = itemDb?.GetItem(itemId);
                     if (ItemSlotIndexes != null && i < ItemSlotIndexes.Length)
                         ItemSlotIndexes[i] = -1;

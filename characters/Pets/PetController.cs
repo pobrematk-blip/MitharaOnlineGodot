@@ -15,6 +15,10 @@ public partial class PetController : Node
     private Button _btnAtacar;
     private HBoxContainer _coletaRow;
     private CheckBox _chkColeta;
+    private PetCollarSlot _coleiraSlot;
+    private TextureRect _coleiraIcon;
+    private Label _coleiraStatusLabel;
+    private Timer _coleiraTimer;
     private bool _arrastando;
     private Vector2 _pontoCliqueOriginal;
     private CanvasLayer _hudLayer;
@@ -116,7 +120,7 @@ public partial class PetController : Node
         modeHBox.AddChild(_btnSeguir);
 
         _btnGuarda = new Button();
-        _btnGuarda.Text = "Guarda";
+        _btnGuarda.Text = "Parado";
         _btnGuarda.Pressed += () => DefinirModo(PetMode.Guarda);
         modeHBox.AddChild(_btnGuarda);
 
@@ -138,6 +142,33 @@ public partial class PetController : Node
         _chkColeta.ButtonPressed = true;
         _chkColeta.Toggled += OnColetaToggled;
         _coletaRow.AddChild(_chkColeta);
+
+        var coleiraRow = new HBoxContainer();
+        coleiraRow.Alignment = BoxContainer.AlignmentMode.Center;
+        vbox.AddChild(coleiraRow);
+
+        _coleiraSlot = new PetCollarSlot();
+        _coleiraSlot.CustomMinimumSize = new Vector2(42, 42);
+        _coleiraSlot.OnPetCollarDropped += OnColeiraDropped;
+        coleiraRow.AddChild(_coleiraSlot);
+
+        _coleiraIcon = new TextureRect();
+        _coleiraIcon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _coleiraIcon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _coleiraIcon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 4);
+        _coleiraSlot.AddChild(_coleiraIcon);
+
+        _coleiraStatusLabel = new Label();
+        _coleiraStatusLabel.Text = "Sem coleira";
+        _coleiraStatusLabel.AddThemeFontSizeOverride("font_size", 10);
+        coleiraRow.AddChild(_coleiraStatusLabel);
+
+        _coleiraTimer = new Timer();
+        _coleiraTimer.WaitTime = 1.0;
+        _coleiraTimer.OneShot = false;
+        _coleiraTimer.Timeout += AtualizarColeiraHUD;
+        AddChild(_coleiraTimer);
+        _coleiraTimer.Start();
 
         CallDeferred(MethodName.CentralizarHUD);
         GetTree().Root.SizeChanged += OnRootSizeChanged;
@@ -295,6 +326,7 @@ public partial class PetController : Node
         _petNode.DefinirModo(PetMode.Seguir);
 
         AtualizarHUD();
+        NotificarServidorPetInvocado(petId, _petNode.NomePet, mobType);
         _hudPanel.Visible = true;
 
         GD.Print($"[PET] {petNome} invocado! id={petId} parent={_petNode.GetParent()?.Name} pos={_petNode.GlobalPosition} frames={(sprite?.SpriteFrames?.GetAnimationNames().Length ?? 0)}");
@@ -542,6 +574,9 @@ public partial class PetController : Node
             _petNode.Ativo = false;
             _petNode.QueueFree();
             _petNode = null;
+            var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+            if (gameNet?.IsConnected == true)
+                gameNet.SendPetSummon(0, "", "");
         }
         _petResource = null;
         _hudPanel.Visible = false;
@@ -554,8 +589,8 @@ public partial class PetController : Node
 
         _hudNameLabel.Text = _petNode.NomePet;
 
-        bool isLoot = _petNode.TipoPet == TipoPet.Loot;
-        _coletaRow.Visible = isLoot;
+        _coletaRow.Visible = true;
+        AtualizarColeiraHUD();
 
         DefinirModo(_petNode.ModoAtual);
     }
@@ -564,7 +599,10 @@ public partial class PetController : Node
     {
         if (_petNode == null) return;
 
-        _petNode.ColetaAtiva = pressed;
+        bool podeColetar = ColeiraAtiva();
+        _petNode.ColetaAtiva = pressed && podeColetar;
+        if (pressed && !podeColetar)
+            GD.Print("[PET] Coleta bloqueada: equipe/use uma Coleira de Pet ativa.");
         GD.Print($"[PET] Coleta {(pressed ? "ativada" : "desativada")}");
     }
 
@@ -578,6 +616,68 @@ public partial class PetController : Node
         _btnAtacar.Modulate = modo == PetMode.Atacar ? Colors.Yellow : Colors.White;
 
         GD.Print($"[PET] Modo alterado para: {modo}");
+    }
+
+    private void OnColeiraDropped(int inventorySlot)
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet == null || !gameNet.IsConnected)
+        {
+            GD.PrintErr("[PET] Nao foi possivel usar a coleira: sem conexao com o servidor.");
+            return;
+        }
+
+        gameNet.SendUseItem(inventorySlot);
+    }
+
+    private bool ColeiraAtiva()
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        return gameNet?.HasActivePetCollar == true;
+    }
+
+    private void AtualizarColeiraHUD()
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        long expiry = gameNet?.PetCollarExpiryUnix ?? 0L;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        bool ativa = expiry > now;
+
+        if (_coleiraIcon != null && _coleiraIcon.Texture == null)
+        {
+            var itemDb = GetNodeOrNull<ItemDatabase>("/root/GameNetwork/ItemDatabase")
+                ?? GetNodeOrNull<GameNetwork>("/root/GameNetwork")?.ItemDB;
+            _coleiraIcon.Texture = itemDb?.GetItem(PetCollarSlot.ColeiraPetItemId)?.Icone;
+        }
+
+        if (_coleiraIcon != null)
+            _coleiraIcon.Modulate = ativa ? Colors.White : new Color(0.35f, 0.35f, 0.35f, 0.75f);
+
+        if (_coleiraStatusLabel != null)
+        {
+            if (!ativa)
+                _coleiraStatusLabel.Text = "Sem coleira";
+            else
+            {
+                var remaining = TimeSpan.FromSeconds(expiry - now);
+                _coleiraStatusLabel.Text = remaining.TotalDays >= 1
+                    ? $"{Mathf.CeilToInt((float)remaining.TotalDays)}d"
+                    : $"{Mathf.Max(1, Mathf.CeilToInt((float)remaining.TotalHours))}h";
+            }
+        }
+
+        if (_chkColeta != null)
+            _chkColeta.Disabled = !ativa;
+
+        if (_petNode != null && IsInstanceValid(_petNode))
+            _petNode.ColetaAtiva = ativa && (_chkColeta?.ButtonPressed ?? true);
+    }
+
+    private void NotificarServidorPetInvocado(int petId, string petNome, string animPrefix)
+    {
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet?.IsConnected == true)
+            gameNet.SendPetSummon(petId, petNome, animPrefix);
     }
 
     private void OnRootSizeChanged()

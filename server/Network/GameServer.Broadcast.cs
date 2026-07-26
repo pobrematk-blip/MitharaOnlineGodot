@@ -121,6 +121,7 @@ partial class GameServer
         foreach (var channel in _world.GetAllChannels())
         {
             var entities = channel.GetAllEntities();
+            UpdateServerPets(channel, entities);
             var players = entities.Where(kv => kv.Value.Type == EntityType.Player).ToList();
 
             foreach (var playerKv in players)
@@ -180,6 +181,9 @@ partial class GameServer
 
     private bool IsEntityVisibleToSession(Entity entity, PlayerSession session)
     {
+        if (entity is PetEntity pet && pet.OwnerEntityId == session.EntityId)
+            return false;
+
         return string.Equals(GetEntityMapName(entity), GetSessionMapName(session), StringComparison.OrdinalIgnoreCase);
     }
 
@@ -187,6 +191,15 @@ partial class GameServer
     {
         if (entity is NPCEntity npc)
             return NormalizeMapName(npc.Map);
+
+        if (entity is PetEntity pet)
+        {
+            foreach (var kv in _sessions)
+            {
+                if (kv.Value.EntityId == pet.OwnerEntityId)
+                    return GetSessionMapName(kv.Value);
+            }
+        }
 
         if (entity.Type == EntityType.Player)
         {
@@ -385,6 +398,7 @@ partial class GameServer
             if (kv.Value.Type != EntityType.Player) continue;
             totalPlayers++;
             if (kv.Key == entity.Id) continue;
+            if (entity is PetEntity pet && pet.OwnerEntityId == kv.Key) continue;
 
             float dx = kv.Value.X - x;
             float dy = kv.Value.Y - y;
@@ -460,6 +474,60 @@ partial class GameServer
             writer.Put(npc.DialogId);
             writer.Put(npc.Race);
             writer.Put(npc.AnimPrefix);
+        }
+        else if (entity is PetEntity pet)
+        {
+            writer.Put(pet.OwnerEntityId);
+            writer.Put(pet.PetId);
+            writer.Put(pet.AnimPrefix);
+            writer.Put(pet.OwnerName);
+        }
+    }
+
+    private void UpdateServerPets(Channel channel, Dictionary<ulong, Entity> entities)
+    {
+        foreach (var pet in entities.Values.OfType<PetEntity>().ToList())
+        {
+            if (!entities.TryGetValue(pet.OwnerEntityId, out var owner) || owner.Type != EntityType.Player)
+            {
+                channel.RemoveEntity(pet.Id);
+                BroadcastDespawn(channel, pet.Id);
+                continue;
+            }
+
+            float dirX = owner.DirX;
+            float dirY = owner.DirY;
+            float lenSq = dirX * dirX + dirY * dirY;
+            if (lenSq < 0.001f)
+            {
+                dirX = -1f;
+                dirY = 0.35f;
+            }
+            else
+            {
+                float len = MathF.Sqrt(lenSq);
+                dirX /= len;
+                dirY /= len;
+            }
+
+            float desiredX = owner.X - dirX * 54f;
+            float desiredY = owner.Y - dirY * 54f + 18f;
+            float dx = desiredX - pet.X;
+            float dy = desiredY - pet.Y;
+            float dist = MathF.Sqrt(dx * dx + dy * dy);
+
+            if (dist > 4f)
+            {
+                float step = MathF.Min(dist, MathF.Max(16f, pet.Speed / 20f));
+                channel.MoveEntity(pet.Id, pet.X + dx / dist * step, pet.Y + dy / dist * step);
+                pet.DirX = dx / dist;
+                pet.DirY = dy / dist;
+                pet.Moving = true;
+            }
+            else
+            {
+                pet.Moving = false;
+            }
         }
     }
 

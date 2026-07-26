@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LojaCashData" load_steps=17 format=3]
+[gd_resource type="Resource" script_class="LojaCashData" load_steps=18 format=3]
 [ext_resource type="Script" path="res://SistemaContas/LojaCashData.cs" id="1_script"]
 [ext_resource type="Script" path="res://SistemaContas/LojaCashEntry.cs" id="2_entry"]
 
@@ -100,6 +100,13 @@ PrecoDiamantes = 220
 NomeExibicao = "Bolsa de 24 Slots"
 Descricao = "Aumenta o inventario em 24 slots quando equipada."
 
+[sub_resource type="Resource" id="LojaCashEntry_coleirapet"]
+script = ExtResource("2_entry")
+ItemID = 121
+PrecoDiamantes = 80
+NomeExibicao = "Coleira de Pet (30 Dias)"
+Descricao = "Ativa a coleta automatica do pet por 30 dias."
+
 [resource]
 script = ExtResource("1_script")
-Itens = Array[ExtResource("2_entry")]([SubResource("LojaCashEntry_slot"), SubResource("LojaCashEntry_vip7"), SubResource("LojaCashEntry_vip15"), SubResource("LojaCashEntry_vip30"), SubResource("LojaCashEntry_guild"), SubResource("LojaCashEntry_petcapture"), SubResource("LojaCashEntry_lojapeq"), SubResource("LojaCashEntry_lojamed"), SubResource("LojaCashEntry_lojagrande"), SubResource("LojaCashEntry_resetpersonagem"), SubResource("LojaCashEntry_bolsa6"), SubResource("LojaCashEntry_bolsa12"), SubResource("LojaCashEntry_bolsa18"), SubResource("LojaCashEntry_bolsa24")])
+Itens = Array[ExtResource("2_entry")]([SubResource("LojaCashEntry_slot"), SubResource("LojaCashEntry_vip7"), SubResource("LojaCashEntry_vip15"), SubResource("LojaCashEntry_vip30"), SubResource("LojaCashEntry_guild"), SubResource("LojaCashEntry_petcapture"), SubResource("LojaCashEntry_lojapeq"), SubResource("LojaCashEntry_lojamed"), SubResource("LojaCashEntry_lojagrande"), SubResource("LojaCashEntry_resetpersonagem"), SubResource("LojaCashEntry_bolsa6"), SubResource("LojaCashEntry_bolsa12"), SubResource("LojaCashEntry_bolsa18"), SubResource("LojaCashEntry_bolsa24"), SubResource("LojaCashEntry_coleirapet")])

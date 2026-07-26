@@ -72,6 +72,7 @@ public class DatabaseManager
                 barba_path TEXT NOT NULL DEFAULT '',
                 cabelo_cor VARCHAR(16) NOT NULL DEFAULT 'ffffff',
                 barba_cor VARCHAR(16) NOT NULL DEFAULT 'ffffff',
+                pet_collar_expiry TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00',
                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
             );
@@ -284,6 +285,7 @@ public class DatabaseManager
             ("characters", "barba_path", "TEXT NOT NULL DEFAULT ''"),
             ("characters", "cabelo_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
             ("characters", "barba_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
+            ("characters", "pet_collar_expiry", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
             ("marketplace_listings", "expires_at", "TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '24 hours')"),
             ("marketplace_listings", "proceeds_gold", "INT NOT NULL DEFAULT 0"),
             ("marketplace_listings", "proceeds_claimed", "SMALLINT NOT NULL DEFAULT 0"),
@@ -920,6 +922,30 @@ public class DatabaseManager
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM items WHERE id = @i AND character_id = @c";
         cmd.Parameters.AddWithValue("@i", dbId);
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public DateTime LoadPetCollarExpiry(int characterId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT pet_collar_expiry FROM characters WHERE id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        var result = cmd.ExecuteScalar();
+        if (result == null || result == DBNull.Value)
+            return new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return DateTime.SpecifyKind((DateTime)result, DateTimeKind.Utc);
+    }
+
+    public void SavePetCollarExpiry(int characterId, DateTime expiry)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE characters SET pet_collar_expiry = @e WHERE id = @c";
+        cmd.Parameters.AddWithValue("@e", expiry);
         cmd.Parameters.AddWithValue("@c", characterId);
         cmd.ExecuteNonQuery();
     }
@@ -2645,6 +2671,7 @@ public class DatabaseManager
             new() { Id = ItemDefinitions.Bolsa12Slots, Name = "Bolsa de 12 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 12, BuyPrice = 0 },
             new() { Id = ItemDefinitions.Bolsa18Slots, Name = "Bolsa de 18 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 18, BuyPrice = 0 },
             new() { Id = ItemDefinitions.Bolsa24Slots, Name = "Bolsa de 24 Slots", Type = ItemType.Bag, MaxStack = 1, IsStackable = false, IsBag = true, ExtraSlots = 24, BuyPrice = 0 },
+            new() { Id = ItemDefinitions.ColeiraPet, Name = "Coleira de Pet (30 Dias)", Type = ItemType.Consumable, MaxStack = 99, IsStackable = true, BuyPrice = 0 },
             new() { Id = ItemDefinitions.PoeiraEstelar, Name = "Poeira Estelar", Type = ItemType.Material, MaxStack = 99, IsStackable = true, BuyPrice = 50 },
             new() { Id = ItemDefinitions.CristalEstelar, Name = "Cristal Estelar", Type = ItemType.Material, MaxStack = 99, IsStackable = true, BuyPrice = 250 },
             new() { Id = ItemDefinitions.OrbeSeguranca, Name = "Orbe de Segurança", Type = ItemType.Material, MaxStack = 99, IsStackable = true, BuyPrice = 500 },

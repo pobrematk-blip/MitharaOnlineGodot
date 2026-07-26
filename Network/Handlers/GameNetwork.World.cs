@@ -121,6 +121,16 @@ partial class GameNetwork
                 string animPrefix = r.GetString(); // AnimPrefix
                 EmitSignal(SignalName.OnEntitySpawned, entityId, typeLabel, name, x, y, level, health, maxHealth, extra1, extra2, animPrefix);
                 return;
+            case 4:
+                typeLabel = "pet";
+                extra1 = r.GetULong().ToString(); // OwnerEntityId
+                extra2 = r.GetInt().ToString(); // PetId
+                extra3 = Json.Stringify(new Godot.Collections.Dictionary
+                {
+                    ["anim_prefix"] = r.GetString(),
+                    ["owner_name"] = r.GetString(),
+                });
+                break;
             default:
                 typeLabel = "unknown";
                 break;

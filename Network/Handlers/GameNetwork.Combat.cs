@@ -65,6 +65,17 @@ partial class GameNetwork
         EmitSignal(SignalName.OnSkillAreaEffect, skillId, x, y, radius, duration);
     }
 
+    private void HandleSkillVisualEffect(NetDataReader r)
+    {
+        ulong casterId = r.GetULong();
+        ulong targetId = r.GetULong();
+        int skillId = r.GetInt();
+        float x = r.GetFloat();
+        float y = r.GetFloat();
+        float duration = r.GetFloat();
+        EmitSignal(SignalName.OnSkillVisualEffect, casterId, targetId, skillId, x, y, duration);
+    }
+
     private void HandleEntityDied(NetDataReader r)
     {
         ulong entityId = r.GetULong();

@@ -122,6 +122,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnBossCastEventHandler(ulong bossId, string effectId, string skillName, float castSeconds, float effectDuration, bool isBuff);
     [Signal] public delegate void OnSkillUseResultEventHandler(int slotIndex, int skillId, bool success, float cooldownSeconds);
     [Signal] public delegate void OnSkillAreaEffectEventHandler(int skillId, float x, float y, float radius, float duration);
+    [Signal] public delegate void OnSkillVisualEffectEventHandler(ulong casterId, ulong targetId, int skillId, float x, float y, float duration);
     [Signal] public delegate void OnTalentDataEventHandler(int pontosDisponiveis, Godot.Collections.Array<string> nosDesbloqueados);
     [Signal] public delegate void OnSkillBarDataEventHandler(Godot.Collections.Array<int> skillIds);
     [Signal] public delegate void OnOpenGuildFormEventHandler();
@@ -285,6 +286,26 @@ public partial class GameNetwork : Node
     {
         EmitSignal(SignalName.OnEnterWorld);
         CallDeferred(nameof(ApplyPendingInventory));
+
+        var tree = GetTree();
+        if (tree != null)
+        {
+            var timer = tree.CreateTimer(0.35);
+            timer.Timeout += ReemitPendingCharacterState;
+        }
+        else
+        {
+            CallDeferred(nameof(ReemitPendingCharacterState));
+        }
+    }
+
+    private void ReemitPendingCharacterState()
+    {
+        if (PendingTalentPoints.HasValue && PendingTalentNodes != null)
+            EmitSignal(SignalName.OnTalentData, PendingTalentPoints.Value, PendingTalentNodes);
+
+        if (PendingSkillBarData != null)
+            EmitSignal(SignalName.OnSkillBarData, PendingSkillBarData);
     }
 
     public void ConnectToServer(string host = "", int port = 0)
@@ -629,6 +650,9 @@ public partial class GameNetwork : Node
             case PacketId.S2C_SkillAreaEffect:
                 HandleSkillAreaEffect(r);
                 break;
+            case PacketId.S2C_SkillVisualEffect:
+                HandleSkillVisualEffect(r);
+                break;
             case PacketId.S2C_OpenMarketplace:
                 HandleOpenMarketplace(r);
                 break;
@@ -831,6 +855,8 @@ public partial class GameNetwork : Node
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingInventoryData { get; private set; }
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingEquipmentData { get; private set; }
     public Godot.Collections.Array<Godot.Collections.Dictionary>? PendingPetData { get; private set; }
+    public long PetCollarExpiryUnix { get; private set; }
+    public bool HasActivePetCollar => PetCollarExpiryUnix > DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
     public void ClearAllEntities()
     {
@@ -849,6 +875,7 @@ public partial class GameNetwork : Node
 
     private void HandlePetData(NetDataReader r)
     {
+        PetCollarExpiryUnix = r.AvailableBytes >= 8 ? r.GetLong() : 0L;
         int count = r.GetInt();
         var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
         for (int i = 0; i < count; i++)
@@ -862,7 +889,7 @@ public partial class GameNetwork : Node
             });
         }
         PendingPetData = list;
-        GD.Print($"[GAME] Received pet data: {count} pets");
+        GD.Print($"[GAME] Received pet data: {count} pets, collarExpiry={PetCollarExpiryUnix}");
         ApplyPendingInventory();
     }
 
@@ -876,6 +903,16 @@ public partial class GameNetwork : Node
             w.Put(sucesso);
         });
         GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId}) scrollSlot={scrollSlot} sucesso={sucesso}");
+    }
+
+    public void SendPetSummon(int petId, string petName, string animPrefix)
+    {
+        _client?.SendPacket(PacketId.C2S_PetSummon, w =>
+        {
+            w.Put(petId);
+            w.Put(petName ?? "");
+            w.Put(animPrefix ?? "");
+        });
     }
 
     public void SendCollectLocalItem(int itemId, int quantity, Vector2 worldPosition)

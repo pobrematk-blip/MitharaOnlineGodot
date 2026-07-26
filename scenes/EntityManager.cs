@@ -298,6 +298,7 @@ public partial class EntityManager : Node
         _gameNet.OnShieldUpdate += OnShieldUpdate;
         _gameNet.OnBossCast += OnBossCast;
         _gameNet.OnSkillAreaEffect += OnSkillAreaEffect;
+        _gameNet.OnSkillVisualEffect += OnSkillVisualEffect;
 
         CriarUI();
         CriarNavegacaoMundo();
@@ -682,6 +683,7 @@ public partial class EntityManager : Node
             "player" => CreatePlayerEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3),
             "monster" or "boss" => CreateMonsterEntity(entityId, name, x, y, level, health, maxHealth, extraData1, entityType == "boss" || EhPrefabBoss(extraData1, name)),
             "npc" => CreateNpcEntity(entityId, name, x, y, extraData1, extraData2, extraData3),
+            "pet" => CreatePetEntity(entityId, name, x, y, extraData1, extraData2, extraData3),
             _ => null,
         };
 
@@ -787,6 +789,52 @@ public partial class EntityManager : Node
         return root;
     }
 
+    private Node2D CreatePetEntity(ulong entityId, string name, float x, float y, string ownerIdText, string petIdText, string petData)
+    {
+        if (!ulong.TryParse(ownerIdText, out ulong ownerId) || ownerId == _gameNet?.LocalPlayerId)
+            return null!;
+
+        string animPrefix = name;
+        if (!string.IsNullOrWhiteSpace(petData))
+        {
+            var parsed = Json.ParseString(petData).AsGodotDictionary();
+            animPrefix = (string)parsed.GetValueOrDefault("anim_prefix", name);
+        }
+
+        string mobType = NormalizarPetAnimPrefix(animPrefix, name);
+        var root = new Node2D
+        {
+            Position = new Vector2(x, y),
+            Name = $"Pet_{entityId}",
+            Scale = new Vector2(1.4f, 1.4f),
+            ZIndex = 0,
+            ZAsRelative = true,
+            YSortEnabled = false,
+        };
+        root.SetMeta("network_id", entityId);
+        root.SetMeta("owner_id", ownerId);
+        root.SetMeta("pet_anim_prefix", mobType);
+        root.AddToGroup("RemotePets");
+        PrepararEntidadeYSort(root);
+
+        var sprite = new AnimatedSprite2D
+        {
+            Name = "AnimatedSprite2D",
+            SpriteFrames = CarregarPetFrames(mobType, name),
+            Scale = Vector2.One * 1.1f,
+        };
+        root.AddChild(sprite);
+        TocarAnimacaoPet(sprite, mobType, "idle_down");
+
+        var world = ObterMundo();
+        if (world != null)
+            world.AddChild(root);
+        else
+            AddChild(root);
+
+        return root;
+    }
+
     public void AtualizarOverheadRemoto(ulong entityId, string nome, string guildName, string guildTag, int guildEmblem, long xp, long xpMax, string factionId = "")
     {
         if (!_networkNodes.TryGetValue(entityId, out var node)) return;
@@ -816,7 +864,6 @@ public partial class EntityManager : Node
     private void OnPartyMemberChanged(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
     {
         AtualizarOverheadStatusRemoto(entityId, health, maxHealth, mana, maxMana);
-        AtualizarCoresNomesRemotos();
     }
 
     private void AtualizarOverheadStatusRemoto(ulong entityId, int health, int maxHealth, int mana, int maxMana)
@@ -3364,6 +3411,85 @@ public partial class EntityManager : Node
             TocarEfeitoBossSlimeSlow(localPlayer);
     }
 
+    private void OnSkillVisualEffect(ulong casterId, ulong targetId, int skillId, float x, float y, float duration)
+    {
+        Node2D? targetNode = ObterNoVisualDeSkill(targetId);
+        Node2D? casterNode = ObterNoVisualDeSkill(casterId);
+
+        // Evita tocar duas vezes no proprio cliente quando o StatusEffect local ja cobre o buff.
+        if (targetId == _gameNet?.LocalPlayerId && casterId == targetId && SkillVisualJaCobertaLocalmente(skillId))
+            return;
+
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            targetNode = casterNode;
+        if (targetNode == null || !IsInstanceValid(targetNode))
+            return;
+
+        switch (skillId)
+        {
+            case 12208:
+                TocarEfeitoReflexosAssassinos(targetNode);
+                break;
+            case 11208:
+                TocarEfeitoFuriaElemental(targetNode);
+                break;
+            case 13101:
+                TocarEfeitoBuffBerserker(targetNode, FuriaBerserkerEffectPath, "FuriaBerserkerLoopEffect", duration);
+                break;
+            case 13106:
+                TocarEfeitoBuffBerserker(targetNode, FrenesiBerserkerEffectPath, "FrenesiBerserkerLoopEffect", duration);
+                break;
+            case 13103:
+                TocarEfeitoSedeDeSangue(targetNode);
+                break;
+            case 13104:
+                TocarEfeitoForcaBrutal(targetNode);
+                break;
+            case 13109:
+                TocarEfeitoBuffBerserker(targetNode, DeusDaGuerraEffectPath, "DeusDaGuerraLoopEffect", duration);
+                break;
+            case 13108:
+                TocarEfeitoBerserk(targetNode);
+                break;
+            case 13003:
+                TocarEfeitoBuffBerserker(targetNode, SangueDeFerroEffectPath, "SangueDeFerroLoopEffect", duration);
+                break;
+            case 14107:
+                TocarEfeitoFortificacao(targetNode, duration);
+                break;
+            case 14109:
+                TocarEfeitoMuralhaInabalavel(targetNode, duration);
+                break;
+            case 15003:
+            case 15102:
+                TocarEfeitoBencaoSagrada(targetNode, duration);
+                break;
+            case 15104:
+                TocarEfeitoPurificacao(targetNode);
+                break;
+            case 11003:
+                TocarEfeitoEscudoArcano(targetNode, duration);
+                break;
+        }
+    }
+
+    private Node2D? ObterNoVisualDeSkill(ulong entityId)
+    {
+        if (entityId == 0)
+            return null;
+
+        if (entityId == _gameNet?.LocalPlayerId)
+            return GetTree()?.CurrentScene?.FindChild("Player", true, false) as Node2D;
+
+        return _networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node) ? node : null;
+    }
+
+    private static bool SkillVisualJaCobertaLocalmente(int skillId)
+    {
+        return skillId is 12208 or 11208 or 13101 or 13106 or 13103 or 13104 or 13109 or 13108 or 13003
+            or 14107 or 14109 or 15003 or 15102 or 15104 or 11003;
+    }
+
     private void TocarEfeitoReflexosAssassinos(Node2D playerNode)
     {
         if (playerNode == null || !IsInstanceValid(playerNode) || !ResourceLoader.Exists(ReflexosAssassinosEffectPath))
@@ -4593,6 +4719,93 @@ public partial class EntityManager : Node
             sprite.Play(fallback);
     }
 
+    private static string NormalizarPetAnimPrefix(string animPrefix, string petNome)
+    {
+        string value = string.IsNullOrWhiteSpace(animPrefix) ? petNome : animPrefix;
+        return value.Trim().TrimEnd('_').Replace(" ", "").ToLowerInvariant();
+    }
+
+    private static SpriteFrames? CarregarPetFrames(string mobType, string petNome)
+    {
+        if (mobType == "sherigan")
+            return CarregarSheriganFrames();
+
+        string petFile = petNome.Replace(" ", "");
+        string[] scenePaths =
+        {
+            $"res://characters/Inimigos/SpriteInimigo/{petFile}.tscn",
+            $"res://characters/Inimigos/SpriteInimigo/{mobType}.tscn",
+            $"res://characters/Pets/{petFile}PetFrames.tres",
+        };
+
+        foreach (string path in scenePaths)
+        {
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            if (path.EndsWith(".tres") || path.EndsWith(".res"))
+            {
+                var frames = ResourceLoader.Load<SpriteFrames>(path);
+                if (frames != null && frames.GetAnimationNames().Length > 0)
+                    return frames;
+                continue;
+            }
+
+            var scene = ResourceLoader.Load<PackedScene>(path);
+            var temp = scene?.Instantiate();
+            var sprite = temp?.FindChild("AnimatedSprite2D", true, false) as AnimatedSprite2D;
+            var loadedFrames = sprite?.SpriteFrames?.Duplicate(true) as SpriteFrames ?? sprite?.SpriteFrames;
+            temp?.QueueFree();
+            if (loadedFrames != null && loadedFrames.GetAnimationNames().Length > 0)
+                return loadedFrames;
+        }
+
+        return MobSpriteFramesBuilder.GetOrBuild(mobType);
+    }
+
+    private static void TocarAnimacaoPet(AnimatedSprite2D sprite, string prefix, string anim)
+    {
+        if (sprite?.SpriteFrames == null)
+            return;
+
+        string[] candidates =
+        {
+            anim,
+            $"{prefix}_{anim}",
+            anim.Replace("walk_", "Walk_"),
+            $"{prefix}_{anim.Replace("walk_", "Walk_")}",
+        };
+
+        foreach (string candidate in candidates)
+        {
+            if (sprite.SpriteFrames.HasAnimation(candidate))
+            {
+                sprite.Play(candidate);
+                return;
+            }
+        }
+
+        var names = sprite.SpriteFrames.GetAnimationNames();
+        if (names.Length > 0)
+            sprite.Play(names[0]);
+    }
+
+    private static void UpdateRemotePetAnimation(Node2D pet, Vector2 direction, bool moving)
+    {
+        var sprite = pet.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+        if (sprite?.SpriteFrames == null)
+            return;
+
+        string prefix = pet.HasMeta("pet_anim_prefix") ? pet.GetMeta("pet_anim_prefix").AsString() : "";
+        string dir = direction.LengthSquared() > 0.001f ? DirectionUtil.VectorToCardinal(direction) : "down";
+        string anim = moving ? $"walk_{dir}" : $"idle_{dir}";
+        string current = sprite.Animation.ToString();
+        if (current == anim || (!string.IsNullOrWhiteSpace(prefix) && current == $"{prefix}_{anim}"))
+            return;
+
+        TocarAnimacaoPet(sprite, prefix, anim);
+    }
+
     private void OnProjectileSpawn(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType)
     {
         if (_gameNet == null) return;
@@ -4706,7 +4919,8 @@ public partial class EntityManager : Node
         var root = new Area2D();
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
-        root.ZIndex = -1;
+        // Fica acima do chao, mas participa do Y-sort do World para nao cobrir o player indevidamente.
+        root.ZIndex = 0;
         root.ZAsRelative = false;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
@@ -5053,6 +5267,12 @@ public partial class EntityManager : Node
             {
                 inimigo.SetNetworkState(cur.Position, animDir, cur.Moving, cur.AIState);
                 AtualizarCorNomeMob(inimigo, cur.AIState);
+            }
+            else if (node.IsInGroup("RemotePets"))
+            {
+                float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 12f : 20f));
+                node.Position = node.Position.Lerp(cur.Position, lerpWeight);
+                UpdateRemotePetAnimation(node, animDir, cur.Moving);
             }
             else
             {
@@ -5470,6 +5690,7 @@ public partial class EntityManager : Node
             _gameNet.OnShieldUpdate -= OnShieldUpdate;
             _gameNet.OnBossCast -= OnBossCast;
             _gameNet.OnSkillAreaEffect -= OnSkillAreaEffect;
+            _gameNet.OnSkillVisualEffect -= OnSkillVisualEffect;
         }
     }
 

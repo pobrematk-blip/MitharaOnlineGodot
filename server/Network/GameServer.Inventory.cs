@@ -911,6 +911,41 @@ partial class GameServer
             peer.Send(vipResult, DeliveryMethod.ReliableOrdered);
             return;
         }
+        else if (item.ItemId == ItemDefinitions.ColeiraPet)
+        {
+            var currentExpiry = _db.LoadPetCollarExpiry(session.SelectedCharacter.Id);
+            var now = DateTime.UtcNow;
+            var baseTime = currentExpiry > now ? currentExpiry : now;
+            var newExpiry = baseTime.AddDays(30);
+            _db.SavePetCollarExpiry(session.SelectedCharacter.Id, newExpiry);
+            SendPetData(peer, session.SelectedCharacter.Id);
+            customUseMessage = $"Coleira de Pet ativada ate {newExpiry:dd/MM/yyyy HH:mm} UTC. Enquanto ativa, pets coletores podem pegar itens do chao.";
+
+            item.Quantity--;
+            if (item.Quantity <= 0)
+            {
+                player.Items.Remove(item);
+                _db.DeleteItem(session.SelectedCharacter.Id, item.DbId);
+                ClearConsumableShortcutIfDepleted(peer, player, session.SelectedCharacter.Id, item.ItemId);
+            }
+            else
+            {
+                _db.SaveItem(session.SelectedCharacter.Id, item);
+            }
+
+            SendInventoryData(peer, player);
+            SendSystemMessage(peer, customUseMessage);
+
+            var collarResult = PacketSerializer.WritePacket(PacketId.S2C_ItemUseResult);
+            collarResult.Put(player.Health);
+            collarResult.Put(player.MaxHealth);
+            collarResult.Put(player.Mana);
+            collarResult.Put(player.MaxMana);
+            collarResult.Put(item.ItemId);
+            collarResult.Put(0f);
+            peer.Send(collarResult, DeliveryMethod.ReliableOrdered);
+            return;
+        }
         else if (ItemDefinitions.GetLojinhaMaxSlots(item.ItemId) > 0)
         {
             int maxSlots = ItemDefinitions.GetLojinhaMaxSlots(item.ItemId);
@@ -1056,6 +1091,7 @@ partial class GameServer
         channel.AddLoot(loot);
 
         var aoi = channel.GetEntitiesInAoi(loot.X, loot.Y);
+        aoi.Add(player.Id);
         var w = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
         w.Put(loot.Id);
         w.Put(loot.X);
@@ -1065,7 +1101,13 @@ partial class GameServer
         foreach (var eid in aoi)
         {
             var p = channel.GetPlayerPeer(eid);
-            p?.Send(w, DeliveryMethod.ReliableOrdered);
+            if (p == null)
+                continue;
+
+            p.Send(w, DeliveryMethod.ReliableOrdered);
+            if (_sessions.TryGetValue(p, out var recipientSession))
+                recipientSession.SpawnedLoot.Add(loot.Id);
+
             w = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
             w.Put(loot.Id);
             w.Put(loot.X);
@@ -1345,6 +1387,7 @@ partial class GameServer
             116 => 110,
             117 => 160,
             118 => 220,
+            121 => 80,
             _ => 0,
         };
     }

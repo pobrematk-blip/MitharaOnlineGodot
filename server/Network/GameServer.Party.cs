@@ -160,6 +160,10 @@ partial class GameServer
 
     private void BroadcastPartyMemberUpdateForEntity(ulong entityId)
     {
+        if (_lastPartyMemberUpdateSentAt.TryGetValue(entityId, out double lastSentAt)
+            && _gameTime - lastSentAt < PartyMemberBroadcastInterval)
+            return;
+
         int hp = 0, maxHp = 0, mana = 0, maxMana = 0, level = 1;
         string name = "?";
         string charClass = "";
@@ -178,6 +182,7 @@ partial class GameServer
         if (partyId < 0 || string.IsNullOrEmpty(charClass)) return;
         var party = _world.Parties.GetParty(partyId);
         if (party == null) return;
+        _lastPartyMemberUpdateSentAt[entityId] = _gameTime;
         foreach (var eid in party.Members)
         {
             var peer = FindPeerByEntityId(eid);

@@ -13,6 +13,9 @@ public partial class PartyHUD : Control
     private ulong _leaderId;
     private Panel? _activeMenu;
     private ulong _activeMenuTargetId;
+    private bool _refreshPending;
+    private double _refreshCountdown;
+    private const double RefreshIntervalSeconds = 0.15;
     public bool HiddenByUser { get; set; }
 
     private string NomeJogador
@@ -54,6 +57,19 @@ public partial class PartyHUD : Control
         Refresh();
     }
 
+    public override void _Process(double delta)
+    {
+        if (!_refreshPending)
+            return;
+
+        _refreshCountdown -= delta;
+        if (_refreshCountdown > 0.0)
+            return;
+
+        _refreshPending = false;
+        Refresh();
+    }
+
     private void AlignBelowPlayerHud()
     {
         var playerHud = GetTree()?.CurrentScene?.FindChild("PlayerHud", true, false) as Control;
@@ -79,7 +95,7 @@ public partial class PartyHUD : Control
             if ((bool)m["is_leader"])
                 _leaderId = (ulong)(long)m["entity_id"];
         }
-        Refresh();
+        RequestRefresh();
     }
 
     private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
@@ -122,7 +138,7 @@ public partial class PartyHUD : Control
                 _leaderId = 0;
             }
         }
-        Refresh();
+        RequestRefresh();
     }
 
     private void OnEntityHealthUpdate(ulong entityId, int health, int maxHealth)
@@ -132,7 +148,7 @@ public partial class PartyHUD : Control
 
         member["health"] = health;
         member["max_health"] = maxHealth;
-        Refresh();
+        RequestRefresh();
     }
 
     private void OnEntityManaUpdate(ulong entityId, int mana, int maxMana)
@@ -142,7 +158,7 @@ public partial class PartyHUD : Control
 
         member["mana"] = mana;
         member["max_mana"] = maxMana;
-        Refresh();
+        RequestRefresh();
     }
 
     private Godot.Collections.Dictionary? FindMember(ulong entityId)
@@ -155,7 +171,14 @@ public partial class PartyHUD : Control
         _leaderId = newLeaderId;
         foreach (var m in _members)
             m["is_leader"] = (ulong)(long)m["entity_id"] == newLeaderId;
-        Refresh();
+        RequestRefresh();
+    }
+
+    private void RequestRefresh()
+    {
+        _refreshPending = true;
+        if (_refreshCountdown <= 0.0)
+            _refreshCountdown = RefreshIntervalSeconds;
     }
 
     public void Refresh()

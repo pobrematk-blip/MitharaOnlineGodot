@@ -17,7 +17,10 @@ public partial class PartyUI : Control
     private ulong _leaderId;
     private List<Godot.Collections.Dictionary> _members = new();
     private const int MaxParty = 5;
+    private const double ListRefreshIntervalSeconds = 0.15;
     private TextureButton _toggleButton;
+    private bool _listRefreshPending;
+    private double _listRefreshCountdown;
 
     private string NomeJogador
     {
@@ -108,6 +111,7 @@ public partial class PartyUI : Control
         if (newState)
         {
             Centralizar();
+            AtualizarLista();
             TrazerParaFrente();
         }
         _arrastando = false;
@@ -162,8 +166,7 @@ public partial class PartyUI : Control
             if ((bool)m["is_leader"])
                 _leaderId = (ulong)(long)m["entity_id"];
         }
-        AtualizarLista();
-        NotificarPartyHUD();
+        RequestAtualizarLista();
     }
 
     private void OnNetworkPartyMemberUpdate(ulong entityId, string name, int health, int maxHealth, int mana, int maxMana, int level, bool joined, string characterClass)
@@ -206,8 +209,7 @@ public partial class PartyUI : Control
                 _leaderId = 0;
             }
         }
-        AtualizarLista();
-        NotificarPartyHUD();
+        RequestAtualizarLista();
     }
 
     private void OnNetworkPartyLeaderUpdate(ulong newLeaderId)
@@ -215,7 +217,7 @@ public partial class PartyUI : Control
         _leaderId = newLeaderId;
         foreach (var m in _members)
             m["is_leader"] = (ulong)(long)m["entity_id"] == newLeaderId;
-        AtualizarLista();
+        RequestAtualizarLista();
     }
 
     private void OnEntityHealthUpdate(ulong entityId, int health, int maxHealth)
@@ -225,8 +227,7 @@ public partial class PartyUI : Control
 
         member["health"] = health;
         member["max_health"] = maxHealth;
-        AtualizarLista();
-        NotificarPartyHUD();
+        RequestAtualizarLista();
     }
 
     private void OnEntityManaUpdate(ulong entityId, int mana, int maxMana)
@@ -236,13 +237,39 @@ public partial class PartyUI : Control
 
         member["mana"] = mana;
         member["max_mana"] = maxMana;
-        AtualizarLista();
-        NotificarPartyHUD();
+        RequestAtualizarLista();
     }
 
     private Godot.Collections.Dictionary FindMember(ulong entityId)
     {
         return _members.Find(m => (ulong)(long)m["entity_id"] == entityId);
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_listRefreshPending)
+            return;
+
+        _listRefreshCountdown -= delta;
+        if (_listRefreshCountdown > 0.0)
+            return;
+
+        _listRefreshPending = false;
+        if (_panel != null && _panel.Visible)
+            AtualizarLista();
+    }
+
+    private void RequestAtualizarLista()
+    {
+        if (_panel == null || !_panel.Visible)
+        {
+            _listRefreshPending = false;
+            return;
+        }
+
+        _listRefreshPending = true;
+        if (_listRefreshCountdown <= 0.0)
+            _listRefreshCountdown = ListRefreshIntervalSeconds;
     }
 
     private void AtualizarLista()

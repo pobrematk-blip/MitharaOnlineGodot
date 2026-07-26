@@ -94,6 +94,7 @@ public enum PacketId : ushort
     C2S_MarketplaceBuyListing = 0x01A4,
     C2S_MarketplaceCreateGoldListing = 0x01A5,
     C2S_MarketplaceClaimGold = 0x01A6,
+    C2S_PetSummon = 0x01A7,
 
     C2S_MapEditorPlaceTile = 0x01B0,
     C2S_MapEditorRequestTiles = 0x01B1,
@@ -186,6 +187,7 @@ public enum PacketId : ushort
     S2C_SkillUseResult = 0x02AA,
     S2C_ShieldUpdate = 0x02AB,
     S2C_SkillAreaEffect = 0x02AC,
+    S2C_SkillVisualEffect = 0x02B3,
     S2C_OpenMarketplace = 0x02AD,
     S2C_MarketplaceListResult = 0x02AE,
     S2C_MarketplaceActionResult = 0x02AF,

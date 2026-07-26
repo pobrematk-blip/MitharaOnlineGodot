@@ -122,6 +122,24 @@ public class Channel
         _entities.Remove(entityId);
     }
 
+    public List<ulong> RemovePetsOwnedBy(ulong ownerEntityId)
+    {
+        var removed = _entities
+            .Where(kv => kv.Value is PetEntity pet && pet.OwnerEntityId == ownerEntityId)
+            .Select(kv => kv.Key)
+            .ToList();
+
+        foreach (ulong petId in removed)
+            RemoveEntity(petId);
+
+        return removed;
+    }
+
+    public PetEntity? GetPetOwnedBy(ulong ownerEntityId)
+    {
+        return _entities.Values.OfType<PetEntity>().FirstOrDefault(pet => pet.OwnerEntityId == ownerEntityId);
+    }
+
     public Entity? GetEntity(ulong entityId)
     {
         _entities.TryGetValue(entityId, out var entity);

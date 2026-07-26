@@ -532,6 +532,7 @@ partial class ItemDatabase
     "res://Itens/Armas/Martelos/11085-Martelo Imperial da Fé-Elite.tres",
     "res://Itens/Armas/Martelos/11086-Martelo Ancestral dos Templos-Elite.tres",
     "res://Itens/Armas/Martelos/11087-Martelo do Sumo Sacerdote-Elite.tres",
+    "res://Itens/Consumiveis/ColeiraDePet.tres",
     "res://Itens/Consumiveis/LojinhaGrande.tres",
     "res://Itens/Consumiveis/LojinhaMedia.tres",
     "res://Itens/Consumiveis/LojinhaPequena.tres",

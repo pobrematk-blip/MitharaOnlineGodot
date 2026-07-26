@@ -42,6 +42,7 @@ public partial class GameServer : INetEventListener
     internal readonly List<PendingAreaSkillTick> _pendingAreaSkillTicks = new();
     internal readonly List<PendingFreneticStrike> _pendingFreneticStrikes = new();
     internal readonly List<ActiveBastionArea> _activeBastionAreas = new();
+    internal readonly Dictionary<ulong, double> _lastPartyMemberUpdateSentAt = new();
     internal int _nextTradeId = 1;
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
@@ -53,6 +54,7 @@ public partial class GameServer : INetEventListener
     private const double AutoSaveInterval = 60.0;
     private const double PresenceUpdateInterval = 30.0;
     private const double EntityBroadcastInterval = 0.10;
+    private const double PartyMemberBroadcastInterval = 0.20;
     private double _lastAutoSaveTime;
     private double _nextPresenceUpdateTime;
     private double _nextEntityBroadcastTime;
@@ -527,6 +529,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_PetCapture:
                 HandlePetCapture(peer, reader);
                 break;
+            case PacketId.C2S_PetSummon:
+                HandlePetSummon(peer, reader);
+                break;
             case PacketId.C2S_AllocateStat:
                 HandleAllocateStat(peer, reader);
                 break;
@@ -739,6 +744,8 @@ public partial class GameServer : INetEventListener
     {
         var pets = _db.LoadPets(characterId);
         var writer = PacketSerializer.WritePacket(PacketId.S2C_PetData);
+        var collarExpiry = _db.LoadPetCollarExpiry(characterId);
+        writer.Put(new DateTimeOffset(collarExpiry).ToUnixTimeSeconds());
         writer.Put(pets.Count);
         foreach (var (petId, petName) in pets)
         {
@@ -746,6 +753,56 @@ public partial class GameServer : INetEventListener
             writer.Put(petName);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void HandlePetSummon(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel?.GetEntity(session.EntityId) is not PlayerEntity player || player.Health <= 0)
+            return;
+
+        int petId = reader.GetInt();
+        string petName = reader.GetString().Trim();
+        string animPrefix = reader.GetString().Trim();
+
+        if (petId <= 0)
+        {
+            foreach (ulong removedId in channel.RemovePetsOwnedBy(player.Id))
+                BroadcastDespawn(channel, removedId);
+            return;
+        }
+
+        var capturedPets = _db.LoadPets(session.SelectedCharacter.Id);
+        bool isSherigan = petId == 999 && petName.Equals("Sherigan", StringComparison.OrdinalIgnoreCase);
+        if (!isSherigan && !capturedPets.Any(p => p.petId == petId))
+        {
+            SendSystemMessage(peer, "Esse pet nao pertence ao seu personagem.");
+            return;
+        }
+
+        foreach (ulong removedId in channel.RemovePetsOwnedBy(player.Id))
+            BroadcastDespawn(channel, removedId);
+
+        var pet = new PetEntity
+        {
+            OwnerEntityId = player.Id,
+            OwnerName = player.Name,
+            PetId = petId,
+            Name = string.IsNullOrWhiteSpace(petName) ? "Pet" : petName,
+            AnimPrefix = string.IsNullOrWhiteSpace(animPrefix) ? petName : animPrefix,
+            X = player.X - 48f,
+            Y = player.Y + 32f,
+            DirX = player.DirX,
+            DirY = player.DirY,
+            Level = player.Level,
+            FactionId = player.FactionId,
+        };
+
+        channel.AddEntity(pet);
+        Logger.Info($"[PET] {player.Name} invocou pet replicado '{pet.Name}' (petId={pet.PetId}).");
     }
 }
 

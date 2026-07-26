@@ -329,6 +329,8 @@ partial class GameServer
 
             if (channel != null)
             {
+                foreach (ulong petId in channel.RemovePetsOwnedBy(session.EntityId))
+                    BroadcastDespawn(channel, petId);
                 channel.RemoveEntity(session.EntityId);
                 BroadcastDespawn(channel, session.EntityId);
             }
