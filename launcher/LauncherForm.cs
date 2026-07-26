@@ -33,6 +33,12 @@ public sealed class LauncherForm : Form
     public LauncherForm()
     {
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("MitharaLauncher/1.0");
+        _http.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+        {
+            NoCache = true,
+            NoStore = true,
+        };
+        _http.DefaultRequestHeaders.Pragma.ParseAdd("no-cache");
         _http.Timeout = TimeSpan.FromMinutes(30);
 
         Text = "Mithara Online Launcher";
@@ -173,7 +179,7 @@ public sealed class LauncherForm : Form
             _version.Text = $"Versão local: {local?.Version ?? "não instalada"}";
 
             string latestDownloadBase = $"https://github.com/{RepositoryOwner}/{RepositoryName}/releases/latest/download";
-            UpdateManifest remote = await GetJsonAsync<UpdateManifest>($"{latestDownloadBase}/{ManifestAssetName}")
+            UpdateManifest remote = await GetJsonAsync<UpdateManifest>(WithCacheBust($"{latestDownloadBase}/{ManifestAssetName}"))
                 ?? throw new InvalidOperationException("O manifesto da atualização é inválido.");
             _activeManifest = remote;
 
@@ -187,7 +193,7 @@ public sealed class LauncherForm : Form
                 GitHubAsset archiveAsset = new()
                 {
                     Name = archiveName,
-                    DownloadUrl = $"{latestDownloadBase}/{archiveName}",
+                    DownloadUrl = WithCacheBust($"{latestDownloadBase}/{archiveName}"),
                     Size = 0,
                 };
                 await InstallUpdateAsync(remote, archiveAsset);
@@ -393,6 +399,12 @@ public sealed class LauncherForm : Form
             if (!silent)
                 _status.Text = $"Nao foi possivel criar o atalho: {ex.Message}";
         }
+    }
+
+    private static string WithCacheBust(string url)
+    {
+        string separator = url.Contains('?') ? "&" : "?";
+        return $"{url}{separator}t={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
     }
 
     private async Task<T?> GetJsonAsync<T>(string url)
