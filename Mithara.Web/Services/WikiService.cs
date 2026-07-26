@@ -301,7 +301,7 @@ public partial class WikiService
                 AddStatFromJson(detail.Stats, root, "Agilidade", "Agilidade");
                 AddStatFromJson(detail.Stats, root, "Destreza", "Destreza");
                 AddStatFromJson(detail.Stats, root, "Inteligencia", "Inteligência");
-                AddStatFromJson(detail.Stats, root, "BaseAttack", "Ataque Base");
+                AddStatFromJson(detail.Stats, root, "BaseAttack", UsaDanoMagicoComoAtaqueBase(id, name, detail.AllowedClasses) ? "Dano Mágico" : "Ataque Base");
                 AddStatFromJson(detail.Stats, root, "Defense", "Defesa Física");
                 AddStatFromJson(detail.Stats, root, "MagicDefense", "Defesa Mágica");
                 AddStatFromJson(detail.Stats, root, "Hp", "HP");
@@ -562,6 +562,26 @@ public partial class WikiService
             "Mago" => "Mago",
             _ => className,
         };
+    }
+
+    private static bool UsaDanoMagicoComoAtaqueBase(int itemId, string itemName, IReadOnlyCollection<string> allowedClasses)
+    {
+        if ((itemId >= 1066 && itemId <= 1076)
+            || (itemId >= 11066 && itemId <= 11076)
+            || (itemId >= 1077 && itemId <= 1087)
+            || (itemId >= 11077 && itemId <= 11087)
+            || (itemId >= 5001 && itemId <= 5021)
+            || (itemId >= 6001 && itemId <= 6021))
+            return true;
+
+        string nome = itemName.ToLowerInvariant();
+        bool classeMagica = allowedClasses.Any(c =>
+            c.Equals("Mago", StringComparison.OrdinalIgnoreCase)
+            || c.Equals("Prist", StringComparison.OrdinalIgnoreCase)
+            || c.Equals("Clérigo", StringComparison.OrdinalIgnoreCase)
+            || c.Equals("Clerigo", StringComparison.OrdinalIgnoreCase));
+
+        return classeMagica && (nome.Contains("cajado") || nome.Contains("martelo") || nome.Contains("maca") || nome.Contains("maça"));
     }
 
     private static string GetItemTypeName(int type)

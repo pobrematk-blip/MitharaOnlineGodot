@@ -296,7 +296,7 @@ partial class GameServer
             writer.Put(aoiEntity.Level);
             writer.Put(aoiEntity.Name);
             writer.Put(aoiEntity.FactionId);
-            writer.Put(aoiEntity is MonsterEntity monster ? (byte)monster.AIState : (byte)0);
+            writer.Put(GetNetworkAiState(aoiEntity));
             if (aoiEntity is PlayerEntity remotePlayer)
             {
                 writer.Put(remotePlayer.Experience);
@@ -364,7 +364,7 @@ partial class GameServer
         writer.Put(entity.Level);
         writer.Put(entity.Name);
         writer.Put(entity.FactionId);
-        writer.Put(entity is MonsterEntity monster ? (byte)monster.AIState : (byte)0);
+        writer.Put(GetNetworkAiState(entity));
         if (entity is PlayerEntity player)
         {
             writer.Put(player.Experience);
@@ -487,14 +487,72 @@ partial class GameServer
         }
     }
 
+    private static byte GetNetworkAiState(Entity entity)
+    {
+        return entity switch
+        {
+            MonsterEntity monster => (byte)monster.AIState,
+            PetEntity pet when pet.IsAttacking => 2,
+            PetEntity pet when pet.Moving => 1,
+            _ => 0,
+        };
+    }
+
     private void UpdateServerPets(Channel channel, Dictionary<ulong, Entity> entities)
     {
+        const float petLeashRange = 32f * 20f;
+        const float petAttackVisualRange = 92f;
+        const float petFollowDistance = 72f;
+
         foreach (var pet in entities.Values.OfType<PetEntity>().ToList())
         {
             if (!entities.TryGetValue(pet.OwnerEntityId, out var owner) || owner.Type != EntityType.Player)
             {
                 channel.RemoveEntity(pet.Id);
                 BroadcastDespawn(channel, pet.Id);
+                continue;
+            }
+
+            pet.IsAttacking = pet.AttackVisualUntil > _gameTime;
+
+            Entity? target = null;
+            if (pet.TargetEntityId != 0
+                && entities.TryGetValue(pet.TargetEntityId, out var possibleTarget)
+                && possibleTarget.Health > 0
+                && possibleTarget is MonsterEntity)
+            {
+                float ownerToTargetX = possibleTarget.X - owner.X;
+                float ownerToTargetY = possibleTarget.Y - owner.Y;
+                if ((ownerToTargetX * ownerToTargetX) + (ownerToTargetY * ownerToTargetY) <= petLeashRange * petLeashRange)
+                    target = possibleTarget;
+                else
+                    pet.TargetEntityId = 0;
+            }
+            else
+            {
+                pet.TargetEntityId = 0;
+            }
+
+            if (target != null)
+            {
+                float tx = target.X - pet.X;
+                float ty = target.Y - pet.Y;
+                float tdist = MathF.Sqrt(tx * tx + ty * ty);
+                if (tdist > petAttackVisualRange)
+                {
+                    MovePetTowards(channel, pet, tx, ty, tdist, pet.Speed);
+                    continue;
+                }
+
+                pet.Moving = false;
+                if (tdist > 0.001f)
+                {
+                    pet.DirX = tx / tdist;
+                    pet.DirY = ty / tdist;
+                }
+                pet.IsAttacking = true;
+                if (pet.AttackVisualUntil <= _gameTime)
+                    pet.AttackVisualUntil = _gameTime + 0.35;
                 continue;
             }
 
@@ -513,25 +571,36 @@ partial class GameServer
                 dirY /= len;
             }
 
-            float desiredX = owner.X - dirX * 54f;
-            float desiredY = owner.Y - dirY * 54f + 18f;
+            float desiredX = owner.X - dirX * petFollowDistance;
+            float desiredY = owner.Y - dirY * petFollowDistance + 18f;
             float dx = desiredX - pet.X;
             float dy = desiredY - pet.Y;
             float dist = MathF.Sqrt(dx * dx + dy * dy);
 
             if (dist > 4f)
             {
-                float step = MathF.Min(dist, MathF.Max(16f, pet.Speed / 20f));
-                channel.MoveEntity(pet.Id, pet.X + dx / dist * step, pet.Y + dy / dist * step);
-                pet.DirX = dx / dist;
-                pet.DirY = dy / dist;
-                pet.Moving = true;
+                MovePetTowards(channel, pet, dx, dy, dist, pet.Speed);
             }
             else
             {
                 pet.Moving = false;
             }
         }
+    }
+
+    private static void MovePetTowards(Channel channel, PetEntity pet, float dx, float dy, float dist, float speed)
+    {
+        if (dist <= 0.001f)
+        {
+            pet.Moving = false;
+            return;
+        }
+
+        float step = MathF.Min(dist, MathF.Max(10f, speed / 20f));
+        channel.MoveEntity(pet.Id, pet.X + dx / dist * step, pet.Y + dy / dist * step);
+        pet.DirX = dx / dist;
+        pet.DirY = dy / dist;
+        pet.Moving = true;
     }
 
     private static string GetFactionForRace(string race)

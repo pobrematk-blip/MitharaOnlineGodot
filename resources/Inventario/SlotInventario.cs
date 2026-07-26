@@ -41,7 +41,17 @@ public class SlotInventario
             item.Agilidade = GetInt(root, "Agilidade");
             item.Destreza = GetInt(root, "Destreza");
             item.Inteligencia = GetInt(root, "Inteligencia");
-            item.DanoFisico = GetInt(root, "BaseAttack");
+            var baseAttack = GetInt(root, "BaseAttack");
+            if (UsaDanoMagicoComoAtaqueBase(item))
+            {
+                item.DanoFisico = 0;
+                item.DanoMagico = baseAttack;
+            }
+            else
+            {
+                item.DanoFisico = baseAttack;
+                item.DanoMagico = 0;
+            }
             item.DefesaFisica = GetInt(root, "Defense");
             item.DefesaMagica = GetInt(root, "MagicDefense");
             item.Hp = GetInt(root, "Hp");
@@ -60,6 +70,25 @@ public class SlotInventario
 
     private static int GetInt(JsonElement root, string name) => root.TryGetProperty(name, out var value) ? value.GetInt32() : 0;
     private static float GetFloat(JsonElement root, string name) => root.TryGetProperty(name, out var value) ? value.GetSingle() : 0f;
+
+    private static bool UsaDanoMagicoComoAtaqueBase(ItemResource item)
+    {
+        if (item == null) return false;
+
+        int id = item.ItemID;
+        if ((id >= 1066 && id <= 1076)
+            || (id >= 11066 && id <= 11076)
+            || (id >= 1077 && id <= 1087)
+            || (id >= 11077 && id <= 11087)
+            || (id >= 5001 && id <= 5021)
+            || (id >= 6001 && id <= 6021))
+            return true;
+
+        string nome = item.Nome?.ToLowerInvariant() ?? "";
+        string classes = item.ClassesPermitidas?.ToLowerInvariant() ?? "";
+        bool classeMagica = classes.Contains("mago") || classes.Contains("prist") || classes.Contains("clerigo") || classes.Contains("clérigo");
+        return classeMagica && (nome.Contains("cajado") || nome.Contains("martelo") || nome.Contains("maca") || nome.Contains("maça"));
+    }
 
     private static void AplicarAfixo(ItemResource item, string nome, float valor)
     {

@@ -1182,16 +1182,17 @@ public partial class Player : CharacterBody2D
         string anim = AnimatedSprite.Animation.ToString();
         int frame = AnimatedSprite.Frame;
         float speed = AnimatedSprite.SpeedScale;
+        bool tocando = AnimatedSprite.IsPlaying();
 
-        SincronizarOverlay(_cabeloOverlay, anim, frame, speed);
-        SincronizarOverlay(_barbaOverlay, anim, frame, speed);
-        SincronizarOverlay(_armaduraOverlay, anim, frame, speed);
-        SincronizarOverlay(_capaceteOverlay, anim, frame, speed);
-        SincronizarOverlay(_luvasOverlay, anim, frame, speed);
-        SincronizarOverlay(_botasOverlay, anim, frame, speed);
+        SincronizarOverlay(_cabeloOverlay, anim, frame, speed, tocando);
+        SincronizarOverlay(_barbaOverlay, anim, frame, speed, tocando);
+        SincronizarOverlay(_armaduraOverlay, anim, frame, speed, tocando);
+        SincronizarOverlay(_capaceteOverlay, anim, frame, speed, tocando);
+        SincronizarOverlay(_luvasOverlay, anim, frame, speed, tocando);
+        SincronizarOverlay(_botasOverlay, anim, frame, speed, tocando);
     }
 
-    private static void SincronizarOverlay(AnimatedSprite2D overlay, string anim, int frame, float speed)
+    private static void SincronizarOverlay(AnimatedSprite2D overlay, string anim, int frame, float speed, bool tocando)
     {
         if (overlay == null || !overlay.Visible) return;
         if (overlay.SpriteFrames == null) return;
@@ -1201,10 +1202,15 @@ public partial class Player : CharacterBody2D
 
         if (overlay.Animation.ToString() != animOverlay)
             overlay.Play(animOverlay);
+        else if (tocando && !overlay.IsPlaying())
+            overlay.Play();
 
         int frameCount = overlay.SpriteFrames.GetFrameCount(animOverlay);
         overlay.Frame = frameCount > 0 ? Math.Clamp(frame, 0, frameCount - 1) : 0;
         overlay.SpeedScale = speed;
+
+        if (!tocando && overlay.IsPlaying())
+            overlay.Stop();
     }
 
     private static string ResolverAnimacaoOverlay(SpriteFrames frames, string anim)
@@ -1219,10 +1225,10 @@ public partial class Player : CharacterBody2D
         if (string.IsNullOrEmpty(dir))
             return "";
 
-        if (anim.StartsWith("walk_", StringComparison.Ordinal) && frames.HasAnimation($"walk_{dir}"))
+        if ((anim.StartsWith("walk_", StringComparison.Ordinal) || anim.Contains("_walk", StringComparison.Ordinal)) && frames.HasAnimation($"walk_{dir}"))
             return $"walk_{dir}";
 
-        if (anim.StartsWith("run_", StringComparison.Ordinal) && frames.HasAnimation($"run_{dir}"))
+        if ((anim.StartsWith("run_", StringComparison.Ordinal) || anim.Contains("_run", StringComparison.Ordinal)) && frames.HasAnimation($"run_{dir}"))
             return $"run_{dir}";
 
         if (anim.StartsWith("idle_", StringComparison.Ordinal) && frames.HasAnimation($"idle_{dir}"))
@@ -1250,6 +1256,10 @@ public partial class Player : CharacterBody2D
         if (anim.EndsWith("_up", StringComparison.Ordinal)) return "up";
         if (anim.EndsWith("_left", StringComparison.Ordinal)) return "left";
         if (anim.EndsWith("_right", StringComparison.Ordinal)) return "right";
+        if (anim.Contains("_down_", StringComparison.Ordinal)) return "down";
+        if (anim.Contains("_up_", StringComparison.Ordinal)) return "up";
+        if (anim.Contains("_left_", StringComparison.Ordinal)) return "left";
+        if (anim.Contains("_right_", StringComparison.Ordinal)) return "right";
         return "";
     }
 
@@ -1376,48 +1386,87 @@ public partial class Player : CharacterBody2D
     private static string ResolverPaperdollPorPrefixo(string prefixo, int nivelItem)
     {
         string pasta = "res://Itens/paperdolls";
-        if (string.IsNullOrWhiteSpace(prefixo) || !DirAccess.DirExistsAbsolute(pasta))
+        if (string.IsNullOrWhiteSpace(prefixo))
             return "";
 
         int escolhido = 0;
         string caminhoEscolhido = "";
+        string prefixoNormalizado = NormalizarEspacos(prefixo);
         using var dir = DirAccess.Open(pasta);
-        if (dir == null)
-            return "";
-
-        dir.ListDirBegin();
-        while (true)
+        if (dir != null)
         {
-            string file = dir.GetNext();
-            if (string.IsNullOrEmpty(file))
-                break;
-            if (dir.CurrentIsDir() || !file.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                continue;
-            if (!file.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            int lvIndex = file.LastIndexOf("Lv", StringComparison.OrdinalIgnoreCase);
-            if (lvIndex < 0)
-                continue;
-
-            string raw = System.IO.Path.GetFileNameWithoutExtension(file)[(lvIndex + 2)..].Trim();
-            if (!int.TryParse(raw, out int nivelArquivo))
-                continue;
-
-            if (nivelArquivo <= nivelItem && nivelArquivo > escolhido)
+            dir.ListDirBegin();
+            while (true)
             {
-                escolhido = nivelArquivo;
-                caminhoEscolhido = $"{pasta}/{file}";
-            }
-        }
-        dir.ListDirEnd();
+                string file = dir.GetNext();
+                if (string.IsNullOrEmpty(file))
+                    break;
+                if (dir.CurrentIsDir() || !file.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                    continue;
 
-        if (!string.IsNullOrWhiteSpace(caminhoEscolhido))
+                string nomeSemExtensao = System.IO.Path.GetFileNameWithoutExtension(file);
+                string nomeNormalizado = NormalizarEspacos(nomeSemExtensao);
+                if (!nomeNormalizado.StartsWith(prefixoNormalizado, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                int lvIndex = nomeNormalizado.LastIndexOf("Lv", StringComparison.OrdinalIgnoreCase);
+                if (lvIndex < 0)
+                    continue;
+
+                string raw = nomeNormalizado[(lvIndex + 2)..].Trim();
+                if (!int.TryParse(raw, out int nivelArquivo))
+                    continue;
+
+                if (nivelArquivo <= nivelItem && nivelArquivo > escolhido)
+                {
+                    escolhido = nivelArquivo;
+                    caminhoEscolhido = $"{pasta}/{file}";
+                }
+            }
+            dir.ListDirEnd();
+        }
+
+        if (!string.IsNullOrWhiteSpace(caminhoEscolhido) && ResourceLoader.Exists(caminhoEscolhido))
             return caminhoEscolhido;
 
-        return nivelItem >= 10
-            ? $"{pasta}/{prefixo} Lv10.png"
-            : $"{pasta}/{prefixo} Lv1.png";
+        int[] niveisConhecidos = { 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 1 };
+        int nivelMaximo = System.Math.Max(1, nivelItem);
+        foreach (int nivel in niveisConhecidos)
+        {
+            if (nivel > nivelMaximo)
+                continue;
+
+            string caminho = ResolverPaperdollExistente(pasta, prefixo, nivel);
+            if (!string.IsNullOrWhiteSpace(caminho))
+                return caminho;
+        }
+
+        return "";
+    }
+
+    private static string ResolverPaperdollExistente(string pasta, string prefixo, int nivel)
+    {
+        string[] candidatos =
+        {
+            $"{pasta}/{prefixo} Lv{nivel}.png",
+            $"{pasta}/{prefixo}  Lv{nivel}.png",
+        };
+
+        foreach (string caminho in candidatos)
+        {
+            if (ResourceLoader.Exists(caminho))
+                return caminho;
+        }
+
+        return "";
+    }
+
+    private static string NormalizarEspacos(string texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return "";
+
+        return System.Text.RegularExpressions.Regex.Replace(texto.Trim(), @"\s+", " ");
     }
 
     private void LimparOverlayEquipamento(AnimatedSprite2D overlay)
@@ -2813,7 +2862,10 @@ public partial class Player : CharacterBody2D
     private void Morrer()
     {
         if (_isLyingDown)
+        {
+            FixarFrameFinalDeMorte();
             return;
+        }
 
         GD.Print("[PLAYER] O Player foi derrotado!");
         IsAttacking = false;
@@ -2830,6 +2882,7 @@ public partial class Player : CharacterBody2D
             if (AnimatedSprite.SpriteFrames.HasAnimation("death"))
             {
                 AnimatedSprite.SpriteFrames.SetAnimationLoop("death", false);
+                AnimatedSprite.SpeedScale = 1f;
                 AnimatedSprite.Play("death");
                 if (!_morteAnimationFinishedConectado)
                 {
@@ -2849,22 +2902,34 @@ public partial class Player : CharacterBody2D
             respawnUI.ShowDeathScreen();
     }
 
+    private void FixarFrameFinalDeMorte()
+    {
+        if (AnimatedSprite?.SpriteFrames == null || !AnimatedSprite.SpriteFrames.HasAnimation("death"))
+            return;
+
+        if (AnimatedSprite.Animation.ToString() != "death")
+            AnimatedSprite.Animation = "death";
+
+        int frameCount = AnimatedSprite.SpriteFrames.GetFrameCount("death");
+        AnimatedSprite.SpeedScale = 0f;
+        AnimatedSprite.Stop();
+        if (frameCount > 0)
+            AnimatedSprite.Frame = frameCount - 1;
+        SincronizarOverlays();
+    }
+
     private void AoTerminarMorte()
     {
         if (AnimatedSprite == null) return;
         string anim = AnimatedSprite.Animation.ToString();
         if (string.Equals(anim, "death", StringComparison.Ordinal))
         {
-            int frameCount = AnimatedSprite.SpriteFrames?.GetFrameCount("death") ?? 0;
-            if (frameCount > 0)
-                AnimatedSprite.Frame = frameCount - 1;
-            AnimatedSprite.Stop();
+            FixarFrameFinalDeMorte();
             if (_morteAnimationFinishedConectado)
             {
                 AnimatedSprite.AnimationFinished -= AoTerminarMorte;
                 _morteAnimationFinishedConectado = false;
             }
-            SincronizarOverlays();
         }
     }
 

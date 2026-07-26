@@ -2729,14 +2729,14 @@ position = Vector2(117.59999, 269.2)
 PairId = 2
 DestinationOffset = Vector2(0, -32)
 
-[node name="NpcSpawn_Refinador" type="Marker2D" parent="."]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=193, Y=192."
-position = Vector2(192.8, 192.4)
+[node name="NpcSpawn_Refinador" type="Marker2D" parent="." groups=["NPC"]]
+editor_description = "Ponto invisivel de refino: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=192.4, Y=199.2."
+position = Vector2(192.40001, 199.2)
 
-[node name="NpcSpawn_Refinador2" type="Marker2D" parent="."]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=80, Y=192."
-position = Vector2(80, 192)
+[node name="NpcSpawn_Refinador2" type="Marker2D" parent="." groups=["NPC"]]
+editor_description = "Ponto invisivel de refino: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=80.4, Y=198."
+position = Vector2(80.399994, 198)
 
-[node name="NpcSpawn_Refinador3" type="Marker2D" parent="."]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=64, Y=33."
-position = Vector2(64, 33.199997)
+[node name="NpcSpawn_Refinador3" type="Marker2D" parent="." groups=["NPC"]]
+editor_description = "Ponto invisivel de refino: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=64.4, Y=38.8."
+position = Vector2(64.399994, 38.8)

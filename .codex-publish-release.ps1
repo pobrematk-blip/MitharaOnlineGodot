@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 
 $owner = 'pobrematk-blip'
 $repository = 'MitharaOnlineGodot'
-$tag = 'v0.1.8'
+$tag = 'v0.1.57'
 $apiBase = "https://api.github.com/repos/$owner/$repository"
 $root = $PSScriptRoot
 

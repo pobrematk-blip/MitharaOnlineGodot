@@ -17,6 +17,9 @@ public class PetEntity : Entity
     public string AnimPrefix { get; set; } = "";
     public string OwnerName { get; set; } = "";
     public bool IsBossPet { get; set; }
+    public ulong TargetEntityId { get; set; }
+    public bool IsAttacking { get; set; }
+    public double AttackVisualUntil { get; set; }
 
     public PetEntity()
     {

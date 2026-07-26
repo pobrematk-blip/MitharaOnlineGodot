@@ -1227,7 +1227,8 @@ public partial class EntityManager : Node
                         continue;
                     float d = n2d.GlobalPosition.DistanceTo(pos);
                     GD.Print($"[EntityManager]   Verificando '{n2d.Name}' em {n2d.GlobalPosition} dist={d:F1}");
-                    if (d < 5f)
+                    float linkDistance = isInvisibleRefinePoint ? 24f : 5f;
+                    if (d < linkDistance)
                     {
                         n2d.SetMeta("network_id", (long)entityId);
                         n2d.SetMeta("dialog_id", dialogId);
@@ -4051,6 +4052,12 @@ public partial class EntityManager : Node
                 return;
             }
 
+            if (node.IsInGroup("RemotePlayers") || node.Name.ToString().StartsWith("Player_", StringComparison.Ordinal))
+            {
+                SetRemotePlayerDowned(node);
+                return;
+            }
+
             node.QueueFree();
         }
         EsquecerEntidadeRede(entityId);
@@ -4300,9 +4307,10 @@ public partial class EntityManager : Node
                     return;
 
                 int frameCount = sprite.SpriteFrames.GetFrameCount("death");
+                sprite.SpeedScale = 0f;
+                sprite.Stop();
                 if (frameCount > 0)
                     sprite.Frame = frameCount - 1;
-                sprite.Stop();
             };
         }
     }
@@ -4844,6 +4852,10 @@ public partial class EntityManager : Node
             $"{prefix}_{anim}",
             anim.Replace("walk_", "Walk_"),
             $"{prefix}_{anim.Replace("walk_", "Walk_")}",
+            anim.Replace("attack_", "Attack_"),
+            $"{prefix}_{anim.Replace("attack_", "Attack_")}",
+            anim.Replace("idle_", "Idle_"),
+            $"{prefix}_{anim.Replace("idle_", "Idle_")}",
         };
 
         foreach (string candidate in candidates)
@@ -4860,7 +4872,7 @@ public partial class EntityManager : Node
             sprite.Play(names[0]);
     }
 
-    private static void UpdateRemotePetAnimation(Node2D pet, Vector2 direction, bool moving)
+    private static void UpdateRemotePetAnimation(Node2D pet, Vector2 direction, bool moving, byte aiState)
     {
         var sprite = pet.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
         if (sprite?.SpriteFrames == null)
@@ -4868,7 +4880,7 @@ public partial class EntityManager : Node
 
         string prefix = pet.HasMeta("pet_anim_prefix") ? pet.GetMeta("pet_anim_prefix").AsString() : "";
         string dir = direction.LengthSquared() > 0.001f ? DirectionUtil.VectorToCardinal(direction) : "down";
-        string anim = moving ? $"walk_{dir}" : $"idle_{dir}";
+        string anim = aiState == 2 ? $"attack_{dir}" : moving ? $"walk_{dir}" : $"idle_{dir}";
         string current = sprite.Animation.ToString();
         if (current == anim || (!string.IsNullOrWhiteSpace(prefix) && current == $"{prefix}_{anim}"))
             return;
@@ -5369,7 +5381,7 @@ public partial class EntityManager : Node
             {
                 float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 12f : 20f));
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
-                UpdateRemotePetAnimation(node, animDir, cur.Moving);
+                UpdateRemotePetAnimation(node, animDir, cur.Moving, cur.AIState);
             }
             else
             {

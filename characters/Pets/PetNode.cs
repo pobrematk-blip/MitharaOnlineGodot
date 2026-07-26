@@ -12,10 +12,12 @@ public enum PetMode
 public partial class PetNode : Node2D
 {
     public const float TileSize = 32f;
-    public const float OwnerAttackLeashRange = TileSize * 12f;
+    public const float OwnerAttackLeashRange = TileSize * 20f;
     public const float OneTileAttackRange = 96f;
     public const float PetLootRange = TileSize * 20f;
     public const int PetAttackSkillId = -100;
+    private const float LootPickupTouchRange = 28f;
+    private const float LootPickupRequestCooldown = 0.35f;
 
     [Export] public float SeguirDistancia = 80f;
     [Export] public float Velocidade = 300f;
@@ -56,6 +58,11 @@ public partial class PetNode : Node2D
     private Area2D _areaAtaque;
     private Control _vidaBarRoot;
     private ColorRect _vidaFill;
+    private Node2D _alvoLoot;
+    private float _ultimoPedidoColeta;
+    private float _proximaBuscaLoot;
+    private float _ataqueAnimAte;
+    private string _ultimaDirecaoAnim = "down";
 
     public void DefinirDono(Player player)
     {
@@ -211,6 +218,13 @@ public partial class PetNode : Node2D
     {
         if (!Ativo || _player == null) return;
 
+        bool coletando = ModoAtual != PetMode.Atacar && AtualizarColeta(delta);
+        if (coletando)
+        {
+            AtualizarAnimacao();
+            return;
+        }
+
         switch (ModoAtual)
         {
             case PetMode.Seguir:
@@ -230,6 +244,32 @@ public partial class PetNode : Node2D
     private void AtualizarSeguir(double delta)
     {
         if (!IsInstanceValid(_player)) return;
+
+        if (TipoPet == TipoPet.Combate)
+        {
+            if (_alvoInimigo == null || !IsInstanceValid(_alvoInimigo))
+                ProcurarAlvoProximo();
+
+            if (_alvoInimigo != null && IsInstanceValid(_alvoInimigo))
+            {
+                float distAlvoDoPlayer = _player.GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
+                if (distAlvoDoPlayer <= OwnerAttackLeashRange)
+                {
+                    float distAlvo = GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
+                    if (distAlvo <= AtaqueRange)
+                        AtacarAlvo();
+                    else
+                    {
+                        _direcao = (_alvoInimigo.GlobalPosition - GlobalPosition).Normalized();
+                        GlobalPosition += _direcao * Velocidade * (float)delta;
+                    }
+                    return;
+                }
+
+                _alvoInimigo = null;
+            }
+        }
+
         float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
 
         if (dist > SeguirDistancia + 10f)
@@ -273,7 +313,24 @@ public partial class PetNode : Node2D
                 GlobalPosition += _direcao * Velocidade * (float)delta;
             }
         }
-        else if (distPlayer > SeguirDistancia * 2f)
+        else
+        {
+            ProcurarAlvoProximo();
+            if (_alvoInimigo != null && IsInstanceValid(_alvoInimigo))
+            {
+                float distAlvo = GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
+                if (distAlvo <= AtaqueRange)
+                    AtacarAlvo();
+                else
+                {
+                    _direcao = (_alvoInimigo.GlobalPosition - GlobalPosition).Normalized();
+                    GlobalPosition += _direcao * Velocidade * (float)delta;
+                }
+                return;
+            }
+        }
+
+        if (distPlayer > SeguirDistancia * 2f)
         {
             _direcao = (_player.GlobalPosition - GlobalPosition).Normalized();
             GlobalPosition += _direcao * Velocidade * (float)delta;
@@ -378,6 +435,10 @@ public partial class PetNode : Node2D
         if (agora - _ultimoAtaque < AtaqueCooldown) return;
         _ultimoAtaque = agora;
 
+        Vector2 alvoDir = _alvoInimigo.GlobalPosition - GlobalPosition;
+        if (alvoDir.LengthSquared() > 0.001f)
+            _direcao = alvoDir.Normalized();
+
         if (_sprite != null)
         {
             string anim = _direcao switch
@@ -389,6 +450,7 @@ public partial class PetNode : Node2D
                 _ => $"{_animPrefixo}_attack_down"
             };
             TocarAnimacaoComFallback(anim);
+            _ataqueAnimAte = agora + Mathf.Min(0.55f, Mathf.Max(0.25f, AtaqueCooldown * 0.65f));
         }
 
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -451,18 +513,11 @@ public partial class PetNode : Node2D
         if (!ColetaAtiva) return;
 
         var itemColetavel = area.GetParentOrNull<ItemColetavel>();
-        if (itemColetavel != null && IsInstanceValid(itemColetavel))
-        {
-            if (_player != null)
-            {
-                float dist = GlobalPosition.DistanceTo(itemColetavel.GlobalPosition);
-                if (dist <= ColetaRange)
-                {
-                    Vector2 dir = (itemColetavel.GlobalPosition - GlobalPosition).Normalized();
-                    GlobalPosition += dir * Mathf.Min(dist, Velocidade * 0.5f);
-                }
-            }
-        }
+        if (itemColetavel != null
+            && IsInstanceValid(itemColetavel)
+            && _player != null
+            && _player.GlobalPosition.DistanceTo(itemColetavel.GlobalPosition) <= ColetaRange)
+            _alvoLoot = itemColetavel;
     }
 
     private void OnColetaTimer()
@@ -474,9 +529,16 @@ public partial class PetNode : Node2D
         float distPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
         if (distPlayer > ColetaRange + SeguirDistancia) return;
 
+        _alvoLoot = EncontrarLootMaisProximo();
+    }
+
+    private Node2D EncontrarLootMaisProximo()
+    {
+        if (!ColetaAtiva || _player == null || !IsInstanceValid(_player))
+            return null;
+
         Node2D itemMaisProximo = null;
         float menorDist = ColetaRange;
-
         var lootNodes = GetTree().GetNodesInGroup("Loot");
         foreach (var node in lootNodes)
         {
@@ -494,23 +556,52 @@ public partial class PetNode : Node2D
             }
         }
 
-        if (itemMaisProximo != null)
-        {
-            Vector2 dir = (itemMaisProximo.GlobalPosition - GlobalPosition).Normalized();
-            GlobalPosition += dir * Velocidade * 0.5f;
+        return itemMaisProximo;
+    }
 
-            float dist = GlobalPosition.DistanceTo(itemMaisProximo.GlobalPosition);
-            if (dist < 30f && _player != null && IsInstanceValid(_player))
-            {
-                SolicitarColetaDoLoot(itemMaisProximo);
-            }
+    private bool AtualizarColeta(double delta)
+    {
+        if (!ColetaAtiva || _player == null || !IsInstanceValid(_player))
+            return false;
+
+        if (_alvoLoot == null
+            || !IsInstanceValid(_alvoLoot)
+            || _player.GlobalPosition.DistanceTo(_alvoLoot.GlobalPosition) > ColetaRange)
+        {
+            float agora = (float)Time.GetTicksMsec() / 1000f;
+            if (agora < _proximaBuscaLoot)
+                return false;
+
+            _proximaBuscaLoot = agora + 0.25f;
+            _alvoLoot = EncontrarLootMaisProximo();
         }
+
+        if (_alvoLoot == null || !IsInstanceValid(_alvoLoot))
+            return false;
+
+        Vector2 toLoot = _alvoLoot.GlobalPosition - GlobalPosition;
+        float dist = toLoot.Length();
+        if (dist <= LootPickupTouchRange)
+        {
+            _direcao = Vector2.Zero;
+            SolicitarColetaDoLoot(_alvoLoot);
+            return true;
+        }
+
+        _direcao = toLoot.Normalized();
+        GlobalPosition += _direcao * Velocidade * (float)delta;
+        return true;
     }
 
     private void SolicitarColetaDoLoot(Node2D lootNode)
     {
         if (lootNode == null || !IsInstanceValid(lootNode) || !lootNode.HasMeta("loot_id"))
             return;
+
+        float agora = (float)Time.GetTicksMsec() / 1000f;
+        if (agora - _ultimoPedidoColeta < LootPickupRequestCooldown)
+            return;
+        _ultimoPedidoColeta = agora;
 
         long rawLootId = lootNode.GetMeta("loot_id").AsInt64();
         if (rawLootId <= 0)
@@ -527,27 +618,27 @@ public partial class PetNode : Node2D
     {
         if (_sprite == null || string.IsNullOrEmpty(_animPrefixo)) return;
 
+        float agora = (float)Time.GetTicksMsec() / 1000f;
+        if (agora < _ataqueAnimAte)
+            return;
+
         string baseAnim = "";
         if (_direcao.Length() > 0.1f)
         {
             if (Mathf.Abs(_direcao.X) > Mathf.Abs(_direcao.Y))
-                baseAnim = _direcao.X > 0 ? $"{_animPrefixo}_walk_right" : $"{_animPrefixo}_walk_left";
+            {
+                _ultimaDirecaoAnim = _direcao.X > 0 ? "right" : "left";
+                baseAnim = $"{_animPrefixo}_walk_{_ultimaDirecaoAnim}";
+            }
             else
-                baseAnim = _direcao.Y > 0 ? $"{_animPrefixo}_walk_down" : $"{_animPrefixo}_walk_up";
+            {
+                _ultimaDirecaoAnim = _direcao.Y > 0 ? "down" : "up";
+                baseAnim = $"{_animPrefixo}_walk_{_ultimaDirecaoAnim}";
+            }
         }
         else
         {
-            string curAnim = _sprite.Animation.ToString();
-            string lastDir = "down";
-            if (!string.IsNullOrEmpty(curAnim))
-            {
-                lastDir = curAnim
-                    .Replace($"{_animPrefixo}_walk_", "")
-                    .Replace($"{_animPrefixo}_idle_", "")
-                    .Replace($"{_animPrefixo}_attack_", "");
-                if (string.IsNullOrEmpty(lastDir)) lastDir = "down";
-            }
-            baseAnim = $"{_animPrefixo}_idle_{lastDir}";
+            baseAnim = $"{_animPrefixo}_idle_{_ultimaDirecaoAnim}";
         }
 
         if (TocarAnimacaoComFallback(baseAnim))
@@ -598,6 +689,25 @@ public partial class PetNode : Node2D
             string semPrefixo = anim[(prefix.Length + 1)..];
             if (TocarAnimacao(semPrefixo))
                 return true;
+        }
+
+        string[] alternativos =
+        {
+            anim.Replace("walk_", "Walk_"),
+            anim.Replace("attack_", "Attack_"),
+            anim.Replace("idle_", "Idle_"),
+        };
+        foreach (string alt in alternativos)
+        {
+            if (TocarAnimacao(alt))
+                return true;
+
+            if (!string.IsNullOrWhiteSpace(prefix) && alt.StartsWith(prefix + "_", StringComparison.OrdinalIgnoreCase))
+            {
+                string semPrefixo = alt[(prefix.Length + 1)..];
+                if (TocarAnimacao(semPrefixo))
+                    return true;
+            }
         }
 
         return false;

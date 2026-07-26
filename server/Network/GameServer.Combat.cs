@@ -24,7 +24,7 @@ partial class GameServer
     private const double RangedBasicAttackCooldown = 1.1;
     private const int PetAttackSkillId = -100;
     private const float BasicAttackRange = 640f;
-    private const float PetOwnerCommandRange = 32f * 12f;
+    private const float PetOwnerCommandRange = 32f * 20f;
     private const float PetLootPickupRange = 32f * 20f;
     private const int GolpeSombrioSkillId = 12201;
     private const int PassoSombrioSkillId = 12102;
@@ -153,6 +153,12 @@ partial class GameServer
     private bool CanDamageEntity(Entity attacker, Entity target, out string reason)
     {
         reason = "";
+
+        if (target is NPCEntity || target.Type == EntityType.NPC)
+        {
+            reason = "NPCs sao imortais.";
+            return false;
+        }
 
         if (attacker.Id == target.Id)
         {
@@ -309,6 +315,9 @@ partial class GameServer
 
     private bool DealMonsterDamage(Channel channel, MonsterEntity mob, Entity target, double gameTime, float damageMultiplier, int skillId)
     {
+        if (!CanDamageEntity(mob, target, out _))
+            return false;
+
         if (target is PlayerEntity targetPlayerForBuffs)
             RefreshTemporarySkillBonuses(targetPlayerForBuffs);
 
@@ -375,6 +384,9 @@ partial class GameServer
 
     private int ApplyDamageToEntity(Channel channel, Entity target, int damage)
     {
+        if (target is NPCEntity || target.Type == EntityType.NPC)
+            return 0;
+
         damage = Math.Max(0, damage);
         if (damage <= 0)
             return 0;
@@ -3999,6 +4011,7 @@ partial class GameServer
                 return;
 
             attacker.NextPetAttackTime = _gameTime + PetAttackCooldown;
+            MarcarAtaqueVisualDoPet(channel, attacker, target);
         }
         else if (skillId == 0)
         {
@@ -4045,6 +4058,26 @@ partial class GameServer
         {
             HandleMonsterDeath(channel, killedMob, attacker, session, targetId);
         }
+    }
+
+    private void MarcarAtaqueVisualDoPet(Channel channel, PlayerEntity owner, Entity target)
+    {
+        var pet = channel.GetPetOwnedBy(owner.Id);
+        if (pet == null)
+            return;
+
+        pet.TargetEntityId = target.Id;
+        float dx = target.X - pet.X;
+        float dy = target.Y - pet.Y;
+        float len = MathF.Sqrt(dx * dx + dy * dy);
+        if (len > 0.001f)
+        {
+            pet.DirX = dx / len;
+            pet.DirY = dy / len;
+        }
+        pet.IsAttacking = true;
+        pet.AttackVisualUntil = _gameTime + 0.45;
+        BroadcastSingleEntityUpdate(channel, pet);
     }
 
     private float GetCritChance(PlayerEntity player)
@@ -4709,6 +4742,9 @@ internal static class ServerSkillCatalog
 
         static string Normalize(string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+
             string formD = value.Normalize(NormalizationForm.FormD);
             var sb = new StringBuilder(formD.Length);
             foreach (char c in formD)
@@ -4716,18 +4752,48 @@ internal static class ServerSkillCatalog
                 if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
                     sb.Append(char.ToLowerInvariant(c));
             }
-            return sb.ToString().Normalize(NormalizationForm.FormC).Replace(" ", "");
+            string normalized = sb.ToString()
+                .Normalize(NormalizationForm.FormC)
+                .Replace(" ", "")
+                .Replace("_", "")
+                .Replace("-", "");
+
+            return normalized switch
+            {
+                "priest" => "prist",
+                "clerigo" => "clerigo",
+                "cla©rigo" => "clerigo",
+                "guardia£o" => "guardiao",
+                "berserker" => "berseker",
+                "assassino" => "assassino",
+                "assasino" => "assassino",
+                _ => normalized,
+            };
         }
 
         string player = Normalize(playerClass);
-        string required = Normalize(requiredClass);
-        if (player == required) return true;
-        if (player == "prist" && required == "clerigo") return true;
-        if (player == "clerigo" && required == "prist") return true;
-        if (player == "berseker" && required == "berserker") return true;
-        if (player == "berserker" && required == "berseker") return true;
-        if (player == "assassino" && required == "ladino") return true;
+        foreach (string rawRequired in requiredClass.Split(new[] { ',', ';', '|', '/' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            string required = Normalize(rawRequired);
+            if (player == required) return true;
+            if (ClassFamily(player) == ClassFamily(required)) return true;
+        }
+
         return false;
+    }
+
+    private static string ClassFamily(string normalizedClass)
+    {
+        return normalizedClass switch
+        {
+            "arqueiro" or "sniper" => "arqueiro",
+            "clerigo" or "prist" or "sacerdote" => "clerigo",
+            "berseker" or "barbaro" => "berseker",
+            "guardiao" or "protetor" => "guardiao",
+            "ladino" or "assassino" => "ladino",
+            "mago" or "elementalista" => "mago",
+            _ => normalizedClass,
+        };
     }
 
     private static Dictionary<int, ServerSkillDefinition> LoadAll()

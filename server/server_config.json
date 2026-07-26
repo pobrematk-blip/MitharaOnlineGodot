@@ -262,24 +262,24 @@
       "Enabled": true
     },
     {
-      "X": 193,
-      "Y": 192,
+      "X": 192.4,
+      "Y": 199.2,
       "PrefabId": "refiner",
       "Map": "ferrariaeartesao",
       "Direction": "down",
       "Enabled": true
     },
     {
-      "X": 80,
-      "Y": 192,
+      "X": 80.4,
+      "Y": 198.0,
       "PrefabId": "refiner",
       "Map": "ferrariaeartesao",
       "Direction": "down",
       "Enabled": true
     },
     {
-      "X": 64,
-      "Y": 33,
+      "X": 64.4,
+      "Y": 38.8,
       "PrefabId": "refiner",
       "Map": "ferrariaeartesao",
       "Direction": "down",
