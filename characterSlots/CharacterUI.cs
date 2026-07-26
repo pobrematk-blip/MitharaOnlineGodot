@@ -310,10 +310,13 @@ public partial class CharacterUI : Control
             petBtn.AddThemeStyleboxOverride("pressed", CriarPetStyle(new Color(0.07f, 0.08f, 0.10f, 1f), PetGold, 5, 1));
 
             var vbox = new VBoxContainer();
-            vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            vbox.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 6);
+            vbox.Alignment = BoxContainer.AlignmentMode.Center;
 
             var icon = new TextureRect();
-            icon.CustomMinimumSize = new Vector2(48, 48);
+            icon.CustomMinimumSize = new Vector2(56, 56);
+            icon.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            icon.SizeFlagsVertical = SizeFlags.ExpandFill;
             icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
             icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
             icon.Texture = ObterIconePet(entry);
@@ -525,6 +528,29 @@ public partial class CharacterUI : Control
 
         string dir = "res://Pets/";
         string nomeNormalizado = NormalizarTexto(entry.Nome);
+
+        string petFileName = RemoverCaracteresInvalidos(entry.Nome);
+        string[] directPaths =
+        {
+            $"{dir}{petFileName}.tres",
+            $"{dir}{petFileName}.res",
+            $"{dir}Cogumelo.tres",
+            $"{dir}Slime.tres",
+            $"{dir}Goblin.tres",
+            $"{dir}PlantaCarnivora.tres",
+            $"{dir}Sherigan.tres",
+        };
+
+        foreach (string path in directPaths)
+        {
+            if (!ResourceLoader.Exists(path))
+                continue;
+
+            var res = ResourceLoader.Load<PetResource>(path);
+            if (PetResourceCombina(entry, res, path, nomeNormalizado))
+                return;
+        }
+
         var dirAccess = DirAccess.Open(dir);
         if (dirAccess == null)
             return;
@@ -539,17 +565,8 @@ public partial class CharacterUI : Control
                 if (ResourceLoader.Exists(path))
                 {
                     var res = ResourceLoader.Load<PetResource>(path);
-                    bool mesmoId = res != null && res.PetID == entry.PetID;
-                    bool mesmoNome = res != null
-                        && !string.IsNullOrWhiteSpace(nomeNormalizado)
-                        && (NormalizarTexto(res.Nome) == nomeNormalizado
-                            || NormalizarTexto(System.IO.Path.GetFileNameWithoutExtension(fileName)) == nomeNormalizado);
-
-                    if (mesmoId || mesmoNome)
+                    if (PetResourceCombina(entry, res, path, nomeNormalizado))
                     {
-                        entry.Recurso = res;
-                        entry.CaminhoRecurso = path;
-                        entry.Nome = res.Nome;
                         dirAccess.ListDirEnd();
                         return;
                     }
@@ -559,6 +576,39 @@ public partial class CharacterUI : Control
             fileName = dirAccess.GetNext();
         }
         dirAccess.ListDirEnd();
+    }
+
+    private static bool PetResourceCombina(PetColecaoComponent.PetColecaoEntry entry, PetResource res, string path, string nomeNormalizado)
+    {
+        if (entry == null || res == null)
+            return false;
+
+        bool mesmoId = res.PetID == entry.PetID;
+        bool mesmoNome = !string.IsNullOrWhiteSpace(nomeNormalizado)
+            && (NormalizarTexto(res.Nome) == nomeNormalizado
+                || NormalizarTexto(System.IO.Path.GetFileNameWithoutExtension(path)) == nomeNormalizado);
+
+        if (!mesmoId && !mesmoNome)
+            return false;
+
+        entry.Recurso = res;
+        entry.CaminhoRecurso = path;
+        entry.Nome = res.Nome;
+        return true;
+    }
+
+    private static string RemoverCaracteresInvalidos(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        var sb = new StringBuilder(value.Length);
+        foreach (char ch in value.Trim())
+        {
+            if (System.Array.IndexOf(System.IO.Path.GetInvalidFileNameChars(), ch) < 0 && !char.IsWhiteSpace(ch))
+                sb.Append(ch);
+        }
+        return sb.ToString();
     }
 
     private static string NormalizarTexto(string value)

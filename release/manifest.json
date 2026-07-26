@@ -1,7 +1,7 @@
 ﻿{
-    "version":  "0.1.55",
+    "version":  "0.1.56",
     "archive":  "MitharaOnline_Update.zip",
-    "archiveSha256":  "37408C7CD99D277A5BC8C2207A23608C42B9820CE8FE9784E73729F555B60B27",
+    "archiveSha256":  "7BC07F5B432FDD1F80DB6DE060519B69009296D18D9AA08B0DD4AA601C17B17D",
     "gameExecutable":  "MitharaOnlineTeste.exe",
     "files":  [
                   {
@@ -86,13 +86,13 @@
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.dll",
-                      "size":  2169856,
-                      "sha256":  "E0168563EC303C6C936AAC4218C6BCE7518477622FD9A9BD6CA905627A4DB635"
+                      "size":  2188800,
+                      "sha256":  "B6DBDD738BCC4DEC8EC2A99370271E912D2B4346D48516550C6C1D29E41D516E"
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.pdb",
-                      "size":  1302076,
-                      "sha256":  "35DA8F4CE3826820D38B6CF99CB13AA969AECE8C73F6D41ED22AE91178F80E84"
+                      "size":  1309412,
+                      "sha256":  "2EB0CD138718461FB65BAFEA6B612C9009025541AE9C9320B2B42A45198FC89A"
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.runtimeconfig.json",
@@ -730,11 +730,6 @@
                       "sha256":  "708EBCDAB083D868BBA68B222245365E962E069924605C87AAE2F64576E8CFCA"
                   },
                   {
-                      "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.Csp.dll~RF551764e.TMP",
-                      "size":  16144,
-                      "sha256":  "708EBCDAB083D868BBA68B222245365E962E069924605C87AAE2F64576E8CFCA"
-                  },
-                  {
                       "path":  "data_Mithara_windows_x86_64/System.Security.Cryptography.dll",
                       "size":  2050312,
                       "sha256":  "EE0B5E1B61F752F6E4762AD12226975609C698D0982568A9593DCBBCF1A975AC"
@@ -956,8 +951,8 @@
                   },
                   {
                       "path":  "MitharaOnlineTeste.pck",
-                      "size":  306777424,
-                      "sha256":  "B87BA0886A3E93DC50253ABC80C7C94342B8CA023EE2428D3689C602BBFCB661"
+                      "size":  306930092,
+                      "sha256":  "7524FA78906EED9121E6D602DA44CFFC37069D9F20CE287FC353E6F2068096AC"
                   },
                   {
                       "path":  "server_endpoint.json",
