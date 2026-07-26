@@ -665,7 +665,7 @@ partial class GameServer
         SendSkillBarData(peer, player);
         SendGoldUpdate(peer, player.Gold);
         if (!useInline && ch != null)
-            SendPetData(peer, ch.Id);
+            SendPetData(peer, session.SelectedCharacter!.Id);
 
         var vipExpiry = _db.LoadVipExpiry(session.AccountId);
         player.VipExpiry = vipExpiry;

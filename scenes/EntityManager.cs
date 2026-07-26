@@ -4919,8 +4919,8 @@ public partial class EntityManager : Node
         var root = new Area2D();
         root.Position = new Vector2(x, y);
         root.Name = $"Loot_{lootId}";
-        // Fica acima do chao, mas participa do Y-sort do World para nao cobrir o player indevidamente.
-        root.ZIndex = 0;
+        // Fica acima do chao e abaixo das entidades/personagens.
+        root.ZIndex = -1;
         root.ZAsRelative = false;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
@@ -4988,10 +4988,6 @@ public partial class EntityManager : Node
             visuals.AddChild(fallback);
         }
 
-        var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-        spawnTween.TweenProperty(root, "scale", Vector2.One * 1.15f, 0.25f);
-        spawnTween.TweenProperty(root, "scale", Vector2.One, 0.1f);
-
         var labelName = new Label();
         string itemName = itemId == 0 ? "Gold" : (itemRes?.Nome ?? NomeLootFallback(itemId));
         labelName.Text = $"{itemName} x{quantity}";
@@ -5039,6 +5035,10 @@ public partial class EntityManager : Node
             else
                 AddChild(root);
             _lootNodes[lootId] = root;
+
+            var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+            spawnTween.TweenProperty(root, "scale", Vector2.One * 1.15f, 0.25f);
+            spawnTween.TweenProperty(root, "scale", Vector2.One, 0.1f);
         }
 
     private static Texture2D? CarregarIconeLootFallback(int itemId)
@@ -5048,6 +5048,18 @@ public partial class EntityManager : Node
             0 => "res://Itens/Incones/Moeda de Gold.png",
             110 => "res://Itens/Incones/Porcao de Vida.png",
             111 => "res://Itens/Incones/Porcao de Mana.png",
+            >= 1001 and <= 1021 => "res://Itens/Incones/Arco 1.png",
+            >= 1051 and <= 1071 => "res://Itens/Incones/Alvaja de Arqueiro Goblin.png",
+            >= 2001 and <= 2021 => "res://Itens/Incones/Adaga 1.png",
+            >= 2051 and <= 2071 => "res://Itens/Incones/Adagas de Pirata 1.png",
+            >= 3001 and <= 3021 => "res://Itens/Incones/Machado 1.png",
+            >= 3051 and <= 3071 => "res://Itens/Incones/Machados Perdisos 1.png",
+            >= 4001 and <= 4021 => "res://Itens/Incones/Espada 1.png",
+            >= 4051 and <= 4071 => "res://Itens/Incones/Escudo de Goglin.png",
+            >= 5001 and <= 5021 => "res://Itens/Incones/Cajado 1.png",
+            >= 5051 and <= 5071 => "res://Itens/Incones/Escudo Magico 1.png",
+            >= 6001 and <= 6021 => "res://Itens/Incones/Martelo quebrada.png",
+            >= 6051 and <= 6071 => "res://Itens/Incones/Escudo de Goglin.png",
             >= 300000 and < 301000 => "res://Itens/Incones/Luva de couro.png",
             _ => "res://Itens/Incones/Bag 3.png",
         };
@@ -5061,6 +5073,18 @@ public partial class EntityManager : Node
         {
             110 => "Pocao de Vida",
             111 => "Pocao de Mana",
+            >= 1001 and <= 1021 => "Arco",
+            >= 1051 and <= 1071 => "Aljava",
+            >= 2001 and <= 2021 => "Adaga",
+            >= 2051 and <= 2071 => "Adaga Secundaria",
+            >= 3001 and <= 3021 => "Machado",
+            >= 3051 and <= 3071 => "Bumerangue",
+            >= 4001 and <= 4021 => "Espada",
+            >= 4051 and <= 4071 => "Escudo",
+            >= 5001 and <= 5021 => "Cajado",
+            >= 5051 and <= 5071 => "Orbe",
+            >= 6001 and <= 6021 => "Martelo",
+            >= 6051 and <= 6071 => "Escudo Sagrado",
             >= 300000 and < 301000 => "Equipamento Normal",
             _ => $"Item {itemId}",
         };

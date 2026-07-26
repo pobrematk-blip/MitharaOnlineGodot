@@ -875,8 +875,28 @@ public partial class GameNetwork : Node
 
     private void HandlePetData(NetDataReader r)
     {
-        PetCollarExpiryUnix = r.AvailableBytes >= 8 ? r.GetLong() : 0L;
-        int count = r.GetInt();
+        PetCollarExpiryUnix = 0L;
+        int count;
+        if (r.AvailableBytes >= 12)
+        {
+            long possibleExpiry = r.GetLong();
+            int possibleCount = r.GetInt();
+            if (possibleCount >= 0 && possibleCount <= 128)
+            {
+                PetCollarExpiryUnix = possibleExpiry;
+                count = possibleCount;
+            }
+            else
+            {
+                r.SetSource(r.RawData, r.UserDataOffset, r.RawDataSize);
+                count = r.GetInt();
+            }
+        }
+        else
+        {
+            count = r.GetInt();
+        }
+
         var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
         for (int i = 0; i < count; i++)
         {

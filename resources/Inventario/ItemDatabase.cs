@@ -141,6 +141,31 @@ public partial class ItemDatabase : Node
 
     private static string IconeEquipamentoFallback(int itemId)
     {
+        if (itemId is >= 1001 and <= 1021)
+            return "res://Itens/Incones/Arco 1.png";
+        if (itemId is >= 1051 and <= 1071)
+            return "res://Itens/Incones/Alvaja de Arqueiro Goblin.png";
+        if (itemId is >= 2001 and <= 2021)
+            return "res://Itens/Incones/Adaga 1.png";
+        if (itemId is >= 2051 and <= 2071)
+            return "res://Itens/Incones/Adagas de Pirata 1.png";
+        if (itemId is >= 3001 and <= 3021)
+            return "res://Itens/Incones/Machado 1.png";
+        if (itemId is >= 3051 and <= 3071)
+            return "res://Itens/Incones/Machados Perdisos 1.png";
+        if (itemId is >= 4001 and <= 4021)
+            return "res://Itens/Incones/Espada 1.png";
+        if (itemId is >= 4051 and <= 4071)
+            return "res://Itens/Incones/Escudo de Goglin.png";
+        if (itemId is >= 5001 and <= 5021)
+            return "res://Itens/Incones/Cajado 1.png";
+        if (itemId is >= 5051 and <= 5071)
+            return "res://Itens/Incones/Escudo Magico 1.png";
+        if (itemId is >= 6001 and <= 6021)
+            return "res://Itens/Incones/Martelo quebrada.png";
+        if (itemId is >= 6051 and <= 6071)
+            return "res://Itens/Incones/Escudo de Goglin.png";
+
         if (itemId >= 300000 && itemId < 301000)
         {
             int slot = (itemId - 300000) % 12;
@@ -201,7 +226,7 @@ public partial class ItemDatabase : Node
             117 => "Bolsa de 18 Slots",
             118 => "Bolsa de 24 Slots",
             121 => "Coleira de Pet (30 Dias)",
-            _ => NomeDoArquivo(knownPath, itemId),
+            _ => NomeEquipamentoFallback(itemId, knownPath),
         };
 
         var fallback = new ItemResource
@@ -236,5 +261,26 @@ public partial class ItemDatabase : Node
         _cache[itemId] = fallback;
         GD.PrintErr($"[ItemDatabase] Fallback criado para itemId={itemId}. Verifique se o .tres desse item foi exportado.");
         return fallback;
+    }
+
+    private static string NomeEquipamentoFallback(int itemId, string? knownPath)
+    {
+        return itemId switch
+        {
+            >= 1001 and <= 1021 => "Arco",
+            >= 1051 and <= 1071 => "Aljava",
+            >= 2001 and <= 2021 => "Adaga",
+            >= 2051 and <= 2071 => "Adaga Secundaria",
+            >= 3001 and <= 3021 => "Machado",
+            >= 3051 and <= 3071 => "Bumerangue",
+            >= 4001 and <= 4021 => "Espada",
+            >= 4051 and <= 4071 => "Escudo",
+            >= 5001 and <= 5021 => "Cajado",
+            >= 5051 and <= 5071 => "Orbe",
+            >= 6001 and <= 6021 => "Martelo",
+            >= 6051 and <= 6071 => "Escudo Sagrado",
+            >= 300000 and < 301000 => "Equipamento Normal",
+            _ => NomeDoArquivo(knownPath, itemId),
+        };
     }
 }

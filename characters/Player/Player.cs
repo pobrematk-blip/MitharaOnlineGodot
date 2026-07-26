@@ -1263,6 +1263,19 @@ public partial class Player : CharacterBody2D
             }
         }
 
+        Texture2D paperdoll = CarregarPaperdollAutomatico(item);
+        if (paperdoll != null)
+        {
+            var frames = LpcSpriteFramesBuilder.Construir(paperdoll, ObterPrefixoAtaqueAtual());
+            if (frames != null && frames.GetAnimationNames().Length > 0)
+            {
+                overlay.SpriteFrames = frames;
+                overlay.Visible = true;
+                SincronizarOverlays();
+                return;
+            }
+        }
+
         overlay.Visible = false;
         overlay.SpriteFrames = null;
     }
@@ -1279,6 +1292,79 @@ public partial class Player : CharacterBody2D
             }
         }
         return null;
+    }
+
+    private static Texture2D CarregarPaperdollAutomatico(ItemResource item)
+    {
+        string path = ResolverPaperdollAutomatico(item);
+        if (string.IsNullOrWhiteSpace(path) || !ResourceLoader.Exists(path))
+            return null;
+
+        return GD.Load<Texture2D>(path);
+    }
+
+    private static string ResolverPaperdollAutomatico(ItemResource item)
+    {
+        if (item == null || item.CategoriaPeso != PesoItem.Medio)
+            return "";
+
+        string prefixo = item.Tipo switch
+        {
+            TipoEquipamento.Capacete => "Bandana de Couro",
+            TipoEquipamento.Peitoral => "Couraca de Couro",
+            TipoEquipamento.Calca => "Calca de Couro",
+            TipoEquipamento.Botas => "Botas de Couro",
+            _ => "",
+        };
+
+        return ResolverPaperdollPorPrefixo(prefixo, item.NivelRequerido);
+    }
+
+    private static string ResolverPaperdollPorPrefixo(string prefixo, int nivelItem)
+    {
+        string pasta = "res://Itens/paperdolls";
+        if (string.IsNullOrWhiteSpace(prefixo) || !DirAccess.DirExistsAbsolute(pasta))
+            return "";
+
+        int escolhido = 0;
+        string caminhoEscolhido = "";
+        using var dir = DirAccess.Open(pasta);
+        if (dir == null)
+            return "";
+
+        dir.ListDirBegin();
+        while (true)
+        {
+            string file = dir.GetNext();
+            if (string.IsNullOrEmpty(file))
+                break;
+            if (dir.CurrentIsDir() || !file.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (!file.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            int lvIndex = file.LastIndexOf("Lv", StringComparison.OrdinalIgnoreCase);
+            if (lvIndex < 0)
+                continue;
+
+            string raw = System.IO.Path.GetFileNameWithoutExtension(file)[(lvIndex + 2)..].Trim();
+            if (!int.TryParse(raw, out int nivelArquivo))
+                continue;
+
+            if (nivelArquivo <= nivelItem && nivelArquivo > escolhido)
+            {
+                escolhido = nivelArquivo;
+                caminhoEscolhido = $"{pasta}/{file}";
+            }
+        }
+        dir.ListDirEnd();
+
+        if (!string.IsNullOrWhiteSpace(caminhoEscolhido))
+            return caminhoEscolhido;
+
+        return nivelItem >= 10
+            ? $"{pasta}/{prefixo} Lv10.png"
+            : $"{pasta}/{prefixo} Lv1.png";
     }
 
     private void LimparOverlayEquipamento(AnimatedSprite2D overlay)
