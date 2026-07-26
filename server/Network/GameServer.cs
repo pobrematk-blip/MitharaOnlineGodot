@@ -97,6 +97,7 @@ public partial class GameServer : INetEventListener
         {
             ch.OnMonsterAttack += HandleMonsterAIAttack;
             ch.OnMonsterSpecial += HandleMonsterSpecial;
+            ch.AoiRadius = Math.Clamp(_config.AoiRadius, 600f, 1600f);
             ch.NoMobZones = _config.NoMobZones;
             if (_config.SpawnPoints.Count > 0)
                 ch.Spawner.ConfigureSpawnPoints(_config.SpawnPoints);

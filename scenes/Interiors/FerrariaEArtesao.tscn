@@ -2730,13 +2730,13 @@ PairId = 2
 DestinationOffset = Vector2(0, -32)
 
 [node name="NpcSpawn_Refinador" type="Marker2D" parent="."]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao global aproximada no server_config.json: X=850, Y=470."
+editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=193, Y=192."
 position = Vector2(192.8, 192.4)
 
 [node name="NpcSpawn_Refinador2" type="Marker2D" parent="."]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao global aproximada no server_config.json: X=850, Y=470."
+editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=80, Y=192."
 position = Vector2(80, 192)
 
 [node name="NpcSpawn_Refinador3" type="Marker2D" parent="."]
-editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao global aproximada no server_config.json: X=850, Y=470."
+editor_description = "Spawn visual de NPC do servidor: PrefabId=refiner. Mapa=ferrariaeartesao. Posicao no server_config.json: X=64, Y=33."
 position = Vector2(64, 33.199997)

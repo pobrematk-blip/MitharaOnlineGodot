@@ -37,10 +37,18 @@ public partial class MarketplaceDropSlot : Panel
                 inventorySlot = GetInt(dict, "inventory_slot");
             if (inventorySlot < 0)
                 inventorySlot = GetInt(dict, "slot_index");
+            if (inventorySlot < 0)
+                inventorySlot = GetInt(dict, "inventorySlot");
+            if (inventorySlot < 0)
+                inventorySlot = GetInt(dict, "source_slot");
+            if (inventorySlot < 0)
+                inventorySlot = GetInt(dict, "from_slot");
 
             quantity = GetInt(dict, "quantity");
             if (quantity <= 0)
                 quantity = GetInt(dict, "quantidade");
+            if (quantity <= 0)
+                quantity = GetInt(dict, "count");
 
             if (dict.ContainsKey("source") && dict["source"].VariantType == Variant.Type.Object)
             {
@@ -60,6 +68,16 @@ public partial class MarketplaceDropSlot : Panel
 
     private static int GetInt(Godot.Collections.Dictionary dict, string key)
     {
-        return dict.ContainsKey(key) ? dict[key].AsInt32() : -1;
+        if (!dict.ContainsKey(key))
+            return -1;
+
+        var value = dict[key];
+        return value.VariantType switch
+        {
+            Variant.Type.Int => value.AsInt32(),
+            Variant.Type.Float => Mathf.RoundToInt((float)value.AsDouble()),
+            Variant.Type.String => int.TryParse(value.AsString(), out int parsed) ? parsed : -1,
+            _ => -1
+        };
     }
 }

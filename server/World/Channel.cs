@@ -32,7 +32,7 @@ public class Channel
     private ulong _nextEntityId = 1;
     private bool _initialSpawned = false;
 
-    public const float AoiRadius = 1200f;
+    public float AoiRadius { get; set; } = 1200f;
     private const float MonsterSeparationRadius = 52f;
     private const float MonsterSeparationStrength = 0.65f;
     private const float SpawnMinDistance = 180f;

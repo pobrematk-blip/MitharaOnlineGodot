@@ -20,7 +20,7 @@ partial class GameServer
     }
 
     private const double DefaultBasicAttackCooldown = 1.2;
-    private const double BerserkerBasicAttackCooldown = 1.5;
+    private const double BerserkerBasicAttackCooldown = 1.35;
     private const double RangedBasicAttackCooldown = 1.1;
     private const int PetAttackSkillId = -100;
     private const float BasicAttackRange = 640f;

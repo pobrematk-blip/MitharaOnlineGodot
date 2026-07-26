@@ -11,7 +11,7 @@ public class ServerConfig
     public int MaxConnections { get; set; } = 500;
     public int ChannelCount { get; set; } = 4;
     public int TickRate { get; set; } = 20;
-    public float AoiRadius { get; set; } = 1200f;
+    public float AoiRadius { get; set; } = 900f;
     public bool AdminMode { get; set; }
     public string AdminAccounts { get; set; } = "";
 

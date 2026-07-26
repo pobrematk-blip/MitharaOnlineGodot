@@ -14,4 +14,4 @@ AttackUpFrames = 6
 AttackLeftFrames = 6
 AttackDownFrames = 6
 AttackRightFrames = 6
-AttackSpeed = 8.0
+AttackSpeed = 8.8

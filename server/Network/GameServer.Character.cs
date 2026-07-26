@@ -742,7 +742,8 @@ partial class GameServer
         }
 
         int available = GetAvailableTalentPoints(player);
-        if (available < node.CustoPontos)
+        int cost = ServerTalentCatalog.GetEffectiveCost(node);
+        if (available < cost)
         {
             SendSystemMessage(peer, "Pontos de talento insuficientes.");
             SendTalentData(peer, player);
@@ -966,9 +967,28 @@ internal static class ServerTalentCatalog
             {
                 if (!BetaSpecializationAllowed(node, out _))
                     continue;
-                total += Math.Max(0, node.CustoPontos);
+                total += GetEffectiveCost(node);
             }
         return total;
+    }
+
+    public static int GetEffectiveCost(ServerTalentNode node)
+    {
+        if (node == null)
+            return 1;
+
+        int baseCost = Math.Max(1, node.CustoPontos);
+        int level = Math.Max(1, node.NivelMinimo);
+        int levelSurcharge = level switch
+        {
+            >= 60 => 4,
+            >= 40 => 3,
+            >= 20 => 2,
+            >= 10 => 1,
+            _ => 0,
+        };
+
+        return baseCost + levelSurcharge;
     }
 
     public static bool RequirementsSatisfied(string className, ServerTalentNode node, HashSet<string> unlocked)

@@ -66,9 +66,9 @@ public partial class MarketplaceUI : Control
         AnchorTop = 0;
         AnchorRight = 1;
         AnchorBottom = 1;
-        MouseFilter = MouseFilterEnum.Stop;
+        MouseFilter = MouseFilterEnum.Pass;
 
-        _panel = new Panel { Size = WindowSize, CustomMinimumSize = WindowSize };
+        _panel = new Panel { Size = WindowSize, CustomMinimumSize = WindowSize, MouseFilter = MouseFilterEnum.Stop };
         _panel.Position = (GetViewportRect().Size - WindowSize) / 2;
         _panel.AddThemeStyleboxOverride("panel", MitharaUiTheme.Panel(0.95f));
         AddChild(_panel);
@@ -137,9 +137,9 @@ public partial class MarketplaceUI : Control
         filters.AddChild(refresh);
         _myListingsButton = CreateButton("Meus anuncios", 120);
         _myListingsButton.ToggleMode = true;
-        _myListingsButton.Pressed += () =>
+        _myListingsButton.Toggled += pressed =>
         {
-            _ownOnly = _myListingsButton.ButtonPressed;
+            _ownOnly = pressed;
             if (_ownOnly)
             {
                 _search.Text = "";
@@ -233,6 +233,17 @@ public partial class MarketplaceUI : Control
     private void OnMarketplaceItemDropped(int inventorySlot, int quantity)
     {
         SelectInventorySlot(inventorySlot, quantity);
+    }
+
+    public bool TrySelectInventorySlotForListing(int inventorySlot, int quantity)
+    {
+        if (!Visible || inventorySlot < 0 || quantity <= 0)
+            return false;
+
+        SelectInventorySlot(inventorySlot, quantity);
+        MoveToFront();
+        _panel?.MoveToFront();
+        return true;
     }
 
     private void SelectInventorySlot(int inventorySlot, int quantity)

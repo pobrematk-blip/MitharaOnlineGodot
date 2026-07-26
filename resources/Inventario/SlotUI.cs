@@ -396,6 +396,12 @@ public partial class SlotUI : Control
                 return;
             }
 
+            if (EnviarParaMercadoSeAberto())
+            {
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (SlotInterno.Item.ItemID >= 100 && SlotInterno.Item.ItemID < 200)
                 UsarItemNoSlot();
             else
@@ -472,6 +478,26 @@ public partial class SlotUI : Control
         if (enviado)
             GD.Print($"[TRADE] Slot {SlotIndex} enviado para oferta por duplo clique. Quantidade={quantidade}");
         return enviado;
+    }
+
+    private bool EnviarParaMercadoSeAberto()
+    {
+        if (ObterContainerUi() != TipoContainerUi.Inventario)
+            return false;
+
+        if (EhQualquerSlotBolsa || SlotInterno?.Item == null || SlotInterno.Quantidade <= 0)
+            return false;
+
+        var tree = GetTree();
+        var mercado = tree?.Root?.FindChild("MarketplaceUI", true, false) as MarketplaceUI
+            ?? tree?.CurrentScene?.FindChild("MarketplaceUI", true, false) as MarketplaceUI;
+        if (mercado == null || !mercado.Visible)
+            return false;
+
+        bool selecionado = mercado.TrySelectInventorySlotForListing(SlotIndex, SlotInterno.Quantidade);
+        if (selecionado)
+            GD.Print($"[MERCADO] Slot {SlotIndex} selecionado para anuncio por duplo clique. Quantidade={SlotInterno.Quantidade}");
+        return selecionado;
     }
 
     private void EquiparItemDoSlot()

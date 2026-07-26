@@ -1466,7 +1466,7 @@ public partial class TalentTreeUI : Control
             node.Nome,
             TalentNodeResource.ObterRotuloTipo(node.NodeType),
             betaLocked ? "Status: indisponivel no beta" : unlocked ? "Status: liberada" : canUnlock ? "Status: disponivel para liberar" : "Status: bloqueada",
-            $"Custo para liberar: {node.CustoPontos} ponto(s)",
+            $"Custo para liberar: {TalentTreeComponent.ObterCustoEfetivo(node)} ponto(s)",
             $"Nivel necessario: {node.NivelMinimo}",
         };
 

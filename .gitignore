@@ -23,6 +23,7 @@ tests/obj/
 build/
 build_update*/
 release/
+tmp/
 export_*.log
 export_presets.cfg
 launcher/bin/

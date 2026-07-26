@@ -52,8 +52,27 @@ public partial class TalentTreeComponent : Node
         if (TalentTree == null) return false;
         var node = TalentTree.ObterNo(nodeId);
         if (node == null) return false;
-        if (PontosDisponiveis < node.CustoPontos) return false;
+        if (PontosDisponiveis < ObterCustoEfetivo(node)) return false;
         return TalentTree.PodeDesbloquear(node, _nosDesbloqueados, nivelAtual);
+    }
+
+    public static int ObterCustoEfetivo(TalentNodeResource node)
+    {
+        if (node == null)
+            return 1;
+
+        int baseCost = System.Math.Max(1, node.CustoPontos);
+        int level = System.Math.Max(1, node.NivelMinimo);
+        int levelSurcharge = level switch
+        {
+            >= 60 => 4,
+            >= 40 => 3,
+            >= 20 => 2,
+            >= 10 => 1,
+            _ => 0,
+        };
+
+        return baseCost + levelSurcharge;
     }
 
     public void DefinirArvore(TalentTreeResource talentTree)

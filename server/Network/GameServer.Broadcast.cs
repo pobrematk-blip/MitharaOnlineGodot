@@ -82,6 +82,9 @@ partial class GameServer
         int sent = 0;
         foreach (var ch in _world.GetAllChannels())
         {
+            if (!ReferenceEquals(ch.GetEntity(entity.Id), entity))
+                continue;
+
             foreach (var kv in ch.GetAllEntities())
             {
                 if (kv.Value.Type != EntityType.Player) continue;
@@ -89,17 +92,21 @@ partial class GameServer
 
                 float dx = kv.Value.X - entity.X;
                 float dy = kv.Value.Y - entity.Y;
-                float dist = MathF.Sqrt(dx * dx + dy * dy);
+                float aoiRadius = ch.AoiRadius;
+                if ((dx * dx) + (dy * dy) > aoiRadius * aoiRadius)
+                    continue;
 
                 var peer = ch.GetPlayerPeer(kv.Key);
                 if (peer == null) continue;
                 if (!_sessions.TryGetValue(peer, out var session)) continue;
                 if (!IsEntityVisibleToSession(entity, session)) continue;
+                if (session.SpawnedEntities.Contains(entity.Id)) continue;
 
-                // Send spawn regardless of distance — client handles visual culling
+                // Envia spawn apenas para clientes que realmente precisam desenhar a entidade.
                 var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
                 WriteEntityPacket(writer, entity);
                 peer.Send(writer, DeliveryMethod.ReliableOrdered);
+                session.SpawnedEntities.Add(entity.Id);
                 sent++;
             }
         }
@@ -203,17 +210,17 @@ partial class GameServer
         return string.IsNullOrWhiteSpace(map) ? MainSceneName : map.Trim().ToLowerInvariant();
     }
 
-    private static bool IsLootInAoi(LootEntity loot, float x, float y)
+    private static bool IsLootInAoi(Channel channel, LootEntity loot, float x, float y)
     {
         float dx = loot.X - x;
         float dy = loot.Y - y;
-        return (dx * dx) + (dy * dy) <= Channel.AoiRadius * Channel.AoiRadius;
+        return (dx * dx) + (dy * dy) <= channel.AoiRadius * channel.AoiRadius;
     }
 
     private void SyncLootVisibility(NetPeer peer, PlayerSession session, Channel channel, float x, float y)
     {
         var visibleLoot = channel.GetAllLoot()
-            .Where(loot => IsLootInAoi(loot, x, y))
+            .Where(loot => IsLootInAoi(channel, loot, x, y))
             .ToList();
         var visibleIds = visibleLoot.Select(loot => loot.Id).ToHashSet();
 
@@ -371,9 +378,6 @@ partial class GameServer
 
     private void BroadcastSpawnToNearby(Channel channel, Entity entity, float x, float y)
     {
-        var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
-        WriteEntityPacket(writer, entity);
-
         int sent = 0;
         int totalPlayers = 0;
         foreach (var kv in channel.GetAllEntities())
@@ -381,13 +385,26 @@ partial class GameServer
             if (kv.Value.Type != EntityType.Player) continue;
             totalPlayers++;
             if (kv.Key == entity.Id) continue;
+
+            float dx = kv.Value.X - x;
+            float dy = kv.Value.Y - y;
+            if ((dx * dx) + (dy * dy) > channel.AoiRadius * channel.AoiRadius)
+                continue;
+
             var peer = channel.GetPlayerPeer(kv.Key);
             if (peer != null)
             {
-                peer.Send(writer, DeliveryMethod.ReliableOrdered);
                 if (_sessions.TryGetValue(peer, out var session))
+                {
+                    if (session.SpawnedEntities.Contains(entity.Id))
+                        continue;
+
+                    var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
+                    WriteEntityPacket(writer, entity);
+                    peer.Send(writer, DeliveryMethod.ReliableOrdered);
                     session.SpawnedEntities.Add(entity.Id);
-                sent++;
+                    sent++;
+                }
             }
         }
         if (entity.Type == EntityType.Player)

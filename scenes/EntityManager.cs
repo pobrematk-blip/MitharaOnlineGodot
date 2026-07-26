@@ -1,5 +1,6 @@
 #nullable enable
 using Godot;
+using System;
 using System.Collections.Generic;
 using Mithara.Network;
 
@@ -1095,6 +1096,7 @@ public partial class EntityManager : Node
         var existing = GetTree()?.GetNodesInGroup("NPC");
         GD.Print($"[EntityManager] CreateNpcEntity({entityId}, {name}, {x}, {y}) — {existing?.Count ?? 0} NPCs no grupo");
         Node2D? root = null;
+        bool isInvisibleRefinePoint = string.Equals(dialogId, "refino", StringComparison.OrdinalIgnoreCase);
 
         if (existing != null)
         {
@@ -1144,8 +1146,14 @@ public partial class EntityManager : Node
             colObj.CollisionLayer = 2u;
         }
 
+        if (isInvisibleRefinePoint)
+        {
+            root.SetMeta("invisible_interaction", true);
+            root.SetMeta("interaction_prompt", "[F] Refinar");
+        }
+
         // Always add sprite, name label and prompt (even for linked nodes)
-        if (root.GetNodeOrNull("AnimatedSprite") == null)
+        if (!isInvisibleRefinePoint && root.GetNodeOrNull("AnimatedSprite") == null)
         {
             var sprite = new AnimatedSprite2D();
             sprite.Name = "AnimatedSprite";
@@ -1176,8 +1184,12 @@ public partial class EntityManager : Node
 
             root.AddChild(sprite);
         }
+        else if (isInvisibleRefinePoint && root.GetNodeOrNull("AnimatedSprite") is Node spriteNode)
+        {
+            spriteNode.QueueFree();
+        }
 
-        if (root.GetNodeOrNull("NameLabel") == null)
+        if (!isInvisibleRefinePoint && root.GetNodeOrNull("NameLabel") == null)
         {
             var labelName = new Label
             {
@@ -1201,11 +1213,15 @@ public partial class EntityManager : Node
             existingNameLabel.VerticalAlignment = VerticalAlignment.Center;
             AplicarEstiloNomeNpc(existingNameLabel);
         }
+        else if (isInvisibleRefinePoint && root.GetNodeOrNull("NameLabel") is Node nameNode)
+        {
+            nameNode.QueueFree();
+        }
 
         if (root.GetNodeOrNull("InteractPrompt") == null)
         {
             var prompt = new Label();
-            prompt.Text = "[F] Falar";
+            prompt.Text = isInvisibleRefinePoint ? "[F] Refinar" : "[F] Falar";
             prompt.Name = "InteractPrompt";
             prompt.Position = new Vector2(-20, -45);
             prompt.ZIndex = 2;
@@ -1215,6 +1231,10 @@ public partial class EntityManager : Node
             prompt.AddThemeConstantOverride("outline_size", 2);
             prompt.Visible = false;
             root.AddChild(prompt);
+        }
+        else if (isInvisibleRefinePoint && root.GetNodeOrNull("InteractPrompt") is Label existingPrompt)
+        {
+            existingPrompt.Text = "[F] Refinar";
         }
 
         if (root.GetParent() == null)
