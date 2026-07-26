@@ -63,6 +63,8 @@ public partial class PetNode : Node2D
     private float _proximaBuscaLoot;
     private float _ataqueAnimAte;
     private string _ultimaDirecaoAnim = "down";
+    private Vector2 _posicaoAnimAnterior;
+    private bool _temPosicaoAnimAnterior;
 
     public void DefinirDono(Player player)
     {
@@ -87,6 +89,8 @@ public partial class PetNode : Node2D
             TocarAnimacao($"{_animPrefixo}_idle_down");
         }
         _posicaoGuarda = GlobalPosition;
+        _posicaoAnimAnterior = GlobalPosition;
+        _temPosicaoAnimAnterior = true;
 
         _areaColeta = new Area2D();
         var colShape = new CollisionShape2D();
@@ -622,8 +626,13 @@ public partial class PetNode : Node2D
         if (agora < _ataqueAnimAte)
             return;
 
+        bool moveuNesteFrame = !_temPosicaoAnimAnterior
+            || GlobalPosition.DistanceSquaredTo(_posicaoAnimAnterior) > 1.0f;
+        _posicaoAnimAnterior = GlobalPosition;
+        _temPosicaoAnimAnterior = true;
+
         string baseAnim = "";
-        if (_direcao.Length() > 0.1f)
+        if (moveuNesteFrame && _direcao.Length() > 0.1f)
         {
             if (Mathf.Abs(_direcao.X) > Mathf.Abs(_direcao.Y))
             {

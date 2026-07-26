@@ -5379,9 +5379,10 @@ public partial class EntityManager : Node
             }
             else if (node.IsInGroup("RemotePets"))
             {
-                float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (cur.Moving ? 12f : 20f));
+                bool petMoveuVisualmente = cur.Moving && node.GlobalPosition.DistanceSquaredTo(cur.Position) > 2.25f;
+                float lerpWeight = 1.0f - Mathf.Exp(-(float)delta * (petMoveuVisualmente ? 12f : 20f));
                 node.Position = node.Position.Lerp(cur.Position, lerpWeight);
-                UpdateRemotePetAnimation(node, animDir, cur.Moving, cur.AIState);
+                UpdateRemotePetAnimation(node, animDir, petMoveuVisualmente, cur.AIState);
             }
             else
             {

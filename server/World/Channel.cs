@@ -544,6 +544,22 @@ public class Channel
         return mob.ActiveServerBuffs.TryGetValue(key, out double until) && until > gameTime;
     }
 
+    private static bool IsMonsterOutsideSpawnLeash(MonsterEntity mob)
+    {
+        float dx = mob.X - mob.SpawnX;
+        float dy = mob.Y - mob.SpawnY;
+        return dx * dx + dy * dy > MonsterEntity.MaxWanderRange * MonsterEntity.MaxWanderRange;
+    }
+
+    private static void ForceMonsterReturnToSpawn(MonsterEntity mob, double gameTime)
+    {
+        mob.TargetEntityId = null;
+        mob.AIState = MonsterAIState.Return;
+        mob.PatrolTargetX = mob.SpawnX;
+        mob.PatrolTargetY = mob.SpawnY;
+        mob.PatrolTimer = gameTime + 1.0;
+    }
+
     private void UpdateMonsterAI(float dt, double gameTime)
     {
         foreach (var kv in _entities.ToList())
@@ -560,6 +576,12 @@ public class Channel
             var pathFollower = usePathfinding ? GetOrCreatePathFollower(mob.Id) : null;
             PruneExpiredMonsterBuffs(mob, gameTime);
             float mobSpeed = GetEffectiveMobSpeed(mob, gameTime);
+
+            if (IsMonsterOutsideSpawnLeash(mob))
+            {
+                ForceMonsterReturnToSpawn(mob, gameTime);
+                pathFollower?.Stop();
+            }
 
             if (mob.TargetEntityId.HasValue)
             {

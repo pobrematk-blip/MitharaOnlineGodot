@@ -156,6 +156,8 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnDuelEndEventHandler(bool won);
     [Signal] public delegate void OnProjectileSpawnEventHandler(ulong entityId, float originX, float originY, float dirX, float dirY, byte projectileType);
     [Signal] public delegate void OnMapMarkerUpdateEventHandler(byte action, int markerId, float worldX, float worldY, string playerName);
+    [Signal] public delegate void OnBossLootRollStartEventHandler(int rollId, int itemId, int quantity, string itemName, string rarity, float seconds);
+    [Signal] public delegate void OnBossLootRollResultEventHandler(int rollId, bool won, string message, string winnerName, int winningRoll, int myRoll);
 
     public new bool IsConnected => _client?.IsConnected ?? false;
     public int ServerPing => _client?.Ping ?? 0;
@@ -671,6 +673,12 @@ public partial class GameNetwork : Node
             case PacketId.S2C_MapMarkerUpdate:
                 HandleMapMarkerUpdate(r);
                 break;
+            case PacketId.S2C_BossLootRollStart:
+                HandleBossLootRollStart(r);
+                break;
+            case PacketId.S2C_BossLootRollResult:
+                HandleBossLootRollResult(r);
+                break;
         } } catch (System.Exception ex)
         {
             LogError($"Erro processando pacote {id}", ex.ToString());
@@ -942,6 +950,16 @@ public partial class GameNetwork : Node
             w.Put(sucesso);
         });
         GD.Print($"[GAME] Sent pet capture: {petName} (ID:{petId}) scrollSlot={scrollSlot} sucesso={sucesso}");
+    }
+
+    public void SendPetCaptureStart(ulong mobEntityId, int scrollSlot)
+    {
+        _client?.SendPacket(PacketId.C2S_PetCaptureStart, w =>
+        {
+            w.Put(mobEntityId);
+            w.Put(scrollSlot);
+        });
+        GD.Print($"[GAME] Sent pet capture start: mob={mobEntityId} scrollSlot={scrollSlot}");
     }
 
     public void SendPetSummon(int petId, string petName, string animPrefix)

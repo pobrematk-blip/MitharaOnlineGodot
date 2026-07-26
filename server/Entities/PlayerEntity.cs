@@ -89,7 +89,7 @@ public class PlayerEntity : Entity
         int atributoOfensivo = CharacterClass.ToLowerInvariant() switch
         {
             "arqueiro" or "ladino" or "assassino" => Destreza,
-            "mago" or "prist" or "clerigo" or "clérigo" => Inteligencia,
+            "mago" or "elementalista" or "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote" => Inteligencia,
             _ => Forca,
         };
         return Math.Max(1, BaseAttack + atributoOfensivo / 2);

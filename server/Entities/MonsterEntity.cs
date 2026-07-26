@@ -32,6 +32,8 @@ public class MonsterEntity : Entity
     public string BossPendingSkill { get; set; } = "";
     public ulong BossPendingTargetId { get; set; }
     public double BossPendingCompleteTime { get; set; }
+    public ulong CaptureReservedByEntityId { get; set; }
+    public double CaptureReservationExpiresAt { get; set; }
 
     // Patrol
     public float SpawnX { get; set; }
@@ -41,8 +43,8 @@ public class MonsterEntity : Entity
     public float? PatrolTargetY { get; set; }
     public double PatrolTimer { get; set; }
 
-    public const float MaxWanderRange = 1440f;
-    public const float ReturnRange = 1280f;
+    public const float MaxWanderRange = 32f * 50f;
+    public const float ReturnRange = 32f * 45f;
 
     public MonsterEntity()
     {

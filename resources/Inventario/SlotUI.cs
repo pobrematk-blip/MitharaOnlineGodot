@@ -637,6 +637,11 @@ public partial class SlotUI : Control
 
         string petNome = alvo.NomeDoInimigo;
         int petId = alvo.PetID;
+        ulong mobEntityId = 0;
+        if (alvo.HasMeta("network_id"))
+            mobEntityId = (ulong)alvo.GetMeta("network_id").AsInt64();
+        if (mobEntityId > 0)
+            gameNet.SendPetCaptureStart(mobEntityId, SlotIndex);
 
         var miniGame = GD.Load<PackedScene>("res://ui/Pets/PetScrollMiniGame.tscn").Instantiate<PetScrollMiniGame>();
         var hud = _ObterHUD();

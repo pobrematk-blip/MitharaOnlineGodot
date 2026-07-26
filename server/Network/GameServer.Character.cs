@@ -113,7 +113,7 @@ partial class GameServer
         };
     }
 
-    private void GiveStartingItems(int characterId, string className)
+    private void GiveStartingItems(int characterId, string className, int accountId = 0, bool grantVipScroll = false)
     {
         var itemIds = GetStartingItemsForClass(className);
         int invSlot = 0;
@@ -153,19 +153,37 @@ partial class GameServer
             count++;
         }
 
-        int vipSlot = FindFreeStartingInventorySlot(characterId, invSlot);
-        var vipItem = new ItemInstance
+        if (grantVipScroll && accountId > 0 && !AccountHasVipScroll(accountId))
         {
-            ItemId = ItemDefinitions.PergaminhoVip7Dias,
-            Slot = vipSlot,
-            Quantity = 1,
-        };
-        _db.DeleteItemBySlot(characterId, vipSlot);
-        _db.SaveItem(characterId, vipItem);
-        count++;
+            int vipSlot = FindFreeStartingInventorySlot(characterId, invSlot);
+            var vipItem = new ItemInstance
+            {
+                ItemId = ItemDefinitions.PergaminhoVip7Dias,
+                Slot = vipSlot,
+                Quantity = 1,
+            };
+            _db.DeleteItemBySlot(characterId, vipSlot);
+            _db.SaveItem(characterId, vipItem);
+            count++;
+        }
 
         if (count > 0)
             Logger.Info($"Itens iniciais dados ao personagem {characterId}: {count} item(ns)");
+    }
+
+    private bool AccountHasVipScroll(int accountId)
+    {
+        foreach (var character in _db.GetCharacters(accountId))
+        {
+            if (_db.LoadItems(character.Id).Any(item => item.ItemId is
+                    ItemDefinitions.PergaminhoVip7Dias
+                    or ItemDefinitions.PergaminhoVip15Dias
+                    or ItemDefinitions.PergaminhoVip30Dias
+                    or ItemDefinitions.PergaminhoVip7DiasTrial))
+                return true;
+        }
+
+        return _db.LoadVipExpiry(accountId) > DateTime.UtcNow;
     }
 
     private int FindFreeStartingInventorySlot(int characterId, int preferredSlot)
@@ -226,7 +244,7 @@ partial class GameServer
             return;
         }
 
-        GiveStartingItems(charId.Value, className);
+        GiveStartingItems(charId.Value, className, session.AccountId, grantVipScroll: true);
 
         var chars = _db.GetCharacters(session.AccountId);
 

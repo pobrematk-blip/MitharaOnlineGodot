@@ -396,6 +396,59 @@ public class DatabaseManager
         {
             Logger.Info($"N?o foi poss?vel normalizar items: {ex.Message}");
         }
+
+        TryNormalizeMagicWeaponRolls(conn);
+    }
+
+    private void TryNormalizeMagicWeaponRolls(NpgsqlConnection conn)
+    {
+        try
+        {
+            var updates = new List<(int Id, string RollData)>();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = """
+                    SELECT id, item_id, roll_data
+                    FROM items
+                    WHERE roll_data IS NOT NULL AND roll_data <> ''
+                    """;
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    int id = reader.GetInt32(0);
+                    int itemId = reader.GetInt32(1);
+                    string rollData = reader.GetString(2);
+                    Mithara.Server.Entities.ItemRoll? roll;
+                    try
+                    {
+                        roll = System.Text.Json.JsonSerializer.Deserialize<Mithara.Server.Entities.ItemRoll>(rollData);
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                        continue;
+                    }
+
+                    if (roll != null && Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponRoll(itemId, roll))
+                        updates.Add((id, System.Text.Json.JsonSerializer.Serialize(roll)));
+                }
+            }
+
+            foreach (var update in updates)
+            {
+                using var updateCmd = conn.CreateCommand();
+                updateCmd.CommandText = "UPDATE items SET roll_data = @roll WHERE id = @id";
+                updateCmd.Parameters.AddWithValue("@roll", update.RollData);
+                updateCmd.Parameters.AddWithValue("@id", update.Id);
+                updateCmd.ExecuteNonQuery();
+            }
+
+            if (updates.Count > 0)
+                Logger.Info($"Normalizacao de dano magico: {updates.Count} cajado(s)/martelo(s)/maca(s) antigo(s) corrigido(s).");
+        }
+        catch (Exception ex)
+        {
+            Logger.Info($"Nao foi possivel normalizar dano magico dos itens: {ex.Message}");
+        }
     }
 
     private void TryAddIndexes(NpgsqlConnection conn)
@@ -888,6 +941,7 @@ public class DatabaseManager
                     instance.Roll = new();
                 }
             }
+            Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponRoll(instance);
             result.Add(instance);
         }
         return result;
@@ -923,6 +977,7 @@ public class DatabaseManager
                     instance.Roll = new();
                 }
             }
+            Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponRoll(instance);
             result.Add(instance);
         }
         return result;
@@ -931,6 +986,7 @@ public class DatabaseManager
     public void SaveItem(int characterId, Mithara.Server.Entities.ItemInstance item)
     {
         Mithara.Server.Entities.ItemRoller.EnsureRolled(item);
+        Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponRoll(item);
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         if (item.DbId > 0)
@@ -2694,6 +2750,7 @@ public class DatabaseManager
                 }
                 catch (System.Text.Json.JsonException) { }
             }
+            Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponDefinition(definition);
             result.Add(definition);
         }
         return result;
@@ -2701,6 +2758,7 @@ public class DatabaseManager
 
     public void SaveItemDefinition(ItemDefinition def)
     {
+        Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponDefinition(def);
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();

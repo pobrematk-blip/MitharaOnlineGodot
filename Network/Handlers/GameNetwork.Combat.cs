@@ -43,6 +43,15 @@ partial class GameNetwork
         });
     }
 
+    public void SendBossLootRollChoice(int rollId, bool wantDrop)
+    {
+        _client?.SendPacket(PacketId.C2S_BossLootRollChoice, w =>
+        {
+            w.Put(rollId);
+            w.Put(wantDrop);
+        });
+    }
+
     private void HandleCombatResult(NetDataReader r)
     {
         ulong attackerId = r.GetULong();
@@ -142,6 +151,53 @@ partial class GameNetwork
     {
         ulong lootId = r.GetULong();
         EmitSignal(SignalName.OnLootDespawn, lootId);
+    }
+
+    private void HandleBossLootRollStart(NetDataReader r)
+    {
+        int rollId = r.GetInt();
+        int itemId = r.GetInt();
+        int quantity = r.GetInt();
+        string itemName = r.GetString();
+        string rarity = r.GetString();
+        float seconds = r.GetFloat();
+
+        EmitSignal(SignalName.OnBossLootRollStart, rollId, itemId, quantity, itemName, rarity, seconds);
+        CallDeferred(nameof(OpenBossLootRollUi), rollId, itemId, quantity, itemName, rarity, seconds);
+    }
+
+    private void HandleBossLootRollResult(NetDataReader r)
+    {
+        int rollId = r.GetInt();
+        bool won = r.GetBool();
+        string message = r.GetString();
+        string winnerName = r.GetString();
+        int winningRoll = r.GetInt();
+        int myRoll = r.GetInt();
+
+        EmitSignal(SignalName.OnBossLootRollResult, rollId, won, message, winnerName, winningRoll, myRoll);
+        CallDeferred(nameof(ApplyBossLootRollResult), rollId, won, message, winnerName, winningRoll, myRoll);
+    }
+
+    private void OpenBossLootRollUi(int rollId, int itemId, int quantity, string itemName, string rarity, float seconds)
+    {
+        var parent = GetTree()?.Root;
+        if (parent == null) return;
+
+        var ui = parent.FindChild("BossLootRollUI", true, false) as BossLootRollUI;
+        if (ui == null)
+        {
+            ui = new BossLootRollUI { Name = "BossLootRollUI" };
+            parent.AddChild(ui);
+        }
+
+        ui.AddRoll(rollId, itemId, quantity, itemName, rarity, seconds, this);
+    }
+
+    private void ApplyBossLootRollResult(int rollId, bool won, string message, string winnerName, int winningRoll, int myRoll)
+    {
+        var ui = GetTree()?.Root?.FindChild("BossLootRollUI", true, false) as BossLootRollUI;
+        ui?.ShowResult(rollId, won, message, winnerName, winningRoll, myRoll);
     }
 
     private void HandleStatUpdate(NetDataReader r)

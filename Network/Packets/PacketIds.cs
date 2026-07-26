@@ -63,6 +63,7 @@ public enum PacketId : ushort
     C2S_PetCapture = 0x0191,
     C2S_AllocateStat = 0x0192,
     C2S_AdminUpdateItemDefinition = 0x0193,
+    C2S_PetCaptureStart = 0x01A8,
     C2S_DuelRequest = 0x0194,
     C2S_DuelAccept = 0x0195,
     C2S_DuelDecline = 0x0196,
@@ -99,6 +100,7 @@ public enum PacketId : ushort
     C2S_MapMarkerPlace = 0x01B2,
     C2S_MapMarkerRemove = 0x01B3,
     C2S_MapMarkerRequest = 0x01B4,
+    C2S_BossLootRollChoice = 0x01B5,
 
     C2S_Ping = 0x01FF,
 
@@ -193,5 +195,7 @@ public enum PacketId : ushort
     S2C_MapEditorTileData = 0x02B0,
     S2C_MapEditorTileUpdate = 0x02B1,
     S2C_MapMarkerUpdate = 0x02B2,
+    S2C_BossLootRollStart = 0x02B4,
+    S2C_BossLootRollResult = 0x02B5,
     S2C_Pong = 0x02FF,
 }

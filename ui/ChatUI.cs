@@ -16,11 +16,11 @@ public partial class ChatUI : Control
     private static readonly string[] ChannelNames = { "Global", "Sussurro", "Grupo", "Guilda", "Sistema" };
     private static readonly Color[] ChannelColors =
     {
-        new Color(0.9f, 0.9f, 1.0f),
-        new Color(0.7f, 1.0f, 0.7f),
-        new Color(1.0f, 0.85f, 0.5f),
-        new Color(0.7f, 0.8f, 1.0f),
-        new Color(1.0f, 1.0f, 0.53f),
+        new Color(0.45f, 0.86f, 1.0f),  // Global
+        new Color(0.75f, 1.0f, 0.75f),  // Sussurro
+        new Color(0.34f, 0.56f, 1.0f),  // Grupo
+        new Color(0.35f, 1.0f, 0.42f),  // Guilda
+        new Color(1.0f, 0.55f, 0.16f),  // Sistema
     };
 
     private PanelContainer _mainContainer;
@@ -145,7 +145,7 @@ public partial class ChatUI : Control
             int idx = i;
             var btn = new Button();
             btn.Text = ChannelNames[i];
-            btn.Flat = true;
+            btn.Flat = false;
             btn.SizeFlagsHorizontal = SizeFlags.Expand;
             btn.CustomMinimumSize = new Vector2(0, 20);
             btn.AddThemeFontSizeOverride("font_size", 9);
@@ -281,7 +281,8 @@ public partial class ChatUI : Control
 
     public void AddSystemMessage(string message)
     {
-        string bbcode = $"[color=#ffff88]{message}[/color]\n";
+        string systemColor = ToBbcodeColor(ChannelColors[(int)ChatChannel.System]);
+        string bbcode = $"[color={systemColor}][Sistema][/color] [color={systemColor}]{EscapeBbcode(message)}[/color]\n";
         _allMessages.Add((ChatChannel.System, bbcode));
         if (_currentChannel == ChatChannel.System || _currentChannel == ChatChannel.Global)
             AppendToLog(bbcode);
@@ -298,8 +299,7 @@ public partial class ChatUI : Control
 
         var ch = (ChatChannel)channel;
         int chIdx = Mathf.Clamp((int)channel, 0, ChannelColors.Length - 1);
-        string hex = ChannelColors[chIdx].ToHtml();
-        string color = "#" + hex.Substring(0, 6);
+        string color = ToBbcodeColor(ChannelColors[chIdx]);
         string tag = ChannelNames[chIdx];
 
         string safeSenderName = EscapeBbcode(senderName);
@@ -322,7 +322,7 @@ public partial class ChatUI : Control
         {
             if (string.IsNullOrEmpty(translated) || string.Equals(translated, message, StringComparison.OrdinalIgnoreCase))
                 return;
-            string transMsg = $"     [color=#888888][i](\u2192 {EscapeBbcode(translated)})[/i][/color]\n";
+            string transMsg = $"     [font_size=10][color=#888888][i](\u2192 {EscapeBbcode(translated)})[/i][/color][/font_size]\n";
             AddMessage(transMsg, ch);
         });
     }
@@ -330,6 +330,12 @@ public partial class ChatUI : Control
     private static string EscapeBbcode(string text)
     {
         return (text ?? "").Replace("[", "[lb]");
+    }
+
+    private static string ToBbcodeColor(Color color)
+    {
+        string hex = color.ToHtml();
+        return "#" + hex.Substring(0, 6);
     }
 
     private void AddMessage(string bbcode, ChatChannel channel)
@@ -502,16 +508,29 @@ public partial class ChatUI : Control
 
         for (int i = 0; i < _tabButtons.Length; i++)
         {
-            var style = new StyleBoxFlat
-            {
-                BgColor = i == idx ? MitharaUiTheme.InnerBg : new Color(0, 0, 0, 0),
-                BorderWidthBottom = i == idx ? 1 : 0,
-                BorderColor = ChannelColors[i],
-            };
-            _tabButtons[i].AddThemeStyleboxOverride("normal", style);
-            _tabButtons[i].AddThemeStyleboxOverride("hover", style);
-            _tabButtons[i].AddThemeStyleboxOverride("pressed", style);
+            bool selected = i == idx;
+            Color color = ChannelColors[i];
+            _tabButtons[i].AddThemeColorOverride("font_color", selected ? Colors.White : color);
+            _tabButtons[i].AddThemeColorOverride("font_hover_color", Colors.White);
+            _tabButtons[i].AddThemeColorOverride("font_pressed_color", Colors.White);
+            _tabButtons[i].AddThemeStyleboxOverride("normal", MakeChannelTabStyle(color, selected, selected ? 0.34f : 0.05f));
+            _tabButtons[i].AddThemeStyleboxOverride("hover", MakeChannelTabStyle(color, selected, selected ? 0.44f : 0.18f));
+            _tabButtons[i].AddThemeStyleboxOverride("pressed", MakeChannelTabStyle(color, true, 0.48f));
         }
+    }
+
+    private static StyleBoxFlat MakeChannelTabStyle(Color color, bool selected, float bgAlpha)
+    {
+        var style = MitharaUiTheme.Box(
+            new Color(color.R, color.G, color.B, bgAlpha),
+            selected ? color : new Color(color.R, color.G, color.B, 0.35f),
+            3,
+            selected ? 1 : 0);
+        style.ContentMarginTop = 2;
+        style.ContentMarginBottom = 2;
+        style.ContentMarginLeft = 4;
+        style.ContentMarginRight = 4;
+        return style;
     }
 
     private void CenterBar()

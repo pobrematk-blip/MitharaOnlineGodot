@@ -4223,6 +4223,10 @@ scale = Vector2(2, 2)
 position = Vector2(0, -5)
 scale = Vector2(2, 2)
 
+[node name="CalcaOverlay" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
+
 [node name="BotasOverlay" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -5)
 scale = Vector2(2, 2)

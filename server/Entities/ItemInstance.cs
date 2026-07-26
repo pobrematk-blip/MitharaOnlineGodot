@@ -53,7 +53,12 @@ public static class ItemRoller
     {
         if (instance.Roll.IsRolled || instance.Definition is not { } def
             || def.IsStackable || (int)def.Type is < 1 or > 16)
+        {
+            NormalizeMagicWeaponRoll(instance);
             return;
+        }
+
+        NormalizeMagicWeaponDefinition(def);
 
         ItemRarity[] allowedRarities = def.IsElite
             ? new[] { ItemRarity.Common, ItemRarity.Uncommon, ItemRarity.Epic, ItemRarity.Legendary, ItemRarity.Mythic }
@@ -86,6 +91,8 @@ public static class ItemRoller
         int count = Math.Min(pool.Count, Random.Shared.Next(countRange.min, countRange.max + 1));
         foreach (string affix in pool.OrderBy(_ => Random.Shared.Next()).Take(count))
             instance.Roll.Affixes[affix] = RollAffixValue(affix, def.RequiredLevel);
+
+        NormalizeMagicWeaponRoll(instance);
     }
 
     private static ItemRarity RollRarity(IReadOnlyList<ItemRarity> allowedRarities)
@@ -142,6 +149,16 @@ public static class ItemRoller
     {
         string key = NormalizeAffixName(affix);
 
+        if (IsMagicDamageWeapon(def))
+        {
+            if (key is "baseattack" or "danofisico" or "ataquebase")
+                return false;
+        }
+        else if (key is "danomagico")
+        {
+            return false;
+        }
+
         if (key is "roubovida" or "roubomana" or "tenacidade" or "penetracaoarmadura")
             return def.Type is ItemType.Necklace or ItemType.Ring or ItemType.Earring;
 
@@ -149,6 +166,107 @@ public static class ItemRoller
             return IsTrueShield(def) || IsHeavyArmor(def);
 
         return true;
+    }
+
+    public static bool IsMagicDamageWeapon(ItemDefinition? def)
+    {
+        if (def == null || def.Type != ItemType.Weapon)
+            return false;
+
+        if (IsMagicDamageWeaponItemId(def.Id))
+            return true;
+
+        string name = NormalizeAffixName(def.Name);
+        string classes = NormalizeAffixName(def.AllowedClasses);
+        bool magicClass = classes.Contains("mago", StringComparison.OrdinalIgnoreCase)
+            || classes.Contains("prist", StringComparison.OrdinalIgnoreCase)
+            || classes.Contains("clerigo", StringComparison.OrdinalIgnoreCase);
+
+        return magicClass && (name.Contains("cajado", StringComparison.OrdinalIgnoreCase)
+            || name.Contains("martelo", StringComparison.OrdinalIgnoreCase)
+            || name.Contains("maca", StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static bool IsMagicDamageWeaponItemId(int itemId)
+    {
+        return (itemId >= 1066 && itemId <= 1087)
+            || (itemId >= 11066 && itemId <= 11087)
+            || (itemId >= 5001 && itemId <= 5021)
+            || (itemId >= 6001 && itemId <= 6021);
+    }
+
+    public static void NormalizeMagicWeaponDefinition(ItemDefinition def)
+    {
+        if (!IsMagicDamageWeapon(def))
+            return;
+
+        def.AffixPool = def.AffixPool
+            .Where(affix =>
+            {
+                string key = NormalizeAffixName(affix);
+                return key is not ("baseattack" or "danofisico" or "ataquebase");
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (!def.AffixPool.Any(affix => NormalizeAffixName(affix) == "danomagico"))
+            def.AffixPool.Insert(0, "DanoMagico");
+    }
+
+    public static bool NormalizeMagicWeaponRoll(ItemInstance instance)
+    {
+        bool isMagicWeapon = instance.Definition != null
+            ? IsMagicDamageWeapon(instance.Definition)
+            : IsMagicDamageWeaponItemId(instance.ItemId);
+
+        return isMagicWeapon && NormalizeMagicWeaponRoll(instance.Roll);
+    }
+
+    public static bool NormalizeMagicWeaponRoll(int itemId, ItemRoll roll)
+    {
+        return IsMagicDamageWeaponItemId(itemId) && NormalizeMagicWeaponRoll(roll);
+    }
+
+    private static bool NormalizeMagicWeaponRoll(ItemRoll roll)
+    {
+        if (roll.Affixes.Count == 0)
+            return false;
+
+        bool changed = false;
+        float magicBonus = 0;
+        var normalized = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var pair in roll.Affixes)
+        {
+            string key = NormalizeAffixName(pair.Key);
+            if (key is "baseattack" or "danofisico" or "ataquebase")
+            {
+                magicBonus += pair.Value;
+                changed = true;
+                continue;
+            }
+
+            string affixName = key == "danomagico" ? "DanoMagico" : pair.Key;
+            if (normalized.TryGetValue(affixName, out float current))
+                normalized[affixName] = current + pair.Value;
+            else
+                normalized[affixName] = pair.Value;
+
+            if (!string.Equals(affixName, pair.Key, StringComparison.Ordinal))
+                changed = true;
+        }
+
+        if (magicBonus > 0)
+        {
+            normalized["DanoMagico"] = normalized.TryGetValue("DanoMagico", out float current)
+                ? current + magicBonus
+                : magicBonus;
+        }
+
+        if (changed)
+            roll.Affixes = normalized;
+
+        return changed;
     }
 
     public static bool IsTrueShield(ItemDefinition def)

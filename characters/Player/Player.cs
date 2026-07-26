@@ -8,6 +8,7 @@ public partial class Player : CharacterBody2D
     private const float NpcInteractionRange = 180f;
     private const float MeleeTargetFallbackRadius = 24f;
     private const float MeleeTargetContactPadding = 10f;
+    private const float MaxMobTargetDistance = 15f * 32f;
     private const float IdleTransitionDelay = 40f;
     private const float AttackAnimationSpeedScale = 4.0f;
     private const string PlayerAnimationModelScenePath = "res://characters/Player/player.tscn";
@@ -36,6 +37,7 @@ public partial class Player : CharacterBody2D
     private AnimatedSprite2D _armaduraOverlay;
     private AnimatedSprite2D _capaceteOverlay;
     private AnimatedSprite2D _luvasOverlay;
+    private AnimatedSprite2D _calcaOverlay;
     private AnimatedSprite2D _botasOverlay;
     private SpriteFrames _spriteFramesBasePersonagem;
     private string _nomeRacaAtual = "";
@@ -437,6 +439,7 @@ public partial class Player : CharacterBody2D
             _armaduraOverlay = GetNodeOrNull<AnimatedSprite2D>("ArmaduraOverlay");
             _capaceteOverlay = GetNodeOrNull<AnimatedSprite2D>("CapaceteOverlay");
             _luvasOverlay = GetNodeOrNull<AnimatedSprite2D>("LuvasOverlay");
+            _calcaOverlay = GetNodeOrNull<AnimatedSprite2D>("CalcaOverlay");
             _botasOverlay = GetNodeOrNull<AnimatedSprite2D>("BotasOverlay");
         }
         else
@@ -550,7 +553,7 @@ public partial class Player : CharacterBody2D
         var net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net == null || !net.IsConnected) return;
 
-        if (!TryEncontrarTargetEm(net, worldPosition, out ulong escolhido, out Node2D nodeEscolhido))
+        if (!TryEncontrarTargetEm(net, GlobalPosition, worldPosition, out ulong escolhido, out Node2D nodeEscolhido))
         {
             LimparTarget();
             return;
@@ -570,6 +573,8 @@ public partial class Player : CharacterBody2D
             if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value))
                 continue;
             if (entry.Value is not Inimigo && !entry.Value.HasMeta("player_name"))
+                continue;
+            if (entry.Value is Inimigo && GlobalPosition.DistanceTo(entry.Value.GlobalPosition) > MaxMobTargetDistance)
                 continue;
             targets.Add((entry.Key, entry.Value, GlobalPosition.DistanceSquaredTo(entry.Value.GlobalPosition)));
         }
@@ -640,7 +645,7 @@ public partial class Player : CharacterBody2D
         GD.Print($"[TARGET] Alvo selecionado: {_selectedTargetId.Value}");
     }
 
-    private static bool TryEncontrarTargetEm(GameNetwork net, Vector2 worldPosition, out ulong entityId, out Node2D targetNode)
+    private static bool TryEncontrarTargetEm(GameNetwork net, Vector2 playerPosition, Vector2 worldPosition, out ulong entityId, out Node2D targetNode)
     {
         entityId = 0;
         targetNode = null;
@@ -650,6 +655,8 @@ public partial class Player : CharacterBody2D
             if (entry.Key == net.LocalPlayerId || !IsInstanceValid(entry.Value))
                 continue;
             if (entry.Value is not Inimigo && !entry.Value.HasMeta("player_name"))
+                continue;
+            if (entry.Value is Inimigo && playerPosition.DistanceTo(entry.Value.GlobalPosition) > MaxMobTargetDistance)
                 continue;
 
             float distancia = worldPosition.DistanceTo(entry.Value.GlobalPosition);
@@ -711,7 +718,8 @@ public partial class Player : CharacterBody2D
 
         ulong? nearestId = null;
         Node2D nearestNode = null;
-        float maxDistanceSquared = maxDistance * maxDistance;
+        float effectiveMaxDistance = MathF.Min(maxDistance, MaxMobTargetDistance);
+        float maxDistanceSquared = effectiveMaxDistance * effectiveMaxDistance;
         float nearestDistanceSquared = maxDistanceSquared;
 
         foreach (var entry in net.GetAllEntities())
@@ -1189,6 +1197,7 @@ public partial class Player : CharacterBody2D
         SincronizarOverlay(_armaduraOverlay, anim, frame, speed, tocando);
         SincronizarOverlay(_capaceteOverlay, anim, frame, speed, tocando);
         SincronizarOverlay(_luvasOverlay, anim, frame, speed, tocando);
+        SincronizarOverlay(_calcaOverlay, anim, frame, speed, tocando);
         SincronizarOverlay(_botasOverlay, anim, frame, speed, tocando);
     }
 
@@ -1316,7 +1325,7 @@ public partial class Player : CharacterBody2D
 
         if (item.SpritesheetEquipamento != null)
         {
-            var frames = LpcSpriteFramesBuilder.Construir(item.SpritesheetEquipamento, ObterPrefixoAtaqueAtual());
+            var frames = CriarSpriteFramesOverlayEquipamento(item.SpritesheetEquipamento);
             if (frames != null && frames.GetAnimationNames().Length > 0)
             {
                 overlay.SpriteFrames = frames;
@@ -1329,7 +1338,7 @@ public partial class Player : CharacterBody2D
         Texture2D paperdoll = CarregarPaperdollAutomatico(item);
         if (paperdoll != null)
         {
-            var frames = LpcSpriteFramesBuilder.Construir(paperdoll, ObterPrefixoAtaqueAtual());
+            var frames = CriarSpriteFramesOverlayEquipamento(paperdoll);
             if (frames != null && frames.GetAnimationNames().Length > 0)
             {
                 overlay.SpriteFrames = frames;
@@ -1341,6 +1350,35 @@ public partial class Player : CharacterBody2D
 
         overlay.Visible = false;
         overlay.SpriteFrames = null;
+    }
+
+    private SpriteFrames CriarSpriteFramesOverlayEquipamento(Texture2D sheet)
+    {
+        if (sheet == null)
+            return null;
+
+        string prefixoAtaque = ObterPrefixoAtaqueAtual();
+        Vector2 sheetSize = sheet.GetSize();
+        if (sheetSize.X <= 832f && sheetSize.Y <= 3456f)
+            return LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque);
+
+        var profile = EncontrarPerfilSpriteHumano(
+                GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")?.ObterSlot(TipoEquipamento.Arma)?.Item,
+                GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")?.ObterSlot(TipoEquipamento.Escudo)?.Item)
+            ?? EncontrarPerfilSpritePorClasse(NomeDaClasse)
+            ?? HumanUnarmedProfile;
+
+        SpriteFrames frames = profile == HumanUnarmedProfile
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
+
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            frames = LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque);
+
+        if (frames != null && frames.GetAnimationNames().Length > 0)
+            AplicarModeloAnimacaoEditavel(frames, profile, sheet, sheet, prefixoAtaque);
+
+        return frames;
     }
 
     private static Texture2D CarregarTexturaPrimeiroExistente(params string[] paths)
@@ -1486,6 +1524,7 @@ public partial class Player : CharacterBody2D
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Peitoral, _armaduraOverlay);
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Capacete, _capaceteOverlay);
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Luvas, _luvasOverlay);
+        AtualizarOverlaySlot(equipamento, TipoEquipamento.Calca, _calcaOverlay);
         AtualizarOverlaySlot(equipamento, TipoEquipamento.Botas, _botasOverlay);
     }
 
@@ -2656,6 +2695,7 @@ public partial class Player : CharacterBody2D
         CopiarSpriteParaGhost(_cabeloOverlay, ghost);
         CopiarSpriteParaGhost(_barbaOverlay, ghost);
         CopiarSpriteParaGhost(_luvasOverlay, ghost);
+        CopiarSpriteParaGhost(_calcaOverlay, ghost);
         CopiarSpriteParaGhost(_botasOverlay, ghost);
 
         if (ghost.GetChildCount() == 0)
@@ -2753,6 +2793,11 @@ public partial class Player : CharacterBody2D
             }
         }
         if (node == null || !IsInstanceValid(node))
+        {
+            LimparTarget();
+            return false;
+        }
+        if (node is Inimigo && GlobalPosition.DistanceTo(node.GlobalPosition) > MaxMobTargetDistance)
         {
             LimparTarget();
             return false;

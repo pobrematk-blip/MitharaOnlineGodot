@@ -42,8 +42,10 @@ public partial class GameServer : INetEventListener
     internal readonly List<PendingAreaSkillTick> _pendingAreaSkillTicks = new();
     internal readonly List<PendingFreneticStrike> _pendingFreneticStrikes = new();
     internal readonly List<ActiveBastionArea> _activeBastionAreas = new();
+    internal readonly Dictionary<int, PendingBossLootRoll> _pendingBossLootRolls = new();
     internal readonly Dictionary<ulong, double> _lastPartyMemberUpdateSentAt = new();
     internal int _nextTradeId = 1;
+    internal int _nextBossLootRollId = 1;
     internal readonly QuestManager _questManager = new();
     internal readonly Dictionary<string, int> _loginAttempts = new();
     internal readonly Dictionary<string, double> _loginCooldowns = new();
@@ -177,6 +179,7 @@ public partial class GameServer : INetEventListener
         ProcessPendingAreaSkillTicks();
         ProcessActiveBastionAreas();
         ProcessActiveDuels();
+        ProcessPendingBossLootRolls();
         UpdateOnlinePresence();
 
         foreach (var ch in _world.GetAllChannels())
@@ -529,6 +532,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_PetCapture:
                 HandlePetCapture(peer, reader);
                 break;
+            case PacketId.C2S_PetCaptureStart:
+                HandlePetCaptureStart(peer, reader);
+                break;
             case PacketId.C2S_PetSummon:
                 HandlePetSummon(peer, reader);
                 break;
@@ -642,6 +648,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_MapMarkerRequest:
                 HandleMapMarkerRequest(peer, reader);
                 break;
+            case PacketId.C2S_BossLootRollChoice:
+                HandleBossLootRollChoice(peer, reader);
+                break;
 
             }
         }
@@ -704,6 +713,63 @@ public partial class GameServer : INetEventListener
         }
 
         SendInventoryData(peer, player);
+        ClearPetCaptureReservation(session.ChannelId, player.Id);
+    }
+
+    private void HandlePetCaptureStart(NetPeer peer, NetDataReader reader)
+    {
+        if (!TryGetPlayer(peer, out var player, out _)) return;
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null) return;
+
+        ulong mobEntityId = reader.GetULong();
+        int scrollSlot = reader.AvailableBytes >= 4 ? reader.GetInt() : -1;
+        if (mobEntityId == 0)
+            return;
+
+        bool hasScroll = player.Items.Any(item =>
+            (item.ItemId == ItemDefinitions.PergaminhoDoPet || item.ItemId == ItemDefinitions.PergaminhoDoPet5)
+            && item.Quantity > 0
+            && (scrollSlot < 0 || item.Slot == scrollSlot));
+        if (!hasScroll)
+        {
+            SendSystemMessage(peer, "Voce nao possui o pergaminho de captura de pet.");
+            return;
+        }
+
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel?.GetEntity(mobEntityId) is not MonsterEntity mob || mob.Health <= 0)
+        {
+            SendSystemMessage(peer, "Mob de captura nao encontrado.");
+            return;
+        }
+
+        if (mob.CaptureReservedByEntityId != 0
+            && mob.CaptureReservedByEntityId != player.Id
+            && mob.CaptureReservationExpiresAt > _gameTime)
+        {
+            SendSystemMessage(peer, "Este mob ja esta em tentativa de captura por outro jogador.");
+            return;
+        }
+
+        mob.CaptureReservedByEntityId = player.Id;
+        mob.CaptureReservationExpiresAt = _gameTime + 180.0;
+        Logger.Info($"[PET] {player.Name} iniciou captura protegida no mob {mob.Name} ({mob.Id}).");
+    }
+
+    private void ClearPetCaptureReservation(int channelId, ulong playerEntityId)
+    {
+        var channel = _world.GetChannel(channelId);
+        if (channel == null)
+            return;
+
+        foreach (var mob in channel.GetAllEntities().Values.OfType<MonsterEntity>())
+        {
+            if (mob.CaptureReservedByEntityId == playerEntityId)
+            {
+                mob.CaptureReservedByEntityId = 0;
+                mob.CaptureReservationExpiresAt = 0;
+            }
+        }
     }
 
     private void HandleProjectileFire(NetPeer peer, NetDataReader reader)
@@ -737,7 +803,14 @@ public partial class GameServer : INetEventListener
     {
         if (string.IsNullOrWhiteSpace(classe)) return false;
         string cls = classe.Trim().ToLowerInvariant();
-        return cls == "mago" || cls == "arqueiro";
+        return cls == "mago"
+            || cls == "elementalista"
+            || cls == "arqueiro"
+            || cls == "prist"
+            || cls == "priest"
+            || cls == "clerigo"
+            || cls == "clérigo"
+            || cls == "sacerdote";
     }
 
     private void SendPetData(NetPeer peer, int characterId)

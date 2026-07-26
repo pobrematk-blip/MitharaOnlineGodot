@@ -11,6 +11,8 @@ namespace Mithara.Server.Network;
 
 partial class GameServer
 {
+    private const double BossLootRollSeconds = 20.0;
+
     private enum PvpAreaKind
     {
         Normal,
@@ -174,6 +176,19 @@ partial class GameServer
 
         if (attacker is PlayerEntity playerAttacker && target is MonsterEntity mobTarget)
         {
+            if (mobTarget.CaptureReservationExpiresAt <= _gameTime)
+            {
+                mobTarget.CaptureReservedByEntityId = 0;
+                mobTarget.CaptureReservationExpiresAt = 0;
+            }
+
+            if (mobTarget.CaptureReservedByEntityId != 0
+                && mobTarget.CaptureReservedByEntityId != playerAttacker.Id)
+            {
+                reason = "Este mob esta sendo capturado por outro jogador.";
+                return false;
+            }
+
             if (!string.IsNullOrWhiteSpace(mobTarget.FactionId)
                 && string.Equals(mobTarget.FactionId, playerAttacker.FactionId, StringComparison.OrdinalIgnoreCase))
             {
@@ -336,7 +351,7 @@ partial class GameServer
         float defReduction = MathF.Min(0.80f, targetDefense / (targetDefense + 400f));
         float critChance = MathF.Max(0f, mob.Destreza / 4f - (target is PlayerEntity tenacious ? tenacious.CalculateTenacity() * 0.5f : 0f));
         bool isCrit = Random.Shared.NextDouble() * 100.0 < critChance;
-        int rawDamage = mob.CalculateAttackDamage();
+        int rawDamage = ApplyDamageVariance(mob.CalculateAttackDamage());
         int damage = Math.Max(1, (int)(rawDamage * damageMultiplier * (1f - defReduction)));
         if (isCrit)
         {
@@ -3613,7 +3628,7 @@ partial class GameServer
     private static bool IsMagicClass(PlayerEntity player)
     {
         string classe = player.CharacterClass?.Trim().ToLowerInvariant() ?? "";
-        return classe is "mago" or "prist" or "clerigo" or "clérigo";
+        return classe is "mago" or "elementalista" or "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote";
     }
 
     private int CalculateDamageAgainstTarget(PlayerEntity caster, Entity target, int rawDamage, out bool isCrit, bool ignoreDefense = false, bool forceCrit = false, bool useMagicDamage = false)
@@ -3636,6 +3651,7 @@ partial class GameServer
 
         if (target is PlayerEntity)
             rawDamage += caster.PvpDamageBonus;
+        rawDamage = ApplyDamageVariance(rawDamage);
 
         int targetDefense = ignoreDefense ? 0 : target switch
         {
@@ -3666,6 +3682,23 @@ partial class GameServer
         if (HasInvisibilityOpeningBuff(caster))
             damage = Math.Max(1, (int)MathF.Round(damage * InvisibilidadeProfundaOpeningDamageBonus));
         return damage;
+    }
+
+    private static int ApplyDamageVariance(int rawDamage)
+    {
+        if (rawDamage <= 1)
+            return Math.Max(1, rawDamage);
+
+        int minDamage = Math.Max(1, (int)MathF.Floor(rawDamage * 0.85f));
+        int maxDamage = Math.Max(minDamage, (int)MathF.Ceiling(rawDamage * 1.15f));
+
+        if (rawDamage >= 3 && maxDamage - minDamage < 2)
+        {
+            minDamage = Math.Max(1, rawDamage - 1);
+            maxDamage = rawDamage + 1;
+        }
+
+        return Random.Shared.Next(minDamage, maxDamage + 1);
     }
 
     private static double GetEffectiveSkillCooldown(PlayerEntity player, float baseCooldown)
@@ -4367,9 +4400,20 @@ partial class GameServer
             var offsetX = (float)(rng.NextDouble() - 0.5) * 40f;
             var offsetY = (float)(rng.NextDouble() - 0.5) * 40f;
 
-            var loot = new LootEntity(mob.X + offsetX, mob.Y + offsetY, entry.ItemId, qty, killer.Id, _gameTime);
-            spawnedLoot.Add(loot);
-            channel.AddLoot(loot);
+            var item = CreateBossLootItemInstance(entry.ItemId, qty);
+            if (mob.IsBoss)
+            {
+                StartBossLootRoll(channel, mob, killer, item);
+            }
+            else
+            {
+                var loot = new LootEntity(mob.X + offsetX, mob.Y + offsetY, entry.ItemId, qty, killer.Id, _gameTime)
+                {
+                    PreservedItem = item,
+                };
+                spawnedLoot.Add(loot);
+                channel.AddLoot(loot);
+            }
         }
 
         bool dropsEquipment = template.DropsNormalEquipment || template.DropsEliteEquipment;
@@ -4392,15 +4436,26 @@ partial class GameServer
             if (equipmentPool.Length > 0)
             {
                 var equipment = equipmentPool[rng.Next(equipmentPool.Length)];
-                var loot = new LootEntity(
-                    mob.X + (float)(rng.NextDouble() - 0.5) * 40f,
-                    mob.Y + (float)(rng.NextDouble() - 0.5) * 40f,
-                    equipment.Id,
-                    1,
-                    killer.Id,
-                    _gameTime);
-                spawnedLoot.Add(loot);
-                channel.AddLoot(loot);
+                var item = CreateBossLootItemInstance(equipment.Id, 1);
+                if (mob.IsBoss)
+                {
+                    StartBossLootRoll(channel, mob, killer, item);
+                }
+                else
+                {
+                    var loot = new LootEntity(
+                        mob.X + (float)(rng.NextDouble() - 0.5) * 40f,
+                        mob.Y + (float)(rng.NextDouble() - 0.5) * 40f,
+                        equipment.Id,
+                        1,
+                        killer.Id,
+                        _gameTime)
+                    {
+                        PreservedItem = item,
+                    };
+                    spawnedLoot.Add(loot);
+                    channel.AddLoot(loot);
+                }
                 Logger.Info($"Drop: {mob.Name} gerou {equipment.Name} ({(eliteItem ? "Elite" : "Normal")}, nivel {equipmentLevel}).");
             }
             else
@@ -4420,6 +4475,29 @@ partial class GameServer
         {
             var recipients = aoi.ToHashSet();
             recipients.Add(killer.Id);
+            SendLootSpawnToRecipients(channel, loot, recipients);
+        }
+    }
+
+    private static ItemInstance CreateBossLootItemInstance(int itemId, int quantity)
+    {
+        var item = new ItemInstance
+        {
+            Slot = -1,
+            ItemId = itemId,
+            Quantity = Math.Max(1, quantity),
+        };
+        ItemRoller.EnsureRolled(item);
+        return item;
+    }
+
+    private void SendLootSpawnToRecipients(Channel channel, LootEntity loot, IEnumerable<ulong> recipients)
+    {
+        foreach (var eid in recipients.Distinct())
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p == null)
+                continue;
 
             var w = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
             w.Put(loot.Id);
@@ -4427,25 +4505,220 @@ partial class GameServer
             w.Put(loot.Y);
             w.Put(loot.ItemId);
             w.Put(loot.Quantity);
+            p.Send(w, DeliveryMethod.ReliableOrdered);
 
-            foreach (var eid in recipients)
-            {
-                var p = channel.GetPlayerPeer(eid);
-                if (p == null)
-                    continue;
-
-                p.Send(w, DeliveryMethod.ReliableOrdered);
-                if (_sessions.TryGetValue(p, out var session))
-                    session.SpawnedLoot.Add(loot.Id);
-
-                w = PacketSerializer.WritePacket(PacketId.S2C_LootSpawn);
-                w.Put(loot.Id);
-                w.Put(loot.X);
-                w.Put(loot.Y);
-                w.Put(loot.ItemId);
-                w.Put(loot.Quantity);
-            }
+            if (_sessions.TryGetValue(p, out var session))
+                session.SpawnedLoot.Add(loot.Id);
         }
+    }
+
+    private void StartBossLootRoll(Channel channel, MonsterEntity mob, PlayerEntity killer, ItemInstance item)
+    {
+        var participants = GetBossLootParticipants(channel, killer);
+        if (participants.Count == 0)
+        {
+            SpawnBossLootOnGround(channel, mob.X, mob.Y, killer.Id, item);
+            return;
+        }
+
+        int rollId = _nextBossLootRollId++;
+        var roll = new PendingBossLootRoll(
+            rollId,
+            channel.Id,
+            item,
+            mob.X,
+            mob.Y,
+            killer.Id,
+            participants.Select(p => p.Id).ToHashSet(),
+            _gameTime + BossLootRollSeconds);
+        _pendingBossLootRolls[rollId] = roll;
+
+        string rarity = item.Roll.IsRolled ? GetRarityDisplayName(item.Roll.Rarity) : "";
+        foreach (var participant in participants)
+        {
+            var peer = channel.GetPlayerPeer(participant.Id);
+            if (peer == null)
+                continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_BossLootRollStart);
+            writer.Put(rollId);
+            writer.Put(item.ItemId);
+            writer.Put(item.Quantity);
+            writer.Put(item.Name);
+            writer.Put(rarity);
+            writer.Put((float)BossLootRollSeconds);
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+
+        Logger.Info($"Boss loot roll #{rollId}: {mob.Name} -> {item.Name} para {participants.Count} jogador(es).");
+    }
+
+    private List<PlayerEntity> GetBossLootParticipants(Channel channel, PlayerEntity killer)
+    {
+        if (killer.PartyId < 0)
+            return new List<PlayerEntity> { killer };
+
+        var party = _world.Parties.GetParty(killer.PartyId);
+        if (party == null)
+            return new List<PlayerEntity> { killer };
+
+        var participants = new List<PlayerEntity>();
+        foreach (ulong memberId in party.Members)
+        {
+            if (channel.GetEntity(memberId) is PlayerEntity member && member.Health > 0)
+                participants.Add(member);
+        }
+
+        if (!participants.Contains(killer))
+            participants.Add(killer);
+
+        return participants;
+    }
+
+    private static string GetRarityDisplayName(ItemRarity rarity) => rarity switch
+    {
+        ItemRarity.Common => "Comum",
+        ItemRarity.Uncommon => "Incomum",
+        ItemRarity.Rare => "Raro",
+        ItemRarity.Epic => "Epico",
+        ItemRarity.Legendary => "Lendario",
+        ItemRarity.Mythic => "Mistico",
+        _ => "",
+    };
+
+    private void HandleBossLootRollChoice(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.EntityId == 0)
+            return;
+
+        int rollId = reader.GetInt();
+        bool wantsDrop = reader.GetBool();
+
+        if (!_pendingBossLootRolls.TryGetValue(rollId, out var roll))
+            return;
+
+        if (!roll.EligibleEntityIds.Contains(session.EntityId))
+            return;
+
+        roll.Choices[session.EntityId] = wantsDrop;
+        if (roll.Choices.Count >= roll.EligibleEntityIds.Count)
+            ResolveBossLootRoll(rollId, roll);
+    }
+
+    private void ProcessPendingBossLootRolls()
+    {
+        if (_pendingBossLootRolls.Count == 0)
+            return;
+
+        var expired = _pendingBossLootRolls
+            .Where(kv => _gameTime >= kv.Value.ExpiresAt)
+            .Select(kv => kv.Key)
+            .ToList();
+
+        foreach (int rollId in expired)
+        {
+            if (_pendingBossLootRolls.TryGetValue(rollId, out var roll))
+                ResolveBossLootRoll(rollId, roll);
+        }
+    }
+
+    private void ResolveBossLootRoll(int rollId, PendingBossLootRoll roll)
+    {
+        if (!_pendingBossLootRolls.Remove(rollId))
+            return;
+
+        var channel = _world.GetChannel(roll.ChannelId);
+        if (channel == null)
+            return;
+
+        var interested = roll.Choices
+            .Where(kv => kv.Value && roll.EligibleEntityIds.Contains(kv.Key))
+            .Select(kv => kv.Key)
+            .Where(id => channel.GetEntity(id) is PlayerEntity)
+            .ToList();
+
+        if (interested.Count == 0)
+        {
+            SpawnBossLootOnGround(channel, roll.X, roll.Y, roll.OwnerId, roll.Item);
+            SendBossLootRollResult(channel, roll, false, "Ninguem escolheu este item. Ele ficou no chao.", "", -1, new Dictionary<ulong, int>());
+            return;
+        }
+
+        var rolls = new Dictionary<ulong, int>();
+        ulong winnerId;
+        if (interested.Count == 1)
+        {
+            winnerId = interested[0];
+            rolls[winnerId] = 100;
+        }
+        else
+        {
+            foreach (ulong entityId in interested)
+                rolls[entityId] = Random.Shared.Next(0, 101);
+
+            winnerId = rolls
+                .OrderByDescending(kv => kv.Value)
+                .ThenBy(_ => Random.Shared.Next())
+                .First()
+                .Key;
+        }
+
+        var winner = channel.GetEntity(winnerId) as PlayerEntity;
+        var winnerPeer = channel.GetPlayerPeer(winnerId);
+        var winnerSession = winnerPeer != null && _sessions.TryGetValue(winnerPeer, out var s) ? s : null;
+        bool delivered = winner != null
+            && winnerPeer != null
+            && winnerSession?.SelectedCharacter != null
+            && TryAddItemInstanceToInventory(winner, winnerSession.SelectedCharacter.Id, roll.Item);
+
+        string winnerName = winner?.Name ?? "";
+        int winningRoll = rolls.TryGetValue(winnerId, out int best) ? best : 100;
+
+        if (delivered)
+        {
+            SendInventoryData(winnerPeer!, winner!);
+            SendSystemMessage(winnerPeer!, $"Voce recebeu {roll.Item.Name} do boss.");
+            SendBossLootRollResult(channel, roll, true, $"{winnerName} ganhou {roll.Item.Name}.", winnerName, winningRoll, rolls);
+        }
+        else
+        {
+            SpawnBossLootOnGround(channel, roll.X, roll.Y, roll.OwnerId, roll.Item);
+            SendBossLootRollResult(channel, roll, false, $"Inventario do vencedor cheio. {roll.Item.Name} ficou no chao.", winnerName, winningRoll, rolls);
+        }
+    }
+
+    private void SendBossLootRollResult(Channel channel, PendingBossLootRoll roll, bool delivered, string message, string winnerName, int winningRoll, IReadOnlyDictionary<ulong, int> rolls)
+    {
+        foreach (ulong entityId in roll.EligibleEntityIds)
+        {
+            var peer = channel.GetPlayerPeer(entityId);
+            if (peer == null)
+                continue;
+
+            int myRoll = rolls.TryGetValue(entityId, out int value) ? value : -1;
+            bool won = delivered && !string.IsNullOrWhiteSpace(winnerName) && channel.GetEntity(entityId) is PlayerEntity p && p.Name == winnerName;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_BossLootRollResult);
+            writer.Put(roll.RollId);
+            writer.Put(won);
+            writer.Put(message);
+            writer.Put(winnerName);
+            writer.Put(winningRoll);
+            writer.Put(myRoll);
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+    }
+
+    private void SpawnBossLootOnGround(Channel channel, float x, float y, ulong ownerId, ItemInstance item)
+    {
+        var loot = new LootEntity(x, y, item.ItemId, item.Quantity, ownerId, _gameTime)
+        {
+            PreservedItem = item,
+        };
+        channel.AddLoot(loot);
+        var recipients = channel.GetEntitiesInAoi(x, y);
+        recipients.Add(ownerId);
+        SendLootSpawnToRecipients(channel, loot, recipients);
     }
 
     private void HandleLootPickup(NetPeer peer, NetDataReader reader)
@@ -4672,6 +4945,39 @@ internal sealed class PendingDotTick
     public int SkillId { get; init; }
     public int Damage { get; init; }
     public bool IsCrit { get; init; }
+}
+
+internal sealed class PendingBossLootRoll
+{
+    public int RollId { get; }
+    public int ChannelId { get; }
+    public ItemInstance Item { get; }
+    public float X { get; }
+    public float Y { get; }
+    public ulong OwnerId { get; }
+    public HashSet<ulong> EligibleEntityIds { get; }
+    public double ExpiresAt { get; }
+    public Dictionary<ulong, bool> Choices { get; } = new();
+
+    public PendingBossLootRoll(
+        int rollId,
+        int channelId,
+        ItemInstance item,
+        float x,
+        float y,
+        ulong ownerId,
+        HashSet<ulong> eligibleEntityIds,
+        double expiresAt)
+    {
+        RollId = rollId;
+        ChannelId = channelId;
+        Item = item;
+        X = x;
+        Y = y;
+        OwnerId = ownerId;
+        EligibleEntityIds = eligibleEntityIds;
+        ExpiresAt = expiresAt;
+    }
 }
 
 internal sealed class PendingHealTick
