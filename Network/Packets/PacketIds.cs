@@ -197,5 +197,6 @@ public enum PacketId : ushort
     S2C_MapMarkerUpdate = 0x02B2,
     S2C_BossLootRollStart = 0x02B4,
     S2C_BossLootRollResult = 0x02B5,
+    S2C_EquipmentVisualUpdate = 0x02B6,
     S2C_Pong = 0x02FF,
 }

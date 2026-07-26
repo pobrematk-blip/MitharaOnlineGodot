@@ -464,6 +464,11 @@ partial class GameServer
             writer.Put(guild?.Name ?? "");
             writer.Put(guild?.Tag ?? "");
             writer.Put(guild?.Emblem ?? -1);
+            WriteEquipmentVisualPayload(writer, player);
+            writer.Put(player.CabeloPath ?? "");
+            writer.Put(player.BarbaPath ?? "");
+            writer.Put(string.IsNullOrWhiteSpace(player.CabeloCor) ? "ffffff" : player.CabeloCor);
+            writer.Put(string.IsNullOrWhiteSpace(player.BarbaCor) ? "ffffff" : player.BarbaCor);
         }
         else if (entity is MonsterEntity mob)
         {
@@ -484,6 +489,43 @@ partial class GameServer
             writer.Put(pet.PetId);
             writer.Put(pet.AnimPrefix);
             writer.Put(pet.OwnerName);
+        }
+    }
+
+    private static void WriteEquipmentVisualPayload(NetDataWriter writer, PlayerEntity player)
+    {
+        var visualEquipment = player.Equipment
+            .Where(kv => IsVisualEquipmentSlot(kv.Key) && kv.Value.ItemId > 0)
+            .OrderBy(kv => kv.Key)
+            .ToList();
+
+        writer.Put(visualEquipment.Count);
+        foreach (var kv in visualEquipment)
+        {
+            writer.Put(kv.Key);
+            writer.Put(kv.Value.ItemId);
+            writer.Put(kv.Value.RefineLevel);
+        }
+    }
+
+    private static bool IsVisualEquipmentSlot(int slot)
+    {
+        return slot is 1 or 2 or 4 or 5 or 6 or 7 or 8 or 16;
+    }
+
+    private void BroadcastEquipmentVisualUpdate(Channel channel, PlayerEntity player)
+    {
+        var writer = PacketSerializer.WritePacket(PacketId.S2C_EquipmentVisualUpdate);
+        writer.Put(player.Id);
+        WriteEquipmentVisualPayload(writer, player);
+
+        foreach (var kv in channel.GetAllEntities())
+        {
+            if (kv.Value.Type != EntityType.Player || kv.Key == player.Id)
+                continue;
+
+            var peer = channel.GetPlayerPeer(kv.Key);
+            peer?.Send(writer, DeliveryMethod.ReliableOrdered);
         }
     }
 

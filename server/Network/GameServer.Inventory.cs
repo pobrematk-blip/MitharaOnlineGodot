@@ -539,6 +539,7 @@ partial class GameServer
             writer.Put("");
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        BroadcastEquipmentVisualUpdate(channel, player);
 
         var aoi = channel.GetEntitiesInAoi(player.X, player.Y);
         foreach (var eid in aoi)
@@ -630,6 +631,7 @@ partial class GameServer
         writer.Put(equipped.RefineLevel);
         writer.Put(System.Text.Json.JsonSerializer.Serialize(equipped.Roll));
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+        BroadcastEquipmentVisualUpdate(channel, player);
     }
 
     private static int FindEmptyInventorySlot(PlayerEntity player)

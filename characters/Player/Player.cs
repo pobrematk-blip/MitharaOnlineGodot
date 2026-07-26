@@ -176,6 +176,77 @@ public partial class Player : CharacterBody2D
         return frames;
     }
 
+    public static SpriteFrames CriarSpriteFramesCorpoEquipadoParaVisual(ItemResource? arma, ItemResource? escudo, string nomeRaca, string nomeClasse, out string spritesheetPath, out string perfilVisual)
+    {
+        spritesheetPath = "";
+        perfilVisual = "";
+
+        var profile = EncontrarPerfilSpriteHumano(arma, escudo)
+            ?? EncontrarPerfilSpritePorClasse(nomeClasse)
+            ?? HumanUnarmedProfile;
+
+        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
+        SpriteFrames baseFrames = CriarSpriteFramesBaseParaRaca(nomeRaca, prefixoAtaque);
+        Texture2D sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile, nomeRaca));
+        if (sheet == null && profile != HumanUnarmedProfile)
+        {
+            profile = HumanUnarmedProfile;
+            sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile, nomeRaca));
+        }
+
+        if (sheet == null)
+            return null;
+
+        SpriteFrames frames = profile == HumanUnarmedProfile
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
+
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            return null;
+
+        if (profile != HumanUnarmedProfile && baseFrames != null)
+            CopiarAnimacoesBaseParaSpriteArmado(frames, baseFrames);
+
+        AplicarModeloAnimacaoEditavel(frames, profile, sheet, sheet, prefixoAtaque);
+        spritesheetPath = sheet.ResourcePath;
+        perfilVisual = profile.Nome;
+        return frames;
+    }
+
+    public static SpriteFrames CriarSpriteFramesOverlayEquipamentoParaVisual(ItemResource item, string nomeClasse, ItemResource? arma, ItemResource? escudo)
+    {
+        if (item == null)
+            return null;
+
+        if (item.SpriteFramesEquipamento != null)
+            return item.SpriteFramesEquipamento;
+
+        Texture2D sheet = item.SpritesheetEquipamento ?? CarregarPaperdollAutomatico(item);
+        if (sheet == null)
+            return null;
+
+        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
+        Vector2 sheetSize = sheet.GetSize();
+        if (sheetSize.X <= 832f && sheetSize.Y <= 3456f)
+            return LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque);
+
+        var profile = EncontrarPerfilSpriteHumano(arma, escudo)
+            ?? EncontrarPerfilSpritePorClasse(nomeClasse)
+            ?? HumanUnarmedProfile;
+
+        SpriteFrames frames = profile == HumanUnarmedProfile
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
+
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            frames = LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque);
+
+        if (frames != null && frames.GetAnimationNames().Length > 0)
+            AplicarModeloAnimacaoEditavel(frames, profile, sheet, sheet, prefixoAtaque);
+
+        return frames;
+    }
+
     private static SpriteFrames CriarSpriteFramesEquipamento(Texture2D sheet, string prefixoAtaque, HumanFullSpriteProfile profile)
     {
         PlayerSpriteAnimationProfile animationProfile = CarregarPerfilAnimacao(profile);

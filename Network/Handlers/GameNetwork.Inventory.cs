@@ -152,6 +152,33 @@ partial class GameNetwork
         inv?.NotificarMudancaExterna();
     }
 
+    private void HandleEquipmentVisualUpdate(NetDataReader r)
+    {
+        ulong entityId = r.GetULong();
+        var equipment = ReadEquipmentVisualPayload(r);
+        EmitSignal(SignalName.OnEquipmentVisualUpdate, entityId, equipment);
+    }
+
+    private static Godot.Collections.Array<Godot.Collections.Dictionary> ReadEquipmentVisualPayload(NetDataReader r)
+    {
+        var equipment = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        if (r.AvailableBytes < 4)
+            return equipment;
+
+        int count = System.Math.Clamp(r.GetInt(), 0, 32);
+        for (int i = 0; i < count && r.AvailableBytes >= 12; i++)
+        {
+            equipment.Add(new Godot.Collections.Dictionary
+            {
+                ["slot"] = r.GetInt(),
+                ["item_id"] = r.GetInt(),
+                ["refine_level"] = r.GetInt(),
+            });
+        }
+
+        return equipment;
+    }
+
     private void HandleItemUpdate(NetDataReader r)
     {
         int slot = r.GetInt();

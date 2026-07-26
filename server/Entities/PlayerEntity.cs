@@ -10,6 +10,10 @@ public class PlayerEntity : Entity
     public int SlotIndex { get; set; }
     public string CharacterClass { get; set; } = "";
     public string Race { get; set; } = "";
+    public string CabeloPath { get; set; } = "";
+    public string BarbaPath { get; set; } = "";
+    public string CabeloCor { get; set; } = "ffffff";
+    public string BarbaCor { get; set; } = "ffffff";
     public int PartyId { get; set; } = -1;
     public int GuildId { get; set; } = -1;
     public string GuildName { get; set; } = "";

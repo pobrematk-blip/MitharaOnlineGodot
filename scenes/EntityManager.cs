@@ -100,6 +100,8 @@ public partial class EntityManager : Node
     private const int PendingMonsterSpawnBatchSize = 8;
     private const float VisibilityCullMargin = 320f;
     private const double VisibilityCullInterval = 0.15;
+    private const string MetaRace = "race";
+    private const string RemotePaperdollPrefix = "RemotePaperdoll_";
     private double _visibilityCullAccumulator;
     private Node2D? ObterMundo()
     {
@@ -313,6 +315,7 @@ public partial class EntityManager : Node
         _gameNet.OnBossCast += OnBossCast;
         _gameNet.OnSkillAreaEffect += OnSkillAreaEffect;
         _gameNet.OnSkillVisualEffect += OnSkillVisualEffect;
+        _gameNet.OnEquipmentVisualUpdate += OnEquipmentVisualUpdate;
 
         CriarUI();
         CriarNavegacaoMundo();
@@ -722,6 +725,7 @@ public partial class EntityManager : Node
         root.SetMeta("network_id", entityId);
         root.SetMeta("player_name", name);
         root.SetMeta(MetaCharacterClass, characterClass);
+        root.SetMeta(MetaRace, race);
         root.AddToGroup("RemotePlayers");
 
         string animPrefix = ClasseRegistry.ObterPrefixoAtaqueRecomendado(characterClass);
@@ -762,6 +766,11 @@ public partial class EntityManager : Node
         string guildTag = "";
         int guildEmblem = -1;
         string factionId = "";
+        Godot.Collections.Array<Godot.Collections.Dictionary> equipment = new();
+        string cabeloPath = "";
+        string barbaPath = "";
+        Color cabeloCor = Colors.White;
+        Color barbaCor = Colors.White;
         if (!string.IsNullOrWhiteSpace(overheadData))
         {
             var data = Json.ParseString(overheadData).AsGodotDictionary();
@@ -771,6 +780,19 @@ public partial class EntityManager : Node
             guildName = (string)data.GetValueOrDefault("guild_name", "");
             guildTag = (string)data.GetValueOrDefault("guild_tag", "");
             guildEmblem = (int)data.GetValueOrDefault("guild_emblem", -1);
+            if (data.TryGetValue("equipment", out var equipmentValue)
+                && equipmentValue.VariantType == Variant.Type.Array)
+            {
+                foreach (Variant entryValue in equipmentValue.AsGodotArray())
+                {
+                    if (entryValue.VariantType == Variant.Type.Dictionary)
+                        equipment.Add(entryValue.AsGodotDictionary());
+                }
+            }
+            cabeloPath = (string)data.GetValueOrDefault("cabelo_path", "");
+            barbaPath = (string)data.GetValueOrDefault("barba_path", "");
+            cabeloCor = ParseColorHtml((string)data.GetValueOrDefault("cabelo_cor", "ffffff"));
+            barbaCor = ParseColorHtml((string)data.GetValueOrDefault("barba_cor", "ffffff"));
         }
         root.SetMeta("faction_id", factionId);
         root.SetMeta("guild_name", guildName);
@@ -800,7 +822,204 @@ public partial class EntityManager : Node
         if (health <= 0)
             SetRemotePlayerDowned(root);
 
+        AplicarEquipamentoVisualRemoto(entityId, equipment);
+        AplicarAparenciaVisualRemota(root, sprite, cabeloPath, cabeloCor, "Cabelo");
+        AplicarAparenciaVisualRemota(root, sprite, barbaPath, barbaCor, "Barba");
+
         return root;
+    }
+
+    private void OnEquipmentVisualUpdate(ulong entityId, Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
+    {
+        AplicarEquipamentoVisualRemoto(entityId, equipment);
+    }
+
+    private void AplicarEquipamentoVisualRemoto(ulong entityId, Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
+    {
+        if (entityId == _gameNet?.LocalPlayerId)
+            return;
+        if (!_networkNodes.TryGetValue(entityId, out var node) || node == null || !IsInstanceValid(node))
+            return;
+        if (!node.IsInGroup("RemotePlayers"))
+            return;
+
+        var sprite = node.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite");
+        if (sprite == null || _gameNet?.ItemDB == null)
+            return;
+
+        var equipped = new Dictionary<int, ItemResource>();
+        foreach (var entry in equipment)
+        {
+            int slot = ObterInt(entry, "slot");
+            int itemId = ObterInt(entry, "item_id");
+            if (slot <= 0 || itemId <= 0)
+                continue;
+
+            var item = _gameNet.ItemDB.GetItem(itemId);
+            if (item != null)
+                equipped[slot] = item;
+        }
+
+        string classe = ObterMetaString(node, MetaCharacterClass);
+        string raca = ObterMetaString(node, MetaRace);
+        equipped.TryGetValue((int)TipoEquipamento.Arma, out var arma);
+        equipped.TryGetValue((int)TipoEquipamento.Escudo, out var escudo);
+
+        string animAtual = sprite.Animation.ToString();
+        int frameAtual = sprite.Frame;
+        float speedAtual = sprite.SpeedScale;
+        var corpoFrames = Player.CriarSpriteFramesCorpoEquipadoParaVisual(arma, escudo, raca, classe, out string sheetPath, out _);
+        if (corpoFrames != null && corpoFrames.GetAnimationNames().Length > 0)
+        {
+            sprite.SpriteFrames = corpoFrames;
+            if (!string.IsNullOrWhiteSpace(sheetPath))
+                node.SetMeta(MetaSpritePath, sheetPath);
+            RestaurarAnimacaoSprite(sprite, animAtual, frameAtual, speedAtual);
+        }
+
+        AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Capacete);
+        AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Peitoral);
+        AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Luvas);
+        AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Calca);
+        AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Botas);
+        SincronizarOverlaysRemotos(node, sprite);
+    }
+
+    private static int ObterInt(Godot.Collections.Dictionary dict, string key)
+    {
+        if (!dict.TryGetValue(key, out var value))
+            return 0;
+
+        return value.VariantType switch
+        {
+            Variant.Type.Int => (int)value.AsInt64(),
+            Variant.Type.Float => (int)value.AsDouble(),
+            Variant.Type.String => int.TryParse(value.AsString(), out int parsed) ? parsed : 0,
+            _ => 0,
+        };
+    }
+
+    private static void RestaurarAnimacaoSprite(AnimatedSprite2D sprite, string anim, int frame, float speed)
+    {
+        if (sprite.SpriteFrames == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(anim) && sprite.SpriteFrames.HasAnimation(anim))
+        {
+            sprite.Play(anim);
+            int frameCount = sprite.SpriteFrames.GetFrameCount(anim);
+            if (frameCount > 0)
+                sprite.Frame = Mathf.Clamp(frame, 0, frameCount - 1);
+            sprite.SpeedScale = speed;
+            return;
+        }
+
+        if (sprite.SpriteFrames.HasAnimation("idle_down"))
+            sprite.Play("idle_down");
+    }
+
+    private void AtualizarOverlayRemoto(Node2D node, AnimatedSprite2D baseSprite, Dictionary<int, ItemResource> equipped, TipoEquipamento tipo)
+    {
+        string nodeName = $"{RemotePaperdollPrefix}{(int)tipo}";
+        var overlay = node.GetNodeOrNull<AnimatedSprite2D>(nodeName);
+        if (!equipped.TryGetValue((int)tipo, out var item) || !DeveAplicarOverlayEquipamentoRemoto(item))
+        {
+            if (overlay != null)
+            {
+                overlay.Visible = false;
+                overlay.SpriteFrames = null;
+            }
+            return;
+        }
+
+        string classe = ObterMetaString(node, MetaCharacterClass);
+        equipped.TryGetValue((int)TipoEquipamento.Arma, out var arma);
+        equipped.TryGetValue((int)TipoEquipamento.Escudo, out var escudo);
+        var frames = Player.CriarSpriteFramesOverlayEquipamentoParaVisual(item, classe, arma, escudo);
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            return;
+
+        overlay ??= CriarOverlayRemoto(node, baseSprite, nodeName);
+        overlay.SpriteFrames = frames;
+        overlay.Visible = true;
+        overlay.Modulate = baseSprite.Modulate;
+    }
+
+    private static AnimatedSprite2D CriarOverlayRemoto(Node2D node, AnimatedSprite2D baseSprite, string nodeName)
+    {
+        var overlay = new AnimatedSprite2D
+        {
+            Name = nodeName,
+            Position = baseSprite.Position,
+            Scale = baseSprite.Scale,
+            Offset = baseSprite.Offset,
+            Centered = baseSprite.Centered,
+            ZIndex = baseSprite.ZIndex + 1,
+            ZAsRelative = baseSprite.ZAsRelative,
+            Visible = false,
+        };
+        node.AddChild(overlay);
+        return overlay;
+    }
+
+    private static bool DeveAplicarOverlayEquipamentoRemoto(ItemResource item)
+    {
+        if (item == null || item.Tipo == TipoEquipamento.Arma)
+            return false;
+
+        if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
+            return true;
+
+        return item.CategoriaPeso == PesoItem.Medio
+            && (item.Tipo == TipoEquipamento.Capacete
+                || item.Tipo == TipoEquipamento.Peitoral
+                || item.Tipo == TipoEquipamento.Calca
+                || item.Tipo == TipoEquipamento.Botas);
+    }
+
+    private static void AplicarAparenciaVisualRemota(Node2D node, AnimatedSprite2D baseSprite, string spritesheetPath, Color cor, string nome)
+    {
+        string nodeName = $"{RemotePaperdollPrefix}{nome}";
+        var overlay = node.GetNodeOrNull<AnimatedSprite2D>(nodeName);
+        if (string.IsNullOrWhiteSpace(spritesheetPath) || !ResourceLoader.Exists(spritesheetPath))
+        {
+            if (overlay != null)
+            {
+                overlay.Visible = false;
+                overlay.SpriteFrames = null;
+            }
+            return;
+        }
+
+        var tex = ResourceLoader.Load<Texture2D>(spritesheetPath);
+        if (tex == null)
+            return;
+
+        string classe = ObterMetaString(node, MetaCharacterClass);
+        var frames = LpcSpriteFramesBuilder.Construir(tex, ClasseRegistry.ObterPrefixoAtaqueRecomendado(classe));
+        if (frames == null || frames.GetAnimationNames().Length == 0)
+            return;
+
+        overlay ??= CriarOverlayRemoto(node, baseSprite, nodeName);
+        overlay.SpriteFrames = frames;
+        overlay.Modulate = cor;
+        overlay.Visible = true;
+        SincronizarOverlaysRemotos(node, baseSprite);
+    }
+
+    private static Color ParseColorHtml(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Colors.White;
+
+        try
+        {
+            return Color.FromHtml(value.StartsWith("#") ? value : "#" + value);
+        }
+        catch
+        {
+            return Colors.White;
+        }
     }
 
     private Node2D CreatePetEntity(ulong entityId, string name, float x, float y, int level, int health, int maxHealth, string ownerIdText, string petIdText, string petData)
@@ -4292,6 +4511,7 @@ public partial class EntityManager : Node
             sprite.SpriteFrames.SetAnimationLoop("death", false);
             sprite.SpeedScale = 1f;
             sprite.Play("death");
+            SincronizarOverlaysRemotos(node, sprite);
         }
 
         if (!node.HasMeta("remote_death_lock_connected"))
@@ -4330,7 +4550,10 @@ public partial class EntityManager : Node
 
         sprite.SpeedScale = 1f;
         if (sprite.SpriteFrames.HasAnimation("idle_down"))
+        {
             sprite.Play("idle_down");
+            SincronizarOverlaysRemotos(node, sprite);
+        }
     }
 
     public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving, bool sprinting = false)
@@ -4367,7 +4590,10 @@ public partial class EntityManager : Node
         string targetAnim = $"{state}_{dirName}";
 
         if (sprite.SpriteFrames.HasAnimation(targetAnim) && currentAnim != targetAnim)
+        {
             sprite.Play(targetAnim);
+            SincronizarOverlaysRemotos(entity, sprite);
+        }
     }
 
     private static bool EstaComAnimacaoTravada(Node2D entity, string metaName)
@@ -4401,6 +4627,7 @@ public partial class EntityManager : Node
             else
                 sprite.SpeedScale = 2.0f;
             sprite.Play(animation);
+            SincronizarOverlaysRemotos(entity, sprite);
             if (!sprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => sprite.SpeedScale = 1.0f)))
                 sprite.AnimationFinished += () => sprite.SpeedScale = 1.0f;
         }
@@ -4419,6 +4646,7 @@ public partial class EntityManager : Node
         sprite.SpriteFrames.SetAnimationLoop(animation, false);
         sprite.SpeedScale = 1.0f;
         sprite.Play(animation);
+        SincronizarOverlaysRemotos(entity, sprite);
         if (!sprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => sprite.SpeedScale = 1.0f)))
             sprite.AnimationFinished += () => sprite.SpeedScale = 1.0f;
     }
@@ -4443,6 +4671,8 @@ public partial class EntityManager : Node
             animSprite.SpriteFrames.SetAnimationLoop(animation, false);
             animSprite.SpeedScale = 1.15f;
             animSprite.Play(animation);
+            if (animSprite.Name == "AnimatedSprite")
+                SincronizarOverlaysRemotos(entity, animSprite);
             if (!animSprite.IsConnected(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(() => animSprite.SpeedScale = 1.0f)))
                 animSprite.AnimationFinished += () => animSprite.SpeedScale = 1.0f;
         }
@@ -5452,6 +5682,89 @@ public partial class EntityManager : Node
             return;
 
         sprite.Play(targetAnim);
+        SincronizarOverlaysRemotos(entity, sprite);
+    }
+
+    private static void SincronizarOverlaysRemotos(Node2D entity, AnimatedSprite2D baseSprite)
+    {
+        if (entity == null || baseSprite?.SpriteFrames == null)
+            return;
+
+        string anim = baseSprite.Animation.ToString();
+        int frame = baseSprite.Frame;
+        float speed = baseSprite.SpeedScale;
+        bool tocando = baseSprite.IsPlaying();
+
+        foreach (var child in entity.GetChildren())
+        {
+            if (child is not AnimatedSprite2D overlay)
+                continue;
+            if (!overlay.Name.ToString().StartsWith(RemotePaperdollPrefix, System.StringComparison.Ordinal))
+                continue;
+            if (!overlay.Visible || overlay.SpriteFrames == null)
+                continue;
+
+            string animOverlay = ResolverAnimacaoOverlayRemota(overlay.SpriteFrames, anim);
+            if (string.IsNullOrEmpty(animOverlay))
+                continue;
+
+            if (overlay.Animation.ToString() != animOverlay)
+                overlay.Play(animOverlay);
+            else if (tocando && !overlay.IsPlaying())
+                overlay.Play();
+
+            int frameCount = overlay.SpriteFrames.GetFrameCount(animOverlay);
+            overlay.Frame = frameCount > 0 ? Mathf.Clamp(frame, 0, frameCount - 1) : 0;
+            overlay.SpeedScale = speed;
+
+            if (!tocando && overlay.IsPlaying())
+                overlay.Stop();
+        }
+    }
+
+    private static string ResolverAnimacaoOverlayRemota(SpriteFrames frames, string anim)
+    {
+        if (frames == null || string.IsNullOrWhiteSpace(anim))
+            return "";
+        if (frames.HasAnimation(anim))
+            return anim;
+
+        string dir = ExtrairDirecaoAnimacaoRemota(anim);
+        if (string.IsNullOrEmpty(dir))
+            return "";
+
+        if ((anim.StartsWith("walk_", System.StringComparison.Ordinal) || anim.Contains("_walk", System.StringComparison.Ordinal)) && frames.HasAnimation($"walk_{dir}"))
+            return $"walk_{dir}";
+        if ((anim.StartsWith("run_", System.StringComparison.Ordinal) || anim.Contains("_run", System.StringComparison.Ordinal)) && frames.HasAnimation($"run_{dir}"))
+            return $"run_{dir}";
+        if (anim.StartsWith("idle_", System.StringComparison.Ordinal) && frames.HasAnimation($"idle_{dir}"))
+            return $"idle_{dir}";
+        if (anim.StartsWith("jump_", System.StringComparison.Ordinal) && frames.HasAnimation($"jump_{dir}"))
+            return $"jump_{dir}";
+        if (anim.Contains("_attack_", System.StringComparison.Ordinal))
+        {
+            foreach (StringName name in frames.GetAnimationNames())
+            {
+                string candidate = name.ToString();
+                if (candidate.EndsWith($"_attack_{dir}", System.StringComparison.Ordinal))
+                    return candidate;
+            }
+        }
+
+        return "";
+    }
+
+    private static string ExtrairDirecaoAnimacaoRemota(string anim)
+    {
+        if (anim.EndsWith("_down", System.StringComparison.Ordinal)) return "down";
+        if (anim.EndsWith("_up", System.StringComparison.Ordinal)) return "up";
+        if (anim.EndsWith("_left", System.StringComparison.Ordinal)) return "left";
+        if (anim.EndsWith("_right", System.StringComparison.Ordinal)) return "right";
+        if (anim.Contains("_down_", System.StringComparison.Ordinal)) return "down";
+        if (anim.Contains("_up_", System.StringComparison.Ordinal)) return "up";
+        if (anim.Contains("_left_", System.StringComparison.Ordinal)) return "left";
+        if (anim.Contains("_right_", System.StringComparison.Ordinal)) return "right";
+        return "";
     }
 
     private void UpdateRemoteSheriganPet(ulong ownerId, Node2D owner, Vector2 ownerDirection, bool ownerMoving, double delta)
@@ -5801,6 +6114,7 @@ public partial class EntityManager : Node
             _gameNet.OnBossCast -= OnBossCast;
             _gameNet.OnSkillAreaEffect -= OnSkillAreaEffect;
             _gameNet.OnSkillVisualEffect -= OnSkillVisualEffect;
+            _gameNet.OnEquipmentVisualUpdate -= OnEquipmentVisualUpdate;
         }
     }
 

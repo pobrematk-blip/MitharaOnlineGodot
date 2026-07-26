@@ -4416,7 +4416,7 @@ partial class GameServer
             }
         }
 
-        bool dropsEquipment = template.DropsNormalEquipment || template.DropsEliteEquipment;
+        bool dropsEquipment = template.DropsNormalEquipment || template.DropsEliteEquipment || mob.IsBoss;
         int equipmentLevel = mob.Level < 10 ? 1 : Math.Min(100, (mob.Level / 10) * 10);
         double equipmentDropChance = template.DropsEliteEquipment
             ? template.EliteDropChance
@@ -4424,9 +4424,10 @@ partial class GameServer
         if (equipmentLevel is 1 or 10)
             equipmentDropChance = Math.Min(1.0, equipmentDropChance * 1.5);
 
-        if (dropsEquipment && rng.NextDouble() < equipmentDropChance)
+        bool shouldDropEquipment = mob.IsBoss || rng.NextDouble() < equipmentDropChance;
+        if (dropsEquipment && shouldDropEquipment)
         {
-            bool eliteItem = template.DropsEliteEquipment;
+            bool eliteItem = mob.IsBoss || template.DropsEliteEquipment;
             var equipmentPool = ItemDefinitions.GetAll()
                 .Where(def => def.IsElite == eliteItem
                     && def.RequiredLevel == equipmentLevel
@@ -4456,7 +4457,7 @@ partial class GameServer
                     spawnedLoot.Add(loot);
                     channel.AddLoot(loot);
                 }
-                Logger.Info($"Drop: {mob.Name} gerou {equipment.Name} ({(eliteItem ? "Elite" : "Normal")}, nivel {equipmentLevel}).");
+                Logger.Info($"Drop: {mob.Name} gerou {equipment.Name} ({(eliteItem ? "Elite" : "Normal")}, nivel {equipmentLevel}){(mob.IsBoss ? " [garantido de boss]" : "")}.");
             }
             else
             {

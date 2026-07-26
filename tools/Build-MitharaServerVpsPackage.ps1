@@ -60,7 +60,7 @@ $skillSubfolders = @('habilidades', 'ArvoresClasses')
 foreach ($subfolder in $skillSubfolders) {
     $source = Join-Path $root "skills\$subfolder"
     if (Test-Path -LiteralPath $source) {
-        $destination = Join-Path $packageRoot "skills\$subfolder"
+        $destination = Join-Path $serverOut "skills\$subfolder"
         New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
         Copy-Item -LiteralPath $source -Destination $destination -Recurse -Force
     }
@@ -99,7 +99,7 @@ Como atualizar na VPS:
    cd C:\MitharaServer\Servidor
    dotnet Mithara.Server.dll
 
-Por padrao este pacote leva apenas o servidor e os dados online necessarios.
+Por padrao este pacote leva o servidor, data\tiles, quests.json e skills\habilidades/ArvoresClasses dentro da pasta Servidor.
 Use -IncludeClientAssets apenas se precisar montar uma VPS nova do zero com assets visuais tambem.
 
 Nao envie nem restaure as pastas .git, .godot, build, release, bin, obj, tmp ou server\data\mysql.

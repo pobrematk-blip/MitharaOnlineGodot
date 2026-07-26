@@ -2452,6 +2452,7 @@ public class DatabaseManager
             foreach (var kv in player.Equipment)
             {
                 var item = kv.Value;
+                item.Slot = 100 + kv.Key;
                 Mithara.Server.Entities.ItemRoller.EnsureRolled(item);
                 using var ins = conn.CreateCommand();
                 ins.Transaction = tx;

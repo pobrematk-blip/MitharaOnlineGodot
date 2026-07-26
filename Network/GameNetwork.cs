@@ -96,6 +96,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnLevelUpEventHandler(ulong entityId, int newLevel, int remainingXp);
     [Signal] public delegate void OnInventoryDataEventHandler(Godot.Collections.Array<Godot.Collections.Dictionary> items, Godot.Collections.Array<Godot.Collections.Dictionary> equipment);
     [Signal] public delegate void OnEquipUpdateEventHandler(int equipSlot, int itemId, int quantity, bool hasUnequip, int invSlot, int unequipItemId, int unequipQuantity);
+    [Signal] public delegate void OnEquipmentVisualUpdateEventHandler(ulong entityId, Godot.Collections.Array<Godot.Collections.Dictionary> equipment);
 
     [Signal] public delegate void OnItemUpdateEventHandler(int slot, int itemId, int quantity);
 
@@ -469,6 +470,9 @@ public partial class GameNetwork : Node
                 break;
             case PacketId.S2C_EquipUpdate:
                 HandleEquipUpdate(r);
+                break;
+            case PacketId.S2C_EquipmentVisualUpdate:
+                HandleEquipmentVisualUpdate(r);
                 break;
             case PacketId.S2C_ItemUpdate:
                 HandleItemUpdate(r);

@@ -95,14 +95,29 @@ partial class GameNetwork
                 typeLabel = "player";
                 extra1 = r.GetString(); // CharacterClass
                 extra2 = r.GetString(); // Race
+                long xp = r.GetLong();
+                long xpMax = r.GetLong();
+                string guildName = r.GetString();
+                string guildTag = r.GetString();
+                int guildEmblem = r.GetInt();
+                var equipment = ReadEquipmentVisualPayload(r);
+                string cabeloPath = r.AvailableBytes > 0 ? r.GetString() : "";
+                string barbaPath = r.AvailableBytes > 0 ? r.GetString() : "";
+                string cabeloCor = r.AvailableBytes > 0 ? r.GetString() : "ffffff";
+                string barbaCor = r.AvailableBytes > 0 ? r.GetString() : "ffffff";
                 extra3 = Json.Stringify(new Godot.Collections.Dictionary
                 {
                     ["faction_id"] = factionId,
-                    ["xp"] = r.GetLong(),
-                    ["xp_max"] = r.GetLong(),
-                    ["guild_name"] = r.GetString(),
-                    ["guild_tag"] = r.GetString(),
-                    ["guild_emblem"] = r.GetInt(),
+                    ["xp"] = xp,
+                    ["xp_max"] = xpMax,
+                    ["guild_name"] = guildName,
+                    ["guild_tag"] = guildTag,
+                    ["guild_emblem"] = guildEmblem,
+                    ["equipment"] = equipment,
+                    ["cabelo_path"] = cabeloPath,
+                    ["barba_path"] = barbaPath,
+                    ["cabelo_cor"] = cabeloCor,
+                    ["barba_cor"] = barbaCor,
                 });
                 break;
             case 1:
