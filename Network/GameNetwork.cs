@@ -825,7 +825,11 @@ public partial class GameNetwork : Node
                 {
                     int petId = (int)entry["pet_id"];
                     string petName = (string)entry["pet_name"];
-                    colecao.RegistrarCaptura(petId, petName);
+                    int petLevel = entry.ContainsKey("level") ? (int)entry["level"] : 1;
+                    long petXp = entry.ContainsKey("xp") ? (long)entry["xp"] : 0L;
+                    long petXpMax = entry.ContainsKey("xp_max") ? (long)entry["xp_max"] : 0L;
+                    bool isBossPet = entry.ContainsKey("is_boss_pet") && (bool)entry["is_boss_pet"];
+                    colecao.RegistrarCaptura(petId, petName, petLevel, petXp, petXpMax, isBossPet);
                 }
                 GD.Print("[GAME] Pending pet data applied");
                 PendingPetData = null;
@@ -902,10 +906,25 @@ public partial class GameNetwork : Node
         {
             int petId = r.GetInt();
             string petName = r.GetString();
+            int petLevel = 1;
+            long petXp = 0L;
+            long petXpMax = 0L;
+            bool isBossPet = false;
+            if (r.AvailableBytes >= 21)
+            {
+                petLevel = r.GetInt();
+                petXp = r.GetLong();
+                petXpMax = r.GetLong();
+                isBossPet = r.GetBool();
+            }
             list.Add(new Godot.Collections.Dictionary
             {
                 ["pet_id"] = petId,
                 ["pet_name"] = petName,
+                ["level"] = petLevel,
+                ["xp"] = petXp,
+                ["xp_max"] = petXpMax,
+                ["is_boss_pet"] = isBossPet,
             });
         }
         PendingPetData = list;

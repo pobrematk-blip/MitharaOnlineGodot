@@ -189,13 +189,9 @@ public partial class DialogUI : Control
     private void AbrirRefine()
     {
         var hud = GetTree().Root.FindChild("HUD", true, false);
-        if (hud == null)
-        {
-            GD.PrintErr("[REFINE] HUD CanvasLayer não encontrado!");
-            return;
-        }
+        Node parent = hud ?? GetTree().CurrentScene ?? GetTree().Root;
 
-        var existing = hud.FindChild("RefineUI", true, false);
+        var existing = parent.FindChild("RefineUI", true, false);
         if (existing != null)
         {
             existing.QueueFree();
@@ -209,7 +205,8 @@ public partial class DialogUI : Control
         }
 
         var ui = scene.Instantiate<Control>();
-        hud.AddChild(ui);
+        parent.AddChild(ui);
+        ui.MoveToFront();
     }
 
     private void Fechar()

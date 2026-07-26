@@ -14,11 +14,12 @@ public partial class PetNode : Node2D
     public const float TileSize = 32f;
     public const float OwnerAttackLeashRange = TileSize * 12f;
     public const float OneTileAttackRange = 96f;
+    public const float PetLootRange = TileSize * 20f;
     public const int PetAttackSkillId = -100;
 
     [Export] public float SeguirDistancia = 80f;
     [Export] public float Velocidade = 300f;
-    [Export] public float ColetaRange = 150f;
+    [Export] public float ColetaRange = PetLootRange;
     [Export] public float AtaqueRange = OneTileAttackRange;
     [Export] public float AtaqueCooldown = 0.8f;
     [Export] public int AtaqueDano = 5;
@@ -53,6 +54,8 @@ public partial class PetNode : Node2D
     private Godot.Timer _coletaTimer;
     private Area2D _areaColeta;
     private Area2D _areaAtaque;
+    private Control _vidaBarRoot;
+    private ColorRect _vidaFill;
 
     public void DefinirDono(Player player)
     {
@@ -64,6 +67,7 @@ public partial class PetNode : Node2D
         VidaMaxima = Mathf.Max(1, hp);
         Defesa = Mathf.Max(0, defesa);
         VidaAtual = VidaMaxima;
+        AtualizarBarraVida();
     }
 
     public override void _Ready()
@@ -109,6 +113,8 @@ public partial class PetNode : Node2D
 
         if (VidaAtual <= 0)
             VidaAtual = VidaMaxima;
+        CriarBarraVida();
+        AtualizarBarraVida();
         AtualizarAreaModo();
     }
 
@@ -119,6 +125,7 @@ public partial class PetNode : Node2D
 
         int danoFinal = Mathf.Max(1, danoBruto - Defesa);
         VidaAtual = Mathf.Max(0, VidaAtual - danoFinal);
+        AtualizarBarraVida();
         GD.Print($"[PET] {NomePet} levou {danoFinal} de dano. Vida: {VidaAtual}/{VidaMaxima}");
 
         if (VidaAtual <= 0)
@@ -126,6 +133,54 @@ public partial class PetNode : Node2D
             Ativo = false;
             QueueFree();
         }
+    }
+
+    private void CriarBarraVida()
+    {
+        if (_vidaBarRoot != null && IsInstanceValid(_vidaBarRoot))
+            return;
+
+        _vidaBarRoot = new Control
+        {
+            Name = "PetHealthBar",
+            Position = new Vector2(-28f, -48f),
+            Size = new Vector2(56f, 5f),
+            CustomMinimumSize = new Vector2(56f, 5f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            ZIndex = 20,
+        };
+
+        var bg = new ColorRect
+        {
+            Name = "Background",
+            Color = new Color(0.02f, 0.02f, 0.025f, 0.88f),
+            Position = Vector2.Zero,
+            Size = new Vector2(56f, 5f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+
+        _vidaFill = new ColorRect
+        {
+            Name = "Fill",
+            Color = new Color(0.86f, 0.09f, 0.10f, 0.95f),
+            Position = new Vector2(1f, 1f),
+            Size = new Vector2(54f, 3f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+
+        _vidaBarRoot.AddChild(bg);
+        _vidaBarRoot.AddChild(_vidaFill);
+        AddChild(_vidaBarRoot);
+    }
+
+    private void AtualizarBarraVida()
+    {
+        if (_vidaFill == null || !IsInstanceValid(_vidaFill))
+            return;
+
+        float pct = VidaMaxima > 0 ? Mathf.Clamp(VidaAtual / (float)VidaMaxima, 0f, 1f) : 0f;
+        _vidaFill.Size = new Vector2(54f * pct, 3f);
+        _vidaBarRoot.Visible = VidaAtual > 0;
     }
 
     public void DefinirModo(PetMode novoModo)
@@ -417,7 +472,7 @@ public partial class PetNode : Node2D
         if (!ColetaAtiva) return;
 
         float distPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);
-        if (distPlayer > SeguirDistancia * 3f) return;
+        if (distPlayer > ColetaRange + SeguirDistancia) return;
 
         Node2D itemMaisProximo = null;
         float menorDist = ColetaRange;
@@ -427,6 +482,9 @@ public partial class PetNode : Node2D
         {
             if (node is Node2D n && IsInstanceValid(n))
             {
+                if (_player.GlobalPosition.DistanceTo(n.GlobalPosition) > ColetaRange)
+                    continue;
+
                 float d = GlobalPosition.DistanceTo(n.GlobalPosition);
                 if (d < menorDist)
                 {
@@ -444,9 +502,25 @@ public partial class PetNode : Node2D
             float dist = GlobalPosition.DistanceTo(itemMaisProximo.GlobalPosition);
             if (dist < 30f && _player != null && IsInstanceValid(_player))
             {
-                _player.TryPickupLoot();
+                SolicitarColetaDoLoot(itemMaisProximo);
             }
         }
+    }
+
+    private void SolicitarColetaDoLoot(Node2D lootNode)
+    {
+        if (lootNode == null || !IsInstanceValid(lootNode) || !lootNode.HasMeta("loot_id"))
+            return;
+
+        long rawLootId = lootNode.GetMeta("loot_id").AsInt64();
+        if (rawLootId <= 0)
+            return;
+
+        var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (gameNet?.HasActivePetCollar != true)
+            return;
+
+        gameNet.SendLootPickup((ulong)rawLootId);
     }
 
     private void AtualizarAnimacao()

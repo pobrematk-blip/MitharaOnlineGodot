@@ -70,6 +70,7 @@ partial class GameServer
             SendTalentData(peer, player);
             BroadcastSingleEntityUpdate(channel, player);
         }
+        ApplyPetExperienceReward(channel, player, session, (int)System.Math.Min(int.MaxValue, questXp));
 
         // Award gold
         player.Gold += def.Reward.Gold;

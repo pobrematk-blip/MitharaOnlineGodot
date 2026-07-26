@@ -332,7 +332,7 @@ public class Channel
     {
         const double outOfCombatDelay = 18.0;
         const float healthRegenPercentPerSecond = 0.003f;
-        const float manaRegenPercentPerSecond = 0.010f;
+        const float manaRegenPercentPerSecond = 0.0025f;
 
         foreach (var kv in _entities)
         {

@@ -147,6 +147,9 @@ public class DatabaseManager
                 character_id INT NOT NULL,
                 pet_id INT NOT NULL,
                 pet_name VARCHAR(255) NOT NULL DEFAULT '',
+                level INT NOT NULL DEFAULT 1,
+                xp BIGINT NOT NULL DEFAULT 0,
+                is_boss_pet SMALLINT NOT NULL DEFAULT 0,
                 FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
             );
 
@@ -292,6 +295,9 @@ public class DatabaseManager
             ("characters", "cabelo_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
             ("characters", "barba_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
             ("characters", "pet_collar_expiry", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
+            ("character_pets", "level", "INT NOT NULL DEFAULT 1"),
+            ("character_pets", "xp", "BIGINT NOT NULL DEFAULT 0"),
+            ("character_pets", "is_boss_pet", "SMALLINT NOT NULL DEFAULT 0"),
             ("marketplace_listings", "expires_at", "TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP + INTERVAL '24 hours')"),
             ("marketplace_listings", "proceeds_gold", "INT NOT NULL DEFAULT 0"),
             ("marketplace_listings", "proceeds_claimed", "SMALLINT NOT NULL DEFAULT 0"),
@@ -1659,27 +1665,51 @@ public class DatabaseManager
         if (existing != null) return;
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT INTO character_pets (character_id, pet_id, pet_name) VALUES (@c, @p, @n)";
+        cmd.CommandText = "INSERT INTO character_pets (character_id, pet_id, pet_name, level, xp, is_boss_pet) VALUES (@c, @p, @n, 1, 0, @b)";
         cmd.Parameters.AddWithValue("@c", characterId);
         cmd.Parameters.AddWithValue("@p", petId);
         cmd.Parameters.AddWithValue("@n", petName);
+        cmd.Parameters.AddWithValue("@b", IsBossPetDefinition(petId, petName) ? 1 : 0);
         cmd.ExecuteNonQuery();
     }
 
-    public List<(int petId, string petName)> LoadPets(int characterId)
+    public List<(int petId, string petName, int level, long xp, bool isBossPet)> LoadPets(int characterId)
     {
-        var result = new List<(int, string)>();
+        var result = new List<(int, string, int, long, bool)>();
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT pet_id, pet_name FROM character_pets WHERE character_id = @c ORDER BY id";
+        cmd.CommandText = "SELECT pet_id, pet_name, level, xp, is_boss_pet FROM character_pets WHERE character_id = @c ORDER BY id";
         cmd.Parameters.AddWithValue("@c", characterId);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            result.Add((reader.GetInt32(0), reader.GetString(1)));
+            result.Add((reader.GetInt32(0), reader.GetString(1), Math.Max(1, reader.GetInt32(2)), Math.Max(0L, reader.GetInt64(3)), reader.GetInt16(4) != 0));
         }
         return result;
+    }
+
+    public void SavePetProgress(int characterId, int petId, int level, long xp)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE character_pets SET level = @l, xp = @x WHERE character_id = @c AND pet_id = @p";
+        cmd.Parameters.AddWithValue("@l", Math.Max(1, level));
+        cmd.Parameters.AddWithValue("@x", Math.Max(0L, xp));
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@p", petId);
+        cmd.ExecuteNonQuery();
+    }
+
+    private static bool IsBossPetDefinition(int petId, string petName)
+    {
+        if (petId >= 9000)
+            return true;
+
+        return !string.IsNullOrWhiteSpace(petName)
+            && (petName.Contains("boss", StringComparison.OrdinalIgnoreCase)
+                || petName.Contains("chefe", StringComparison.OrdinalIgnoreCase));
     }
 
     public ulong SaveLojinha(LojinhaEntity lojinha)
@@ -2610,11 +2640,12 @@ public class DatabaseManager
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT INTO character_pets (id, character_id, pet_id, pet_name) VALUES (@i, @c, @p, @n) ON CONFLICT (id) DO UPDATE SET pet_name=@n";
+        cmd.CommandText = "INSERT INTO character_pets (id, character_id, pet_id, pet_name, level, xp, is_boss_pet) VALUES (@i, @c, @p, @n, 1, 0, @b) ON CONFLICT (id) DO UPDATE SET pet_name=@n";
         cmd.Parameters.AddWithValue("@i", id);
         cmd.Parameters.AddWithValue("@c", characterId);
         cmd.Parameters.AddWithValue("@p", petId);
         cmd.Parameters.AddWithValue("@n", petName);
+        cmd.Parameters.AddWithValue("@b", IsBossPetDefinition(petId, petName) ? 1 : 0);
         cmd.ExecuteNonQuery();
     }
 

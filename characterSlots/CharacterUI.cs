@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Text;
 
 public partial class CharacterUI : Control
 {
@@ -300,6 +301,7 @@ public partial class CharacterUI : Control
 
         foreach (var entry in pets)
         {
+            ResolverRecursoPet(entry);
             var petBtn = new Button();
             petBtn.CustomMinimumSize = new Vector2(80, 80);
             petBtn.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
@@ -352,6 +354,7 @@ public partial class CharacterUI : Control
         }
 
         if (entry == null) return;
+        ResolverRecursoPet(entry);
 
         _petDetalhesIcone.Texture = ObterIconePet(entry);
         _petDetalhesNome.Text = entry.Nome;
@@ -360,17 +363,24 @@ public partial class CharacterUI : Control
         if (entry.Recurso != null)
         {
             var r = entry.Recurso;
+            int danoFinal = Mathf.Max(1, Mathf.CeilToInt(r.AttackDamage * (entry.IsBossPet ? 0.30f : 0.20f)));
+            int hpFinal = Mathf.Max(1, r.HP + Mathf.Max(0, entry.Level - 1) * (entry.IsBossPet ? 10 : 7));
+            string xpText = entry.ExperienceForNextLevel > 0
+                ? $"{entry.Experience}/{entry.ExperienceForNextLevel}"
+                : $"{entry.Experience}";
             _petDetalhesStats.Text = $"Tipo: {(r.Tipo == TipoPet.Combate ? "Combate" : "Coleta")}\n" +
-                $"HP: {r.HP}  |  Dano: {r.AttackDamage}\n" +
+                $"Nivel: {entry.Level}  |  XP: {xpText}\n" +
+                $"HP: {hpFinal}  |  Dano: {danoFinal}\n" +
                 $"Forca: {r.Forca}  Agilidade: {r.Agilidade}  Destreza: {r.Destreza}  Intel: {r.Inteligencia}\n" +
                 $"Velocidade: {r.Speed}  Alcance: {r.AttackRange}";
             _petDetalhesPanel.TooltipText =
-                $"{r.Nome} | Nv. {r.Level}\n" +
-                $"Tipo: {(r.Tipo == TipoPet.Combate ? "Combate" : "Coleta")}\n" +
-                $"Vida: {r.HP} | Mana: {r.Mana} | Defesa: {r.Defense}\n" +
-                $"Dano: {r.AttackDamage} | Alcance: {r.AttackRange:0} | Cooldown: {r.AttackCooldown:0.0}s\n" +
+                $"{r.Nome} | Nv. {entry.Level}\n" +
+                $"Tipo: {(entry.IsBossPet ? "Boss" : (r.Tipo == TipoPet.Combate ? "Combate" : "Coleta"))}\n" +
+                $"XP: {xpText}\n" +
+                $"Vida: {hpFinal} | Mana: {r.Mana} | Defesa: {r.Defense}\n" +
+                $"Dano: {danoFinal} ({(entry.IsBossPet ? "30%" : "20%")} do dano do dono) | Alcance: {r.AttackRange:0} | Cooldown: {r.AttackCooldown:0.0}s\n" +
                 $"Forca: {r.Forca} | Agilidade: {r.Agilidade} | Destreza: {r.Destreza} | Inteligencia: {r.Inteligencia}\n" +
-                $"Velocidade: {r.Speed:0} | Coleta: {r.ColetaRange:0}";
+                $"Velocidade: {r.Speed:0} | Coleta: 20 tiles";
         }
         else
         {
@@ -488,6 +498,7 @@ public partial class CharacterUI : Control
 
     private static Texture2D ObterIconePet(PetColecaoComponent.PetColecaoEntry entry)
     {
+        ResolverRecursoPet(entry);
         var recurso = entry?.Recurso;
         if (recurso == null)
             return null;
@@ -505,6 +516,66 @@ public partial class CharacterUI : Control
             Atlas = recurso.SpriteAtlas,
             Region = new Rect2(0, 0, w, h)
         };
+    }
+
+    private static void ResolverRecursoPet(PetColecaoComponent.PetColecaoEntry entry)
+    {
+        if (entry == null || entry.Recurso != null)
+            return;
+
+        string dir = "res://Pets/";
+        string nomeNormalizado = NormalizarTexto(entry.Nome);
+        var dirAccess = DirAccess.Open(dir);
+        if (dirAccess == null)
+            return;
+
+        dirAccess.ListDirBegin();
+        string fileName = dirAccess.GetNext();
+        while (!string.IsNullOrEmpty(fileName))
+        {
+            if (fileName.EndsWith(".tres") || fileName.EndsWith(".res"))
+            {
+                string path = dir + fileName;
+                if (ResourceLoader.Exists(path))
+                {
+                    var res = ResourceLoader.Load<PetResource>(path);
+                    bool mesmoId = res != null && res.PetID == entry.PetID;
+                    bool mesmoNome = res != null
+                        && !string.IsNullOrWhiteSpace(nomeNormalizado)
+                        && (NormalizarTexto(res.Nome) == nomeNormalizado
+                            || NormalizarTexto(System.IO.Path.GetFileNameWithoutExtension(fileName)) == nomeNormalizado);
+
+                    if (mesmoId || mesmoNome)
+                    {
+                        entry.Recurso = res;
+                        entry.CaminhoRecurso = path;
+                        entry.Nome = res.Nome;
+                        dirAccess.ListDirEnd();
+                        return;
+                    }
+                }
+            }
+
+            fileName = dirAccess.GetNext();
+        }
+        dirAccess.ListDirEnd();
+    }
+
+    private static string NormalizarTexto(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        string normalized = value.Trim().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(normalized.Length);
+        foreach (char ch in normalized)
+        {
+            var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (category != System.Globalization.UnicodeCategory.NonSpacingMark && !char.IsWhiteSpace(ch))
+                sb.Append(char.ToLowerInvariant(ch));
+        }
+
+        return sb.ToString().Normalize(NormalizationForm.FormC);
     }
 
     private void OnCloseButtonPressed()

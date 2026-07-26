@@ -400,26 +400,29 @@ partial class GameServer
             if (kv.Key == entity.Id) continue;
             if (entity is PetEntity pet && pet.OwnerEntityId == kv.Key) continue;
 
+            var peer = channel.GetPlayerPeer(kv.Key);
+            if (peer == null)
+                continue;
+
+            if (!_sessions.TryGetValue(peer, out var session))
+                continue;
+
+            if (!IsEntityVisibleToSession(entity, session))
+                continue;
+
             float dx = kv.Value.X - x;
             float dy = kv.Value.Y - y;
             if ((dx * dx) + (dy * dy) > channel.AoiRadius * channel.AoiRadius)
                 continue;
 
-            var peer = channel.GetPlayerPeer(kv.Key);
-            if (peer != null)
-            {
-                if (_sessions.TryGetValue(peer, out var session))
-                {
-                    if (session.SpawnedEntities.Contains(entity.Id))
-                        continue;
+            if (session.SpawnedEntities.Contains(entity.Id))
+                continue;
 
-                    var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
-                    WriteEntityPacket(writer, entity);
-                    peer.Send(writer, DeliveryMethod.ReliableOrdered);
-                    session.SpawnedEntities.Add(entity.Id);
-                    sent++;
-                }
-            }
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_SpawnEntity);
+            WriteEntityPacket(writer, entity);
+            peer.Send(writer, DeliveryMethod.ReliableOrdered);
+            session.SpawnedEntities.Add(entity.Id);
+            sent++;
         }
         if (entity.Type == EntityType.Player)
             Logger.Info($"BroadcastSpawnToNearby: {entity.Name} enviado para {sent} de {totalPlayers} jogador(es) no canal");

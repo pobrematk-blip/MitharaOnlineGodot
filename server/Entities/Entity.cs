@@ -12,9 +12,11 @@ public enum EntityType : byte
 public class PetEntity : Entity
 {
     public ulong OwnerEntityId { get; set; }
+    public int OwnerCharacterId { get; set; }
     public int PetId { get; set; }
     public string AnimPrefix { get; set; } = "";
     public string OwnerName { get; set; } = "";
+    public bool IsBossPet { get; set; }
 
     public PetEntity()
     {

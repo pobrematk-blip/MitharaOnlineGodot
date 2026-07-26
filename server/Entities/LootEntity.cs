@@ -11,6 +11,7 @@ public class LootEntity
     public ulong OwnerId { get; set; }
     public double SpawnTime { get; set; }
     public bool PickedUp { get; set; }
+    public ItemInstance? PreservedItem { get; set; }
 
     public LootEntity(float x, float y, int itemId, int quantity, ulong ownerId, double gameTime)
     {

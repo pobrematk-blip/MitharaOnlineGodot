@@ -747,10 +747,14 @@ public partial class GameServer : INetEventListener
         var collarExpiry = _db.LoadPetCollarExpiry(characterId);
         writer.Put(new DateTimeOffset(collarExpiry).ToUnixTimeSeconds());
         writer.Put(pets.Count);
-        foreach (var (petId, petName) in pets)
+        foreach (var (petId, petName, level, xp, isBossPet) in pets)
         {
             writer.Put(petId);
             writer.Put(petName);
+            writer.Put(level);
+            writer.Put(xp);
+            writer.Put(XpForNextLevel(level));
+            writer.Put(isBossPet);
         }
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
@@ -777,7 +781,8 @@ public partial class GameServer : INetEventListener
 
         var capturedPets = _db.LoadPets(session.SelectedCharacter.Id);
         bool isSherigan = petId == 999 && petName.Equals("Sherigan", StringComparison.OrdinalIgnoreCase);
-        if (!isSherigan && !capturedPets.Any(p => p.petId == petId))
+        var capturedPet = capturedPets.FirstOrDefault(p => p.petId == petId);
+        if (!isSherigan && capturedPet.petId != petId)
         {
             SendSystemMessage(peer, "Esse pet nao pertence ao seu personagem.");
             return;
@@ -789,6 +794,7 @@ public partial class GameServer : INetEventListener
         var pet = new PetEntity
         {
             OwnerEntityId = player.Id,
+            OwnerCharacterId = session.SelectedCharacter.Id,
             OwnerName = player.Name,
             PetId = petId,
             Name = string.IsNullOrWhiteSpace(petName) ? "Pet" : petName,
@@ -797,9 +803,13 @@ public partial class GameServer : INetEventListener
             Y = player.Y + 32f,
             DirX = player.DirX,
             DirY = player.DirY,
-            Level = player.Level,
+            Level = isSherigan ? player.Level : Math.Max(1, capturedPet.level),
+            Experience = isSherigan ? player.Experience : Math.Max(0L, capturedPet.xp),
+            IsBossPet = !isSherigan && capturedPet.isBossPet,
             FactionId = player.FactionId,
         };
+        pet.MaxHealth = CalculatePetMaxHealth(player, pet.Level, pet.IsBossPet);
+        pet.Health = pet.MaxHealth;
 
         channel.AddEntity(pet);
         Logger.Info($"[PET] {player.Name} invocou pet replicado '{pet.Name}' (petId={pet.PetId}).");

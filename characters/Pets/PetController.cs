@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Text;
 
 public partial class PetController : Node
 {
@@ -79,7 +80,8 @@ public partial class PetController : Node
 
         _hudPanel = new Panel();
         _hudPanel.Name = "PetHUD";
-        _hudPanel.CustomMinimumSize = new Vector2(254, 150);
+        _hudPanel.CustomMinimumSize = new Vector2(306, 190);
+        _hudPanel.Size = _hudPanel.CustomMinimumSize;
         _hudPanel.Visible = false;
         _hudPanel.AddThemeStyleboxOverride("panel", CriarStyle(HudBg, HudBorder, 7, 1));
         _hudPanel.MouseFilter = Control.MouseFilterEnum.Stop;
@@ -127,11 +129,14 @@ public partial class PetController : Node
 
         var bodyHBox = new HBoxContainer();
         bodyHBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        bodyHBox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
         bodyHBox.AddThemeConstantOverride("separation", 8);
         vbox.AddChild(bodyHBox);
 
         var iconPanel = new Panel();
-        iconPanel.CustomMinimumSize = new Vector2(70, 70);
+        iconPanel.CustomMinimumSize = new Vector2(82, 82);
+        iconPanel.SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin;
+        iconPanel.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
         iconPanel.AddThemeStyleboxOverride("panel", CriarStyle(new Color(0.01f, 0.012f, 0.018f, 0.95f), HudBorder, 6, 1));
         bodyHBox.AddChild(iconPanel);
 
@@ -143,6 +148,7 @@ public partial class PetController : Node
 
         var rightVBox = new VBoxContainer();
         rightVBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        rightVBox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
         rightVBox.AddThemeConstantOverride("separation", 5);
         bodyHBox.AddChild(rightVBox);
 
@@ -194,10 +200,17 @@ public partial class PetController : Node
         _chkColeta.Toggled += OnColetaToggled;
         _coletaRow.AddChild(_chkColeta);
 
+        var coleiraPanel = new Panel();
+        coleiraPanel.CustomMinimumSize = new Vector2(0, 56);
+        coleiraPanel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        coleiraPanel.AddThemeStyleboxOverride("panel", CriarStyle(new Color(0.012f, 0.015f, 0.022f, 0.92f), new Color(0.12f, 0.30f, 0.42f, 0.95f), 5, 1));
+        vbox.AddChild(coleiraPanel);
+
         var coleiraRow = new HBoxContainer();
         coleiraRow.Alignment = BoxContainer.AlignmentMode.Center;
-        coleiraRow.AddThemeConstantOverride("separation", 8);
-        vbox.AddChild(coleiraRow);
+        coleiraRow.AddThemeConstantOverride("separation", 10);
+        coleiraRow.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, margin: 5);
+        coleiraPanel.AddChild(coleiraRow);
 
         _coleiraSlot = new PetCollarSlot();
         _coleiraSlot.CustomMinimumSize = new Vector2(48, 48);
@@ -215,6 +228,7 @@ public partial class PetController : Node
         _coleiraStatusLabel = new Label();
         _coleiraStatusLabel.Text = "Sem coleira";
         _coleiraStatusLabel.VerticalAlignment = VerticalAlignment.Center;
+        _coleiraStatusLabel.HorizontalAlignment = HorizontalAlignment.Left;
         _coleiraStatusLabel.AddThemeFontSizeOverride("font_size", 11);
         _coleiraStatusLabel.AddThemeColorOverride("font_color", HudText);
         _coleiraStatusLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -236,7 +250,8 @@ public partial class PetController : Node
     {
         if (_hudPanel == null) return;
         Vector2 tela = GetViewport().GetVisibleRect().Size;
-        _hudPanel.Position = new Vector2(Mathf.Max(12f, tela.X - 260f), 330f);
+        _hudPanel.Size = _hudPanel.CustomMinimumSize;
+        _hudPanel.Position = new Vector2(Mathf.Max(12f, tela.X - 318f), 330f);
     }
 
     private CanvasLayer ObterHudLayer()
@@ -313,15 +328,18 @@ public partial class PetController : Node
 
         if (_petResource != null)
         {
+            var petEntry = ObterEntradaPet(petId);
+            bool isBossPet = petEntry?.IsBossPet == true;
+            int petLevel = petEntry?.Level ?? Mathf.Max(1, _petResource.Level);
             _petNode.AnimPrefix = mobType;
             _petNode.TipoPet = _petResource.Tipo;
             _petNode.Velocidade = _petResource.Speed;
             _petNode.AtaqueRange = Mathf.Clamp(_petResource.AttackRange, 1f, PetNode.OneTileAttackRange);
             _petNode.AtaqueCooldown = _petResource.AttackCooldown;
-            _petNode.AtaqueDano = _petResource.AttackDamage;
-            _petNode.ColetaRange = _petResource.ColetaRange;
+            _petNode.AtaqueDano = Mathf.Max(1, Mathf.CeilToInt(_petResource.AttackDamage * (isBossPet ? 0.30f : 0.20f)));
+            _petNode.ColetaRange = PetNode.PetLootRange;
             _petNode.GuardaRange = _petResource.GuardRange;
-            _petNode.ConfigurarAtributos(_petResource.HP, _petResource.Defense);
+            _petNode.ConfigurarAtributos(CalcularPetHpVisual(_petResource.HP, petLevel, isBossPet), _petResource.Defense);
         }
         else
         {
@@ -330,7 +348,8 @@ public partial class PetController : Node
             _petNode.Velocidade = 250f;
             _petNode.AtaqueRange = PetNode.OneTileAttackRange;
             _petNode.AtaqueCooldown = 0.8f;
-            _petNode.AtaqueDano = 8;
+            _petNode.AtaqueDano = 4;
+            _petNode.ColetaRange = PetNode.PetLootRange;
             _petNode.GuardaRange = 200f;
             _petNode.ConfigurarAtributos(240, 15);
         }
@@ -383,10 +402,31 @@ public partial class PetController : Node
         _petNode.DefinirModo(PetMode.Seguir);
 
         AtualizarHUD();
+        AtualizarColeiraHUD();
         NotificarServidorPetInvocado(petId, _petNode.NomePet, mobType);
         _hudPanel.Visible = true;
 
         GD.Print($"[PET] {petNome} invocado! id={petId} parent={_petNode.GetParent()?.Name} pos={_petNode.GlobalPosition} frames={(sprite?.SpriteFrames?.GetAnimationNames().Length ?? 0)}");
+    }
+
+    private PetColecaoComponent.PetColecaoEntry ObterEntradaPet(int petId)
+    {
+        var colecao = _player?.FindChild("PetColecaoComponent", true, false) as PetColecaoComponent;
+        if (colecao == null)
+            return null;
+
+        foreach (var pet in colecao.GetPets())
+        {
+            if (pet.PetID == petId)
+                return pet;
+        }
+
+        return null;
+    }
+
+    private static int CalcularPetHpVisual(int baseHp, int level, bool isBossPet)
+    {
+        return Mathf.Max(40, baseHp + Mathf.Max(0, level - 1) * (isBossPet ? 10 : 7));
     }
 
     private static void TocarPrimeiraAnimacao(AnimatedSprite2D sprite)
@@ -458,6 +498,7 @@ public partial class PetController : Node
     private PetResource CarregarPetResource(int petId, string petNome)
     {
         string dir = "res://Pets/";
+        string nomeNormalizado = NormalizarTexto(petNome);
         var dirAccess = DirAccess.Open(dir);
         if (dirAccess != null)
         {
@@ -469,7 +510,12 @@ public partial class PetController : Node
                 {
                     string path = dir + fileName;
                     var res = ResourceLoader.Load<PetResource>(path);
-                    if (res != null && res.PetID == petId)
+                    bool mesmoId = res != null && res.PetID == petId;
+                    bool mesmoNome = res != null
+                        && !string.IsNullOrWhiteSpace(nomeNormalizado)
+                        && (NormalizarTexto(res.Nome) == nomeNormalizado
+                            || NormalizarTexto(System.IO.Path.GetFileNameWithoutExtension(fileName)) == nomeNormalizado);
+                    if (mesmoId || mesmoNome)
                     {
                         dirAccess.ListDirEnd();
                         return res;
@@ -497,6 +543,23 @@ public partial class PetController : Node
 
         GD.PrintErr($"[PET] Recurso do pet ID {petId} ('{petNome}') nao encontrado em res://Pets/.");
         return null;
+    }
+
+    private static string NormalizarTexto(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        string normalized = value.Trim().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(normalized.Length);
+        foreach (char ch in normalized)
+        {
+            var category = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch);
+            if (category != System.Globalization.UnicodeCategory.NonSpacingMark && !char.IsWhiteSpace(ch))
+                sb.Append(char.ToLowerInvariant(ch));
+        }
+
+        return sb.ToString().Normalize(NormalizationForm.FormC);
     }
 
     private static string NormalizarMobType(string animPrefix, string petNome)
@@ -646,7 +709,12 @@ public partial class PetController : Node
 
         _hudNameLabel.Text = _petNode.NomePet;
         if (_hudPetIcon != null)
+        {
             _hudPetIcon.Texture = ObterIconePet(_petResource);
+            _hudPetIcon.TooltipText = _hudPetIcon.Texture == null
+                ? "Icone do pet nao encontrado."
+                : _petNode.NomePet;
+        }
         AtualizarTooltipPet();
 
         _coletaRow.Visible = true;
@@ -765,6 +833,7 @@ public partial class PetController : Node
             $"Dano: {_petNode.AtaqueDano} | Defesa: {_petNode.Defesa}\n" +
             $"Forca: {forca} | Agilidade: {agilidade} | Destreza: {destreza} | Inteligencia: {inteligencia}\n" +
             $"Velocidade: {_petNode.Velocidade:0} | Alcance: {_petNode.AtaqueRange:0}\n" +
+            $"Raio de coleta: {PetNode.PetLootRange / PetNode.TileSize:0} tiles\n" +
             $"Coleta automatica: {(coleta ? "Ativa" : "Inativa")}";
     }
 

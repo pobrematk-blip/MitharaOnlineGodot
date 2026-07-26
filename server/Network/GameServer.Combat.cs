@@ -25,6 +25,7 @@ partial class GameServer
     private const int PetAttackSkillId = -100;
     private const float BasicAttackRange = 640f;
     private const float PetOwnerCommandRange = 32f * 12f;
+    private const float PetLootPickupRange = 32f * 20f;
     private const int GolpeSombrioSkillId = 12201;
     private const int PassoSombrioSkillId = 12102;
     private const int InvisibilidadeProfundaSkillId = 12202;
@@ -4011,7 +4012,10 @@ partial class GameServer
             return;
         }
 
-        int damage = CalculateBasicDamage(attacker, target, out bool isCrit);
+        bool isCrit;
+        int damage = isPetAttack
+            ? CalculatePetDamage(channel, attacker, target, out isCrit)
+            : CalculateBasicDamage(attacker, target, out isCrit);
 
         int healthDamage = ApplyDamageToEntity(channel, target, damage);
         ApplyOffensiveSustain(channel, attacker, healthDamage);
@@ -4217,6 +4221,42 @@ partial class GameServer
         session.SelectedCharacter.Xp = player.Experience;
         session.SelectedCharacter.Level = player.Level;
         session.SelectedCharacter.StatPoints = player.StatPoints;
+
+        ApplyPetExperienceReward(channel, player, session, xpReward);
+    }
+
+    private void ApplyPetExperienceReward(Channel channel, PlayerEntity owner, PlayerSession session, int xpReward)
+    {
+        if (session.SelectedCharacter == null || xpReward <= 0)
+            return;
+
+        var pet = channel.GetPetOwnedBy(owner.Id);
+        if (pet == null || pet.PetId <= 0 || pet.Health <= 0)
+            return;
+
+        pet.Experience += xpReward;
+        long xpForNextLevel = XpForNextLevel(pet.Level);
+        bool leveled = false;
+        while (pet.Experience >= xpForNextLevel)
+        {
+            pet.Experience -= xpForNextLevel;
+            pet.Level++;
+            xpForNextLevel = XpForNextLevel(pet.Level);
+            leveled = true;
+        }
+
+        if (leveled)
+        {
+            float hpPercent = pet.MaxHealth > 0 ? Math.Clamp(pet.Health / (float)pet.MaxHealth, 0.01f, 1f) : 1f;
+            pet.MaxHealth = CalculatePetMaxHealth(owner, pet.Level, pet.IsBossPet);
+            pet.Health = Math.Max(1, (int)MathF.Ceiling(pet.MaxHealth * hpPercent));
+            BroadcastSingleEntityUpdate(channel, pet);
+        }
+
+        _db.SavePetProgress(session.SelectedCharacter.Id, pet.PetId, pet.Level, pet.Experience);
+        var peer = channel.GetPlayerPeer(owner.Id);
+        if (peer != null)
+            SendPetData(peer, session.SelectedCharacter.Id);
     }
 
     private void SendGainExpToAoiAndPlayer(Channel channel, HashSet<ulong> aoi, ulong playerId, int xpReward, long totalExperience)
@@ -4399,7 +4439,15 @@ partial class GameServer
 
         float dx = player.X - loot.X;
         float dy = player.Y - loot.Y;
-        if (MathF.Sqrt(dx * dx + dy * dy) > 80f) return;
+        float pickupRange = 80f;
+        if (session.SelectedCharacter != null)
+        {
+            var collarExpiry = _db.LoadPetCollarExpiry(session.SelectedCharacter.Id);
+            if (collarExpiry > DateTime.UtcNow)
+                pickupRange = PetLootPickupRange;
+        }
+
+        if (MathF.Sqrt(dx * dx + dy * dy) > pickupRange) return;
 
         if (loot.ItemId == 0)
         {
@@ -4410,7 +4458,9 @@ partial class GameServer
         }
         else
         {
-            bool itemAdded = TryAddItemToInventory(player, character.Id, loot.ItemId, loot.Quantity);
+            bool itemAdded = loot.PreservedItem != null
+                ? TryAddItemInstanceToInventory(player, character.Id, loot.PreservedItem)
+                : TryAddItemToInventory(player, character.Id, loot.ItemId, loot.Quantity);
 
             if (!itemAdded)
             {
@@ -4469,6 +4519,22 @@ partial class GameServer
 
         var ownerPartyId = _world.Parties.GetPlayerPartyId(loot.OwnerId);
         return ownerPartyId.HasValue && ownerPartyId.Value == playerPartyId.Value;
+    }
+
+    private int CalculatePetDamage(Channel channel, PlayerEntity owner, Entity target, out bool isCrit)
+    {
+        int ownerDamage = CalculateBasicDamage(owner, target, out isCrit);
+        var pet = channel.GetPetOwnedBy(owner.Id);
+        float multiplier = pet?.IsBossPet == true ? 0.30f : 0.20f;
+        return Math.Max(1, (int)MathF.Ceiling(ownerDamage * multiplier));
+    }
+
+    private static int CalculatePetMaxHealth(PlayerEntity owner, int petLevel, bool isBossPet)
+    {
+        int level = Math.Max(1, petLevel);
+        float ownerHpShare = isBossPet ? 0.45f : 0.35f;
+        int levelBonus = (level - 1) * (isBossPet ? 10 : 7);
+        return Math.Max(40, (int)MathF.Round(owner.MaxHealth * ownerHpShare) + levelBonus);
     }
 
     private void SpawnTestPotion(NetPeer peer, Channel channel, Entity sender)

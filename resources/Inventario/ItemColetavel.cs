@@ -33,6 +33,7 @@ public partial class ItemColetavel : Area2D
         // Loot fica acima do chao, mas abaixo de personagens/mobs/NPCs.
         ZIndex = 0;
         ZAsRelative = true;
+        YSortEnabled = false;
         Scale = Vector2.Zero;
 
         var spawnTween = CreateTween().SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);

@@ -173,6 +173,20 @@ public partial class EntityManager : Node
         world.ZAsRelative = true;
     }
 
+    private Vector2 ParaPosicaoVisual(Vector2 posicaoServidor)
+    {
+        var currentScene = GetTree()?.CurrentScene;
+        var world = currentScene?.FindChild("World", true, false) as Node2D;
+        var interiores = world?.GetNodeOrNull<Node2D>("Interiores");
+        if (interiores != null && interiores.GetChildCount() > 0)
+            return posicaoServidor + interiores.GlobalPosition;
+
+        return posicaoServidor;
+    }
+
+    private Vector2 ParaPosicaoVisual(float x, float y)
+        => ParaPosicaoVisual(new Vector2(x, y));
+
     private static void PrepararEntidadeYSort(Node2D node)
     {
         node.ZIndex = 1;
@@ -683,7 +697,7 @@ public partial class EntityManager : Node
             "player" => CreatePlayerEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3),
             "monster" or "boss" => CreateMonsterEntity(entityId, name, x, y, level, health, maxHealth, extraData1, entityType == "boss" || EhPrefabBoss(extraData1, name)),
             "npc" => CreateNpcEntity(entityId, name, x, y, extraData1, extraData2, extraData3),
-            "pet" => CreatePetEntity(entityId, name, x, y, extraData1, extraData2, extraData3),
+            "pet" => CreatePetEntity(entityId, name, x, y, level, health, maxHealth, extraData1, extraData2, extraData3),
             _ => null,
         };
 
@@ -702,7 +716,7 @@ public partial class EntityManager : Node
         }
 
         var root = new Node2D();
-        root.Position = new Vector2(x, y);
+        root.Position = ParaPosicaoVisual(x, y);
         root.Name = $"Player_{entityId}";
         PrepararEntidadeYSort(root);
         root.SetMeta("network_id", entityId);
@@ -789,7 +803,7 @@ public partial class EntityManager : Node
         return root;
     }
 
-    private Node2D CreatePetEntity(ulong entityId, string name, float x, float y, string ownerIdText, string petIdText, string petData)
+    private Node2D CreatePetEntity(ulong entityId, string name, float x, float y, int level, int health, int maxHealth, string ownerIdText, string petIdText, string petData)
     {
         if (!ulong.TryParse(ownerIdText, out ulong ownerId) || ownerId == _gameNet?.LocalPlayerId)
             return null!;
@@ -804,7 +818,7 @@ public partial class EntityManager : Node
         string mobType = NormalizarPetAnimPrefix(animPrefix, name);
         var root = new Node2D
         {
-            Position = new Vector2(x, y),
+            Position = ParaPosicaoVisual(x, y),
             Name = $"Pet_{entityId}",
             Scale = new Vector2(1.4f, 1.4f),
             ZIndex = 0,
@@ -814,6 +828,7 @@ public partial class EntityManager : Node
         root.SetMeta("network_id", entityId);
         root.SetMeta("owner_id", ownerId);
         root.SetMeta("pet_anim_prefix", mobType);
+        root.SetMeta("pet_level", level);
         root.AddToGroup("RemotePets");
         PrepararEntidadeYSort(root);
 
@@ -825,6 +840,7 @@ public partial class EntityManager : Node
         };
         root.AddChild(sprite);
         TocarAnimacaoPet(sprite, mobType, "idle_down");
+        CriarBarraVidaPet(root, health, maxHealth);
 
         var world = ObterMundo();
         if (world != null)
@@ -883,11 +899,65 @@ public partial class EntityManager : Node
         if (!_networkNodes.TryGetValue(entityId, out var node) || node == null || !IsInstanceValid(node))
             return;
 
+        if (node.IsInGroup("RemotePets"))
+        {
+            AtualizarBarraVidaPet(node, health, maxHealth);
+            return;
+        }
+
         var overhead = node.GetNodeOrNull<OverheadUI>("OverheadUI_Remoto");
         if (overhead == null || !IsInstanceValid(overhead) || overhead.IsQueuedForDeletion())
             return;
 
         overhead.AtualizarVidaRemota(health, maxHealth);
+    }
+
+    private static void CriarBarraVidaPet(Node2D root, int health, int maxHealth)
+    {
+        var bar = new Control
+        {
+            Name = "PetHealthBar",
+            Position = new Vector2(-28f, -48f),
+            Size = new Vector2(56f, 5f),
+            CustomMinimumSize = new Vector2(56f, 5f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            ZIndex = 20,
+        };
+
+        var bg = new ColorRect
+        {
+            Name = "Background",
+            Color = new Color(0.02f, 0.02f, 0.025f, 0.88f),
+            Position = Vector2.Zero,
+            Size = new Vector2(56f, 5f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+
+        var fill = new ColorRect
+        {
+            Name = "Fill",
+            Color = new Color(0.86f, 0.09f, 0.10f, 0.95f),
+            Position = new Vector2(1f, 1f),
+            Size = new Vector2(54f, 3f),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+
+        bar.AddChild(bg);
+        bar.AddChild(fill);
+        root.AddChild(bar);
+        AtualizarBarraVidaPet(root, health, maxHealth);
+    }
+
+    private static void AtualizarBarraVidaPet(Node2D root, int health, int maxHealth)
+    {
+        var bar = root.GetNodeOrNull<Control>("PetHealthBar");
+        var fill = bar?.GetNodeOrNull<ColorRect>("Fill");
+        if (bar == null || fill == null || !IsInstanceValid(bar) || !IsInstanceValid(fill))
+            return;
+
+        float pct = maxHealth > 0 ? Mathf.Clamp(health / (float)maxHealth, 0f, 1f) : 0f;
+        fill.Size = new Vector2(54f * pct, 3f);
+        bar.Visible = health > 0;
     }
 
     private void AtualizarOverheadManaRemota(ulong entityId, int mana, int maxMana)
@@ -1055,7 +1125,7 @@ public partial class EntityManager : Node
                 GameNetwork.LogError($"Cena de mob invalida para '{name}' ({entityId}) prefab='{prefabId}' tipo='{mobType}'. Usando placeholder.");
                 return CreateMonsterPlaceholder(entityId, name, x, y, level, isBoss);
             }
-            inimigo.Position = new Vector2(x, y);
+            inimigo.Position = ParaPosicaoVisual(x, y);
             inimigo.Name = $"Monster_{entityId}";
             PrepararEntidadeYSort(inimigo);
             inimigo.NomeDoInimigo = name;
@@ -1070,7 +1140,7 @@ public partial class EntityManager : Node
             inimigo.AnimPrefix = "";
             inimigo.SetMeta("network_id", entityId);
             inimigo.SetMeta(MetaAnimPrefix, inimigo.AnimPrefix);
-            inimigo.NetworkTargetPos = new Vector2(x, y);
+            inimigo.NetworkTargetPos = ParaPosicaoVisual(x, y);
 
             string levelTag = isBoss
                 ? $"[center][color=red]Boss[/color]\n[color=yellow]Lv.{level}[/color] {name}[/center]"
@@ -1106,7 +1176,7 @@ public partial class EntityManager : Node
     private Node2D CreateMonsterPlaceholder(ulong entityId, string name, float x, float y, int level, bool isBoss)
     {
         var placeholder = new Node2D();
-        placeholder.Position = new Vector2(x, y);
+        placeholder.Position = ParaPosicaoVisual(x, y);
         placeholder.Name = $"Monster_{entityId}";
         PrepararEntidadeYSort(placeholder);
         if (isBoss)
@@ -1147,7 +1217,7 @@ public partial class EntityManager : Node
 
         if (existing != null)
         {
-            var pos = new Vector2(x, y);
+            var pos = ParaPosicaoVisual(x, y);
             foreach (Node node in existing)
             {
                 if (node is Node2D n2d && IsInstanceValid(n2d))
@@ -1174,7 +1244,7 @@ public partial class EntityManager : Node
         if (root == null)
         {
             var body = new CharacterBody2D();
-            body.Position = new Vector2(x, y);
+            body.Position = ParaPosicaoVisual(x, y);
             body.Name = $"NPC_{entityId}";
             PrepararEntidadeYSort(body);
             body.SetMeta("network_id", entityId);
@@ -1301,7 +1371,7 @@ public partial class EntityManager : Node
         if (!_networkNodes.TryGetValue(entityId, out var node) || !IsInstanceValid(node))
             return;
 
-        node.Position = new Vector2(x, y);
+        node.Position = ParaPosicaoVisual(x, y);
 
         if (node is Player player)
         {
@@ -4917,11 +4987,12 @@ public partial class EntityManager : Node
         if (_lootNodes.ContainsKey(lootId)) return;
 
         var root = new Area2D();
-        root.Position = new Vector2(x, y);
+        root.Position = ParaPosicaoVisual(x, y);
         root.Name = $"Loot_{lootId}";
         // Fica acima do chao e abaixo das entidades/personagens.
         root.ZIndex = 0;
         root.ZAsRelative = true;
+        root.YSortEnabled = false;
         root.Scale = Vector2.Zero;
         root.SetMeta("loot_id", (long)lootId);
         root.SetMeta("item_id", itemId);
@@ -4944,7 +5015,9 @@ public partial class EntityManager : Node
 
         var visuals = new Node2D();
         visuals.Name = "Visuals";
+        visuals.ZIndex = 0;
         visuals.ZAsRelative = true;
+        visuals.YSortEnabled = false;
         root.AddChild(visuals);
 
 		Texture2D? iconTexture = itemRes?.Icone ?? CarregarIconeLootFallback(itemId);
@@ -5233,7 +5306,7 @@ public partial class EntityManager : Node
     {
         _remoteStates[entityId] = new RemoteState
         {
-            Position = position,
+            Position = ParaPosicaoVisual(position),
             Direction = direction,
             Moving = moving,
             Sprinting = sprinting,

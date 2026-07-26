@@ -371,6 +371,8 @@ partial class GameServer
         session.TeleportEntryX = entryX;
         session.TeleportEntryY = entryY;
         session.CurrentMap = info.TargetScene;
+        session.SpawnedEntities.Clear();
+        session.SpawnedLoot.Clear();
 
         if (session.SelectedCharacter != null)
         {

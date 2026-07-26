@@ -189,6 +189,97 @@ partial class GameServer
         return true;
     }
 
+    private bool TryAddItemInstanceToInventory(PlayerEntity player, int characterId, ItemInstance sourceItem)
+    {
+        if (sourceItem.Quantity <= 0) return false;
+
+        var def = ItemDefinitions.Get(sourceItem.ItemId);
+        if (def == null) return false;
+
+        bool stackable = IsStackableInventoryItem(def);
+        int maxStack = stackable ? Math.Max(1, def.MaxStack) : 1;
+        int remaining = sourceItem.Quantity;
+
+        if (stackable)
+        {
+            foreach (var existing in player.Items.Where(i =>
+                         i.Slot >= 0
+                         && i.Slot < GetInventorySlotLimit(player)
+                         && i.ItemId == sourceItem.ItemId
+                         && i.Quantity < maxStack).OrderBy(i => i.Slot))
+            {
+                int add = Math.Min(remaining, maxStack - existing.Quantity);
+                if (add <= 0) continue;
+
+                existing.Quantity += add;
+                _db.SaveItem(characterId, existing);
+                remaining -= add;
+                if (remaining <= 0)
+                    return true;
+            }
+        }
+
+        int slotsNeeded = stackable ? (int)Math.Ceiling(remaining / (double)maxStack) : remaining;
+        var usedSlots = new HashSet<int>(player.Items.Select(i => i.Slot));
+        var freeSlots = new List<int>();
+        int slotLimit = GetInventorySlotLimit(player);
+        for (int slot = 0; slot < slotLimit && freeSlots.Count < slotsNeeded; slot++)
+        {
+            if (usedSlots.Contains(slot)) continue;
+            freeSlots.Add(slot);
+        }
+
+        if (freeSlots.Count < slotsNeeded)
+            return false;
+
+        foreach (int slot in freeSlots)
+        {
+            if (remaining <= 0) break;
+
+            int amount = stackable ? Math.Min(remaining, maxStack) : 1;
+            var newItem = CloneItemInstance(sourceItem, amount);
+            newItem.Slot = slot;
+            player.Items.Add(newItem);
+            _db.SaveItem(characterId, newItem);
+            remaining -= amount;
+        }
+
+        return true;
+    }
+
+    private static ItemInstance CloneItemInstance(ItemInstance sourceItem, int quantity)
+    {
+        return new ItemInstance
+        {
+            DbId = 0,
+            Slot = -1,
+            ItemId = sourceItem.ItemId,
+            Quantity = quantity,
+            RefineLevel = sourceItem.RefineLevel,
+            Roll = CloneItemRoll(sourceItem.Roll),
+        };
+    }
+
+    private static ItemRoll CloneItemRoll(ItemRoll sourceRoll)
+    {
+        return new ItemRoll
+        {
+            Rarity = sourceRoll.Rarity,
+            Forca = sourceRoll.Forca,
+            Agilidade = sourceRoll.Agilidade,
+            Destreza = sourceRoll.Destreza,
+            Inteligencia = sourceRoll.Inteligencia,
+            BaseAttack = sourceRoll.BaseAttack,
+            Defense = sourceRoll.Defense,
+            MagicDefense = sourceRoll.MagicDefense,
+            Hp = sourceRoll.Hp,
+            Mana = sourceRoll.Mana,
+            Evasion = sourceRoll.Evasion,
+            Affixes = new Dictionary<string, float>(sourceRoll.Affixes, StringComparer.OrdinalIgnoreCase),
+            IsRolled = sourceRoll.IsRolled,
+        };
+    }
+
     private static bool IsStackableInventoryItem(ItemDefinition? def)
     {
         if (def == null || !def.IsStackable || def.MaxStack <= 1)
@@ -1070,15 +1161,18 @@ partial class GameServer
         if (item == null) return;
 
         int dropQty;
+        ItemInstance droppedItem;
         if (quantity >= item.Quantity)
         {
             dropQty = item.Quantity;
+            droppedItem = CloneItemInstance(item, dropQty);
             player.Items.Remove(item);
             _db.DeleteItem(session.SelectedCharacter!.Id, item.DbId);
         }
         else
         {
             dropQty = quantity;
+            droppedItem = CloneItemInstance(item, dropQty);
             item.Quantity -= quantity;
             _db.SaveItem(session.SelectedCharacter!.Id, item);
         }
@@ -1087,7 +1181,10 @@ partial class GameServer
 
         var offsetX = (float)(Random.Shared.NextDouble() - 0.5) * 20f;
         var offsetY = (float)(Random.Shared.NextDouble() - 0.5) * 20f;
-        var loot = new LootEntity(entity.X + offsetX, entity.Y + offsetY, item.ItemId, dropQty, player.Id, _gameTime);
+        var loot = new LootEntity(entity.X + offsetX, entity.Y + offsetY, item.ItemId, dropQty, player.Id, _gameTime)
+        {
+            PreservedItem = droppedItem,
+        };
         channel.AddLoot(loot);
 
         var aoi = channel.GetEntitiesInAoi(loot.X, loot.Y);
