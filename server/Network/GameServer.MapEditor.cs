@@ -10,8 +10,15 @@ namespace Mithara.Server.Network;
 
 public partial class GameServer
 {
+    private const byte TileTypeBlock = 0;
+    private const byte TileTypeTeleport = 1;
+    private const byte TileTypeNpcVoid = 2;
+
     private static readonly Dictionary<string, Dictionary<(int X, int Y), byte>> _tileData = new();
     private static readonly Dictionary<string, Dictionary<(int X, int Y), TeleportTileInfo>> _teleportTargets = new();
+
+    private static bool IsFullBlockTileType(byte type) => type == TileTypeBlock;
+    private static bool IsMobBlockedTileType(byte type) => type == TileTypeBlock || type == TileTypeNpcVoid;
 
     public class TeleportTileInfo
     {
@@ -53,7 +60,7 @@ public partial class GameServer
                 byte type = entry.GetProperty("type").GetByte();
                 tiles[(tileX, tileY)] = type;
 
-                if (type == 1 && entry.TryGetProperty("targetScene", out var ts))
+                if (type == TileTypeTeleport && entry.TryGetProperty("targetScene", out var ts))
                 {
                     teleports[(tileX, tileY)] = new TeleportTileInfo
                     {
@@ -113,7 +120,7 @@ public partial class GameServer
 
             foreach (var kvp in mainTiles)
             {
-                if (kvp.Value != 0)
+                if (!IsMobBlockedTileType(kvp.Value))
                     continue;
 
                 float worldX = kvp.Key.X * 32f + 16f;
@@ -124,7 +131,7 @@ public partial class GameServer
             }
         }
 
-        Logger.Info($"[TILE DATA] {blockedCount} tile(s) bloqueados aplicados ao pathfinding dos mobs.");
+        Logger.Info($"[TILE DATA] {blockedCount} tile(s) bloqueados aplicados ao pathfinding dos mobs/bosses.");
     }
 
     private void HandleMapEditorPlaceTile(NetPeer peer, NetDataReader reader)

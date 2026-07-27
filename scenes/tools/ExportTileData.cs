@@ -13,6 +13,7 @@ public partial class ExportTileData : Node
         public string SceneName { get; set; } = "";
         public List<TileMarker> Markers { get; set; } = new();
         public HashSet<(int X, int Y)> BlockedTiles { get; set; } = new();
+        public HashSet<(int X, int Y)> MobBlockedTiles { get; set; } = new();
         public List<TeleportPairPoint> PairTeleports { get; set; } = new();
     }
 
@@ -80,12 +81,14 @@ public partial class ExportTileData : Node
 
         var instance = scene.Instantiate<Node>();
         string sceneName = Path.GetFileNameWithoutExtension(scenePath).ToLower();
+        var tileBlocks = FindTileBlocks(instance);
         var data = new SceneExportData
         {
             ScenePath = scenePath,
             SceneName = sceneName,
             Markers = FindMarkers(instance),
-            BlockedTiles = FindBlockedTiles(instance),
+            BlockedTiles = tileBlocks.FullBlocks,
+            MobBlockedTiles = tileBlocks.MobBlocks,
             PairTeleports = FindTeleportPairs(instance, sceneName),
         };
         instance.QueueFree();
@@ -142,13 +145,27 @@ public partial class ExportTileData : Node
         string outputDir,
         Dictionary<string, Dictionary<(int X, int Y), Dictionary<string, object>>> pairedTeleports)
     {
-        if (sceneData.Markers.Count == 0 && sceneData.BlockedTiles.Count == 0 && sceneData.PairTeleports.Count == 0)
+        if (sceneData.Markers.Count == 0
+            && sceneData.BlockedTiles.Count == 0
+            && sceneData.MobBlockedTiles.Count == 0
+            && sceneData.PairTeleports.Count == 0)
         {
             GD.Print($"[TILE EXPORT] {sceneData.ScenePath}: 0 marcadores/colisoes (ignorado)");
             return;
         }
 
         var outputByTile = new Dictionary<(int X, int Y), Dictionary<string, object>>();
+        foreach (var tile in sceneData.MobBlockedTiles)
+        {
+            outputByTile[tile] = new Dictionary<string, object>
+            {
+                { "tileX", tile.X },
+                { "tileY", tile.Y },
+                { "type", (int)TileMarker.TileType.Npc },
+                { "source", "layer_npc_void" },
+            };
+        }
+
         foreach (var tile in sceneData.BlockedTiles)
         {
             outputByTile[tile] = new Dictionary<string, object>
@@ -156,7 +173,7 @@ public partial class ExportTileData : Node
                 { "tileX", tile.X },
                 { "tileY", tile.Y },
                 { "type", (int)TileMarker.TileType.Block },
-                { "source", "godot_collision" },
+                { "source", "godot_collision_or_block_layer" },
             };
         }
 
@@ -196,7 +213,7 @@ public partial class ExportTileData : Node
             .ToList();
         string json = JsonSerializer.Serialize(output, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(jsonPath, json);
-        GD.Print($"[TILE EXPORT] {sceneData.ScenePath}: {sceneData.Markers.Count} marcadores, {sceneData.BlockedTiles.Count} tiles de colisao, {sceneData.PairTeleports.Count} teleportes de casal -> {jsonPath}");
+        GD.Print($"[TILE EXPORT] {sceneData.ScenePath}: {sceneData.Markers.Count} marcadores, {sceneData.BlockedTiles.Count} bloqueios totais, {sceneData.MobBlockedTiles.Count} bloqueios de mobs, {sceneData.PairTeleports.Count} teleportes de casal -> {jsonPath}");
     }
 
     private List<TileMarker> FindMarkers(Node node)
@@ -242,27 +259,56 @@ public partial class ExportTileData : Node
         }
     }
 
-    private HashSet<(int X, int Y)> FindBlockedTiles(Node node)
+    private (HashSet<(int X, int Y)> FullBlocks, HashSet<(int X, int Y)> MobBlocks) FindTileBlocks(Node node)
     {
-        var result = new HashSet<(int X, int Y)>();
-        CollectBlockedTiles(node, result);
-        return result;
+        var fullBlocks = new HashSet<(int X, int Y)>();
+        var mobBlocks = new HashSet<(int X, int Y)>();
+        CollectTileBlocks(node, fullBlocks, mobBlocks);
+        return (fullBlocks, mobBlocks);
     }
 
-    private void CollectBlockedTiles(Node node, HashSet<(int X, int Y)> result)
+    private void CollectTileBlocks(Node node, HashSet<(int X, int Y)> fullBlocks, HashSet<(int X, int Y)> mobBlocks)
     {
         if (node is TileMapLayer layer)
-            AddTileMapCollisionTiles(layer, result);
+        {
+            if (IsLayerNamed(layer, "Block"))
+                AddTileMapUsedCells(layer, fullBlocks);
+            else if (IsLayerNamed(layer, "NpcVoid", "Npc Void", "Npc_Void", "MobVoid", "MobBlock"))
+                AddTileMapUsedCells(layer, mobBlocks);
+            else
+                AddTileMapCollisionTiles(layer, fullBlocks);
+        }
         else if (node is CollisionShape2D shape)
-            AddCollisionShapeTiles(shape, result);
+            AddCollisionShapeTiles(shape, fullBlocks);
         else if (node is CollisionPolygon2D polygon)
-            AddCollisionPolygonTiles(polygon, result);
+            AddCollisionPolygonTiles(polygon, fullBlocks);
 
         foreach (var child in node.GetChildren())
         {
             if (child is Node childNode)
-                CollectBlockedTiles(childNode, result);
+                CollectTileBlocks(childNode, fullBlocks, mobBlocks);
         }
+    }
+
+    private static bool IsLayerNamed(Node node, params string[] names)
+    {
+        string current = NormalizeLayerName(node.Name.ToString());
+        foreach (string name in names)
+        {
+            if (current == NormalizeLayerName(name))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string NormalizeLayerName(string name)
+    {
+        return name
+            .Replace(" ", "")
+            .Replace("_", "")
+            .Replace("-", "")
+            .ToLowerInvariant();
     }
 
     private void AddTileMapCollisionTiles(TileMapLayer layer, HashSet<(int X, int Y)> result)
@@ -273,6 +319,15 @@ public partial class ExportTileData : Node
             if (data == null || !TileHasCollision(data))
                 continue;
 
+            Vector2 world = layer.ToGlobal(layer.MapToLocal(cell));
+            AddTileAtWorld(world, result);
+        }
+    }
+
+    private void AddTileMapUsedCells(TileMapLayer layer, HashSet<(int X, int Y)> result)
+    {
+        foreach (Vector2I cell in layer.GetUsedCells())
+        {
             Vector2 world = layer.ToGlobal(layer.MapToLocal(cell));
             AddTileAtWorld(world, result);
         }

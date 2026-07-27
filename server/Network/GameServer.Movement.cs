@@ -233,7 +233,7 @@ partial class GameServer
 
         int tileX = (int)MathF.Floor(x / 32f);
         int tileY = (int)MathF.Floor(y / 32f);
-        return tiles.TryGetValue((tileX, tileY), out byte type) && type == 0;
+        return tiles.TryGetValue((tileX, tileY), out byte type) && IsFullBlockTileType(type);
     }
 
     private bool CheckTeleportTile(NetPeer peer, PlayerSession session, Channel channel, Entity entity, float x, float y)

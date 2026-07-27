@@ -78,6 +78,9 @@ public class PlayerEntity : Entity
     public float TemporaryDefenseMultiplier { get; set; } = 1f;
     public double HealthRegenAccumulator { get; set; }
     public double ManaRegenAccumulator { get; set; }
+    public bool DeathBroadcasted { get; set; }
+    public ulong LastAttackerEntityId { get; set; }
+    public double LastAttackedAt { get; set; }
     public HashSet<string> UnlockedTalents { get; set; } = new();
     public int[] SkillBarSlots { get; set; } = new int[20];
 
@@ -95,7 +98,7 @@ public class PlayerEntity : Entity
     {
         int atributoOfensivo = CharacterClass.ToLowerInvariant() switch
         {
-            "arqueiro" or "ladino" or "assassino" => Destreza,
+            "arqueiro" or "ladino" or "assasino" or "assassino" => Destreza,
             _ => Forca,
         };
         return Math.Max(1, BaseAttack + atributoOfensivo / 2 + Sorte / 10);

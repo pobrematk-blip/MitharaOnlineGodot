@@ -1813,6 +1813,8 @@ public partial class EntityManager : Node
                 AtualizarOverheadVidaRemota(targetId, targetHealth, targetMaxHealth);
                 if (targetHealth <= 0)
                     SetRemotePlayerDowned(targetNode);
+                else if (targetNode.IsInGroup("PlayersDowned") || targetNode.HasMeta("remote_downed"))
+                    SetRemotePlayerRevived(targetNode);
             }
 
             if (damage == 0)
@@ -4290,6 +4292,14 @@ public partial class EntityManager : Node
 
     private void OnEntityDied(ulong entityId, ulong killerId)
     {
+        if (entityId == _gameNet?.LocalPlayerId)
+        {
+            var localPlayer = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
+            if (localPlayer != null && IsInstanceValid(localPlayer))
+                localPlayer.SetHealthFromServer(0, localPlayer.MaxHealth);
+            return;
+        }
+
         if (_networkNodes.TryGetValue(entityId, out var node) && IsInstanceValid(node))
         {
             if (node is Inimigo inimigo)
@@ -4485,7 +4495,7 @@ public partial class EntityManager : Node
         return ImageTexture.CreateFromImage(image);
     }
 
-    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle, int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte)
+    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle, int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte, int danoFisicoMin, int danoFisicoMax, int danoMagicoMin, int danoMagicoMax)
     {
         if (_gameNet == null) return;
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
@@ -4528,7 +4538,7 @@ public partial class EntityManager : Node
             node.AddToGroup("PlayersDowned");
 
         node.SetMeta("remote_downed", true);
-        var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        var sprite = ObterSpriteAnimadoRemoto(node);
         if (sprite?.SpriteFrames == null)
             return;
 
@@ -4576,7 +4586,7 @@ public partial class EntityManager : Node
         if (node.HasMeta("remote_downed"))
             node.RemoveMeta("remote_downed");
 
-        var sprite = node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D;
+        var sprite = ObterSpriteAnimadoRemoto(node);
         if (sprite?.SpriteFrames == null)
             return;
 
@@ -4586,6 +4596,27 @@ public partial class EntityManager : Node
             sprite.Play("idle_down");
             SincronizarOverlaysRemotos(node, sprite);
         }
+    }
+
+    private static AnimatedSprite2D? ObterSpriteAnimadoRemoto(Node2D node)
+    {
+        if (node == null || !IsInstanceValid(node))
+            return null;
+
+        var sprite = node.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite")
+            ?? node.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")
+            ?? node.FindChild("AnimatedSprite", true, false) as AnimatedSprite2D
+            ?? node.FindChild("AnimatedSprite2D", true, false) as AnimatedSprite2D;
+        if (sprite != null)
+            return sprite;
+
+        foreach (var child in node.FindChildren("*", "AnimatedSprite2D", true, false))
+        {
+            if (child is AnimatedSprite2D animatedSprite)
+                return animatedSprite;
+        }
+
+        return null;
     }
 
     public static void UpdateRemoteAnimation(Node2D entity, Vector2 direction, bool moving, bool sprinting = false)

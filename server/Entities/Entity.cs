@@ -9,6 +9,15 @@ public enum EntityType : byte
     Pet = 4,
 }
 
+public enum PetMode : byte
+{
+    Seguir = 0,
+    Parado = 1,
+    Atacar = 2,
+    Coletar = 3,
+    Guarda = 4,
+}
+
 public class PetEntity : Entity
 {
     public ulong OwnerEntityId { get; set; }
@@ -18,8 +27,10 @@ public class PetEntity : Entity
     public string OwnerName { get; set; } = "";
     public bool IsBossPet { get; set; }
     public ulong TargetEntityId { get; set; }
+    public PetMode Mode { get; set; } = PetMode.Seguir;
     public bool IsAttacking { get; set; }
     public double AttackVisualUntil { get; set; }
+    public double NextLootPickupTime { get; set; }
 
     public PetEntity()
     {

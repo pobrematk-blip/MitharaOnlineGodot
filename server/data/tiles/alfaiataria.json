@@ -1,780 +1,810 @@
-﻿[
-    {
-        "tileX":  0,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  1,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  2,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  3,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  4,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  5,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  6,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  7,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  9,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  10,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  11,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  12,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  13,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  14,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  15,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  16,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  17,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  18,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  19,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  20,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  21,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  22,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  23,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  24,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  25,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  26,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  27,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  28,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  29,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  30,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  31,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  32,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  33,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  34,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  35,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  36,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  37,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  38,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  2,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  3,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  3,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  3,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  4,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  4,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  4,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  5,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  5,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  5,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  6,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  6,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  6,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  7,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  7,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  30,
-        "tileY":  7,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  35,
-        "tileY":  7,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  7,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  1,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  2,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  3,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  4,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  5,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  6,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  7,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  8,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  9,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  9,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  10,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  10,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  11,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  11,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  12,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  12,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  13,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  13,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  14,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  14,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  15,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  15,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  16,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  16,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  17,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  17,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  18,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  18,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  19,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  19,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  20,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  20,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  0,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  1,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  2,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  3,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  4,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  5,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  6,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  7,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  8,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  9,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  10,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  11,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  12,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  13,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  14,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  15,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  16,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  17,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  18,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  20,
-        "tileY":  21,
-        "type":  1,
-        "targetScene":  "main",
-        "targetX":  3312,
-        "targetY":  16,
-        "pairId":  1,
-        "source":  "teleport_pair"
-    },
-    {
-        "tileX":  22,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  23,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  24,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  25,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  26,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  27,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  28,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  29,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  30,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  31,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  32,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  33,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  34,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  35,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  36,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  37,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  38,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    },
-    {
-        "tileX":  39,
-        "tileY":  21,
-        "type":  0,
-        "source":  "godot_collision"
-    }
+[
+  {
+    "tileX": 0,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 1,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 2,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 3,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 4,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 5,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 6,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 7,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 9,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 10,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 11,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 12,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 13,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 14,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 15,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 16,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 17,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 18,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 19,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 20,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 21,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 22,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 23,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 24,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 25,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 26,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 27,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 28,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 29,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 30,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 31,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 32,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 33,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 34,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 35,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 36,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 37,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 38,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 2,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 3,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 3,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 3,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 4,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 4,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 4,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 5,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 5,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 5,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 6,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 6,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 6,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 7,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 7,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 30,
+    "tileY": 7,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 35,
+    "tileY": 7,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 7,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 1,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 2,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 3,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 4,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 5,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 6,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 7,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 8,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 9,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 9,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 10,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 10,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 11,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 11,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 12,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 12,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 13,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 13,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 14,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 14,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 15,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 15,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 16,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 16,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 17,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 17,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 18,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 18,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 19,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 19,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 20,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 20,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 0,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 1,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 2,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 3,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 4,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 5,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 6,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 7,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 8,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 9,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 10,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 11,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 12,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 13,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 14,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 15,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 16,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 17,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 18,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 20,
+    "tileY": 21,
+    "type": 1,
+    "targetScene": "main",
+    "targetX": 3312,
+    "targetY": 16,
+    "pairId": 1,
+    "source": "teleport_pair"
+  },
+  {
+    "tileX": 22,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 23,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 24,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 25,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 26,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 27,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 28,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 29,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 30,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 31,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 32,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 33,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 34,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 35,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 36,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 37,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 38,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 39,
+    "tileY": 21,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 18,
+    "tileY": 22,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 19,
+    "tileY": 22,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 20,
+    "tileY": 22,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 21,
+    "tileY": 22,
+    "type": 0,
+    "source": "godot_collision"
+  },
+  {
+    "tileX": 22,
+    "tileY": 22,
+    "type": 0,
+    "source": "godot_collision"
+  }
 ]

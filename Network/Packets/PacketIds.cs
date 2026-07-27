@@ -94,6 +94,7 @@ public enum PacketId : ushort
     C2S_MarketplaceCreateGoldListing = 0x01A5,
     C2S_MarketplaceClaimGold = 0x01A6,
     C2S_PetSummon = 0x01A7,
+    C2S_PetCommand = 0x01A9,
 
     C2S_MapEditorPlaceTile = 0x01B0,
     C2S_MapEditorRequestTiles = 0x01B1,

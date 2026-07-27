@@ -795,6 +795,9 @@ partial class GameServer
         writer.Put(power);
         writer.Put(iconPath);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+
+        if (channel.GetEntity(playerId) is PlayerEntity player)
+            SendStatUpdate(peer, player);
     }
 
     private void HandleRespawn(NetPeer peer)
@@ -807,6 +810,7 @@ partial class GameServer
 
         player.Health = player.MaxHealth;
         player.Mana = player.MaxMana;
+        player.DeathBroadcasted = false;
         player.LastCombatTime = _gameTime - 120.0;
 
         var character = session.SelectedCharacter;
@@ -908,6 +912,7 @@ partial class GameServer
 
         target.Health = target.MaxHealth;
         target.Mana = target.MaxMana;
+        target.DeathBroadcasted = false;
         target.LastCombatTime = _gameTime - 120.0;
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
@@ -1442,7 +1447,8 @@ partial class GameServer
         const float hitRadius = 44f;
         float originX = caster.X + dirX * 38f;
         float originY = caster.Y + dirY * 38f;
-        if (FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, range, hitRadius) == null)
+        float openRange = GetProjectileOpenRange(GetCurrentMapForEntity(caster.Id), originX, originY, dirX, dirY, range);
+        if (FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, openRange, hitRadius) == null)
         {
             SendSystemMessage(peer, $"{skill.Nome}: nenhum alvo valido na direcao.");
             return false;
@@ -1459,7 +1465,7 @@ partial class GameServer
                 CasterId = caster.Id,
                 DirX = dirX,
                 DirY = dirY,
-                Range = range,
+                Range = openRange,
                 HitRadius = hitRadius,
                 Skill = skill,
                 StrikeCount = strikeCount,
@@ -1506,8 +1512,9 @@ partial class GameServer
         const float originOffset = 42f;
         float originX = caster.X + dirX * originOffset;
         float originY = caster.Y + dirY * originOffset;
+        float openRange = GetProjectileOpenRange(session.CurrentMap, originX, originY, dirX, dirY, SangramentoMortalRange);
 
-        target ??= FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, SangramentoMortalRange, 38f);
+        target ??= FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, openRange, 38f);
         if (target == null)
         {
             SendSystemMessage(peer, "Sangramento Mortal: nenhum alvo valido em ate 10 tiles.");
@@ -1515,7 +1522,8 @@ partial class GameServer
         }
 
         float distanceToTarget = MathF.Sqrt((target.X - caster.X) * (target.X - caster.X) + (target.Y - caster.Y) * (target.Y - caster.Y));
-        if (distanceToTarget > SangramentoMortalRange + 16f)
+        float alongToTarget = ProjectileHitDistance(originX, originY, dirX, dirY, target.X, target.Y, SangramentoMortalRange).Along;
+        if (distanceToTarget > SangramentoMortalRange + 16f || alongToTarget > openRange + 16f)
         {
             SendSystemMessage(peer, "Sangramento Mortal: alvo fora do alcance.");
             return false;
@@ -2823,8 +2831,9 @@ partial class GameServer
         const float projectileRange = 760f;
         const float projectileRadius = 34f;
         const float projectileSpeed = 900f;
+        float openRange = GetProjectileOpenRange(session.CurrentMap, originX, originY, dirX, dirY, projectileRange);
 
-        var target = FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, projectileRange, projectileRadius);
+        var target = FindFirstProjectileHit(channel, caster, originX, originY, dirX, dirY, openRange, projectileRadius);
         if (target == null)
         {
             if (notifyMiss && peer != null)
@@ -2854,10 +2863,11 @@ partial class GameServer
         const float projectileRange = 760f;
         const float projectileRadius = 34f;
         const float projectileSpeed = 700f;
+        float openRange = GetProjectileOpenRange(session.CurrentMap, originX, originY, dirX, dirY, projectileRange);
 
         BroadcastProjectileSpawn(channel, attacker.Id, originX, originY, dirX, dirY, projectileType, includeCaster: false);
 
-        var target = FindFirstProjectileHit(channel, attacker, originX, originY, dirX, dirY, projectileRange, projectileRadius);
+        var target = FindFirstProjectileHit(channel, attacker, originX, originY, dirX, dirY, openRange, projectileRadius);
         if (target == null)
             return;
 
@@ -3083,6 +3093,25 @@ partial class GameServer
         float perpX = targetX - closestX;
         float perpY = targetY - closestY;
         return (along, MathF.Sqrt(perpX * perpX + perpY * perpY));
+    }
+
+    private float GetProjectileOpenRange(string sceneName, float originX, float originY, float dirX, float dirY, float range)
+    {
+        const float step = 16f;
+        for (float distance = step; distance <= range; distance += step)
+        {
+            float checkX = originX + dirX * distance;
+            float checkY = originY + dirY * distance;
+            if (IsBlockedTile(sceneName, checkX, checkY))
+                return MathF.Max(0f, distance - step);
+        }
+
+        return range;
+    }
+
+    private string GetCurrentMapForEntity(ulong entityId)
+    {
+        return _sessions.Values.FirstOrDefault(s => s.EntityId == entityId)?.CurrentMap ?? "main";
     }
 
     private static bool IsProjectileSkill(PlayerEntity caster, ServerSkillDefinition skill)
@@ -3513,6 +3542,7 @@ partial class GameServer
         int revivePercent = Math.Clamp(skill.Valor > 0 ? skill.Valor : 20, 1, 100);
         target.Health = Math.Max(1, (int)MathF.Round(target.MaxHealth * (revivePercent / 100f)));
         target.Mana = Math.Max(0, (int)MathF.Round(target.MaxMana * (revivePercent / 100f)));
+        target.DeathBroadcasted = false;
         target.LastCombatTime = _gameTime - 120.0;
 
         var writer = PacketSerializer.WritePacket(PacketId.S2C_Respawn);
@@ -3821,6 +3851,8 @@ partial class GameServer
     {
         if (damage > 0)
         {
+            RegisterHostileResponse(channel, attackerId, targetId);
+            RegisterPlayerWasAttacked(channel, attackerId, targetId);
             if (channel.GetEntity(attackerId) is PlayerEntity attacker)
                 ConsumeInvisibilityOpeningBuff(channel, attacker);
             BreakInvisibilityOnDamage(channel, targetId);
@@ -3852,6 +3884,94 @@ partial class GameServer
             writer.Put(targetMaxHealth);
             writer.Put(skillId);
             p.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+
+        if (damage > 0
+            && targetHealth <= 0
+            && channel.GetEntity(targetId) is PlayerEntity defeatedPlayer
+            && !defeatedPlayer.DeathBroadcasted)
+        {
+            defeatedPlayer.DeathBroadcasted = true;
+            BroadcastEntityDied(channel, targetId, attackerId, recipients);
+        }
+    }
+
+    private void BroadcastEntityDied(Channel channel, ulong entityId, ulong killerId, HashSet<ulong> recipients)
+    {
+        foreach (var eid in recipients)
+        {
+            var p = channel.GetPlayerPeer(eid);
+            if (p == null)
+                continue;
+
+            var writer = PacketSerializer.WritePacket(PacketId.S2C_EntityDied);
+            writer.Put(entityId);
+            writer.Put(killerId);
+            p.Send(writer, DeliveryMethod.ReliableOrdered);
+        }
+    }
+
+    private void RegisterHostileResponse(Channel channel, ulong attackerId, ulong targetId)
+    {
+        if (channel.GetEntity(targetId) is not MonsterEntity mob || mob.Health <= 0)
+            return;
+
+        if (channel.GetEntity(attackerId) is PlayerEntity playerAttacker)
+        {
+            mob.TargetEntityId = playerAttacker.Id;
+            return;
+        }
+
+        if (channel.GetEntity(attackerId) is PetEntity petAttacker
+            && channel.GetEntity(petAttacker.OwnerEntityId) is PlayerEntity owner)
+        {
+            mob.TargetEntityId = owner.Id;
+        }
+    }
+
+    private void RegisterPlayerWasAttacked(Channel channel, ulong attackerId, ulong targetId)
+    {
+        if (channel.GetEntity(targetId) is not PlayerEntity target || target.Health <= 0)
+            return;
+
+        target.LastAttackerEntityId = attackerId;
+        target.LastAttackedAt = _gameTime;
+    }
+
+    private void TryServerPetAttack(Channel channel, PlayerEntity owner, PetEntity pet, Entity target)
+    {
+        if (owner.Health <= 0 || pet.Health <= 0 || target.Health <= 0)
+            return;
+        if (_gameTime < owner.NextPetAttackTime)
+            return;
+        if (!CanDamageEntity(owner, target, out _))
+            return;
+
+        owner.NextPetAttackTime = _gameTime + PetAttackCooldown;
+        MarcarAtaqueVisualDoPet(channel, owner, target);
+
+        int damage = CalculatePetDamage(channel, owner, target, out bool isCrit);
+        int healthDamage = ApplyDamageToEntity(channel, target, damage);
+        ApplyOffensiveSustain(channel, owner, healthDamage);
+
+        owner.LastCombatTime = _gameTime;
+        if (target is PlayerEntity playerTarget)
+        {
+            playerTarget.LastCombatTime = _gameTime;
+            BroadcastPartyMemberUpdateForEntity(playerTarget.Id);
+            ApplyDamageReflect(channel, playerTarget, owner, healthDamage);
+        }
+
+        if (target is MonsterEntity hitMob)
+            hitMob.TargetEntityId = owner.Id;
+
+        BroadcastCombatResult(channel, owner.Id, target.Id, damage, isCrit, target.Health, target.MaxHealth, pet.X, pet.Y, PetAttackSkillId);
+
+        if (target is MonsterEntity killedMob && target.Health <= 0)
+        {
+            var session = _sessions.Values.FirstOrDefault(s => s.EntityId == owner.Id);
+            if (session?.SelectedCharacter != null)
+                HandleMonsterDeath(channel, killedMob, owner, session, target.Id);
         }
     }
 
@@ -4741,23 +4861,32 @@ partial class GameServer
         var loot = channel.GetLoot(lootId);
         if (loot == null || loot.PickedUp) return;
 
+        TryPickupLootForPlayer(peer, session, channel, player, loot, 80f);
+    }
+
+    private bool TryPickupLootForPlayer(NetPeer peer, PlayerSession session, Channel channel, PlayerEntity player, LootEntity loot, float pickupRange)
+    {
+        var character = session.SelectedCharacter;
+        if (character == null || loot.PickedUp)
+            return false;
+
         if (!CanPickupLoot(player, loot))
         {
             SendSystemMessage(peer, "Este item pertence a outro jogador ou party.");
-            return;
+            return false;
         }
 
         float dx = player.X - loot.X;
         float dy = player.Y - loot.Y;
-        float pickupRange = 80f;
         if (session.SelectedCharacter != null)
         {
             var collarExpiry = _db.LoadPetCollarExpiry(session.SelectedCharacter.Id);
             if (collarExpiry > DateTime.UtcNow)
-                pickupRange = PetLootPickupRange;
+                pickupRange = Math.Max(pickupRange, PetLootPickupRange);
         }
 
-        if (MathF.Sqrt(dx * dx + dy * dy) > pickupRange) return;
+        if (MathF.Sqrt(dx * dx + dy * dy) > pickupRange)
+            return false;
 
         if (loot.ItemId == 0)
         {
@@ -4776,7 +4905,7 @@ partial class GameServer
             {
                 SendSystemMessage(peer, "Inventario cheio!");
                 SendInventoryData(peer, player);
-                return;
+                return false;
             }
             /* else if (false)
             {
@@ -4801,11 +4930,11 @@ partial class GameServer
         SendInventoryData(peer, player);
 
         loot.PickedUp = true;
-        channel.RemoveLoot(lootId);
+        channel.RemoveLoot(loot.Id);
 
         var aoi = channel.GetEntitiesInAoi(loot.X, loot.Y);
         var wDespawn = PacketSerializer.WritePacket(PacketId.S2C_LootDespawn);
-        wDespawn.Put(lootId);
+        wDespawn.Put(loot.Id);
         foreach (var eid in aoi)
         {
             var p = channel.GetPlayerPeer(eid);
@@ -4813,9 +4942,10 @@ partial class GameServer
             {
                 p.Send(wDespawn, DeliveryMethod.ReliableOrdered);
                 wDespawn = PacketSerializer.WritePacket(PacketId.S2C_LootDespawn);
-                wDespawn.Put(lootId);
+                wDespawn.Put(loot.Id);
             }
         }
+        return true;
     }
 
     private bool CanPickupLoot(PlayerEntity player, LootEntity loot)

@@ -14,8 +14,10 @@ public partial class PetController : Node
     private Label _hudNameLabel;
     private Label _hudModeLabel;
     private Button _btnSeguir;
-    private Button _btnGuarda;
+    private Button _btnParado;
     private Button _btnAtacar;
+    private Button _btnColetar;
+    private Button _btnGuarda;
     private HBoxContainer _coletaRow;
     private CheckBox _chkColeta;
     private PetCollarSlot _coleiraSlot;
@@ -164,8 +166,15 @@ public partial class PetController : Node
         _btnSeguir.Pressed += () => DefinirModo(PetMode.Seguir);
         modeHBox.AddChild(_btnSeguir);
 
+        _btnParado = new Button();
+        _btnParado.Text = "Parado";
+        _btnParado.CustomMinimumSize = new Vector2(58, 28);
+        AplicarBotaoModo(_btnParado);
+        _btnParado.Pressed += () => DefinirModo(PetMode.Parado);
+        modeHBox.AddChild(_btnParado);
+
         _btnGuarda = new Button();
-        _btnGuarda.Text = "Parado";
+        _btnGuarda.Text = "Guarda";
         _btnGuarda.CustomMinimumSize = new Vector2(58, 28);
         AplicarBotaoModo(_btnGuarda);
         _btnGuarda.Pressed += () => DefinirModo(PetMode.Guarda);
@@ -177,6 +186,13 @@ public partial class PetController : Node
         AplicarBotaoModo(_btnAtacar);
         _btnAtacar.Pressed += () => DefinirModo(PetMode.Atacar);
         modeHBox.AddChild(_btnAtacar);
+
+        _btnColetar = new Button();
+        _btnColetar.Text = "Coletar";
+        _btnColetar.CustomMinimumSize = new Vector2(58, 28);
+        AplicarBotaoModo(_btnColetar);
+        _btnColetar.Pressed += () => DefinirModo(PetMode.Coletar);
+        modeHBox.AddChild(_btnColetar);
 
         _hudModeLabel = new Label();
         _hudModeLabel.HorizontalAlignment = HorizontalAlignment.Center;
@@ -738,10 +754,13 @@ public partial class PetController : Node
     {
         if (_petNode == null || !IsInstanceValid(_petNode)) return;
         _petNode.DefinirModo(modo);
+        GetNodeOrNull<GameNetwork>("/root/GameNetwork")?.SendPetCommand((int)modo);
 
-        _btnSeguir.Modulate = modo == PetMode.Seguir ? Colors.Yellow : Colors.White;
-        _btnGuarda.Modulate = modo == PetMode.Guarda ? Colors.Yellow : Colors.White;
-        _btnAtacar.Modulate = modo == PetMode.Atacar ? Colors.Yellow : Colors.White;
+        if (_btnSeguir != null) _btnSeguir.Modulate = modo == PetMode.Seguir ? Colors.Yellow : Colors.White;
+        if (_btnParado != null) _btnParado.Modulate = modo == PetMode.Parado ? Colors.Yellow : Colors.White;
+        if (_btnAtacar != null) _btnAtacar.Modulate = modo == PetMode.Atacar ? Colors.Yellow : Colors.White;
+        if (_btnColetar != null) _btnColetar.Modulate = modo == PetMode.Coletar ? Colors.Yellow : Colors.White;
+        if (_btnGuarda != null) _btnGuarda.Modulate = modo == PetMode.Guarda ? Colors.Yellow : Colors.White;
         if (_hudModeLabel != null)
             _hudModeLabel.Text = $"Modo: {NomeModo(modo)}";
         AtualizarTooltipPet();
@@ -842,8 +861,10 @@ public partial class PetController : Node
         return modo switch
         {
             PetMode.Seguir => "Seguir",
-            PetMode.Guarda => "Parado",
+            PetMode.Parado => "Parado",
             PetMode.Atacar => "Atacar",
+            PetMode.Coletar => "Coletar",
+            PetMode.Guarda => "Guarda",
             _ => modo.ToString()
         };
     }

@@ -5,8 +5,10 @@ using System.Collections.Generic;
 public enum PetMode
 {
     Seguir,
-    Guarda,
-    Atacar
+    Parado,
+    Atacar,
+    Coletar,
+    Guarda
 }
 
 public partial class PetNode : Node2D
@@ -207,6 +209,8 @@ public partial class PetNode : Node2D
         switch (ModoAtual)
         {
             case PetMode.Seguir:
+            case PetMode.Parado:
+            case PetMode.Coletar:
                 _areaAtaque.Monitoring = false;
                 break;
             case PetMode.Guarda:
@@ -222,7 +226,7 @@ public partial class PetNode : Node2D
     {
         if (!Ativo || _player == null) return;
 
-        bool coletando = ModoAtual != PetMode.Atacar && AtualizarColeta(delta);
+        bool coletando = ModoAtual == PetMode.Coletar && AtualizarColeta(delta);
         if (coletando)
         {
             AtualizarAnimacao();
@@ -232,6 +236,12 @@ public partial class PetNode : Node2D
         switch (ModoAtual)
         {
             case PetMode.Seguir:
+                AtualizarSeguir(delta);
+                break;
+            case PetMode.Parado:
+                _direcao = Vector2.Zero;
+                break;
+            case PetMode.Coletar:
                 AtualizarSeguir(delta);
                 break;
             case PetMode.Guarda:
@@ -248,31 +258,6 @@ public partial class PetNode : Node2D
     private void AtualizarSeguir(double delta)
     {
         if (!IsInstanceValid(_player)) return;
-
-        if (TipoPet == TipoPet.Combate)
-        {
-            if (_alvoInimigo == null || !IsInstanceValid(_alvoInimigo))
-                ProcurarAlvoProximo();
-
-            if (_alvoInimigo != null && IsInstanceValid(_alvoInimigo))
-            {
-                float distAlvoDoPlayer = _player.GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
-                if (distAlvoDoPlayer <= OwnerAttackLeashRange)
-                {
-                    float distAlvo = GlobalPosition.DistanceTo(_alvoInimigo.GlobalPosition);
-                    if (distAlvo <= AtaqueRange)
-                        AtacarAlvo();
-                    else
-                    {
-                        _direcao = (_alvoInimigo.GlobalPosition - GlobalPosition).Normalized();
-                        GlobalPosition += _direcao * Velocidade * (float)delta;
-                    }
-                    return;
-                }
-
-                _alvoInimigo = null;
-            }
-        }
 
         float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
 
@@ -460,11 +445,7 @@ public partial class PetNode : Node2D
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (gameNet != null && gameNet.IsConnected)
         {
-            if (_alvoInimigo.HasMeta("network_id"))
-            {
-                ulong targetId = (ulong)_alvoInimigo.GetMeta("network_id");
-                gameNet.SendAttack(targetId, PetAttackSkillId);
-            }
+            return;
         }
         else
         {
@@ -513,7 +494,7 @@ public partial class PetNode : Node2D
 
     private void OnItemEntrouNaArea(Area2D area)
     {
-        if (ModoAtual == PetMode.Atacar) return;
+        if (ModoAtual != PetMode.Coletar) return;
         if (!ColetaAtiva) return;
 
         var itemColetavel = area.GetParentOrNull<ItemColetavel>();
@@ -527,7 +508,7 @@ public partial class PetNode : Node2D
     private void OnColetaTimer()
     {
         if (!Ativo || _player == null) return;
-        if (ModoAtual == PetMode.Atacar) return;
+        if (ModoAtual != PetMode.Coletar) return;
         if (!ColetaAtiva) return;
 
         float distPlayer = GlobalPosition.DistanceTo(_player.GlobalPosition);

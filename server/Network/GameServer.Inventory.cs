@@ -1308,18 +1308,21 @@ partial class GameServer
             bonusDamageReflect += RefinedFloat(Affix(item, "ReflexaoDano") + Affix(item, "Reflexao"), item.RefineLevel);
             bonusControlResistance += RefinedFloat(Affix(item, "ResistenciaControle"), item.RefineLevel);
         }
-        int baseAttack = player.CharacterClass.ToLowerInvariant() switch
+        string playerClass = player.CharacterClass.ToLowerInvariant();
+        int baseAttack = playerClass switch
         {
-            "guerreiro" => 10,
+            "guerreiro" or "berseker" or "berserker" or "barbaro" or "bárbaro" or "guardiao" or "guardião" or "protetor" => 10,
             "arqueiro" => 7,
-            "mago" => 5,
+            "ladino" or "assasino" or "assassino" => 8,
+            "mago" or "elementalista" or "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote" => 5,
             _ => 6,
         };
-        int baseDefense = player.CharacterClass.ToLowerInvariant() switch
+        int baseDefense = playerClass switch
         {
-            "guerreiro" => 8,
-            "arqueiro" => 4,
-            "mago" => 2,
+            "guerreiro" or "guardiao" or "guardião" or "protetor" => 8,
+            "berseker" or "berserker" or "barbaro" or "bárbaro" => 6,
+            "arqueiro" or "ladino" or "assasino" or "assassino" => 4,
+            "mago" or "elementalista" or "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote" => 2,
             _ => 4,
         };
 

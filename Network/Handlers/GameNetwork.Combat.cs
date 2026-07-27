@@ -237,8 +237,12 @@ partial class GameNetwork
         int baseSorte = r.AvailableBytes >= 4 ? r.GetInt() : 5;
         int totalVitalidade = r.AvailableBytes >= 4 ? r.GetInt() : baseVitalidade;
         int totalSorte = r.AvailableBytes >= 4 ? r.GetInt() : baseSorte;
+        int danoFisicoMin = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        int danoFisicoMax = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        int danoMagicoMin = r.AvailableBytes >= 4 ? r.GetInt() : 0;
+        int danoMagicoMax = r.AvailableBytes >= 4 ? r.GetInt() : 0;
         _pendingBaseVitalidade = baseVitalidade;
         _pendingBaseSorte = baseSorte;
-        EmitSignal(SignalName.OnStatUpdate, baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints, totalForca, totalAgilidade, totalDestreza, totalInteligencia, maxHealth, maxMana, defesaFisica, defesaMagica, chanceCritica, danoCritico, evasao, velocidadeMovimento, velocidadeAtaque, precisao, tenacidade, penetracaoArmadura, regeneracaoVida, regeneracaoMana, rouboVida, rouboMana, reducaoCooldown, danoPvp, defesaPvp, bonusExperiencia, reflexaoDano, resistenciaControle, baseVitalidade, baseSorte, totalVitalidade, totalSorte);
+        EmitSignal(SignalName.OnStatUpdate, baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints, totalForca, totalAgilidade, totalDestreza, totalInteligencia, maxHealth, maxMana, defesaFisica, defesaMagica, chanceCritica, danoCritico, evasao, velocidadeMovimento, velocidadeAtaque, precisao, tenacidade, penetracaoArmadura, regeneracaoVida, regeneracaoMana, rouboVida, rouboMana, reducaoCooldown, danoPvp, defesaPvp, bonusExperiencia, reflexaoDano, resistenciaControle, baseVitalidade, baseSorte, totalVitalidade, totalSorte, danoFisicoMin, danoFisicoMax, danoMagicoMin, danoMagicoMax);
     }
 }

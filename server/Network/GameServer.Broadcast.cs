@@ -543,12 +543,14 @@ partial class GameServer
     private void UpdateServerPets(Channel channel, Dictionary<ulong, Entity> entities)
     {
         const float petLeashRange = 32f * 20f;
-        const float petAttackVisualRange = 92f;
+        const float petAttackVisualRange = 86f;
+        const float petLootTouchRange = 34f;
         const float petFollowDistance = 72f;
+        const float petStopDeadZone = 10f;
 
         foreach (var pet in entities.Values.OfType<PetEntity>().ToList())
         {
-            if (!entities.TryGetValue(pet.OwnerEntityId, out var owner) || owner.Type != EntityType.Player)
+            if (!entities.TryGetValue(pet.OwnerEntityId, out var owner) || owner is not PlayerEntity ownerPlayer)
             {
                 channel.RemoveEntity(pet.Id);
                 BroadcastDespawn(channel, pet.Id);
@@ -556,19 +558,30 @@ partial class GameServer
             }
 
             pet.IsAttacking = pet.AttackVisualUntil > _gameTime;
+            if (pet.Mode == PetMode.Parado)
+            {
+                pet.Moving = false;
+                pet.TargetEntityId = 0;
+                continue;
+            }
+
+            if (pet.Mode == PetMode.Coletar)
+            {
+                if (TryUpdatePetCollection(channel, pet, ownerPlayer, petLeashRange, petLootTouchRange))
+                    continue;
+
+                FollowOwner(channel, pet, ownerPlayer, petFollowDistance, petStopDeadZone);
+                continue;
+            }
 
             Entity? target = null;
-            if (pet.TargetEntityId != 0
-                && entities.TryGetValue(pet.TargetEntityId, out var possibleTarget)
-                && possibleTarget.Health > 0
-                && possibleTarget is MonsterEntity)
+            if (pet.Mode == PetMode.Atacar)
             {
-                float ownerToTargetX = possibleTarget.X - owner.X;
-                float ownerToTargetY = possibleTarget.Y - owner.Y;
-                if ((ownerToTargetX * ownerToTargetX) + (ownerToTargetY * ownerToTargetY) <= petLeashRange * petLeashRange)
-                    target = possibleTarget;
-                else
-                    pet.TargetEntityId = 0;
+                target = ResolvePetAttackTarget(channel, entities, pet, ownerPlayer, petLeashRange);
+            }
+            else if (pet.Mode == PetMode.Guarda)
+            {
+                target = ResolvePetGuardTarget(channel, entities, pet, ownerPlayer, petLeashRange);
             }
             else
             {
@@ -593,41 +606,157 @@ partial class GameServer
                     pet.DirY = ty / tdist;
                 }
                 pet.IsAttacking = true;
+                TryServerPetAttack(channel, ownerPlayer, pet, target);
                 if (pet.AttackVisualUntil <= _gameTime)
                     pet.AttackVisualUntil = _gameTime + 0.35;
                 continue;
             }
 
-            float dirX = owner.DirX;
-            float dirY = owner.DirY;
-            float lenSq = dirX * dirX + dirY * dirY;
-            if (lenSq < 0.001f)
-            {
-                dirX = -1f;
-                dirY = 0.35f;
-            }
-            else
-            {
-                float len = MathF.Sqrt(lenSq);
-                dirX /= len;
-                dirY /= len;
-            }
-
-            float desiredX = owner.X - dirX * petFollowDistance;
-            float desiredY = owner.Y - dirY * petFollowDistance + 18f;
-            float dx = desiredX - pet.X;
-            float dy = desiredY - pet.Y;
-            float dist = MathF.Sqrt(dx * dx + dy * dy);
-
-            if (dist > 4f)
-            {
-                MovePetTowards(channel, pet, dx, dy, dist, pet.Speed);
-            }
-            else
-            {
-                pet.Moving = false;
-            }
+            FollowOwner(channel, pet, ownerPlayer, petFollowDistance, petStopDeadZone);
         }
+    }
+
+    private void HandlePetCommand(NetPeer peer, NetDataReader reader)
+    {
+        if (!_sessions.TryGetValue(peer, out var session))
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        var pet = channel?.GetPetOwnedBy(session.EntityId);
+        if (pet == null)
+            return;
+
+        int rawMode = reader.GetInt();
+        if (!Enum.IsDefined(typeof(PetMode), (byte)rawMode))
+            return;
+
+        pet.Mode = (PetMode)(byte)rawMode;
+        pet.TargetEntityId = 0;
+        pet.Moving = false;
+        BroadcastSingleEntityUpdate(channel!, pet);
+    }
+
+    private Entity? ResolvePetAttackTarget(Channel channel, Dictionary<ulong, Entity> entities, PetEntity pet, PlayerEntity owner, float petLeashRange)
+    {
+        if (pet.TargetEntityId != 0
+            && entities.TryGetValue(pet.TargetEntityId, out var current)
+            && IsValidPetTarget(channel, owner, current, petLeashRange))
+            return current;
+
+        pet.TargetEntityId = 0;
+        var target = entities.Values
+            .Where(e => IsValidPetTarget(channel, owner, e, petLeashRange))
+            .OrderBy(e => DistanceSquared(pet.X, pet.Y, e.X, e.Y))
+            .FirstOrDefault();
+
+        pet.TargetEntityId = target?.Id ?? 0;
+        return target;
+    }
+
+    private Entity? ResolvePetGuardTarget(Channel channel, Dictionary<ulong, Entity> entities, PetEntity pet, PlayerEntity owner, float petLeashRange)
+    {
+        if (owner.LastAttackedAt + 4.0 < _gameTime)
+        {
+            pet.TargetEntityId = 0;
+            return null;
+        }
+
+        if (owner.LastAttackerEntityId != 0
+            && entities.TryGetValue(owner.LastAttackerEntityId, out var attacker)
+            && IsValidPetTarget(channel, owner, attacker, petLeashRange))
+        {
+            pet.TargetEntityId = attacker.Id;
+            return attacker;
+        }
+
+        var mobTargetingOwner = entities.Values
+            .OfType<MonsterEntity>()
+            .Where(m => m.TargetEntityId == owner.Id && IsValidPetTarget(channel, owner, m, petLeashRange))
+            .OrderBy(m => DistanceSquared(pet.X, pet.Y, m.X, m.Y))
+            .FirstOrDefault();
+
+        pet.TargetEntityId = mobTargetingOwner?.Id ?? 0;
+        return mobTargetingOwner;
+    }
+
+    private bool IsValidPetTarget(Channel channel, PlayerEntity owner, Entity target, float petLeashRange)
+    {
+        if (target.Id == owner.Id || target.Health <= 0 || target.Type == EntityType.NPC || target.Type == EntityType.Pet)
+            return false;
+        if (DistanceSquared(owner.X, owner.Y, target.X, target.Y) > petLeashRange * petLeashRange)
+            return false;
+        return CanDamageEntity(owner, target, out _);
+    }
+
+    private bool TryUpdatePetCollection(Channel channel, PetEntity pet, PlayerEntity owner, float collectRange, float touchRange)
+    {
+        var ownerSession = _sessions.Values.FirstOrDefault(s => s.EntityId == owner.Id);
+        if (ownerSession?.SelectedCharacter == null)
+            return false;
+
+        var collarExpiry = _db.LoadPetCollarExpiry(ownerSession.SelectedCharacter.Id);
+        if (collarExpiry <= DateTime.UtcNow)
+            return false;
+
+        var loot = channel.GetLootInRadius(owner.X, owner.Y, collectRange)
+            .Where(l => CanPickupLoot(owner, l))
+            .OrderBy(l => DistanceSquared(pet.X, pet.Y, l.X, l.Y))
+            .FirstOrDefault();
+        if (loot == null)
+            return false;
+
+        float dx = loot.X - pet.X;
+        float dy = loot.Y - pet.Y;
+        float dist = MathF.Sqrt(dx * dx + dy * dy);
+        if (dist > touchRange)
+        {
+            MovePetTowards(channel, pet, dx, dy, dist, pet.Speed);
+            return true;
+        }
+
+        pet.Moving = false;
+        if (_gameTime >= pet.NextLootPickupTime)
+        {
+            pet.NextLootPickupTime = _gameTime + 0.25;
+            TryPickupLootForPlayer(ownerSession.Peer, ownerSession, channel, owner, loot, collectRange);
+        }
+        return true;
+    }
+
+    private static void FollowOwner(Channel channel, PetEntity pet, Entity owner, float followDistance, float deadZone)
+    {
+        float dirX = owner.DirX;
+        float dirY = owner.DirY;
+        float lenSq = dirX * dirX + dirY * dirY;
+        if (lenSq < 0.001f)
+        {
+            dirX = -1f;
+            dirY = 0.35f;
+        }
+        else
+        {
+            float len = MathF.Sqrt(lenSq);
+            dirX /= len;
+            dirY /= len;
+        }
+
+        float desiredX = owner.X - dirX * followDistance;
+        float desiredY = owner.Y - dirY * followDistance + 18f;
+        float dx = desiredX - pet.X;
+        float dy = desiredY - pet.Y;
+        float dist = MathF.Sqrt(dx * dx + dy * dy);
+
+        if (dist > deadZone)
+            MovePetTowards(channel, pet, dx, dy, dist, pet.Speed);
+        else
+            pet.Moving = false;
+    }
+
+    private static float DistanceSquared(float ax, float ay, float bx, float by)
+    {
+        float dx = ax - bx;
+        float dy = ay - by;
+        return dx * dx + dy * dy;
     }
 
     private static void MovePetTowards(Channel channel, PetEntity pet, float dx, float dy, float dist, float speed)

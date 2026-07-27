@@ -88,6 +88,10 @@ public partial class EquipamentoComponent : Node
     private float _bonusExperienciaServidor;
     private float _reflexaoDanoServidor;
     private float _resistenciaControleServidor;
+    private int _danoFisicoMinServidor;
+    private int _danoFisicoMaxServidor;
+    private int _danoMagicoMinServidor;
+    private int _danoMagicoMaxServidor;
 
     public int PontosDisponiveis => _pontosDisponiveis;
     public int Forca => _temTotaisServidor ? _forcaServidor : _forca + _bonusForca;
@@ -111,13 +115,13 @@ public partial class EquipamentoComponent : Node
     private float BonusTemporarioDanoFisicoPercentual => SomarBonusTemporarios(_bonusTemporarioDanoFisicoPorEfeito);
     private float BonusTemporarioVelocidadeAtaquePercentual => MathF.Max(_bonusTemporarioVelocidadeAtaque, SomarBonusTemporarios(_bonusTemporarioVelocidadeAtaquePorEfeito));
     private float BonusTemporarioRouboVida => SomarBonusTemporarios(_bonusTemporarioRouboVidaPorEfeito);
-    public int DanoFisicoMin => AplicarBonusPercentual(8 + (AtributoOfensivoFisico / 2) + (Sorte / 10) + _bonusDanoFisico + _bonusDanoFisicoMin, BonusTemporarioDanoFisicoPercentual);
-    public int DanoFisicoMax => AplicarBonusPercentual(12 + (AtributoOfensivoFisico / 2) + (Sorte / 10) + _bonusDanoFisico + _bonusDanoFisicoMax, BonusTemporarioDanoFisicoPercentual);
+    public int DanoFisicoMin => _temTotaisServidor && _danoFisicoMinServidor > 0 ? _danoFisicoMinServidor : AplicarBonusPercentual(8 + (AtributoOfensivoFisico / 2) + (Sorte / 10) + _bonusDanoFisico + _bonusDanoFisicoMin, BonusTemporarioDanoFisicoPercentual);
+    public int DanoFisicoMax => _temTotaisServidor && _danoFisicoMaxServidor > 0 ? _danoFisicoMaxServidor : AplicarBonusPercentual(12 + (AtributoOfensivoFisico / 2) + (Sorte / 10) + _bonusDanoFisico + _bonusDanoFisicoMax, BonusTemporarioDanoFisicoPercentual);
     public string DanoFisico => $"{DanoFisicoMin}-{DanoFisicoMax}";
     
     // Dano Mágico com variação (por Inteligência) - Base 8-12, aumenta com Inteligência
-    public int DanoMagicoMin => 8 + (Inteligencia / 2) + (Sorte / 10) + _bonusDanoMagico + _bonusDanoMagicoMin;
-    public int DanoMagicoMax => 12 + (Inteligencia / 2) + (Sorte / 10) + _bonusDanoMagico + _bonusDanoMagicoMax;
+    public int DanoMagicoMin => _temTotaisServidor && _danoMagicoMinServidor > 0 ? _danoMagicoMinServidor : 8 + (Inteligencia / 2) + (Sorte / 10) + _bonusDanoMagico + _bonusDanoMagicoMin;
+    public int DanoMagicoMax => _temTotaisServidor && _danoMagicoMaxServidor > 0 ? _danoMagicoMaxServidor : 12 + (Inteligencia / 2) + (Sorte / 10) + _bonusDanoMagico + _bonusDanoMagicoMax;
     public string DanoMagico => $"{DanoMagicoMin}-{DanoMagicoMax}";
     
     // HP (por Vitalidade + bonus de itens)
@@ -208,7 +212,8 @@ public partial class EquipamentoComponent : Node
         float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura,
         float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown,
         int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle,
-        int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte)
+        int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte,
+        int danoFisicoMin, int danoFisicoMax, int danoMagicoMin, int danoMagicoMax)
     {
         _forca = baseForca;
         _agilidade = baseAgilidade;
@@ -243,6 +248,10 @@ public partial class EquipamentoComponent : Node
         _bonusExperienciaServidor = bonusExperiencia;
         _reflexaoDanoServidor = reflexaoDano;
         _resistenciaControleServidor = resistenciaControle;
+        _danoFisicoMinServidor = danoFisicoMin;
+        _danoFisicoMaxServidor = danoFisicoMax;
+        _danoMagicoMinServidor = danoMagicoMin;
+        _danoMagicoMaxServidor = danoMagicoMax;
         _temTotaisServidor = true;
 
         var player = GetParent() as Player ?? GetTree().CurrentScene?.FindChild("Player", true, false) as Player;

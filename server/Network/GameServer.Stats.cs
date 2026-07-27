@@ -162,6 +162,10 @@ partial class GameServer
 
     private void SendStatUpdate(NetPeer peer, PlayerEntity player)
     {
+        RefreshTemporarySkillBonuses(player);
+        var (danoFisicoMin, danoFisicoMax) = GetDisplayedDamageRange(player, magicDamage: false);
+        var (danoMagicoMin, danoMagicoMax) = GetDisplayedDamageRange(player, magicDamage: true);
+
         var writer = PacketSerializer.WritePacket(PacketId.S2C_StatUpdate);
         writer.Put(player.BaseForca);
         writer.Put(player.BaseAgilidade);
@@ -198,6 +202,27 @@ partial class GameServer
         writer.Put(player.BaseSorte);
         writer.Put(player.Vitalidade);
         writer.Put(player.Sorte);
+        writer.Put(danoFisicoMin);
+        writer.Put(danoFisicoMax);
+        writer.Put(danoMagicoMin);
+        writer.Put(danoMagicoMax);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private static (int Min, int Max) GetDisplayedDamageRange(PlayerEntity player, bool magicDamage)
+    {
+        int rawDamage = magicDamage ? player.CalculateMagicAttackDamage() : player.CalculateAttackDamage();
+        if (player.TemporaryDamageBonus > 0f)
+            rawDamage = Math.Max(1, (int)MathF.Round(rawDamage * (1f + player.TemporaryDamageBonus)));
+
+        int min = Math.Max(1, (int)MathF.Floor(rawDamage * 0.85f));
+        int max = Math.Max(min, (int)MathF.Ceiling(rawDamage * 1.15f));
+        if (rawDamage >= 3 && max - min < 2)
+        {
+            min = Math.Max(1, rawDamage - 1);
+            max = rawDamage + 1;
+        }
+
+        return (min, max);
     }
 }

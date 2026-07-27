@@ -540,6 +540,9 @@ public partial class GameServer : INetEventListener
             case PacketId.C2S_PetSummon:
                 HandlePetSummon(peer, reader);
                 break;
+            case PacketId.C2S_PetCommand:
+                HandlePetCommand(peer, reader);
+                break;
             case PacketId.C2S_AllocateStat:
                 HandleAllocateStat(peer, reader);
                 break;
