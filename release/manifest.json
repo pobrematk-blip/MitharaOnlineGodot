@@ -1,7 +1,7 @@
 ﻿{
-    "version":  "0.1.62",
+    "version":  "0.1.63",
     "archive":  "MitharaOnline_Update.zip",
-    "archiveSha256":  "1894FA6EA215449430EB579587B085C1D2A57B0938A912A4C5AD3418408D5BE5",
+    "archiveSha256":  "A6BB296F903C253A7D25F5B260EDB03A499B26444FAC8D68E43FACCB12939E49",
     "gameExecutable":  "MitharaOnlineTeste.exe",
     "files":  [
                   {
@@ -86,13 +86,13 @@
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.dll",
-                      "size":  2233344,
-                      "sha256":  "C26F73F956EA200B9F2A88E05A44BCA77750F54F66A0AA851B5FE97478EBDC2C"
+                      "size":  2236416,
+                      "sha256":  "B3706A9BF9C0A57A2F1C5EFACAD444E29B719D1B53A10913516804B998919D5D"
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.pdb",
-                      "size":  1331760,
-                      "sha256":  "74815B04905374EE407325D92B85F150068627DA3B876BEDB9980C79F6011C79"
+                      "size":  1332556,
+                      "sha256":  "4492167E32ABBE8D977DA37651F97009DEA1FD4D3F9D2F75517E0FB993CF63DB"
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.runtimeconfig.json",
@@ -951,8 +951,8 @@
                   },
                   {
                       "path":  "MitharaOnlineTeste.pck",
-                      "size":  307202184,
-                      "sha256":  "148796DD1D426AF6F06B722FA6031BA05D076925931F80C972FACD950D931311"
+                      "size":  307856476,
+                      "sha256":  "40B9CDA486BD4EF35547AAEC228C41768E6797B94F27B75BFEA6FBB65C5D13D4"
                   },
                   {
                       "path":  "server_endpoint.json",
