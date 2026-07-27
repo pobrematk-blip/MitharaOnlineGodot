@@ -51,6 +51,8 @@ public class Entity
     public int Agilidade { get; set; }
     public int Destreza { get; set; }
     public int Inteligencia { get; set; }
+    public int Vitalidade { get; set; }
+    public int Sorte { get; set; }
     public long Experience { get; set; }
     public bool Moving { get; set; }
     public bool Sprinting { get; set; }

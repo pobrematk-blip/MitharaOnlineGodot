@@ -91,7 +91,7 @@ partial class GameServer
 
         _db.SaveCharacterXp(characterId, player.Experience);
         _db.SaveCharacterLevel(characterId, player.Level);
-        _db.SaveCharacterStats(characterId, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
+        _db.SaveCharacterStats(characterId, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.BaseVitalidade, player.BaseSorte, player.StatPoints);
         _db.SaveCharacterGold(characterId, player.Gold);
         session.SelectedCharacter.Xp = player.Experience;
         session.SelectedCharacter.Level = player.Level;

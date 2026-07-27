@@ -27,20 +27,36 @@ partial class GameServer
         int baseAgilidade = player.BaseAgilidade;
         int baseDestreza = player.BaseDestreza;
         int baseInteligencia = player.BaseInteligencia;
+        int baseVitalidade = player.BaseVitalidade;
+        int baseSorte = player.BaseSorte;
 
         switch (statName.ToLowerInvariant())
         {
             case "forca":
+            case "força":
+            case "str":
                 baseForca++;
                 break;
+            case "vitalidade":
+            case "vit":
+                baseVitalidade++;
+                break;
             case "agilidade":
+            case "agi":
                 baseAgilidade++;
                 break;
             case "destreza":
+            case "dex":
                 baseDestreza++;
                 break;
             case "inteligencia":
+            case "inteligência":
+            case "int":
                 baseInteligencia++;
+                break;
+            case "sorte":
+            case "luk":
+                baseSorte++;
                 break;
             default:
                 SendSystemMessage(peer, $"Atributo desconhecido: {statName}");
@@ -51,12 +67,23 @@ partial class GameServer
         player.BaseAgilidade = baseAgilidade;
         player.BaseDestreza = baseDestreza;
         player.BaseInteligencia = baseInteligencia;
+        player.BaseVitalidade = baseVitalidade;
+        player.BaseSorte = baseSorte;
         player.StatPoints--;
 
         RecalculatePlayerStats(player);
 
         if (session.SelectedCharacter != null)
-            _db.SaveCharacterStats(session.SelectedCharacter.Id, baseForca, baseAgilidade, baseDestreza, baseInteligencia, player.StatPoints);
+        {
+            _db.SaveCharacterStats(session.SelectedCharacter.Id, baseForca, baseAgilidade, baseDestreza, baseInteligencia, baseVitalidade, baseSorte, player.StatPoints);
+            session.SelectedCharacter.Forca = baseForca;
+            session.SelectedCharacter.Agilidade = baseAgilidade;
+            session.SelectedCharacter.Destreza = baseDestreza;
+            session.SelectedCharacter.Inteligencia = baseInteligencia;
+            session.SelectedCharacter.Vitalidade = baseVitalidade;
+            session.SelectedCharacter.Sorte = baseSorte;
+            session.SelectedCharacter.StatPoints = player.StatPoints;
+        }
 
         SendStatUpdate(peer, player);
 
@@ -97,6 +124,10 @@ partial class GameServer
         writer.Put(player.BonusExperience);
         writer.Put(player.DamageReflect);
         writer.Put(player.ControlResistance);
+        writer.Put(player.BaseVitalidade);
+        writer.Put(player.BaseSorte);
+        writer.Put(player.Vitalidade);
+        writer.Put(player.Sorte);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
     }
 }

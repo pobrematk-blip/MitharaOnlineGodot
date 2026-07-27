@@ -16,12 +16,16 @@ public partial class EquipamentoComponent : Node
     private int _agilidade = 10;
     private int _destreza = 10;
     private int _inteligencia = 10;
+    private int _vitalidade = 5;
+    private int _sorte = 5;
 
     // Bônus de equipamentos
     private int _bonusForca;
     private int _bonusAgilidade;
     private int _bonusDestreza;
     private int _bonusInteligencia;
+    private int _bonusVitalidade;
+    private int _bonusSorte;
     private int _bonusDanoFisico;
     private int _bonusDefesaFisica;
     private int _bonusHp;
@@ -62,6 +66,8 @@ public partial class EquipamentoComponent : Node
     private int _agilidadeServidor;
     private int _destrezaServidor;
     private int _inteligenciaServidor;
+    private int _vitalidadeServidor = 5;
+    private int _sorteServidor = 5;
     private int _defesaFisicaServidor;
     private int _defesaMagicaServidor;
     private float _chanceCriticaServidor;
@@ -88,6 +94,8 @@ public partial class EquipamentoComponent : Node
     public int Agilidade => _temTotaisServidor ? _agilidadeServidor : _agilidade + _bonusAgilidade;
     public int Destreza => _temTotaisServidor ? _destrezaServidor : _destreza + _bonusDestreza;
     public int Inteligencia => _temTotaisServidor ? _inteligenciaServidor : _inteligencia + _bonusInteligencia;
+    public int Vitalidade => _temTotaisServidor ? _vitalidadeServidor : _vitalidade + _bonusVitalidade;
+    public int Sorte => _temTotaisServidor ? _sorteServidor : _sorte + _bonusSorte;
 
     // ============ STATUS DERIVADOS ============
     // Dano Físico com variação (por Força) - Base 8-12, aumenta com Força
@@ -103,24 +111,23 @@ public partial class EquipamentoComponent : Node
     private float BonusTemporarioDanoFisicoPercentual => SomarBonusTemporarios(_bonusTemporarioDanoFisicoPorEfeito);
     private float BonusTemporarioVelocidadeAtaquePercentual => MathF.Max(_bonusTemporarioVelocidadeAtaque, SomarBonusTemporarios(_bonusTemporarioVelocidadeAtaquePorEfeito));
     private float BonusTemporarioRouboVida => SomarBonusTemporarios(_bonusTemporarioRouboVidaPorEfeito);
-    public int DanoFisicoMin => AplicarBonusPercentual(8 + (AtributoOfensivoFisico / 2) + _bonusDanoFisico + _bonusDanoFisicoMin, BonusTemporarioDanoFisicoPercentual);
-    public int DanoFisicoMax => AplicarBonusPercentual(12 + (AtributoOfensivoFisico / 2) + _bonusDanoFisico + _bonusDanoFisicoMax, BonusTemporarioDanoFisicoPercentual);
+    public int DanoFisicoMin => AplicarBonusPercentual(8 + (AtributoOfensivoFisico / 2) + (Sorte / 10) + _bonusDanoFisico + _bonusDanoFisicoMin, BonusTemporarioDanoFisicoPercentual);
+    public int DanoFisicoMax => AplicarBonusPercentual(12 + (AtributoOfensivoFisico / 2) + (Sorte / 10) + _bonusDanoFisico + _bonusDanoFisicoMax, BonusTemporarioDanoFisicoPercentual);
     public string DanoFisico => $"{DanoFisicoMin}-{DanoFisicoMax}";
     
     // Dano Mágico com variação (por Inteligência) - Base 8-12, aumenta com Inteligência
-    public int DanoMagicoMin => 8 + (Inteligencia / 2) + _bonusDanoMagico + _bonusDanoMagicoMin;
-    public int DanoMagicoMax => 12 + (Inteligencia / 2) + _bonusDanoMagico + _bonusDanoMagicoMax;
+    public int DanoMagicoMin => 8 + (Inteligencia / 2) + (Sorte / 10) + _bonusDanoMagico + _bonusDanoMagicoMin;
+    public int DanoMagicoMax => 12 + (Inteligencia / 2) + (Sorte / 10) + _bonusDanoMagico + _bonusDanoMagicoMax;
     public string DanoMagico => $"{DanoMagicoMin}-{DanoMagicoMax}";
     
-    // HP (por Força + bônus de itens)
-    public int Hp => 100 + (Forca * 2) + _bonusHp;
+    // HP (por Vitalidade + bonus de itens)
+    public int Hp => 80 + (Vitalidade * 8) + _bonusHp;
     
     // Mana (por Inteligência + bônus de itens)
-    public int Mana => 50 + (Inteligencia * 3) + _bonusMana;
+    public int Mana => 30 + (Inteligencia * 5) + _bonusMana;
     
-    // Chance Crítica e Evasão (por Destreza + bônus de itens)
-    public float ChanceCritica => _temTotaisServidor ? _chanceCriticaServidor : MathF.Min(60f, (Destreza * 0.15f) + _bonusChanceCritica + _bonusTemporarioChanceCritica);
-    public float Evasao => _temTotaisServidor ? _evasaoServidor : MathF.Min(45f, (Agilidade * 0.2f) + (Destreza * 0.05f) + _bonusEvasao);
+    public float ChanceCritica => _temTotaisServidor ? _chanceCriticaServidor : MathF.Min(60f, (Sorte * 0.20f) + _bonusChanceCritica + _bonusTemporarioChanceCritica);
+    public float Evasao => _temTotaisServidor ? _evasaoServidor : MathF.Min(45f, (Agilidade * 0.22f) + (Sorte * 0.03f) + _bonusEvasao);
     
     // Dano Crítico - Base 1.5x, bônus máximo +100% (cap 1.0f)
     private float _bonusDanoCritico = 0f;
@@ -128,16 +135,16 @@ public partial class EquipamentoComponent : Node
     
     // Velocidades (por Agilidade + bônus de itens)
     public float VelocidadeMovimento => _temTotaisServidor ? _velocidadeMovimentoServidor : MathF.Min(1.3f, 1.0f + (_bonusVelocidadeMovimento / 100f));
-    private float VelocidadeAtaqueBase => MathF.Min(2.0f, 1.0f + (Agilidade * 0.015f) + (_bonusVelocidadeAtaque / 100f));
+    private float VelocidadeAtaqueBase => MathF.Min(2.0f, 1.0f + (Agilidade * 0.012f) + (Destreza * 0.006f) + (_bonusVelocidadeAtaque / 100f));
     public float VelocidadeAtaque => MathF.Min(2.5f, (_temTotaisServidor ? _velocidadeAtaqueServidor : VelocidadeAtaqueBase) * (1.0f + BonusTemporarioVelocidadeAtaquePercentual));
     
     // Defesas
-    public int DefesaFisica => _temTotaisServidor ? _defesaFisicaServidor : (Agilidade / 3) + (Forca / 5) + _bonusDefesaFisica;
-    public int DefesaMagica => _temTotaisServidor ? _defesaMagicaServidor : (Inteligencia / 3) + _bonusDefesaMagica;
+    public int DefesaFisica => _temTotaisServidor ? _defesaFisicaServidor : (Vitalidade / 2) + _bonusDefesaFisica;
+    public int DefesaMagica => _temTotaisServidor ? _defesaMagicaServidor : (Vitalidade / 4) + (Inteligencia / 3) + _bonusDefesaMagica;
     
     // Limites globais definidos no catálogo de armaduras.
-    public float Precisao => _temTotaisServidor ? _precisaoServidor : MathF.Min(98f, 75f + (Destreza * 0.2f) + (Agilidade * 0.05f) + _bonusPrecisao + _bonusTemporarioPrecisao);
-    public float Tenacidade => _temTotaisServidor ? _tenacidadeServidor : MathF.Min(75f, (Forca * 0.05f) + _bonusTenacidade);
+    public float Precisao => _temTotaisServidor ? _precisaoServidor : MathF.Min(98f, 75f + (Destreza * 0.25f) + (Sorte * 0.02f) + _bonusPrecisao + _bonusTemporarioPrecisao);
+    public float Tenacidade => _temTotaisServidor ? _tenacidadeServidor : MathF.Min(75f, (Vitalidade * 0.06f) + _bonusTenacidade);
     
     // PvP
     public int DanoPvp => _temTotaisServidor ? _danoPvpServidor : _bonusDanoPvp;
@@ -200,17 +207,22 @@ public partial class EquipamentoComponent : Node
         int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico,
         float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura,
         float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown,
-        int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle)
+        int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle,
+        int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte)
     {
         _forca = baseForca;
         _agilidade = baseAgilidade;
         _destreza = baseDestreza;
         _inteligencia = baseInteligencia;
+        _vitalidade = baseVitalidade;
+        _sorte = baseSorte;
         _pontosDisponiveis = statPoints;
         _forcaServidor = totalForca;
         _agilidadeServidor = totalAgilidade;
         _destrezaServidor = totalDestreza;
         _inteligenciaServidor = totalInteligencia;
+        _vitalidadeServidor = totalVitalidade;
+        _sorteServidor = totalSorte;
         _defesaFisicaServidor = defesaFisica;
         _defesaMagicaServidor = defesaMagica;
         _chanceCriticaServidor = chanceCritica;
@@ -299,6 +311,8 @@ public partial class EquipamentoComponent : Node
         _bonusAgilidade = 0;
         _bonusDestreza = 0;
         _bonusInteligencia = 0;
+        _bonusVitalidade = 0;
+        _bonusSorte = 0;
         _bonusDanoFisico = 0;
         _bonusDanoFisicoMin = 0;
         _bonusDanoFisicoMax = 0;
@@ -391,11 +405,10 @@ public partial class EquipamentoComponent : Node
         if (value <= 0)
             return 0;
 
-        int refinedValue = (int)System.Math.Round(value * multiplier);
         if (refineLevel <= 0)
-            return refinedValue;
+            return value;
 
-        return System.Math.Max(refinedValue, value + refineLevel);
+        return value + refineLevel;
     }
 
     public void AdicionarBonusDanoCritico(float bonusPercentual)
@@ -515,6 +528,16 @@ public partial class EquipamentoComponent : Node
         RequestAllocateStat("inteligencia");
     }
 
+    public void AdicionarPontoVitalidade()
+    {
+        RequestAllocateStat("vitalidade");
+    }
+
+    public void AdicionarPontoSorte()
+    {
+        RequestAllocateStat("sorte");
+    }
+
     private void RequestAllocateStat(string statName)
     {
         var gameNet = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
@@ -546,12 +569,14 @@ public partial class EquipamentoComponent : Node
         return false;
     }
 
-    public void ImportarEstado(int forca, int agilidade, int destreza, int inteligencia, int pontosDisponiveis)
+    public void ImportarEstado(int forca, int agilidade, int destreza, int inteligencia, int pontosDisponiveis, int vitalidade = 5, int sorte = 5)
     {
         _forca = forca;
         _agilidade = agilidade;
         _destreza = destreza;
         _inteligencia = inteligencia;
+        _vitalidade = vitalidade;
+        _sorte = sorte;
         _pontosDisponiveis = pontosDisponiveis;
         RecalcularBonusEquipamentos();
         EmitSignal(SignalName.EquipamentoAtualizado);

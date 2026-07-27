@@ -25,6 +25,8 @@ public partial class GameNetwork : Node
     internal int _pendingBaseAgilidade;
     internal int _pendingBaseDestreza;
     internal int _pendingBaseInteligencia;
+    internal int _pendingBaseVitalidade = 5;
+    internal int _pendingBaseSorte = 5;
     internal int _pendingLevel;
     internal long _pendingXp;
     internal string _pendingCabeloPath = "";
@@ -116,7 +118,7 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnLootSpawnEventHandler(ulong lootId, float x, float y, int itemId, int quantity);
     [Signal] public delegate void OnLootDespawnEventHandler(ulong lootId);
     [Signal] public delegate void OnGoldUpdateEventHandler(int gold);
-    [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle);
+    [Signal] public delegate void OnStatUpdateEventHandler(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle, int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte);
     [Signal] public delegate void OnVipStatusEventHandler(long expiryBinary);
     [Signal] public delegate void OnStatusEffectEventHandler(string effectId, string displayName, bool isDebuff, float duration, int power, string iconPath);
     [Signal] public delegate void OnShieldUpdateEventHandler(int currentShield, int maxShield);

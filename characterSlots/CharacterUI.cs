@@ -49,11 +49,15 @@ public partial class CharacterUI : Control
         if (HasNode("%AgilidadeValorLabel")) _atributosValores["Agilidade"] = GetNode<Label>("%AgilidadeValorLabel");
         if (HasNode("%DestrexaValorLabel")) _atributosValores["Destreza"] = GetNode<Label>("%DestrexaValorLabel");
         if (HasNode("%InteligenciaValorLabel")) _atributosValores["Inteligencia"] = GetNode<Label>("%InteligenciaValorLabel");
+        if (HasNode("%VitalidadeValorLabel")) _atributosValores["Vitalidade"] = GetNode<Label>("%VitalidadeValorLabel");
+        if (HasNode("%SorteValorLabel")) _atributosValores["Sorte"] = GetNode<Label>("%SorteValorLabel");
 
         if (HasNode("%ForcaBotaoPlus")) _atributosBotoes["Forca"] = GetNode<Button>("%ForcaBotaoPlus");
         if (HasNode("%AgilidadeBotaoPlus")) _atributosBotoes["Agilidade"] = GetNode<Button>("%AgilidadeBotaoPlus");
         if (HasNode("%DestrexaBotaoPlus")) _atributosBotoes["Destreza"] = GetNode<Button>("%DestrexaBotaoPlus");
         if (HasNode("%InteligenciaBotaoPlus")) _atributosBotoes["Inteligencia"] = GetNode<Button>("%InteligenciaBotaoPlus");
+        if (HasNode("%VitalidadeBotaoPlus")) _atributosBotoes["Vitalidade"] = GetNode<Button>("%VitalidadeBotaoPlus");
+        if (HasNode("%SorteBotaoPlus")) _atributosBotoes["Sorte"] = GetNode<Button>("%SorteBotaoPlus");
 
         if (HasNode("%PontosDisponiveisLabel"))
             _pontosDisponiveisLabel = GetNode<Label>("%PontosDisponiveisLabel");
@@ -758,6 +762,8 @@ public partial class CharacterUI : Control
                 "Agilidade" => _equipamento.Agilidade,
                 "Destreza" => _equipamento.Destreza,
                 "Inteligencia" => _equipamento.Inteligencia,
+                "Vitalidade" => _equipamento.Vitalidade,
+                "Sorte" => _equipamento.Sorte,
                 _ => 0
             };
 
@@ -835,6 +841,8 @@ public partial class CharacterUI : Control
             case "Agilidade": _equipamento.AdicionarPontoAgilidade(); break;
             case "Destreza": _equipamento.AdicionarPontoDestreza(); break;
             case "Inteligencia": _equipamento.AdicionarPontoInteligencia(); break;
+            case "Vitalidade": _equipamento.AdicionarPontoVitalidade(); break;
+            case "Sorte": _equipamento.AdicionarPontoSorte(); break;
         }
 
         AtualizarTela();

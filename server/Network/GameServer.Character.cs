@@ -462,8 +462,10 @@ partial class GameServer
         int agilidade = Math.Max(5, useInline ? 5 : ch!.Agilidade);
         int destreza = Math.Max(5, useInline ? 5 : ch!.Destreza);
         int inteligencia = Math.Max(5, useInline ? 5 : ch!.Inteligencia);
+        int vitalidade = Math.Max(5, useInline ? 5 : ch!.Vitalidade);
+        int sorte = Math.Max(5, useInline ? 5 : ch!.Sorte);
         int gold = useInline ? 100 : ch!.Gold;
-        int statPoints = useInline ? 10 : ch!.StatPoints;
+        int statPoints = useInline ? 3 : ch!.StatPoints;
 
         int baseAttack = charClass.ToLowerInvariant() switch
         {
@@ -479,8 +481,9 @@ partial class GameServer
             "mago" => 2,
             _ => 4,
         };
-        int maxHp = 80 + forca * 2 + level * 10;
-        int maxMana = 30 + inteligencia * 3 + level * 5;
+        float levelMultiplier = 1f + Math.Max(0, level - 1) * 0.02f;
+        int maxHp = Math.Max(1, (int)MathF.Round((80 + vitalidade * 8 + level * 10) * levelMultiplier));
+        int maxMana = Math.Max(1, (int)MathF.Round((30 + inteligencia * 5 + level * 5) * levelMultiplier));
 
         var player = new PlayerEntity
         {
@@ -505,10 +508,14 @@ partial class GameServer
             Agilidade = agilidade,
             Destreza = destreza,
             Inteligencia = inteligencia,
+            Vitalidade = vitalidade,
+            Sorte = sorte,
             BaseForca = forca,
             BaseAgilidade = agilidade,
             BaseDestreza = destreza,
             BaseInteligencia = inteligencia,
+            BaseVitalidade = vitalidade,
+            BaseSorte = sorte,
             Experience = xp,
             BaseAttack = baseAttack,
             Defense = baseDefense,

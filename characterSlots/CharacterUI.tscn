@@ -308,6 +308,50 @@ custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 text = "+"
 
+[node name="Linha_Vitalidade" type="HBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="VitalidadeLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Vitalidade"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Vitalidade"
+
+[node name="VitalidadeValorLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Vitalidade"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "5"
+horizontal_alignment = 2
+
+[node name="VitalidadeBotaoPlus" type="Button" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Vitalidade"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+text = "+"
+
+[node name="Linha_Sorte" type="HBoxContainer" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SorteLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Sorte"]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "Sorte"
+
+[node name="SorteValorLabel" type="Label" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Sorte"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "5"
+horizontal_alignment = 2
+
+[node name="SorteBotaoPlus" type="Button" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas/Linha_Sorte"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+text = "+"
+
 [node name="Separator2" type="HSeparator" parent="Panel/ContentHBox/ColunaStatus/ScrollStatus/PainelEstatisticas"]
 layout_mode = 2
 

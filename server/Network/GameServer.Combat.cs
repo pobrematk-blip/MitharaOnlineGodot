@@ -3596,13 +3596,16 @@ partial class GameServer
     private int CalculateBasicDamage(PlayerEntity caster, Entity target, out bool isCrit)
     {
         RefreshTemporarySkillBonuses(caster);
-        return CalculateDamageAgainstTarget(caster, target, caster.CalculateAttackDamage(), out isCrit, useMagicDamage: IsMagicClass(caster));
+        bool magicDamage = IsMagicClass(caster);
+        int baseDamage = magicDamage ? caster.CalculateMagicAttackDamage() : caster.CalculateAttackDamage();
+        return CalculateDamageAgainstTarget(caster, target, baseDamage, out isCrit, useMagicDamage: magicDamage);
     }
 
     private int CalculateSkillDamage(PlayerEntity caster, Entity target, ServerSkillDefinition skill, out bool isCrit, float chargePercent = 1f)
     {
         RefreshTemporarySkillBonuses(caster);
-        int baseDamage = caster.CalculateAttackDamage();
+        bool magicDamage = IsMagicClass(caster);
+        int baseDamage = magicDamage ? caster.CalculateMagicAttackDamage() : caster.CalculateAttackDamage();
         float minMultiplier = skill.DamageMultiplierMin > 0 ? skill.DamageMultiplierMin : skill.DamageMultiplier;
         float maxMultiplier = skill.DamageMultiplierMax > 0 ? skill.DamageMultiplierMax : minMultiplier;
         if (maxMultiplier < minMultiplier)
@@ -3622,7 +3625,7 @@ partial class GameServer
             || string.Equals(skill.Nome, "Tiro Penetrante", StringComparison.OrdinalIgnoreCase)
             || (!string.IsNullOrWhiteSpace(skill.EfeitoPrincipal)
                 && skill.EfeitoPrincipal.Contains("Penetra", StringComparison.OrdinalIgnoreCase));
-        return CalculateDamageAgainstTarget(caster, target, rawDamage, out isCrit, ignoreDefense, IsGuaranteedCriticalSkill(skill), IsMagicClass(caster));
+        return CalculateDamageAgainstTarget(caster, target, rawDamage, out isCrit, ignoreDefense, IsGuaranteedCriticalSkill(skill), magicDamage);
     }
 
     private static bool IsMagicClass(PlayerEntity player)
@@ -4283,7 +4286,7 @@ partial class GameServer
 
         _db.SaveCharacterXp(session.SelectedCharacter!.Id, player.Experience);
         _db.SaveCharacterLevel(session.SelectedCharacter.Id, player.Level);
-        _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
+        _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.BaseVitalidade, player.BaseSorte, player.StatPoints);
         session.SelectedCharacter.Xp = player.Experience;
         session.SelectedCharacter.Level = player.Level;
         session.SelectedCharacter.StatPoints = player.StatPoints;

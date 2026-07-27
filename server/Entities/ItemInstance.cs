@@ -48,6 +48,15 @@ public static class ItemRoller
     private static readonly double[] RarityWeights = { 0.40, 0.25, 0.17, 0.11, 0.05, 0.02 };
     private static readonly float[] RarityMultipliers = { 1f, 1.05f, 1.10f, 1.15f, 1.20f, 1.25f };
     private static readonly (int min, int max)[] AffixCounts = { (0, 0), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6) };
+    private static readonly string[] GlobalAffixPool =
+    {
+        "Forca", "Agilidade", "Vitalidade", "Inteligencia", "Destreza", "Sorte",
+        "Hp", "Mana", "DefesaFisica", "DefesaMagica", "DanoFisico", "DanoMagico",
+        "Evasao", "Precisao", "ChanceCritica", "DanoCriticoBonus", "VelocidadeAtaque",
+        "VelocidadeMovimento", "PenetracaoArmadura", "Tenacidade", "RegeneracaoVida",
+        "RegeneracaoMana", "RouboVida", "RouboMana", "ReducaoCooldown", "BonusExperiencia",
+        "ReflexaoDano", "ResistenciaControle"
+    };
 
     public static void EnsureRolled(ItemInstance instance, ItemRarity? forcedRarity = null)
     {
@@ -58,6 +67,7 @@ public static class ItemRoller
             return;
         }
 
+        NormalizeDefinitionStats(def);
         NormalizeMagicWeaponDefinition(def);
 
         ItemRarity[] allowedRarities = def.IsElite
@@ -83,7 +93,7 @@ public static class ItemRoller
             IsRolled = true,
         };
 
-        var pool = def.AffixPool
+        var pool = GlobalAffixPool
             .Where(affix => IsAffixAllowedForItem(def, affix))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -133,12 +143,14 @@ public static class ItemRoller
         int band = level <= 25 ? 0 : level <= 45 ? 1 : 2;
         (float min, float max)[] ranges = name.ToLowerInvariant() switch
         {
+            "forca" or "agilidade" or "vitalidade" or "inteligencia" or "destreza" or "sorte" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
             "chancecritica" or "velocidadeataque" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
             "danocriticobonus" => new[] { (2f, 4f), (4f, 8f), (8f, 15f) },
             "precisao" => new[] { (2f, 5f), (5f, 10f), (10f, 20f) },
             "penetracaoarmadura" => new[] { (1f, 3f), (3f, 6f), (6f, 12f) },
             "evasao" or "roubovida" or "roubomana" or "reducaocooldown" => new[] { (1f, 2f), (2f, 3f), (3f, 5f) },
             "hp" or "mana" => new[] { (10f, 25f), (25f, 50f), (50f, 100f) },
+            "danofisico" or "danomagico" or "defesafisica" or "defesamagica" => new[] { (1f, 3f), (3f, 6f), (6f, 12f) },
             _ => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
         };
         var range = ranges[band];
@@ -149,23 +161,115 @@ public static class ItemRoller
     {
         string key = NormalizeAffixName(affix);
 
+        return key is not ("baseattack" or "ataquebase");
+    }
+
+    public static void NormalizeDefinitionStats(ItemDefinition def)
+    {
+        if (def.Type == ItemType.Weapon)
+        {
+            NormalizeWeaponStats(def);
+            NormalizeMagicWeaponDefinition(def);
+            return;
+        }
+
+        if (IsArmorPiece(def))
+            NormalizeArmorStats(def);
+    }
+
+    private static void NormalizeWeaponStats(ItemDefinition def)
+    {
+        if (def.BaseAttackMax <= 0 && def.BaseAttack <= 0)
+            return;
+
         if (IsMagicDamageWeapon(def))
         {
-            if (key is "baseattack" or "danofisico" or "ataquebase")
-                return false;
+            def.Defense = 0;
+            def.DefenseMin = 0;
+            def.DefenseMax = 0;
+            return;
         }
-        else if (key is "danomagico")
+
+        def.MagicDefense = 0;
+        def.MagicDefenseMin = 0;
+        def.MagicDefenseMax = 0;
+    }
+
+    private static void NormalizeArmorStats(ItemDefinition def)
+    {
+        float levelFactor = 0.35f + Math.Clamp(def.RequiredLevel, 1, 100) / 100f * 0.65f;
+        float eliteFactor = def.IsElite ? 1.18f : 1f;
+        float slotFactor = GetArmorSlotFactor(def.Type);
+        ArmorWeight weight = GetArmorWeight(def);
+
+        float defenseBase = weight switch
         {
-            return false;
-        }
+            ArmorWeight.Light => 35f,
+            ArmorWeight.Medium => 55f,
+            _ => 78f,
+        };
+        float magicDefenseBase = weight switch
+        {
+            ArmorWeight.Light => 78f,
+            ArmorWeight.Medium => 55f,
+            _ => 30f,
+        };
+        float hpBase = weight switch
+        {
+            ArmorWeight.Light => 80f,
+            ArmorWeight.Medium => 100f,
+            _ => 130f,
+        };
 
-        if (key is "roubovida" or "roubomana" or "tenacidade" or "penetracaoarmadura")
-            return def.Type is ItemType.Necklace or ItemType.Ring or ItemType.Earring;
+        int defense = Math.Max(1, (int)MathF.Round(defenseBase * levelFactor * slotFactor * eliteFactor));
+        int magicDefense = Math.Max(1, (int)MathF.Round(magicDefenseBase * levelFactor * slotFactor * eliteFactor));
+        int hp = Math.Max(1, (int)MathF.Round(hpBase * levelFactor * slotFactor * eliteFactor));
 
-        if (key is "reflexao" or "reflexaodano")
-            return IsTrueShield(def) || IsHeavyArmor(def);
+        def.Defense = defense;
+        def.DefenseMin = Math.Max(1, (int)MathF.Round(defense * 0.85f));
+        def.DefenseMax = Math.Max(def.DefenseMin, (int)MathF.Round(defense * 1.15f));
+        def.MagicDefense = magicDefense;
+        def.MagicDefenseMin = Math.Max(1, (int)MathF.Round(magicDefense * 0.85f));
+        def.MagicDefenseMax = Math.Max(def.MagicDefenseMin, (int)MathF.Round(magicDefense * 1.15f));
+        def.Hp = hp;
+        def.HpMin = Math.Max(1, (int)MathF.Round(hp * 0.85f));
+        def.HpMax = Math.Max(def.HpMin, (int)MathF.Round(hp * 1.15f));
+    }
 
-        return true;
+    private static bool IsArmorPiece(ItemDefinition def)
+    {
+        return def.Type is ItemType.Helmet
+            or ItemType.Chestplate
+            or ItemType.Belt
+            or ItemType.Gloves
+            or ItemType.Pants
+            or ItemType.Boots;
+    }
+
+    private static float GetArmorSlotFactor(ItemType type)
+    {
+        return type switch
+        {
+            ItemType.Chestplate => 1.00f,
+            ItemType.Pants => 0.65f,
+            ItemType.Helmet => 0.35f,
+            ItemType.Belt => 0.30f,
+            ItemType.Gloves => 0.30f,
+            ItemType.Boots => 0.30f,
+            _ => 1.00f,
+        };
+    }
+
+    private static ArmorWeight GetArmorWeight(ItemDefinition def)
+    {
+        string classes = NormalizeAffixName(def.AllowedClasses);
+        string name = NormalizeAffixName(def.Name);
+
+        if (classes.Contains("berseker") || classes.Contains("berserker") || classes.Contains("guardiao"))
+            return ArmorWeight.Heavy;
+        if (classes.Contains("mago") || classes.Contains("prist") || classes.Contains("clerigo") || name.Contains("tunica"))
+            return ArmorWeight.Light;
+        return ArmorWeight.Medium;
     }
 
     public static bool IsMagicDamageWeapon(ItemDefinition? def)
@@ -288,6 +392,13 @@ public static class ItemRoller
             || def.AllowedClasses.Contains("Berserker", StringComparison.OrdinalIgnoreCase)
             || def.AllowedClasses.Contains("Guardiao", StringComparison.OrdinalIgnoreCase)
             || def.AllowedClasses.Contains("Guardião", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private enum ArmorWeight
+    {
+        Light,
+        Medium,
+        Heavy,
     }
 
     public static string NormalizeAffixName(string name)

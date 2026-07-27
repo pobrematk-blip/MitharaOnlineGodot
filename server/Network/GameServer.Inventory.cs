@@ -899,12 +899,16 @@ partial class GameServer
             int pontosDevolvidos = Math.Max(0, player.BaseForca - 5)
                 + Math.Max(0, player.BaseAgilidade - 5)
                 + Math.Max(0, player.BaseDestreza - 5)
-                + Math.Max(0, player.BaseInteligencia - 5);
+                + Math.Max(0, player.BaseInteligencia - 5)
+                + Math.Max(0, player.BaseVitalidade - 5)
+                + Math.Max(0, player.BaseSorte - 5);
 
             player.BaseForca = 5;
             player.BaseAgilidade = 5;
             player.BaseDestreza = 5;
             player.BaseInteligencia = 5;
+            player.BaseVitalidade = 5;
+            player.BaseSorte = 5;
             player.StatPoints = Math.Max(0, player.StatPoints) + pontosDevolvidos;
 
             player.UnlockedTalents.Clear();
@@ -922,6 +926,8 @@ partial class GameServer
                 player.BaseAgilidade,
                 player.BaseDestreza,
                 player.BaseInteligencia,
+                player.BaseVitalidade,
+                player.BaseSorte,
                 player.StatPoints);
             _db.DeleteCharacterTalents(session.SelectedCharacter.Id);
             _db.DeleteCharacterSkillSlots(session.SelectedCharacter.Id);
@@ -930,6 +936,8 @@ partial class GameServer
             session.SelectedCharacter.Agilidade = player.BaseAgilidade;
             session.SelectedCharacter.Destreza = player.BaseDestreza;
             session.SelectedCharacter.Inteligencia = player.BaseInteligencia;
+            session.SelectedCharacter.Vitalidade = player.BaseVitalidade;
+            session.SelectedCharacter.Sorte = player.BaseSorte;
             session.SelectedCharacter.StatPoints = player.StatPoints;
 
             item.Quantity--;
@@ -1236,8 +1244,8 @@ partial class GameServer
 
     private static void RecalculatePlayerStats(PlayerEntity player)
     {
-        int bonusAtk = 0, bonusDef = 0, bonusMagicDef = 0, bonusHp = 0, bonusMana = 0;
-        int bonusForca = 0, bonusAgi = 0, bonusDes = 0, bonusInt = 0;
+        int bonusAtk = 0, bonusMagicAtk = 0, bonusDef = 0, bonusMagicDef = 0, bonusHp = 0, bonusMana = 0;
+        int bonusForca = 0, bonusAgi = 0, bonusDes = 0, bonusInt = 0, bonusVit = 0, bonusSorte = 0;
         float bonusEvasion = 0;
         float bonusCritChance = 0f;
         float bonusCritDamage = 0f;
@@ -1263,34 +1271,44 @@ partial class GameServer
             if (def == null) continue;
             ItemRoller.EnsureRolled(item);
             var roll = item.Roll;
-            double refineMult = GetRefineMultiplier(item.RefineLevel);
-            bonusAtk += Refined(roll.BaseAttack + Affix(item, "BaseAttack"), item.RefineLevel, refineMult);
-            bonusDef += Refined(roll.Defense + Affix(item, "DefesaFisica"), item.RefineLevel, refineMult);
-            bonusMagicDef += Refined(roll.MagicDefense + Affix(item, "DefesaMagica"), item.RefineLevel, refineMult);
-            bonusHp += Refined(roll.Hp + Affix(item, "Hp"), item.RefineLevel, refineMult);
-            bonusMana += Refined(roll.Mana + Affix(item, "Mana"), item.RefineLevel, refineMult);
-            bonusEvasion += Math.Min(40f, (float)((roll.Evasion + Affix(item, "Evasao")) * refineMult));
-            bonusForca += Refined(roll.Forca + Affix(item, "Forca"), item.RefineLevel, refineMult);
-            bonusAgi += Refined(roll.Agilidade + Affix(item, "Agilidade"), item.RefineLevel, refineMult);
-            bonusDes += Refined(roll.Destreza + Affix(item, "Destreza"), item.RefineLevel, refineMult);
-            bonusInt += Refined(roll.Inteligencia + Affix(item, "Inteligencia"), item.RefineLevel, refineMult);
-            bonusCritChance += (float)(Affix(item, "ChanceCritica") * refineMult);
-            bonusCritDamage += (float)(Affix(item, "DanoCriticoBonus") * refineMult);
-            bonusPrecision += (float)(Affix(item, "Precisao") * refineMult);
-            bonusTenacity += (float)(Affix(item, "Tenacidade") * refineMult);
-            bonusAttackSpeed += (float)(Affix(item, "VelocidadeAtaque") * refineMult);
-            bonusMovementSpeed += (float)(Affix(item, "VelocidadeMovimento") * refineMult);
-            bonusArmorPen += (float)(Affix(item, "PenetracaoArmadura") * refineMult);
-            bonusHealthRegen += (float)(Affix(item, "RegeneracaoVida") * refineMult);
-            bonusManaRegen += (float)(Affix(item, "RegeneracaoMana") * refineMult);
-            bonusLifeSteal += (float)(Affix(item, "RouboVida") * refineMult);
-            bonusManaSteal += (float)(Affix(item, "RouboMana") * refineMult);
-            bonusCooldownReduction += (float)(Affix(item, "ReducaoCooldown") * refineMult);
-            bonusPvpDamage += Refined(Affix(item, "DanoPvp"), item.RefineLevel, refineMult);
-            bonusPvpDefense += Refined(Affix(item, "DefesaPvp"), item.RefineLevel, refineMult);
-            bonusExperience += (float)(Affix(item, "BonusExperiencia") * refineMult);
-            bonusDamageReflect += (float)((Affix(item, "ReflexaoDano") + Affix(item, "Reflexao")) * refineMult);
-            bonusControlResistance += (float)(Affix(item, "ResistenciaControle") * refineMult);
+            bool magicWeapon = ItemRoller.IsMagicDamageWeapon(def);
+            float rolledDamage = roll.BaseAttack;
+            if (magicWeapon)
+                bonusMagicAtk += Refined(rolledDamage + Affix(item, "DanoMagico"), item.RefineLevel);
+            else
+            {
+                bonusAtk += Refined(rolledDamage + Affix(item, "BaseAttack") + Affix(item, "DanoFisico"), item.RefineLevel);
+                bonusMagicAtk += Refined(Affix(item, "DanoMagico"), item.RefineLevel);
+            }
+
+            bonusDef += Refined(roll.Defense + Affix(item, "DefesaFisica"), item.RefineLevel);
+            bonusMagicDef += Refined(roll.MagicDefense + Affix(item, "DefesaMagica"), item.RefineLevel);
+            bonusHp += Refined(roll.Hp + Affix(item, "Hp"), item.RefineLevel);
+            bonusMana += Refined(roll.Mana + Affix(item, "Mana"), item.RefineLevel);
+            bonusEvasion += Math.Min(40f, RefinedFloat(roll.Evasion + Affix(item, "Evasao"), item.RefineLevel));
+            bonusForca += Refined(roll.Forca + Affix(item, "Forca"), item.RefineLevel);
+            bonusAgi += Refined(roll.Agilidade + Affix(item, "Agilidade"), item.RefineLevel);
+            bonusDes += Refined(roll.Destreza + Affix(item, "Destreza"), item.RefineLevel);
+            bonusInt += Refined(roll.Inteligencia + Affix(item, "Inteligencia"), item.RefineLevel);
+            bonusVit += Refined(Affix(item, "Vitalidade"), item.RefineLevel);
+            bonusSorte += Refined(Affix(item, "Sorte"), item.RefineLevel);
+            bonusCritChance += RefinedFloat(Affix(item, "ChanceCritica"), item.RefineLevel);
+            bonusCritDamage += RefinedFloat(Affix(item, "DanoCriticoBonus"), item.RefineLevel);
+            bonusPrecision += RefinedFloat(Affix(item, "Precisao"), item.RefineLevel);
+            bonusTenacity += RefinedFloat(Affix(item, "Tenacidade"), item.RefineLevel);
+            bonusAttackSpeed += RefinedFloat(Affix(item, "VelocidadeAtaque"), item.RefineLevel);
+            bonusMovementSpeed += RefinedFloat(Affix(item, "VelocidadeMovimento"), item.RefineLevel);
+            bonusArmorPen += RefinedFloat(Affix(item, "PenetracaoArmadura"), item.RefineLevel);
+            bonusHealthRegen += RefinedFloat(Affix(item, "RegeneracaoVida"), item.RefineLevel);
+            bonusManaRegen += RefinedFloat(Affix(item, "RegeneracaoMana"), item.RefineLevel);
+            bonusLifeSteal += RefinedFloat(Affix(item, "RouboVida"), item.RefineLevel);
+            bonusManaSteal += RefinedFloat(Affix(item, "RouboMana"), item.RefineLevel);
+            bonusCooldownReduction += RefinedFloat(Affix(item, "ReducaoCooldown"), item.RefineLevel);
+            bonusPvpDamage += Refined(Affix(item, "DanoPvp"), item.RefineLevel);
+            bonusPvpDefense += Refined(Affix(item, "DefesaPvp"), item.RefineLevel);
+            bonusExperience += RefinedFloat(Affix(item, "BonusExperiencia"), item.RefineLevel);
+            bonusDamageReflect += RefinedFloat(Affix(item, "ReflexaoDano") + Affix(item, "Reflexao"), item.RefineLevel);
+            bonusControlResistance += RefinedFloat(Affix(item, "ResistenciaControle"), item.RefineLevel);
         }
         int baseAttack = player.CharacterClass.ToLowerInvariant() switch
         {
@@ -1308,6 +1326,7 @@ partial class GameServer
         };
 
         player.BaseAttack = baseAttack + bonusAtk;
+        player.MagicAttack = 5 + bonusMagicAtk;
         player.Defense = baseDefense + bonusDef;
         player.MagicDefense = bonusMagicDef;
         player.EquipmentEvasion = Math.Clamp(bonusEvasion, 0f, 40f);
@@ -1332,24 +1351,34 @@ partial class GameServer
         player.Agilidade = player.BaseAgilidade + bonusAgi;
         player.Destreza = player.BaseDestreza + bonusDes;
         player.Inteligencia = player.BaseInteligencia + bonusInt;
-        float levelVitalityMultiplier = 1f + Math.Max(0, player.Level - 1) * 0.02f;
-        int baseMaxHealth = 80 + player.Forca * 2 + player.Level * 10 + bonusHp;
-        int baseMaxMana = 30 + player.Inteligencia * 3 + player.Level * 5 + bonusMana;
-        player.MaxHealth = Math.Max(1, (int)MathF.Round(baseMaxHealth * levelVitalityMultiplier));
-        player.MaxMana = Math.Max(1, (int)MathF.Round(baseMaxMana * levelVitalityMultiplier));
+        player.Vitalidade = player.BaseVitalidade + bonusVit;
+        player.Sorte = player.BaseSorte + bonusSorte;
+        player.ManaRegenBonus = Math.Clamp(bonusManaRegen + player.Inteligencia * 0.03f, 0f, 200f);
+        float levelMultiplier = 1f + Math.Max(0, player.Level - 1) * 0.02f;
+        int baseMaxHealth = 80 + player.Vitalidade * 8 + player.Level * 10 + bonusHp;
+        int baseMaxMana = 30 + player.Inteligencia * 5 + player.Level * 5 + bonusMana;
+        player.MaxHealth = Math.Max(1, (int)MathF.Round(baseMaxHealth * levelMultiplier));
+        player.MaxMana = Math.Max(1, (int)MathF.Round(baseMaxMana * levelMultiplier));
     }
 
-    private static int Refined(float value, int refineLevel, double multiplier)
+    private static int Refined(float value, int refineLevel)
     {
         if (value <= 0f)
             return 0;
 
         int baseValue = (int)Math.Round(value);
-        int refinedValue = (int)Math.Round(value * multiplier);
         if (refineLevel <= 0)
-            return refinedValue;
+            return baseValue;
 
-        return Math.Max(refinedValue, baseValue + refineLevel);
+        return baseValue + refineLevel;
+    }
+
+    private static float RefinedFloat(float value, int refineLevel)
+    {
+        if (value <= 0f)
+            return 0f;
+
+        return value + Math.Max(0, refineLevel);
     }
 
     private static float Affix(ItemInstance item, string name)

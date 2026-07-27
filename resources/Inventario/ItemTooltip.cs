@@ -215,11 +215,10 @@ public partial class ItemTooltip : Panel
 		if (value <= 0)
 			return 0;
 
-		int refinedValue = (int)System.Math.Round(value * multiplier);
 		if (refinoNivel <= 0)
-			return refinedValue;
+			return value;
 
-		return System.Math.Max(refinedValue, value + refinoNivel);
+		return value + refinoNivel;
 	}
 
 	private void AddCompareHeader(string rotulo, ItemResource item, Color cor, int refinoNivel)

@@ -64,11 +64,13 @@ public class DatabaseManager
                 agilidade INT NOT NULL DEFAULT 0,
                 destreza INT NOT NULL DEFAULT 0,
                 inteligencia INT NOT NULL DEFAULT 0,
+                vitalidade INT NOT NULL DEFAULT 5,
+                sorte INT NOT NULL DEFAULT 5,
                 pos_x DOUBLE PRECISION NOT NULL DEFAULT 1000,
                 pos_y DOUBLE PRECISION NOT NULL DEFAULT 1000,
                 bank_gold INT NOT NULL DEFAULT 0,
                 gold INT NOT NULL DEFAULT 50,
-                stat_points INT NOT NULL DEFAULT 10,
+                stat_points INT NOT NULL DEFAULT 3,
                 cabelo_path TEXT NOT NULL DEFAULT '',
                 barba_path TEXT NOT NULL DEFAULT '',
                 cabelo_cor VARCHAR(16) NOT NULL DEFAULT 'ffffff',
@@ -294,6 +296,8 @@ public class DatabaseManager
             ("characters", "barba_path", "TEXT NOT NULL DEFAULT ''"),
             ("characters", "cabelo_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
             ("characters", "barba_cor", "VARCHAR(16) NOT NULL DEFAULT 'ffffff'"),
+            ("characters", "vitalidade", "INT NOT NULL DEFAULT 5"),
+            ("characters", "sorte", "INT NOT NULL DEFAULT 5"),
             ("characters", "pet_collar_expiry", "TIMESTAMP NOT NULL DEFAULT '2000-01-01 00:00:00'"),
             ("character_pets", "level", "INT NOT NULL DEFAULT 1"),
             ("character_pets", "xp", "BIGINT NOT NULL DEFAULT 0"),
@@ -729,7 +733,7 @@ public class DatabaseManager
         conn.Open();
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, pos_x, pos_y, bank_gold, gold, stat_points, current_map, cabelo_path, barba_path, cabelo_cor, barba_cor FROM characters WHERE account_id = @a ORDER BY slot_index";
+        cmd.CommandText = "SELECT id, slot_index, name, class, race, level, xp, forca, agilidade, destreza, inteligencia, vitalidade, sorte, pos_x, pos_y, bank_gold, gold, stat_points, current_map, cabelo_path, barba_path, cabelo_cor, barba_cor FROM characters WHERE account_id = @a ORDER BY slot_index";
         cmd.Parameters.AddWithValue("@a", accountId);
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -747,16 +751,18 @@ public class DatabaseManager
                 Agilidade = reader.GetInt32(8),
                 Destreza = reader.GetInt32(9),
                 Inteligencia = reader.GetInt32(10),
-                PosX = (float)reader.GetDouble(11),
-                PosY = (float)reader.GetDouble(12),
-                BankGold = reader.GetInt32(13),
-                Gold = reader.GetInt32(14),
-                StatPoints = reader.GetInt32(15),
-                CurrentMap = reader.GetString(16),
-                CabeloPath = reader.GetString(17),
-                BarbaPath = reader.GetString(18),
-                CabeloCor = reader.GetString(19),
-                BarbaCor = reader.GetString(20),
+                Vitalidade = reader.GetInt32(11),
+                Sorte = reader.GetInt32(12),
+                PosX = (float)reader.GetDouble(13),
+                PosY = (float)reader.GetDouble(14),
+                BankGold = reader.GetInt32(15),
+                Gold = reader.GetInt32(16),
+                StatPoints = reader.GetInt32(17),
+                CurrentMap = reader.GetString(18),
+                CabeloPath = reader.GetString(19),
+                BarbaPath = reader.GetString(20),
+                CabeloCor = reader.GetString(21),
+                BarbaCor = reader.GetString(22),
             });
         }
         return result;
@@ -872,16 +878,18 @@ public class DatabaseManager
         cmd.ExecuteNonQuery();
     }
 
-    public void SaveCharacterStats(int characterId, int forca, int agilidade, int destreza, int inteligencia, int statPoints)
+    public void SaveCharacterStats(int characterId, int forca, int agilidade, int destreza, int inteligencia, int vitalidade, int sorte, int statPoints)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE characters SET forca = @f, agilidade = @a, destreza = @d, inteligencia = @i, stat_points = @s WHERE id = @c";
+        cmd.CommandText = "UPDATE characters SET forca = @f, agilidade = @a, destreza = @d, inteligencia = @i, vitalidade = @v, sorte = @l, stat_points = @s WHERE id = @c";
         cmd.Parameters.AddWithValue("@f", forca);
         cmd.Parameters.AddWithValue("@a", agilidade);
         cmd.Parameters.AddWithValue("@d", destreza);
         cmd.Parameters.AddWithValue("@i", inteligencia);
+        cmd.Parameters.AddWithValue("@v", vitalidade);
+        cmd.Parameters.AddWithValue("@l", sorte);
         cmd.Parameters.AddWithValue("@s", statPoints);
         cmd.Parameters.AddWithValue("@c", characterId);
         cmd.ExecuteNonQuery();
@@ -2409,6 +2417,7 @@ public class DatabaseManager
                         level = @l,
                         xp = @xp,
                         forca = @f, agilidade = @a, destreza = @d, inteligencia = @i,
+                        vitalidade = @v, sorte = @lk,
                         stat_points = @sp
                     WHERE id = @c
                     """;
@@ -2421,6 +2430,8 @@ public class DatabaseManager
                 cmd.Parameters.AddWithValue("@a", player.BaseAgilidade);
                 cmd.Parameters.AddWithValue("@d", player.BaseDestreza);
                 cmd.Parameters.AddWithValue("@i", player.BaseInteligencia);
+                cmd.Parameters.AddWithValue("@v", player.BaseVitalidade);
+                cmd.Parameters.AddWithValue("@lk", player.BaseSorte);
                 cmd.Parameters.AddWithValue("@sp", player.StatPoints);
                 cmd.Parameters.AddWithValue("@c", characterId);
                 cmd.ExecuteNonQuery();
@@ -2751,7 +2762,7 @@ public class DatabaseManager
                 }
                 catch (System.Text.Json.JsonException) { }
             }
-            Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponDefinition(definition);
+            Mithara.Server.Entities.ItemRoller.NormalizeDefinitionStats(definition);
             result.Add(definition);
         }
         return result;
@@ -2759,7 +2770,7 @@ public class DatabaseManager
 
     public void SaveItemDefinition(ItemDefinition def)
     {
-        Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponDefinition(def);
+        Mithara.Server.Entities.ItemRoller.NormalizeDefinitionStats(def);
         using var conn = new NpgsqlConnection(_connectionString);
         conn.Open();
         using var cmd = conn.CreateCommand();
@@ -3419,19 +3430,8 @@ public class DatabaseManager
             new() { Id = 300395, Name = "Cinturão da Ascensão", Type = (ItemType)3, RequiredLevel = 100, IsElite = true, AllowedClasses = "Berseker,Guardiao", Defense = 27, DefenseMin = 23, DefenseMax = 32, MagicDefense = 8, MagicDefenseMin = 7, MagicDefenseMax = 10, Hp = 36, HpMin = 31, HpMax = 42, Mana = 7, ManaMin = 6, ManaMax = 9, Evasion = 0f, EvasionMin = 0f, EvasionMax = 0f, BuyPrice = 1000, AffixPool = new List<string>("Forca,Hp,DefesaFisica,Tenacidade,RegeneracaoVida,Reflexao,PenetracaoArmadura".Split(',', StringSplitOptions.RemoveEmptyEntries)) },
         };
         // ARMOR_CATALOG_END
-        var definitionsWithRanges = new HashSet<int>();
-        using (var conn = new NpgsqlConnection(_connectionString))
-        {
-            conn.Open();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id FROM item_definitions WHERE definition_data <> ''";
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read()) definitionsWithRanges.Add(reader.GetInt32(0));
-        }
-
         foreach (var item in items.Concat(armorItems))
-            if (item.Id <= 102 || !definitionsWithRanges.Contains(item.Id))
-                SaveItemDefinition(item);
+            SaveItemDefinition(item);
 
         Logger.Info($"{items.Count} definicoes de item sincronizadas com o catalogo oficial.");
     }
@@ -3450,6 +3450,8 @@ public class CharacterRow
     public int Agilidade { get; set; }
     public int Destreza { get; set; }
     public int Inteligencia { get; set; }
+    public int Vitalidade { get; set; } = 5;
+    public int Sorte { get; set; } = 5;
     public float PosX { get; set; } = 1000f;
     public float PosY { get; set; } = 1000f;
     public int BankGold { get; set; }

@@ -481,7 +481,9 @@ public partial class EntityManager : Node
                 _gameNet._pendingBaseAgilidade,
                 _gameNet._pendingBaseDestreza,
                 _gameNet._pendingBaseInteligencia,
-                _gameNet._pendingStatPoints);
+                _gameNet._pendingStatPoints,
+                _gameNet._pendingBaseVitalidade,
+                _gameNet._pendingBaseSorte);
         }
 
         var prog = player.FindChild("LevelProgressionComponent", true, false) as LevelProgressionComponent;
@@ -4453,7 +4455,7 @@ public partial class EntityManager : Node
         return ImageTexture.CreateFromImage(image);
     }
 
-    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle)
+    private void OnStatUpdate(int baseForca, int baseAgilidade, int baseDestreza, int baseInteligencia, int statPoints, int totalForca, int totalAgilidade, int totalDestreza, int totalInteligencia, int maxHealth, int maxMana, int defesaFisica, int defesaMagica, float chanceCritica, float danoCritico, float evasao, float velocidadeMovimento, float velocidadeAtaque, float precisao, float tenacidade, float penetracaoArmadura, float regeneracaoVida, float regeneracaoMana, float rouboVida, float rouboMana, float reducaoCooldown, int danoPvp, int defesaPvp, float bonusExperiencia, float reflexaoDano, float resistenciaControle, int baseVitalidade, int baseSorte, int totalVitalidade, int totalSorte)
     {
         if (_gameNet == null) return;
         var player = GetTree()?.CurrentScene?.FindChild("Player", true, false) as Player;
@@ -4461,7 +4463,7 @@ public partial class EntityManager : Node
 
         var equip = player.FindChild("EquipamentoComponent", true, false) as EquipamentoComponent;
         if (equip != null)
-            equip.ImportarEstado(baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints);
+            equip.ImportarEstado(baseForca, baseAgilidade, baseDestreza, baseInteligencia, statPoints, baseVitalidade, baseSorte);
     }
 
     private void OnItemUseResult(int health, int maxHealth, int mana, int maxMana, int itemId, float cooldownSeconds)

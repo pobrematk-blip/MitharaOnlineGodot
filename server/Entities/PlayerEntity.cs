@@ -19,6 +19,7 @@ public class PlayerEntity : Entity
     public string GuildName { get; set; } = "";
 
     public int BaseAttack { get; set; }
+    public int MagicAttack { get; set; }
     public int Defense { get; set; }
     public int MagicDefense { get; set; }
     public float EquipmentEvasion { get; set; }
@@ -48,7 +49,9 @@ public class PlayerEntity : Entity
     public int BaseAgilidade { get; set; }
     public int BaseDestreza { get; set; }
     public int BaseInteligencia { get; set; }
-    public int StatPoints { get; set; } = 10;
+    public int BaseVitalidade { get; set; }
+    public int BaseSorte { get; set; }
+    public int StatPoints { get; set; } = 3;
 
     public List<ItemInstance> Items { get; set; } = new();
     public Dictionary<int, ItemInstance> Equipment { get; set; } = new();
@@ -93,35 +96,39 @@ public class PlayerEntity : Entity
         int atributoOfensivo = CharacterClass.ToLowerInvariant() switch
         {
             "arqueiro" or "ladino" or "assassino" => Destreza,
-            "mago" or "elementalista" or "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote" => Inteligencia,
             _ => Forca,
         };
-        return Math.Max(1, BaseAttack + atributoOfensivo / 2);
+        return Math.Max(1, BaseAttack + atributoOfensivo / 2 + Sorte / 10);
+    }
+
+    public int CalculateMagicAttackDamage()
+    {
+        return Math.Max(1, MagicAttack + Inteligencia / 2 + Sorte / 10);
     }
 
     public int CalculateDefense()
     {
-        return Math.Max(0, (int)MathF.Round((Defense + Agilidade / 3 + Forca / 5) * TemporaryDefenseMultiplier));
+        return Math.Max(0, (int)MathF.Round((Defense + Vitalidade / 2) * TemporaryDefenseMultiplier));
     }
 
     public int CalculateMagicDefense()
     {
-        return Math.Max(0, (int)MathF.Round((MagicDefense + Inteligencia / 3) * TemporaryDefenseMultiplier));
+        return Math.Max(0, (int)MathF.Round((MagicDefense + Vitalidade / 4 + Inteligencia / 3) * TemporaryDefenseMultiplier));
     }
 
     public float CalculateEvasion()
     {
-        return Math.Clamp(Agilidade * 0.20f + Destreza * 0.05f + EquipmentEvasion, 0f, 45f);
+        return Math.Clamp(Agilidade * 0.22f + Sorte * 0.03f + EquipmentEvasion, 0f, 45f);
     }
 
     public float CalculatePrecision()
     {
-        return Math.Clamp(75f + Destreza * 0.20f + Agilidade * 0.05f + PrecisionBonus + TemporaryPrecisionBonus, 5f, 98f);
+        return Math.Clamp(75f + Destreza * 0.25f + Sorte * 0.02f + PrecisionBonus + TemporaryPrecisionBonus, 5f, 98f);
     }
 
     public float CalculateCritChance()
     {
-        return Math.Clamp(Destreza * 0.15f + CritChanceBonus + TemporaryCritChanceBonus, 0f, 60f);
+        return Math.Clamp(Sorte * 0.20f + CritChanceBonus + TemporaryCritChanceBonus, 0f, 60f);
     }
 
     public float CalculateCritMultiplier()
@@ -132,7 +139,7 @@ public class PlayerEntity : Entity
     public float CalculateAttackSpeedMultiplier()
     {
         return Math.Clamp(
-            Math.Clamp(1f + Agilidade * 0.015f + AttackSpeedBonus / 100f, 0.25f, 2.0f)
+            Math.Clamp(1f + Agilidade * 0.012f + Destreza * 0.006f + AttackSpeedBonus / 100f, 0.25f, 2.0f)
             * (1f + TemporaryAttackSpeedBonus),
             0.25f,
             2.5f);
@@ -145,7 +152,7 @@ public class PlayerEntity : Entity
 
     public float CalculateTenacity()
     {
-        return Math.Clamp(Forca * 0.05f + TenacityBonus, 0f, 75f);
+        return Math.Clamp(Vitalidade * 0.06f + TenacityBonus, 0f, 75f);
     }
 
     public int FindEmptyInventorySlot()

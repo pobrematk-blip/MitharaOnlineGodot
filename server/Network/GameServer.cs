@@ -227,7 +227,7 @@ public partial class GameServer : INetEventListener
                         _db.SaveCharacterGold(session.SelectedCharacter.Id, player.Gold);
                         _db.SaveCharacterXp(session.SelectedCharacter.Id, player.Experience);
                         _db.SaveCharacterLevel(session.SelectedCharacter.Id, player.Level);
-                        _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.StatPoints);
+                        _db.SaveCharacterStats(session.SelectedCharacter.Id, player.BaseForca, player.BaseAgilidade, player.BaseDestreza, player.BaseInteligencia, player.BaseVitalidade, player.BaseSorte, player.StatPoints);
                         session.SelectedCharacter.Gold = player.Gold;
                         session.SelectedCharacter.Xp = player.Experience;
                         session.SelectedCharacter.Level = player.Level;
@@ -235,6 +235,8 @@ public partial class GameServer : INetEventListener
                         session.SelectedCharacter.Agilidade = player.BaseAgilidade;
                         session.SelectedCharacter.Destreza = player.BaseDestreza;
                         session.SelectedCharacter.Inteligencia = player.BaseInteligencia;
+                        session.SelectedCharacter.Vitalidade = player.BaseVitalidade;
+                        session.SelectedCharacter.Sorte = player.BaseSorte;
                         session.SelectedCharacter.StatPoints = player.StatPoints;
                     }
                 }
