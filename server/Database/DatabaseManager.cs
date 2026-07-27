@@ -401,10 +401,10 @@ public class DatabaseManager
             Logger.Info($"N?o foi poss?vel normalizar items: {ex.Message}");
         }
 
-        TryNormalizeMagicWeaponRolls(conn);
+        TryNormalizeExistingItemRolls(conn);
     }
 
-    private void TryNormalizeMagicWeaponRolls(NpgsqlConnection conn)
+    private void TryNormalizeExistingItemRolls(NpgsqlConnection conn)
     {
         try
         {
@@ -432,7 +432,14 @@ public class DatabaseManager
                         continue;
                     }
 
-                    if (roll != null && Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponRoll(itemId, roll))
+                    bool changed = false;
+                    if (roll != null)
+                    {
+                        changed |= Mithara.Server.Entities.ItemRoller.NormalizeMagicWeaponRoll(itemId, roll);
+                        changed |= Mithara.Server.Entities.ItemRoller.RebalanceRoll(itemId, roll);
+                    }
+
+                    if (roll != null && changed)
                         updates.Add((id, System.Text.Json.JsonSerializer.Serialize(roll)));
                 }
             }
@@ -447,11 +454,11 @@ public class DatabaseManager
             }
 
             if (updates.Count > 0)
-                Logger.Info($"Normalizacao de dano magico: {updates.Count} cajado(s)/martelo(s)/maca(s) antigo(s) corrigido(s).");
+                Logger.Info($"Normalizacao de rolls: {updates.Count} item(ns) antigo(s) rebalanceado(s).");
         }
         catch (Exception ex)
         {
-            Logger.Info($"Nao foi possivel normalizar dano magico dos itens: {ex.Message}");
+            Logger.Info($"Nao foi possivel normalizar rolls dos itens: {ex.Message}");
         }
     }
 
@@ -1035,6 +1042,98 @@ public class DatabaseManager
             cmd.Parameters.AddWithValue("@r", item.RefineLevel);
             cmd.Parameters.AddWithValue("@roll", System.Text.Json.JsonSerializer.Serialize(item.Roll));
             item.DbId = Convert.ToInt32(cmd.ExecuteScalar());
+        }
+    }
+
+    public void MoveItemToSlot(int characterId, Mithara.Server.Entities.ItemInstance item, int targetSlot)
+    {
+        if (item.DbId <= 0)
+        {
+            item.Slot = targetSlot;
+            SaveItem(characterId, item);
+            return;
+        }
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE items SET slot = @s WHERE id = @i AND character_id = @c";
+        cmd.Parameters.AddWithValue("@s", targetSlot);
+        cmd.Parameters.AddWithValue("@i", item.DbId);
+        cmd.Parameters.AddWithValue("@c", characterId);
+        int affected = cmd.ExecuteNonQuery();
+        if (affected <= 0)
+        {
+            item.DbId = 0;
+            item.Slot = targetSlot;
+            SaveItem(characterId, item);
+            return;
+        }
+
+        item.Slot = targetSlot;
+    }
+
+    public void SwapItemSlots(
+        int characterId,
+        Mithara.Server.Entities.ItemInstance first,
+        int firstTargetSlot,
+        Mithara.Server.Entities.ItemInstance second,
+        int secondTargetSlot)
+    {
+        if (first.DbId <= 0 || second.DbId <= 0)
+        {
+            first.Slot = firstTargetSlot;
+            second.Slot = secondTargetSlot;
+            SaveItem(characterId, first);
+            SaveItem(characterId, second);
+            return;
+        }
+
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+        using var tx = conn.BeginTransaction();
+        try
+        {
+            int tempSlot = -1_000_000 - Math.Abs(first.DbId);
+
+            using (var tmp = conn.CreateCommand())
+            {
+                tmp.Transaction = tx;
+                tmp.CommandText = "UPDATE items SET slot = @s WHERE id = @i AND character_id = @c";
+                tmp.Parameters.AddWithValue("@s", tempSlot);
+                tmp.Parameters.AddWithValue("@i", first.DbId);
+                tmp.Parameters.AddWithValue("@c", characterId);
+                tmp.ExecuteNonQuery();
+            }
+
+            using (var moveSecond = conn.CreateCommand())
+            {
+                moveSecond.Transaction = tx;
+                moveSecond.CommandText = "UPDATE items SET slot = @s WHERE id = @i AND character_id = @c";
+                moveSecond.Parameters.AddWithValue("@s", secondTargetSlot);
+                moveSecond.Parameters.AddWithValue("@i", second.DbId);
+                moveSecond.Parameters.AddWithValue("@c", characterId);
+                moveSecond.ExecuteNonQuery();
+            }
+
+            using (var moveFirst = conn.CreateCommand())
+            {
+                moveFirst.Transaction = tx;
+                moveFirst.CommandText = "UPDATE items SET slot = @s WHERE id = @i AND character_id = @c";
+                moveFirst.Parameters.AddWithValue("@s", firstTargetSlot);
+                moveFirst.Parameters.AddWithValue("@i", first.DbId);
+                moveFirst.Parameters.AddWithValue("@c", characterId);
+                moveFirst.ExecuteNonQuery();
+            }
+
+            tx.Commit();
+            first.Slot = firstTargetSlot;
+            second.Slot = secondTargetSlot;
+        }
+        catch
+        {
+            tx.Rollback();
+            throw;
         }
     }
 
@@ -2437,27 +2536,10 @@ public class DatabaseManager
                 cmd.ExecuteNonQuery();
             }
 
-            using (var del = conn.CreateCommand())
-            {
-                del.Transaction = tx;
-                del.CommandText = "DELETE FROM items WHERE character_id = @c AND slot < 1000";
-                del.Parameters.AddWithValue("@c", characterId);
-                del.ExecuteNonQuery();
-            }
-
             foreach (var item in player.Items)
             {
                 Mithara.Server.Entities.ItemRoller.EnsureRolled(item);
-                using var ins = conn.CreateCommand();
-                ins.Transaction = tx;
-                ins.CommandText = "INSERT INTO items (character_id, slot, item_id, quantity, refine_level, roll_data) VALUES (@c, @s, @ii, @q, @r, @roll) RETURNING id";
-                ins.Parameters.AddWithValue("@c", characterId);
-                ins.Parameters.AddWithValue("@s", item.Slot);
-                ins.Parameters.AddWithValue("@ii", item.ItemId);
-                ins.Parameters.AddWithValue("@q", item.Quantity);
-                ins.Parameters.AddWithValue("@r", item.RefineLevel);
-                ins.Parameters.AddWithValue("@roll", System.Text.Json.JsonSerializer.Serialize(item.Roll));
-                item.DbId = Convert.ToInt32(ins.ExecuteScalar());
+                UpsertItemInTransaction(conn, tx, characterId, item);
             }
 
             foreach (var kv in player.Equipment)
@@ -2465,16 +2547,7 @@ public class DatabaseManager
                 var item = kv.Value;
                 item.Slot = 100 + kv.Key;
                 Mithara.Server.Entities.ItemRoller.EnsureRolled(item);
-                using var ins = conn.CreateCommand();
-                ins.Transaction = tx;
-                ins.CommandText = "INSERT INTO items (character_id, slot, item_id, quantity, refine_level, roll_data) VALUES (@c, @s, @ii, @q, @r, @roll) RETURNING id";
-                ins.Parameters.AddWithValue("@c", characterId);
-                ins.Parameters.AddWithValue("@s", item.Slot);
-                ins.Parameters.AddWithValue("@ii", item.ItemId);
-                ins.Parameters.AddWithValue("@q", item.Quantity);
-                ins.Parameters.AddWithValue("@r", item.RefineLevel);
-                ins.Parameters.AddWithValue("@roll", System.Text.Json.JsonSerializer.Serialize(item.Roll));
-                item.DbId = Convert.ToInt32(ins.ExecuteScalar());
+                UpsertItemInTransaction(conn, tx, characterId, item);
             }
 
             foreach (var kv in player.Quests)
@@ -2513,6 +2586,51 @@ public class DatabaseManager
             tx.Rollback();
             throw;
         }
+    }
+
+    private static void UpsertItemInTransaction(NpgsqlConnection conn, NpgsqlTransaction tx, int characterId, Mithara.Server.Entities.ItemInstance item)
+    {
+        if (item.DbId > 0)
+        {
+            using var update = conn.CreateCommand();
+            update.Transaction = tx;
+            update.CommandText = """
+                UPDATE items
+                SET slot = @s, item_id = @ii, quantity = @q, refine_level = @r, roll_data = @roll
+                WHERE id = @id AND character_id = @c
+                """;
+            update.Parameters.AddWithValue("@s", item.Slot);
+            update.Parameters.AddWithValue("@ii", item.ItemId);
+            update.Parameters.AddWithValue("@q", item.Quantity);
+            update.Parameters.AddWithValue("@r", item.RefineLevel);
+            update.Parameters.AddWithValue("@roll", System.Text.Json.JsonSerializer.Serialize(item.Roll));
+            update.Parameters.AddWithValue("@id", item.DbId);
+            update.Parameters.AddWithValue("@c", characterId);
+            if (update.ExecuteNonQuery() > 0)
+                return;
+
+            item.DbId = 0;
+        }
+
+        using var insert = conn.CreateCommand();
+        insert.Transaction = tx;
+        insert.CommandText = """
+            INSERT INTO items (character_id, slot, item_id, quantity, refine_level, roll_data)
+            VALUES (@c, @s, @ii, @q, @r, @roll)
+            ON CONFLICT (character_id, slot)
+            DO UPDATE SET item_id = EXCLUDED.item_id,
+                          quantity = EXCLUDED.quantity,
+                          refine_level = EXCLUDED.refine_level,
+                          roll_data = EXCLUDED.roll_data
+            RETURNING id
+            """;
+        insert.Parameters.AddWithValue("@c", characterId);
+        insert.Parameters.AddWithValue("@s", item.Slot);
+        insert.Parameters.AddWithValue("@ii", item.ItemId);
+        insert.Parameters.AddWithValue("@q", item.Quantity);
+        insert.Parameters.AddWithValue("@r", item.RefineLevel);
+        insert.Parameters.AddWithValue("@roll", System.Text.Json.JsonSerializer.Serialize(item.Roll));
+        item.DbId = Convert.ToInt32(insert.ExecuteScalar());
     }
 
     private static string HashPassword(string password, string salt = "")

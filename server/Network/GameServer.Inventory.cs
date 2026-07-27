@@ -500,14 +500,12 @@ partial class GameServer
         {
             currentEquipped.Slot = invSlot;
             player.Items.Add(currentEquipped);
-            _db.DeleteItemBySlot(session.SelectedCharacter!.Id, 100 + equipSlot);
-            _db.SaveItem(session.SelectedCharacter.Id, currentEquipped);
+            _db.SwapItemSlots(session.SelectedCharacter!.Id, sourceItem, 100 + equipSlot, currentEquipped, invSlot);
         }
         else
         {
-            _db.DeleteItemBySlot(session.SelectedCharacter!.Id, invSlot);
+            _db.MoveItemToSlot(session.SelectedCharacter!.Id, sourceItem, 100 + equipSlot);
         }
-        _db.SaveItem(session.SelectedCharacter.Id, sourceItem);
 
         RecalculatePlayerStats(player);
         player.Health = Math.Min(player.Health, player.MaxHealth);
@@ -610,8 +608,7 @@ partial class GameServer
         equipped.Slot = targetInvSlot;
         player.Items.Add(equipped);
 
-        _db.DeleteItemBySlot(session.SelectedCharacter!.Id, 100 + equipSlot);
-        _db.SaveItem(session.SelectedCharacter.Id, equipped);
+        _db.MoveItemToSlot(session.SelectedCharacter!.Id, equipped, targetInvSlot);
 
         RecalculatePlayerStats(player);
         player.Health = Math.Min(player.Health, player.MaxHealth);
@@ -774,9 +771,10 @@ partial class GameServer
         fromItem.Slot = toSlot;
         if (toItem != null)
             toItem.Slot = fromSlot;
-        _db.SaveItem(session.SelectedCharacter!.Id, fromItem);
         if (toItem != null)
-            _db.SaveItem(session.SelectedCharacter!.Id, toItem);
+            _db.SwapItemSlots(session.SelectedCharacter!.Id, fromItem, toSlot, toItem, fromSlot);
+        else
+            _db.MoveItemToSlot(session.SelectedCharacter!.Id, fromItem, toSlot);
 
         SendInventoryData(peer, player);
     }

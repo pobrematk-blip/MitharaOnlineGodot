@@ -1,5 +1,6 @@
 #nullable enable
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -243,6 +244,8 @@ public partial class ItemDatabase : Node
             QuantidadeMaximaPorSlot = 99,
         };
 
+        AplicarMetadadosEquipamentoFallback(fallback, itemId, knownPath);
+
         if (itemId is 115 or 116 or 117 or 118)
         {
             fallback.Acumulavel = false;
@@ -261,6 +264,98 @@ public partial class ItemDatabase : Node
         _cache[itemId] = fallback;
         GD.PrintErr($"[ItemDatabase] Fallback criado para itemId={itemId}. Verifique se o .tres desse item foi exportado.");
         return fallback;
+    }
+
+    private static void AplicarMetadadosEquipamentoFallback(ItemResource item, int itemId, string? knownPath)
+    {
+        item.NivelRequerido = InferirNivelEquipamentoFallback(itemId, knownPath);
+
+        if (itemId >= 300000 && itemId < 301000)
+        {
+            item.Acumulavel = false;
+            item.QuantidadeMaximaPorSlot = 1;
+            item.Tipo = InferirTipoArmaduraFallback(itemId, knownPath);
+            item.CategoriaPeso = InferirPesoArmaduraFallback(knownPath);
+            return;
+        }
+
+        item.Tipo = itemId switch
+        {
+            >= 1001 and <= 1021 => TipoEquipamento.Arma,
+            >= 1051 and <= 1071 => TipoEquipamento.Escudo,
+            >= 2001 and <= 2021 => TipoEquipamento.Arma,
+            >= 2051 and <= 2071 => TipoEquipamento.Escudo,
+            >= 3001 and <= 3021 => TipoEquipamento.Arma,
+            >= 3051 and <= 3071 => TipoEquipamento.Escudo,
+            >= 4001 and <= 4021 => TipoEquipamento.Arma,
+            >= 4051 and <= 4071 => TipoEquipamento.Escudo,
+            >= 5001 and <= 5021 => TipoEquipamento.Arma,
+            >= 5051 and <= 5071 => TipoEquipamento.Escudo,
+            >= 6001 and <= 6021 => TipoEquipamento.Arma,
+            >= 6051 and <= 6071 => TipoEquipamento.Escudo,
+            _ => item.Tipo,
+        };
+
+        if (item.Tipo != TipoEquipamento.Nenhum)
+        {
+            item.Acumulavel = false;
+            item.QuantidadeMaximaPorSlot = 1;
+        }
+    }
+
+    private static TipoEquipamento InferirTipoArmaduraFallback(int itemId, string? knownPath)
+    {
+        string path = (knownPath ?? "").Replace('\\', '/').ToLowerInvariant();
+        if (path.Contains("/capacetes/")) return TipoEquipamento.Capacete;
+        if (path.Contains("/peitorais/")) return TipoEquipamento.Peitoral;
+        if (path.Contains("/cintos/")) return TipoEquipamento.Cinto;
+        if (path.Contains("/luvas/")) return TipoEquipamento.Luvas;
+        if (path.Contains("/calcas/")) return TipoEquipamento.Calca;
+        if (path.Contains("/botas/")) return TipoEquipamento.Botas;
+
+        int slot = Math.Abs(itemId - 300000) % 12;
+        return slot switch
+        {
+            0 or 1 => TipoEquipamento.Capacete,
+            2 or 3 => TipoEquipamento.Peitoral,
+            4 or 5 => TipoEquipamento.Calca,
+            6 or 7 => TipoEquipamento.Luvas,
+            8 or 9 => TipoEquipamento.Botas,
+            10 or 11 => TipoEquipamento.Cinto,
+            _ => TipoEquipamento.Nenhum,
+        };
+    }
+
+    private static PesoItem InferirPesoArmaduraFallback(string? knownPath)
+    {
+        string path = (knownPath ?? "").Replace('\\', '/').ToLowerInvariant();
+        if (path.Contains("/leves/")) return PesoItem.Leve;
+        if (path.Contains("/medias/")) return PesoItem.Medio;
+        if (path.Contains("/pesadas/")) return PesoItem.Pesado;
+        return PesoItem.Medio;
+    }
+
+    private static int InferirNivelEquipamentoFallback(int itemId, string? knownPath)
+    {
+        string path = knownPath ?? "";
+        var match = System.Text.RegularExpressions.Regex.Match(path, @"(?:^|[^0-9])Lv(?:el)?\s*(\d+)(?:[^0-9]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (match.Success && int.TryParse(match.Groups[1].Value, out int nivelPath))
+            return Math.Max(1, nivelPath);
+
+        if (itemId >= 300000 && itemId < 301000)
+        {
+            int tier = ((itemId - 300000) / 12) % 11;
+            return tier == 0 ? 1 : tier * 10;
+        }
+
+        if (itemId is >= 1001 and <= 6071)
+        {
+            int index = Math.Abs(itemId % 50);
+            if (index <= 1) return 1;
+            return Math.Max(1, (index - 1) * 5);
+        }
+
+        return 1;
     }
 
     private static string NomeEquipamentoFallback(int itemId, string? knownPath)

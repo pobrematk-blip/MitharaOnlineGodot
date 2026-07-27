@@ -95,6 +95,7 @@ public partial class EntityManager : Node
     private readonly Dictionary<ulong, Vector2> _previousPositions = new();
     private readonly Dictionary<ulong, double> _lastDashTrailAt = new();
     private readonly Dictionary<string, double> _lastCasterSkillEffectAt = new();
+    private readonly Dictionary<ulong, Godot.Collections.Array<Godot.Collections.Dictionary>> _pendingRemoteEquipmentVisual = new();
     private const string MetaMachadoGiratorioUntil = "machado_giratorio_until";
     private const double InterpolationDelay = 0.08;
     private const int PendingMonsterSpawnBatchSize = 8;
@@ -824,7 +825,10 @@ public partial class EntityManager : Node
         if (health <= 0)
             SetRemotePlayerDowned(root);
 
-        AplicarEquipamentoVisualRemoto(entityId, equipment);
+        if (_pendingRemoteEquipmentVisual.TryGetValue(entityId, out var pendingEquipment))
+            AplicarEquipamentoVisualRemoto(entityId, pendingEquipment, root);
+        else
+            AplicarEquipamentoVisualRemoto(entityId, equipment, root);
         AplicarAparenciaVisualRemota(root, sprite, cabeloPath, cabeloCor, "Cabelo");
         AplicarAparenciaVisualRemota(root, sprite, barbaPath, barbaCor, "Barba");
 
@@ -833,21 +837,33 @@ public partial class EntityManager : Node
 
     private void OnEquipmentVisualUpdate(ulong entityId, Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
     {
+        if (entityId != _gameNet?.LocalPlayerId)
+            _pendingRemoteEquipmentVisual[entityId] = ClonarPayloadEquipamento(equipment);
         AplicarEquipamentoVisualRemoto(entityId, equipment);
     }
 
-    private void AplicarEquipamentoVisualRemoto(ulong entityId, Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
+    private void AplicarEquipamentoVisualRemoto(ulong entityId, Godot.Collections.Array<Godot.Collections.Dictionary> equipment, Node2D? nodeOverride = null)
     {
         if (entityId == _gameNet?.LocalPlayerId)
             return;
-        if (!_networkNodes.TryGetValue(entityId, out var node) || node == null || !IsInstanceValid(node))
+        Node2D? node = nodeOverride;
+        if (node == null || !IsInstanceValid(node))
+            _networkNodes.TryGetValue(entityId, out node);
+
+        if (node == null || !IsInstanceValid(node))
+        {
+            _pendingRemoteEquipmentVisual[entityId] = ClonarPayloadEquipamento(equipment);
             return;
+        }
         if (!node.IsInGroup("RemotePlayers"))
             return;
 
         var sprite = node.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite");
         if (sprite == null || _gameNet?.ItemDB == null)
+        {
+            _pendingRemoteEquipmentVisual[entityId] = ClonarPayloadEquipamento(equipment);
             return;
+        }
 
         var equipped = new Dictionary<int, ItemResource>();
         foreach (var entry in equipment)
@@ -885,6 +901,20 @@ public partial class EntityManager : Node
         AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Calca);
         AtualizarOverlayRemoto(node, sprite, equipped, TipoEquipamento.Botas);
         SincronizarOverlaysRemotos(node, sprite);
+        _pendingRemoteEquipmentVisual.Remove(entityId);
+    }
+
+    private static Godot.Collections.Array<Godot.Collections.Dictionary> ClonarPayloadEquipamento(Godot.Collections.Array<Godot.Collections.Dictionary> equipment)
+    {
+        var clone = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        foreach (var entry in equipment)
+        {
+            var copied = new Godot.Collections.Dictionary();
+            foreach (var key in entry.Keys)
+                copied[key] = entry[key];
+            clone.Add(copied);
+        }
+        return clone;
     }
 
     private static int ObterInt(Godot.Collections.Dictionary dict, string key)
@@ -966,7 +996,7 @@ public partial class EntityManager : Node
 
     private static bool DeveAplicarOverlayEquipamentoRemoto(ItemResource item)
     {
-        if (item == null || item.Tipo == TipoEquipamento.Arma)
+        if (item == null || item.Tipo is TipoEquipamento.Arma or TipoEquipamento.Luvas)
             return false;
 
         if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
@@ -5643,6 +5673,7 @@ public partial class EntityManager : Node
                 _lastDirections.Remove(id);
                 _lastDashTrailAt.Remove(id);
                 _remotePlayerSprites.Remove(id);
+                _pendingRemoteEquipmentVisual.Remove(id);
             }
         }
 
@@ -6029,6 +6060,7 @@ public partial class EntityManager : Node
         _previousPositions.Clear();
         _lastDashTrailAt.Clear();
         _remotePlayerSprites.Clear();
+        _pendingRemoteEquipmentVisual.Clear();
         _pendingSpawns.Clear();
         _worldNode = null;
         _flushRetryCount = 0;
@@ -6072,6 +6104,7 @@ public partial class EntityManager : Node
         _previousPositions.Remove(entityId);
         _lastDashTrailAt.Remove(entityId);
         _remotePlayerSprites.Remove(entityId);
+        _pendingRemoteEquipmentVisual.Remove(entityId);
         _pendingSpawns.RemoveAll(spawn => spawn.EntityId == entityId);
         if (_remoteSheriganPets.TryGetValue(entityId, out var pet) && IsInstanceValid(pet))
             pet.QueueFree();

@@ -833,7 +833,7 @@ public partial class CharacterUI : Control
 
     private void OnAtributoPlus(string atributo)
     {
-        if (_equipamento == null || _equipamento.PontosDisponiveis <= 0) return;
+        if (_equipamento == null) return;
 
         switch (atributo)
         {

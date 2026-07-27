@@ -396,6 +396,12 @@ public partial class SlotUI : Control
                 return;
             }
 
+            if (EnviarParaBancoSeAberto())
+            {
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (EnviarParaMercadoSeAberto())
             {
                 GetViewport().SetInputAsHandled();
@@ -498,6 +504,26 @@ public partial class SlotUI : Control
         if (selecionado)
             GD.Print($"[MERCADO] Slot {SlotIndex} selecionado para anuncio por duplo clique. Quantidade={SlotInterno.Quantidade}");
         return selecionado;
+    }
+
+    private bool EnviarParaBancoSeAberto()
+    {
+        if (ObterContainerUi() != TipoContainerUi.Inventario)
+            return false;
+
+        if (EhQualquerSlotBolsa || SlotInterno?.Item == null || SlotInterno.Quantidade <= 0)
+            return false;
+
+        var tree = GetTree();
+        var banco = tree?.Root?.FindChild("BancoUi", true, false) as BancoUI
+            ?? tree?.CurrentScene?.FindChild("BancoUi", true, false) as BancoUI;
+        if (banco == null || !banco.PainelVisivel)
+            return false;
+
+        bool enviado = banco.TryDepositInventorySlot(SlotIndex);
+        if (enviado)
+            GD.Print($"[BANCO] Slot {SlotIndex} enviado para deposito por duplo clique.");
+        return enviado;
     }
 
     private void EquiparItemDoSlot()

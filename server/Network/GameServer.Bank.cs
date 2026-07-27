@@ -118,7 +118,7 @@ partial class GameServer
 
         player.Items.Remove(item);
         item.Slot = BankSlotBase + bankSlot;
-        _db.SaveItem(session.SelectedCharacter.Id, item);
+        _db.MoveItemToSlot(session.SelectedCharacter.Id, item, item.Slot);
 
         SendInventoryData(peer, player);
         SendBankData(peer, player.Gold, session.SelectedCharacter.BankGold, session.SelectedCharacter.Id);
@@ -152,7 +152,7 @@ partial class GameServer
         }
 
         bankItem.Slot = invSlot;
-        _db.SaveItem(session.SelectedCharacter.Id, bankItem);
+        _db.MoveItemToSlot(session.SelectedCharacter.Id, bankItem, invSlot);
         player.Items.Add(bankItem);
 
         SendInventoryData(peer, player);
@@ -175,13 +175,17 @@ partial class GameServer
         var toItem = bankItems.FirstOrDefault(i => i.Slot == toSlot);
         if (fromItem == null) return;
 
-        fromItem.Slot = BankSlotBase + toSlot;
         if (toItem != null)
+        {
+            fromItem.Slot = BankSlotBase + toSlot;
             toItem.Slot = BankSlotBase + fromSlot;
-
-        _db.SaveItem(session.SelectedCharacter.Id, fromItem);
-        if (toItem != null)
-            _db.SaveItem(session.SelectedCharacter.Id, toItem);
+            _db.SwapItemSlots(session.SelectedCharacter.Id, fromItem, BankSlotBase + toSlot, toItem, BankSlotBase + fromSlot);
+        }
+        else
+        {
+            fromItem.Slot = BankSlotBase + toSlot;
+            _db.MoveItemToSlot(session.SelectedCharacter.Id, fromItem, BankSlotBase + toSlot);
+        }
 
         SendBankData(peer, player.Gold, session.SelectedCharacter.BankGold, session.SelectedCharacter.Id);
     }

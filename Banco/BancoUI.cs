@@ -229,6 +229,37 @@ public partial class BancoUI : Control
             ForcarAtualizacaoDosDados();
     }
 
+    public bool TryDepositInventorySlot(int inventorySlot)
+    {
+        if (!PainelVisivel || _gameNet == null || !_gameNet.IsConnected)
+            return false;
+
+        int bankSlot = EncontrarPrimeiroSlotLivre();
+        if (bankSlot < 0)
+        {
+            _goldResult.Text = "Banco cheio.";
+            _goldResult.AddThemeColorOverride("font_color", new Color(1, 0.3f, 0.3f));
+            return false;
+        }
+
+        _gameNet.SendBankDepositItem(inventorySlot, bankSlot);
+        return true;
+    }
+
+    private int EncontrarPrimeiroSlotLivre()
+    {
+        if (_bancoAlvo == null)
+            return -1;
+
+        for (int i = 0; i < _bancoAlvo.Slots.Count; i++)
+        {
+            if (_bancoAlvo.Slots[i]?.Item == null)
+                return i;
+        }
+
+        return -1;
+    }
+
     public override void _ExitTree()
     {
         if (_gameNet != null)

@@ -226,10 +226,6 @@ public partial class Player : CharacterBody2D
             return null;
 
         string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
-        Vector2 sheetSize = sheet.GetSize();
-        if (sheetSize.X <= 832f && sheetSize.Y <= 3456f)
-            return LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque);
-
         var profile = EncontrarPerfilSpriteHumano(arma, escudo)
             ?? EncontrarPerfilSpritePorClasse(nomeClasse)
             ?? HumanUnarmedProfile;
@@ -1429,10 +1425,6 @@ public partial class Player : CharacterBody2D
             return null;
 
         string prefixoAtaque = ObterPrefixoAtaqueAtual();
-        Vector2 sheetSize = sheet.GetSize();
-        if (sheetSize.X <= 832f && sheetSize.Y <= 3456f)
-            return LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque);
-
         var profile = EncontrarPerfilSpriteHumano(
                 GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")?.ObterSlot(TipoEquipamento.Arma)?.Item,
                 GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")?.ObterSlot(TipoEquipamento.Escudo)?.Item)
@@ -1498,6 +1490,11 @@ public partial class Player : CharacterBody2D
         if (string.IsNullOrWhiteSpace(prefixo))
             return "";
 
+        int nivelPreferido = nivelItem >= 10 ? 10 : 1;
+        string caminhoDireto = ResolverPaperdollExistente(pasta, prefixo, nivelPreferido);
+        if (!string.IsNullOrWhiteSpace(caminhoDireto))
+            return caminhoDireto;
+
         int escolhido = 0;
         string caminhoEscolhido = "";
         string prefixoNormalizado = NormalizarEspacos(prefixo);
@@ -1559,6 +1556,8 @@ public partial class Player : CharacterBody2D
         {
             $"{pasta}/{prefixo} Lv{nivel}.png",
             $"{pasta}/{prefixo}  Lv{nivel}.png",
+            $"{pasta}/{NormalizarEspacos(prefixo)} Lv{nivel}.png",
+            $"{pasta}/{NormalizarEspacos(prefixo)}  Lv{nivel}.png",
         };
 
         foreach (string caminho in candidatos)
@@ -2132,7 +2131,7 @@ public partial class Player : CharacterBody2D
         if (item == null)
             return false;
 
-        if (item.Tipo == TipoEquipamento.Arma)
+        if (item.Tipo is TipoEquipamento.Arma or TipoEquipamento.Luvas)
             return false;
 
         if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)

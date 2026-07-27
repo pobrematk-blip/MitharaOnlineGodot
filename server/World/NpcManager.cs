@@ -180,6 +180,7 @@ public class NpcManager
         {
             new() { ItemId = ItemDefinitions.PocaoVida, Price = 10, Stock = -1 },
             new() { ItemId = ItemDefinitions.PocaoMana, Price = 10, Stock = -1 },
+            new() { ItemId = ItemDefinitions.PergaminhoResetTalentos, Price = 300, Stock = -1 },
         };
     }
 

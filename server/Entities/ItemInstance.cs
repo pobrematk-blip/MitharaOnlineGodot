@@ -46,8 +46,8 @@ public sealed class ItemRoll
 public static class ItemRoller
 {
     private static readonly double[] RarityWeights = { 0.40, 0.25, 0.17, 0.11, 0.05, 0.02 };
-    private static readonly float[] RarityMultipliers = { 1f, 1.05f, 1.10f, 1.15f, 1.20f, 1.25f };
-    private static readonly (int min, int max)[] AffixCounts = { (0, 0), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6) };
+    private static readonly float[] RarityMultipliers = { 1f, 1.03f, 1.06f, 1.10f, 1.14f, 1.18f };
+    private static readonly (int min, int max)[] AffixCounts = { (0, 2), (1, 3), (2, 4), (3, 5), (4, 6), (5, 7) };
     private static readonly string[] GlobalAffixPool =
     {
         "Forca", "Agilidade", "Vitalidade", "Inteligencia", "Destreza", "Sorte",
@@ -100,9 +100,10 @@ public static class ItemRoller
         var countRange = AffixCounts[(int)rarity];
         int count = Math.Min(pool.Count, Random.Shared.Next(countRange.min, countRange.max + 1));
         foreach (string affix in pool.OrderBy(_ => Random.Shared.Next()).Take(count))
-            instance.Roll.Affixes[affix] = RollAffixValue(affix, def.RequiredLevel);
+            instance.Roll.Affixes[affix] = RollAffixValue(affix, def.RequiredLevel, def.IsElite);
 
         NormalizeMagicWeaponRoll(instance);
+        RebalanceRoll(instance);
     }
 
     private static ItemRarity RollRarity(IReadOnlyList<ItemRarity> allowedRarities)
@@ -138,30 +139,58 @@ public static class ItemRoller
         return Random.Shared.Next(min, max + 1);
     }
 
-    private static float RollAffixValue(string name, int level)
+    private static float RollAffixValue(string name, int level, bool isElite)
     {
         int band = level <= 25 ? 0 : level <= 45 ? 1 : 2;
         (float min, float max)[] ranges = name.ToLowerInvariant() switch
         {
-            "forca" or "agilidade" or "vitalidade" or "inteligencia" or "destreza" or "sorte" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
-            "chancecritica" or "velocidadeataque" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
-            "danocriticobonus" => new[] { (2f, 4f), (4f, 8f), (8f, 15f) },
-            "precisao" => new[] { (2f, 5f), (5f, 10f), (10f, 20f) },
-            "penetracaoarmadura" => new[] { (1f, 3f), (3f, 6f), (6f, 12f) },
-            "evasao" or "roubovida" or "roubomana" or "reducaocooldown" => new[] { (1f, 2f), (2f, 3f), (3f, 5f) },
-            "hp" or "mana" => new[] { (10f, 25f), (25f, 50f), (50f, 100f) },
-            "danofisico" or "danomagico" or "defesafisica" or "defesamagica" => new[] { (1f, 3f), (3f, 6f), (6f, 12f) },
-            _ => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
+            "forca" or "agilidade" or "vitalidade" or "inteligencia" or "destreza" or "sorte" => new[] { (1f, 1f), (1f, 2f), (2f, 4f) },
+            "chancecritica" or "velocidadeataque" => new[] { (0.5f, 1f), (1f, 2f), (2f, 4f) },
+            "danocriticobonus" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
+            "precisao" => new[] { (1f, 3f), (3f, 6f), (6f, 12f) },
+            "penetracaoarmadura" => new[] { (0.5f, 1.5f), (1.5f, 3f), (3f, 6f) },
+            "evasao" or "roubovida" or "roubomana" or "reducaocooldown" => new[] { (0.5f, 1f), (1f, 2f), (2f, 3f) },
+            "hp" or "mana" => new[] { (5f, 12f), (12f, 25f), (25f, 50f) },
+            "danofisico" or "danomagico" or "defesafisica" or "defesamagica" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
+            _ => new[] { (0.5f, 1f), (1f, 2f), (2f, 4f) },
         };
         var range = ranges[band];
-        return MathF.Round(range.min + (float)Random.Shared.NextDouble() * (range.max - range.min), 2);
+        float eliteMultiplier = isElite ? 1.10f : 1f;
+        return MathF.Round((range.min + (float)Random.Shared.NextDouble() * (range.max - range.min)) * eliteMultiplier, 2);
     }
 
     public static bool IsAffixAllowedForItem(ItemDefinition def, string affix)
     {
         string key = NormalizeAffixName(affix);
 
-        return key is not ("baseattack" or "ataquebase");
+        if (key is "baseattack" or "ataquebase")
+            return false;
+
+        if (key is "roubovida" or "roubomana" or "tenacidade" or "penetracaoarmadura")
+            return def.Type is ItemType.Ring or ItemType.Necklace or ItemType.Earring;
+
+        if (key is "evasao")
+            return IsArmorPiece(def) && GetArmorWeight(def) == ArmorWeight.Medium;
+
+        if (key is "reflexaodano" or "reflexao")
+            return IsHeavyArmor(def) || IsTrueShield(def);
+
+        if (key is "danopvp" or "defesapvp")
+            return IsArenaPvpItem(def);
+
+        return true;
+    }
+
+    private static bool IsArenaPvpItem(ItemDefinition def)
+    {
+        string name = NormalizeAffixName(def.Name);
+        string classes = NormalizeAffixName(def.AllowedClasses);
+        return name.Contains("arena")
+            || name.Contains("guerra")
+            || name.Contains("pvp")
+            || classes.Contains("arena")
+            || classes.Contains("guerra")
+            || classes.Contains("pvp");
     }
 
     public static void NormalizeDefinitionStats(ItemDefinition def)
@@ -173,21 +202,67 @@ public static class ItemRoller
             return;
         }
 
+        if (def.Type == ItemType.Shield && !IsTrueShield(def) && (def.BaseAttack > 0 || def.BaseAttackMax > 0))
+        {
+            NormalizeWeaponStats(def, offhand: true);
+            NormalizeMagicWeaponDefinition(def);
+            return;
+        }
+
         if (IsArmorPiece(def))
             NormalizeArmorStats(def);
     }
 
-    private static void NormalizeWeaponStats(ItemDefinition def)
+    private static void NormalizeWeaponStats(ItemDefinition def, bool offhand = false)
     {
-        if (def.BaseAttackMax <= 0 && def.BaseAttack <= 0)
-            return;
+        int level = Math.Clamp(def.RequiredLevel, 1, 100);
+        bool magicWeapon = IsMagicDamageWeapon(def);
+        float eliteFactor = def.IsElite ? 1.10f : 1f;
+        float offhandFactor = offhand ? 0.62f : 1f;
+        float classFactor = GetWeaponClassFactor(def);
+        int attack = Math.Max(1, (int)MathF.Round((4f + level * 0.85f) * classFactor * eliteFactor * offhandFactor));
+        int primary = Math.Max(1, (int)MathF.Round((1f + level * 0.16f) * eliteFactor * offhandFactor));
 
-        if (IsMagicDamageWeapon(def))
+        def.BaseAttack = attack;
+        def.BaseAttackMin = Math.Max(1, (int)MathF.Round(attack * 0.90f));
+        def.BaseAttackMax = Math.Max(def.BaseAttackMin, (int)MathF.Round(attack * 1.10f));
+
+        def.Forca = 0;
+        def.ForcaMin = 0;
+        def.ForcaMax = 0;
+        def.Agilidade = 0;
+        def.AgilidadeMin = 0;
+        def.AgilidadeMax = 0;
+        def.Destreza = 0;
+        def.DestrezaMin = 0;
+        def.DestrezaMax = 0;
+        def.Inteligencia = 0;
+        def.InteligenciaMin = 0;
+        def.InteligenciaMax = 0;
+
+        if (magicWeapon)
         {
+            def.Inteligencia = primary;
+            def.InteligenciaMin = Math.Max(1, (int)MathF.Round(primary * 0.85f));
+            def.InteligenciaMax = Math.Max(def.InteligenciaMin, (int)MathF.Round(primary * 1.15f));
             def.Defense = 0;
             def.DefenseMin = 0;
             def.DefenseMax = 0;
             return;
+        }
+
+        var role = GetWeaponRole(def);
+        if (role is WeaponRole.Archer or WeaponRole.Assassin)
+        {
+            def.Destreza = primary;
+            def.DestrezaMin = Math.Max(1, (int)MathF.Round(primary * 0.85f));
+            def.DestrezaMax = Math.Max(def.DestrezaMin, (int)MathF.Round(primary * 1.15f));
+        }
+        else
+        {
+            def.Forca = primary;
+            def.ForcaMin = Math.Max(1, (int)MathF.Round(primary * 0.85f));
+            def.ForcaMax = Math.Max(def.ForcaMin, (int)MathF.Round(primary * 1.15f));
         }
 
         def.MagicDefense = 0;
@@ -195,10 +270,45 @@ public static class ItemRoller
         def.MagicDefenseMax = 0;
     }
 
+    private static float GetWeaponClassFactor(ItemDefinition def)
+    {
+        var role = GetWeaponRole(def);
+        return role switch
+        {
+            WeaponRole.Berserker => 1.12f,
+            WeaponRole.Guardian => 0.92f,
+            WeaponRole.Assassin => 0.78f,
+            WeaponRole.Archer => 1.00f,
+            WeaponRole.Mage => 0.96f,
+            WeaponRole.Cleric => 0.92f,
+            _ => 1.00f,
+        };
+    }
+
+    private static WeaponRole GetWeaponRole(ItemDefinition def)
+    {
+        string classes = NormalizeAffixName(def.AllowedClasses);
+        string name = NormalizeAffixName(def.Name);
+
+        if (classes.Contains("berseker") || classes.Contains("berserker") || name.Contains("machado"))
+            return WeaponRole.Berserker;
+        if (classes.Contains("guardiao") || name.Contains("espada"))
+            return WeaponRole.Guardian;
+        if (classes.Contains("ladino") || classes.Contains("assassino") || name.Contains("adaga") || name.Contains("lamina"))
+            return WeaponRole.Assassin;
+        if (classes.Contains("arqueiro") || name.Contains("arco"))
+            return WeaponRole.Archer;
+        if (classes.Contains("mago") || name.Contains("cajado"))
+            return WeaponRole.Mage;
+        if (classes.Contains("prist") || classes.Contains("clerigo") || name.Contains("martelo") || name.Contains("maca"))
+            return WeaponRole.Cleric;
+        return WeaponRole.Generic;
+    }
+
     private static void NormalizeArmorStats(ItemDefinition def)
     {
-        float levelFactor = 0.35f + Math.Clamp(def.RequiredLevel, 1, 100) / 100f * 0.65f;
-        float eliteFactor = def.IsElite ? 1.18f : 1f;
+        float levelFactor = 0.08f + Math.Clamp(def.RequiredLevel, 1, 100) / 100f * 0.92f;
+        float eliteFactor = def.IsElite ? 1.10f : 1f;
         float slotFactor = GetArmorSlotFactor(def.Type);
         ArmorWeight weight = GetArmorWeight(def);
 
@@ -326,6 +436,155 @@ public static class ItemRoller
         return isMagicWeapon && NormalizeMagicWeaponRoll(instance.Roll);
     }
 
+    public static bool RebalanceRoll(ItemInstance instance)
+    {
+        if (instance.Definition is not { } def || instance.Roll is not { IsRolled: true } roll)
+            return false;
+
+        NormalizeDefinitionStats(def);
+        NormalizeMagicWeaponDefinition(def);
+        return RebalanceRoll(def, roll);
+    }
+
+    public static bool RebalanceRoll(int itemId, ItemRoll roll)
+    {
+        var def = ItemDefinitions.Get(itemId);
+        if (def == null || !roll.IsRolled)
+            return false;
+
+        NormalizeDefinitionStats(def);
+        NormalizeMagicWeaponDefinition(def);
+        return RebalanceRoll(def, roll);
+    }
+
+    private static bool RebalanceRoll(ItemDefinition def, ItemRoll roll)
+    {
+        bool changed = false;
+        float multiplier = RarityMultipliers[Math.Clamp((int)roll.Rarity, 0, RarityMultipliers.Length - 1)];
+
+        (roll.Forca, changed) = ClampInt(roll.Forca, RollRangeMax(def.ForcaMin, def.ForcaMax, def.Forca, multiplier), changed);
+        (roll.Agilidade, changed) = ClampInt(roll.Agilidade, RollRangeMax(def.AgilidadeMin, def.AgilidadeMax, def.Agilidade, multiplier), changed);
+        (roll.Destreza, changed) = ClampInt(roll.Destreza, RollRangeMax(def.DestrezaMin, def.DestrezaMax, def.Destreza, multiplier), changed);
+        (roll.Inteligencia, changed) = ClampInt(roll.Inteligencia, RollRangeMax(def.InteligenciaMin, def.InteligenciaMax, def.Inteligencia, multiplier), changed);
+        (roll.BaseAttack, changed) = ClampInt(roll.BaseAttack, RollRangeMax(def.BaseAttackMin, def.BaseAttackMax, def.BaseAttack, multiplier), changed);
+        (roll.Defense, changed) = ClampInt(roll.Defense, RollRangeMax(def.DefenseMin, def.DefenseMax, def.Defense, multiplier), changed);
+        (roll.MagicDefense, changed) = ClampInt(roll.MagicDefense, RollRangeMax(def.MagicDefenseMin, def.MagicDefenseMax, def.MagicDefense, multiplier), changed);
+        (roll.Hp, changed) = ClampInt(roll.Hp, RollRangeMax(def.HpMin, def.HpMax, def.Hp, multiplier), changed);
+        (roll.Mana, changed) = ClampInt(roll.Mana, RollRangeMax(def.ManaMin, def.ManaMax, def.Mana, multiplier), changed);
+        (roll.Evasion, changed) = ClampFloat(roll.Evasion, RollRangeMax(def.EvasionMin, def.EvasionMax, def.Evasion, multiplier), changed);
+
+        var allowedAffixes = roll.Affixes
+            .Where(pair => IsAffixAllowedForItem(def, pair.Key))
+            .Select(pair =>
+            {
+                string displayName = NormalizeAffixDisplayName(pair.Key);
+                float max = GetAffixMax(displayName, def.RequiredLevel, def.IsElite);
+                return (Name: displayName, Value: MathF.Round(Math.Min(pair.Value, max), 2));
+            })
+            .GroupBy(pair => NormalizeAffixName(pair.Name))
+            .Select(group => group.OrderByDescending(pair => pair.Value).First())
+            .OrderByDescending(pair => pair.Value)
+            .ThenBy(pair => pair.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(GetMaxAffixCount(roll.Rarity))
+            .ToDictionary(pair => pair.Name, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+
+        if (allowedAffixes.Count != roll.Affixes.Count
+            || allowedAffixes.Any(pair => !roll.Affixes.TryGetValue(pair.Key, out float oldValue) || MathF.Abs(oldValue - pair.Value) > 0.001f))
+        {
+            roll.Affixes = allowedAffixes;
+            changed = true;
+        }
+
+        NormalizeMagicWeaponRoll(roll);
+        return changed;
+    }
+
+    private static int GetMaxAffixCount(ItemRarity rarity)
+    {
+        int index = Math.Clamp((int)rarity, 0, AffixCounts.Length - 1);
+        return AffixCounts[index].max;
+    }
+
+    private static int RollRangeMax(int min, int max, int fallback, float multiplier)
+    {
+        int value = min == 0 && max == 0 ? fallback : Math.Max(min, max);
+        return Math.Max(0, (int)MathF.Round(value * multiplier));
+    }
+
+    private static float RollRangeMax(float min, float max, float fallback, float multiplier)
+    {
+        float value = min == 0 && max == 0 ? fallback : Math.Max(min, max);
+        return MathF.Round(Math.Max(0, value * multiplier), 2);
+    }
+
+    private static (int value, bool changed) ClampInt(int value, int max, bool changed)
+    {
+        if (value <= max)
+            return (value, changed);
+        return (max, true);
+    }
+
+    private static (float value, bool changed) ClampFloat(float value, float max, bool changed)
+    {
+        if (value <= max)
+            return (value, changed);
+        return (max, true);
+    }
+
+    private static float GetAffixMax(string name, int level, bool isElite)
+    {
+        int band = level <= 25 ? 0 : level <= 45 ? 1 : 2;
+        (float min, float max)[] ranges = NormalizeAffixName(name) switch
+        {
+            "forca" or "agilidade" or "vitalidade" or "inteligencia" or "destreza" or "sorte" => new[] { (1f, 1f), (1f, 2f), (2f, 4f) },
+            "chancecritica" or "velocidadeataque" => new[] { (0.5f, 1f), (1f, 2f), (2f, 4f) },
+            "danocriticobonus" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
+            "precisao" => new[] { (1f, 3f), (3f, 6f), (6f, 12f) },
+            "penetracaoarmadura" => new[] { (0.5f, 1.5f), (1.5f, 3f), (3f, 6f) },
+            "evasao" or "roubovida" or "roubomana" or "reducaocooldown" => new[] { (0.5f, 1f), (1f, 2f), (2f, 3f) },
+            "hp" or "mana" => new[] { (5f, 12f), (12f, 25f), (25f, 50f) },
+            "danofisico" or "danomagico" or "defesafisica" or "defesamagica" => new[] { (1f, 2f), (2f, 4f), (4f, 8f) },
+            _ => new[] { (0.5f, 1f), (1f, 2f), (2f, 4f) },
+        };
+        return MathF.Round(ranges[band].max * (isElite ? 1.10f : 1f), 2);
+    }
+
+    private static string NormalizeAffixDisplayName(string name)
+    {
+        return NormalizeAffixName(name) switch
+        {
+            "forca" => "Forca",
+            "agilidade" => "Agilidade",
+            "vitalidade" => "Vitalidade",
+            "inteligencia" => "Inteligencia",
+            "destreza" => "Destreza",
+            "sorte" => "Sorte",
+            "hp" => "Hp",
+            "mana" => "Mana",
+            "defesafisica" => "DefesaFisica",
+            "defesamagica" => "DefesaMagica",
+            "danofisico" => "DanoFisico",
+            "danomagico" => "DanoMagico",
+            "evasao" => "Evasao",
+            "precisao" => "Precisao",
+            "chancecritica" => "ChanceCritica",
+            "danocriticobonus" => "DanoCriticoBonus",
+            "velocidadeataque" => "VelocidadeAtaque",
+            "velocidademovimento" => "VelocidadeMovimento",
+            "penetracaoarmadura" => "PenetracaoArmadura",
+            "tenacidade" => "Tenacidade",
+            "regeneracaovida" => "RegeneracaoVida",
+            "regeneracaomana" => "RegeneracaoMana",
+            "roubovida" => "RouboVida",
+            "roubomana" => "RouboMana",
+            "reducaocooldown" => "ReducaoCooldown",
+            "bonusexperiencia" => "BonusExperiencia",
+            "reflexaodano" or "reflexao" => "ReflexaoDano",
+            "resistenciacontrole" => "ResistenciaControle",
+            _ => name,
+        };
+    }
+
     public static bool NormalizeMagicWeaponRoll(int itemId, ItemRoll roll)
     {
         return IsMagicDamageWeaponItemId(itemId) && NormalizeMagicWeaponRoll(roll);
@@ -399,6 +658,17 @@ public static class ItemRoller
         Light,
         Medium,
         Heavy,
+    }
+
+    private enum WeaponRole
+    {
+        Generic,
+        Archer,
+        Assassin,
+        Berserker,
+        Guardian,
+        Mage,
+        Cleric,
     }
 
     public static string NormalizeAffixName(string name)
