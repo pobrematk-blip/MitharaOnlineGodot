@@ -1002,7 +1002,7 @@ public partial class EntityManager : Node
         if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
             return true;
 
-        return item.CategoriaPeso == PesoItem.Medio
+        return item.CategoriaPeso is PesoItem.Leve or PesoItem.Medio or PesoItem.Pesado
             && (item.Tipo == TipoEquipamento.Capacete
                 || item.Tipo == TipoEquipamento.Peitoral
                 || item.Tipo == TipoEquipamento.Calca

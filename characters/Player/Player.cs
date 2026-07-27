@@ -147,7 +147,7 @@ public partial class Player : CharacterBody2D
         perfilVisual = "";
 
         var profile = EncontrarPerfilSpritePorClasse(nomeClasse) ?? HumanUnarmedProfile;
-        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
+        string prefixoAtaque = ObterPrefixoAtaqueParaPerfilOuClasse(profile, nomeClasse);
         SpriteFrames baseFrames = CriarSpriteFramesBaseParaRaca(nomeRaca, prefixoAtaque);
         Texture2D sheet = CarregarTexturaPrimeiroExistente(ResolverCaminhosSpriteRaca(profile, nomeRaca));
         if (sheet == null && profile != HumanUnarmedProfile)
@@ -225,12 +225,14 @@ public partial class Player : CharacterBody2D
         if (sheet == null)
             return null;
 
-        string prefixoAtaque = ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse);
         var profile = EncontrarPerfilSpriteHumano(arma, escudo)
             ?? EncontrarPerfilSpritePorClasse(nomeClasse)
             ?? HumanUnarmedProfile;
+        string prefixoAtaque = ObterPrefixoAtaqueParaPerfilOuClasse(profile, nomeClasse);
 
-        SpriteFrames frames = profile == HumanUnarmedProfile
+        SpriteFrames frames = DeveUsarLayoutLpcPadraoParaPaperdoll(sheet)
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : profile == HumanUnarmedProfile
             ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
             : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
 
@@ -1424,14 +1426,16 @@ public partial class Player : CharacterBody2D
         if (sheet == null)
             return null;
 
-        string prefixoAtaque = ObterPrefixoAtaqueAtual();
         var profile = EncontrarPerfilSpriteHumano(
                 GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")?.ObterSlot(TipoEquipamento.Arma)?.Item,
                 GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent")?.ObterSlot(TipoEquipamento.Escudo)?.Item)
             ?? EncontrarPerfilSpritePorClasse(NomeDaClasse)
             ?? HumanUnarmedProfile;
+        string prefixoAtaque = ObterPrefixoAtaqueParaPerfilOuClasse(profile, NomeDaClasse);
 
-        SpriteFrames frames = profile == HumanUnarmedProfile
+        SpriteFrames frames = DeveUsarLayoutLpcPadraoParaPaperdoll(sheet)
+            ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
+            : profile == HumanUnarmedProfile
             ? LpcSpriteFramesBuilder.Construir(sheet, prefixoAtaque)
             : CriarSpriteFramesEquipamento(sheet, prefixoAtaque, profile);
 
@@ -1469,19 +1473,52 @@ public partial class Player : CharacterBody2D
 
     private static string ResolverPaperdollAutomatico(ItemResource item)
     {
-        if (item == null || item.CategoriaPeso != PesoItem.Medio)
+        if (item == null)
             return "";
 
-        string prefixo = item.Tipo switch
+        foreach (string prefixo in ObterPrefixosPaperdoll(item))
         {
-            TipoEquipamento.Capacete => "Bandana de Couro",
-            TipoEquipamento.Peitoral => "Couraca de Couro",
-            TipoEquipamento.Calca => "Calca de Couro",
-            TipoEquipamento.Botas => "Botas de Couro",
-            _ => "",
-        };
+            string caminho = ResolverPaperdollPorPrefixo(prefixo, item.NivelRequerido);
+            if (!string.IsNullOrWhiteSpace(caminho))
+                return caminho;
+        }
 
-        return ResolverPaperdollPorPrefixo(prefixo, item.NivelRequerido);
+        return "";
+    }
+
+    private static string[] ObterPrefixosPaperdoll(ItemResource item)
+    {
+        if (item == null)
+            return Array.Empty<string>();
+
+        return item.CategoriaPeso switch
+        {
+            PesoItem.Medio => item.Tipo switch
+            {
+                TipoEquipamento.Capacete => new[] { "Bandana de Couro" },
+                TipoEquipamento.Peitoral => new[] { "Couraca de Couro" },
+                TipoEquipamento.Calca => new[] { "Calca de Couro" },
+                TipoEquipamento.Botas => new[] { "Botas de Couro" },
+                _ => Array.Empty<string>(),
+            },
+            PesoItem.Pesado => item.Tipo switch
+            {
+                TipoEquipamento.Capacete => new[] { "Capacete de Ferro" },
+                TipoEquipamento.Peitoral => new[] { "Armadura de Ferro" },
+                TipoEquipamento.Calca => new[] { "Calca de Ferro" },
+                TipoEquipamento.Botas => new[] { "Botas de Ferro", "Boras de Ferro" },
+                _ => Array.Empty<string>(),
+            },
+            PesoItem.Leve => item.Tipo switch
+            {
+                TipoEquipamento.Capacete => new[] { "Chapel de Pano", "Chapeu de Pano", "Chapéu de Pano", "Capuz de Pano" },
+                TipoEquipamento.Peitoral => new[] { "Manto de Pano", "Tunica de Pano", "Túnica de Pano" },
+                TipoEquipamento.Calca => new[] { "Calca de Pano", "Calça de Pano" },
+                TipoEquipamento.Botas => new[] { "Sandalia de Pano", "Sandalha de Pano", "Sandália de Pano", "Botas de Pano" },
+                _ => Array.Empty<string>(),
+            },
+            _ => Array.Empty<string>(),
+        };
     }
 
     private static string ResolverPaperdollPorPrefixo(string prefixo, int nivelItem)
@@ -1490,7 +1527,7 @@ public partial class Player : CharacterBody2D
         if (string.IsNullOrWhiteSpace(prefixo))
             return "";
 
-        int nivelPreferido = nivelItem >= 10 ? 10 : 1;
+        int nivelPreferido = nivelItem >= 20 ? 20 : nivelItem >= 10 ? 10 : 1;
         string caminhoDireto = ResolverPaperdollExistente(pasta, prefixo, nivelPreferido);
         if (!string.IsNullOrWhiteSpace(caminhoDireto))
             return caminhoDireto;
@@ -1516,10 +1553,16 @@ public partial class Player : CharacterBody2D
                     continue;
 
                 int lvIndex = nomeNormalizado.LastIndexOf("Lv", StringComparison.OrdinalIgnoreCase);
+                int marcadorLength = 2;
+                if (lvIndex < 0)
+                {
+                    lvIndex = nomeNormalizado.LastIndexOf("Level", StringComparison.OrdinalIgnoreCase);
+                    marcadorLength = 5;
+                }
                 if (lvIndex < 0)
                     continue;
 
-                string raw = nomeNormalizado[(lvIndex + 2)..].Trim();
+                string raw = nomeNormalizado[(lvIndex + marcadorLength)..].Trim();
                 if (!int.TryParse(raw, out int nivelArquivo))
                     continue;
 
@@ -1556,8 +1599,12 @@ public partial class Player : CharacterBody2D
         {
             $"{pasta}/{prefixo} Lv{nivel}.png",
             $"{pasta}/{prefixo}  Lv{nivel}.png",
+            $"{pasta}/{prefixo} level {nivel}.png",
+            $"{pasta}/{prefixo} Level {nivel}.png",
             $"{pasta}/{NormalizarEspacos(prefixo)} Lv{nivel}.png",
             $"{pasta}/{NormalizarEspacos(prefixo)}  Lv{nivel}.png",
+            $"{pasta}/{NormalizarEspacos(prefixo)} level {nivel}.png",
+            $"{pasta}/{NormalizarEspacos(prefixo)} Level {nivel}.png",
         };
 
         foreach (string caminho in candidatos)
@@ -1778,9 +1825,42 @@ public partial class Player : CharacterBody2D
         {
             "Arco" => "arqueiro",
             "Adaga" => "ladino",
+            "Machado Duas Maos" => "machado_guerra",
+            "Espada e Escudo" => "espada_escudo",
+            "Maca e Escudo" => "maca_escudo",
             "Cajado" => "mago",
             _ => "guerreiro"
         };
+    }
+
+    private static string ObterPrefixoAtaqueParaPerfilOuClasse(HumanFullSpriteProfile profile, string nomeClasse)
+    {
+        if (profile != null && profile != HumanUnarmedProfile)
+            return ObterPrefixoAtaqueDoPerfil(profile);
+
+        string classe = (nomeClasse ?? "").Trim().ToLowerInvariant();
+        return classe switch
+        {
+            "assassino" or "assasino" or "ladino" => "ladino",
+            "arqueiro" => "arqueiro",
+            "mago" => "mago",
+            "berseker" or "berserker" or "barbaro" or "bárbaro" => "machado_guerra",
+            "guardiao" or "guradiao" or "guardião" or "protetor" => "espada_escudo",
+            "prist" or "priest" or "clerigo" or "clérigo" or "sacerdote" => "maca_escudo",
+            _ => ClasseRegistry.ObterPrefixoAtaqueRecomendado(nomeClasse)
+        };
+    }
+
+    private static bool DeveUsarLayoutLpcPadraoParaPaperdoll(Texture2D sheet)
+    {
+        if (sheet == null)
+            return false;
+
+        Vector2 size = sheet.GetSize();
+        string path = sheet.ResourcePath ?? "";
+        return path.Contains("/paperdolls/", StringComparison.OrdinalIgnoreCase)
+            && size.X > 0
+            && size.X <= 1024;
     }
 
     private static IEnumerable<string> ObterPrefixosModeloAtaque(HumanFullSpriteProfile profile, string prefixoAtaque)
@@ -2085,7 +2165,14 @@ public partial class Player : CharacterBody2D
 
     private string ObterPrefixoAtaqueAtual()
     {
-        return ClasseRegistry.ObterPrefixoAtaqueRecomendado(NomeDaClasse);
+        var equipamento = GetNodeOrNull<EquipamentoComponent>("EquipamentoComponent");
+        var profile = EncontrarPerfilSpriteHumano(
+                equipamento?.ObterSlot(TipoEquipamento.Arma)?.Item,
+                equipamento?.ObterSlot(TipoEquipamento.Escudo)?.Item)
+            ?? EncontrarPerfilSpritePorClasse(NomeDaClasse)
+            ?? HumanUnarmedProfile;
+
+        return ObterPrefixoAtaqueParaPerfilOuClasse(profile, NomeDaClasse);
     }
 
     private float ObterVelocidadeVisualAtaqueAtual()
@@ -2137,7 +2224,7 @@ public partial class Player : CharacterBody2D
         if (item.SpriteFramesEquipamento != null || item.SpritesheetEquipamento != null)
             return true;
 
-        if (item.CategoriaPeso != PesoItem.Medio)
+        if (item.CategoriaPeso is not (PesoItem.Leve or PesoItem.Medio or PesoItem.Pesado))
             return false;
 
         return item.Tipo is TipoEquipamento.Capacete
