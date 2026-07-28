@@ -231,8 +231,9 @@ partial class GameServer
         if (!_tileData.TryGetValue(sceneName, out var tiles))
             return false;
 
-        int tileX = (int)MathF.Floor(x / MapTileSize);
-        int tileY = (int)MathF.Floor(y / MapTileSize);
+        float tileSize = GetTileWorldSize(sceneName);
+        int tileX = (int)MathF.Floor(x / tileSize);
+        int tileY = (int)MathF.Floor(y / tileSize);
         return tiles.TryGetValue((tileX, tileY), out byte type) && IsFullBlockTileType(type);
     }
 
@@ -313,6 +314,7 @@ partial class GameServer
         if (!_teleportTargets.TryGetValue(sceneName, out var teleports))
             return false;
 
+        float tileSize = GetTileWorldSize(sceneName);
         const float playerRadius = 16f;
         float movementMinX = MathF.Min(fromX, toX) - playerRadius;
         float movementMaxX = MathF.Max(fromX, toX) + playerRadius;
@@ -323,10 +325,10 @@ partial class GameServer
         {
             int tileX = teleport.Key.X;
             int tileY = teleport.Key.Y;
-            float tileMinX = tileX * 32f;
-            float tileMaxX = tileMinX + 32f;
-            float tileMinY = tileY * 32f;
-            float tileMaxY = tileMinY + 32f;
+            float tileMinX = tileX * tileSize;
+            float tileMaxX = tileMinX + tileSize;
+            float tileMinY = tileY * tileSize;
+            float tileMaxY = tileMinY + tileSize;
 
             if (movementMaxX < tileMinX || movementMinX > tileMaxX
                 || movementMaxY < tileMinY || movementMinY > tileMaxY)
@@ -395,8 +397,9 @@ partial class GameServer
             || session.SuppressedTeleportTileY != tileY)
             return false;
 
-        float centerX = tileX * 32f + 16f;
-        float centerY = tileY * 32f + 16f;
+        float tileSize = GetTileWorldSize(sceneName);
+        float centerX = tileX * tileSize + tileSize * 0.5f;
+        float centerY = tileY * tileSize + tileSize * 0.5f;
         float dx = x - centerX;
         float dy = y - centerY;
         const float clearRadius = 48f;
@@ -420,14 +423,15 @@ partial class GameServer
         if (!_teleportTargets.TryGetValue(targetScene, out var teleports))
             return;
 
-        const float adjacentDistance = 32f;
+        float tileSize = GetTileWorldSize(targetScene);
+        float adjacentDistance = tileSize * 2f;
         float bestDistanceSq = adjacentDistance * adjacentDistance + 0.01f;
         (int X, int Y)? nearestTile = null;
 
         foreach (var teleport in teleports)
         {
-            float centerX = teleport.Key.X * 32f + 16f;
-            float centerY = teleport.Key.Y * 32f + 16f;
+            float centerX = teleport.Key.X * tileSize + tileSize * 0.5f;
+            float centerY = teleport.Key.Y * tileSize + tileSize * 0.5f;
             float dx = targetX - centerX;
             float dy = targetY - centerY;
             float distanceSq = dx * dx + dy * dy;
@@ -448,8 +452,9 @@ partial class GameServer
 
     private static bool TryFindTeleportAtPosition(string sceneName, float x, float y, out int tileX, out int tileY, out TeleportTileInfo info)
     {
-        tileX = (int)MathF.Floor(x / 32f);
-        tileY = (int)MathF.Floor(y / 32f);
+        float tileSize = GetTileWorldSize(sceneName);
+        tileX = (int)MathF.Floor(x / tileSize);
+        tileY = (int)MathF.Floor(y / tileSize);
         info = null!;
 
         if (!_teleportTargets.TryGetValue(sceneName, out var teleports))

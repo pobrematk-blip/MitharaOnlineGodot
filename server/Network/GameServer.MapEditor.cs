@@ -13,10 +13,11 @@ public partial class GameServer
     private const byte TileTypeBlock = 0;
     private const byte TileTypeTeleport = 1;
     private const byte TileTypeNpcVoid = 2;
-    private const float MapTileSize = 16f;
+    private const float LegacyTileSize = 32f;
 
     private static readonly Dictionary<string, Dictionary<(int X, int Y), byte>> _tileData = new();
     private static readonly Dictionary<string, Dictionary<(int X, int Y), TeleportTileInfo>> _teleportTargets = new();
+    private static readonly Dictionary<string, float> _tileWorldSizeByScene = new();
 
     private static bool IsFullBlockTileType(byte type) => type == TileTypeBlock;
     private static bool IsMobBlockedTileType(byte type) => type == TileTypeBlock || type == TileTypeNpcVoid;
@@ -33,6 +34,7 @@ public partial class GameServer
     {
         _tileData.Clear();
         _teleportTargets.Clear();
+        _tileWorldSizeByScene.Clear();
 
         string dataDir = ResolveTileDataDirectory();
 
@@ -53,12 +55,20 @@ public partial class GameServer
 
             var tiles = new Dictionary<(int, int), byte>();
             var teleports = new Dictionary<(int, int), TeleportTileInfo>();
+            float sceneTileSize = LegacyTileSize;
 
             foreach (var entry in entries)
             {
                 int tileX = entry.GetProperty("tileX").GetInt32();
                 int tileY = entry.GetProperty("tileY").GetInt32();
                 byte type = entry.GetProperty("type").GetByte();
+                if (entry.TryGetProperty("tileSize", out var tileSizeProperty)
+                    && tileSizeProperty.TryGetSingle(out float exportedTileSize)
+                    && exportedTileSize > 0f)
+                {
+                    sceneTileSize = exportedTileSize;
+                }
+
                 tiles[(tileX, tileY)] = type;
 
                 if (type == TileTypeTeleport && entry.TryGetProperty("targetScene", out var ts))
@@ -74,10 +84,11 @@ public partial class GameServer
             }
 
             _tileData[sceneName] = tiles;
+            _tileWorldSizeByScene[sceneName] = sceneTileSize;
             if (teleports.Count > 0)
                 _teleportTargets[sceneName] = teleports;
 
-            Logger.Info($"[TILE DATA] Carregado: {sceneName} ({tiles.Count} tiles, {teleports.Count} teleportes)");
+            Logger.Info($"[TILE DATA] Carregado: {sceneName} ({tiles.Count} tiles, {teleports.Count} teleportes, tile={sceneTileSize:0.#}px)");
         }
 
         ApplyTileBlocksToPathGrids();
@@ -124,7 +135,7 @@ public partial class GameServer
                 if (!IsMobBlockedTileType(kvp.Value))
                     continue;
 
-                ApplyTileBlockToPathGrid(channel.PathGrid, kvp.Key.X, kvp.Key.Y);
+                ApplyTileBlockToPathGrid(channel.PathGrid, kvp.Key.X, kvp.Key.Y, GetTileWorldSize("main"));
                 blockedCount++;
             }
         }
@@ -132,12 +143,20 @@ public partial class GameServer
         Logger.Info($"[TILE DATA] {blockedCount} tile(s) bloqueados aplicados ao pathfinding dos mobs/bosses.");
     }
 
-    private static void ApplyTileBlockToPathGrid(PathfindingGrid grid, int tileX, int tileY)
+    private static float GetTileWorldSize(string sceneName)
     {
-        float minX = tileX * MapTileSize;
-        float minY = tileY * MapTileSize;
-        float maxX = minX + MapTileSize - 0.001f;
-        float maxY = minY + MapTileSize - 0.001f;
+        sceneName = string.IsNullOrWhiteSpace(sceneName) ? "main" : sceneName.Trim().ToLowerInvariant();
+        return _tileWorldSizeByScene.TryGetValue(sceneName, out float tileSize) && tileSize > 0f
+            ? tileSize
+            : LegacyTileSize;
+    }
+
+    private static void ApplyTileBlockToPathGrid(PathfindingGrid grid, int tileX, int tileY, float tileSize)
+    {
+        float minX = tileX * tileSize;
+        float minY = tileY * tileSize;
+        float maxX = minX + tileSize - 0.001f;
+        float maxY = minY + tileSize - 0.001f;
 
         var (minGx, minGy) = grid.WorldToGrid(minX, minY);
         var (maxGx, maxGy) = grid.WorldToGrid(maxX, maxY);

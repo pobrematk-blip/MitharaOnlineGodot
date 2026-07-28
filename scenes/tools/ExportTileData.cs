@@ -7,6 +7,8 @@ using System.Text.Json;
 [Tool]
 public partial class ExportTileData : Node
 {
+    private const float MapTileSize = 16f;
+
     private sealed class SceneExportData
     {
         public string ScenePath { get; set; } = "";
@@ -45,7 +47,7 @@ public partial class ExportTileData : Node
 
     public override void _Ready()
     {
-        if (Engine.IsEditorHint()) return;
+        if (Engine.IsEditorHint() && !OS.GetCmdlineArgs().Contains("--export-tile-data")) return;
         Export();
         GD.Print("[TILE EXPORT] Concluido!");
         GetTree().Quit();
@@ -131,6 +133,7 @@ public partial class ExportTileData : Node
         {
             { "tileX", from.TileX },
             { "tileY", from.TileY },
+            { "tileSize", MapTileSize },
             { "type", (int)TileMarker.TileType.Teleport },
             { "targetScene", to.SceneName },
             { "targetX", to.Destination.X },
@@ -161,6 +164,7 @@ public partial class ExportTileData : Node
             {
                 { "tileX", tile.X },
                 { "tileY", tile.Y },
+                { "tileSize", MapTileSize },
                 { "type", (int)TileMarker.TileType.Npc },
                 { "source", "layer_npc_void" },
             };
@@ -172,6 +176,7 @@ public partial class ExportTileData : Node
             {
                 { "tileX", tile.X },
                 { "tileY", tile.Y },
+                { "tileSize", MapTileSize },
                 { "type", (int)TileMarker.TileType.Block },
                 { "source", "godot_collision_or_block_layer" },
             };
@@ -179,13 +184,14 @@ public partial class ExportTileData : Node
 
         foreach (var marker in sceneData.Markers)
         {
-            int tileX = Mathf.FloorToInt(marker.GlobalPosition.X / 32f);
-            int tileY = Mathf.FloorToInt(marker.GlobalPosition.Y / 32f);
+            int tileX = Mathf.FloorToInt(marker.GlobalPosition.X / MapTileSize);
+            int tileY = Mathf.FloorToInt(marker.GlobalPosition.Y / MapTileSize);
 
             var entry = new Dictionary<string, object>
             {
                 { "tileX", tileX },
                 { "tileY", tileY },
+                { "tileSize", MapTileSize },
                 { "type", (int)marker.Type },
             };
 
@@ -419,10 +425,10 @@ public partial class ExportTileData : Node
 
     private static void AddBoundsTiles(Rect2 bounds, HashSet<(int X, int Y)> result)
     {
-        int minX = Mathf.FloorToInt(bounds.Position.X / 32f);
-        int minY = Mathf.FloorToInt(bounds.Position.Y / 32f);
-        int maxX = Mathf.FloorToInt((bounds.Position.X + bounds.Size.X) / 32f);
-        int maxY = Mathf.FloorToInt((bounds.Position.Y + bounds.Size.Y) / 32f);
+        int minX = Mathf.FloorToInt(bounds.Position.X / MapTileSize);
+        int minY = Mathf.FloorToInt(bounds.Position.Y / MapTileSize);
+        int maxX = Mathf.FloorToInt((bounds.Position.X + bounds.Size.X) / MapTileSize);
+        int maxY = Mathf.FloorToInt((bounds.Position.Y + bounds.Size.Y) / MapTileSize);
 
         for (int y = minY; y <= maxY; y++)
         {
@@ -433,8 +439,8 @@ public partial class ExportTileData : Node
 
     private static void AddTileAtWorld(Vector2 world, HashSet<(int X, int Y)> result)
     {
-        int tileX = Mathf.FloorToInt(world.X / 32f);
-        int tileY = Mathf.FloorToInt(world.Y / 32f);
+        int tileX = Mathf.FloorToInt(world.X / MapTileSize);
+        int tileY = Mathf.FloorToInt(world.Y / MapTileSize);
         result.Add((tileX, tileY));
     }
 }
