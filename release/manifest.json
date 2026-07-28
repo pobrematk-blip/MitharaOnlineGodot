@@ -1,7 +1,7 @@
 ﻿{
-    "version":  "0.1.64",
+    "version":  "0.1.65",
     "archive":  "MitharaOnline_Update.zip",
-    "archiveSha256":  "6A30FF624D354BDED94E49F5FA6635FEA3DAABA206CC9292A4A2B7A95FB788E7",
+    "archiveSha256":  "E469A171D23C1298272D8463EAEE7F10B8DF4FC55AC0A65EEB8825E1FFA828E3",
     "gameExecutable":  "MitharaOnlineTeste.exe",
     "files":  [
                   {
@@ -86,13 +86,13 @@
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.dll",
-                      "size":  2236416,
-                      "sha256":  "B3706A9BF9C0A57A2F1C5EFACAD444E29B719D1B53A10913516804B998919D5D"
+                      "size":  2242560,
+                      "sha256":  "51EDE9C84D831C28880B47005FA32F74710F485EE317A860596279007E5A0684"
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.pdb",
-                      "size":  1332556,
-                      "sha256":  "4492167E32ABBE8D977DA37651F97009DEA1FD4D3F9D2F75517E0FB993CF63DB"
+                      "size":  1335316,
+                      "sha256":  "B8AA526FBCE4C02DE4BB94FF23B427F6B6784CD7EE12CBF5CCCB1E2322EE0F4F"
                   },
                   {
                       "path":  "data_Mithara_windows_x86_64/Mithara.runtimeconfig.json",
@@ -951,8 +951,18 @@
                   },
                   {
                       "path":  "MitharaOnlineTeste.pck",
-                      "size":  307990524,
-                      "sha256":  "21AE4B6D5514DB47150E0111338190786695A8774E29C4CBF4CE6B2539BC56DF"
+                      "size":  311588620,
+                      "sha256":  "0FEAA45C0A22485F2D8135ADDC620D9968E0C873DA05A02EDA05B71F547A7DB1"
+                  },
+                  {
+                      "path":  "MitharaOnlineTeste.pck14782252.tmp",
+                      "size":  133795952,
+                      "sha256":  "199E247A7420F7DD718A8C2BCCF7CC9C292B0A60313C0C5CFF40BEB9D5E9F9E9"
+                  },
+                  {
+                      "path":  "MitharaOnlineTeste.pck31837182.tmp",
+                      "size":  304689264,
+                      "sha256":  "E58166DF980230873F0DED5F09939F030EBC1DAECAE00AD9BE1525005A078188"
                   },
                   {
                       "path":  "server_endpoint.json",
