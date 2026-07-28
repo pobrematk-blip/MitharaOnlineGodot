@@ -14,6 +14,7 @@ public partial class GameServer
     private const byte TileTypeTeleport = 1;
     private const byte TileTypeNpcVoid = 2;
     private const float LegacyTileSize = 32f;
+    private const float DefaultEntityTileCheckRadius = 14f;
 
     private static readonly Dictionary<string, Dictionary<(int X, int Y), byte>> _tileData = new();
     private static readonly Dictionary<string, Dictionary<(int X, int Y), TeleportTileInfo>> _teleportTargets = new();
@@ -127,6 +128,8 @@ public partial class GameServer
 
         foreach (var channel in _world.GetAllChannels())
         {
+            channel.MonsterTileBlocker = (x, y, radius) => IsTileBlockedForMonsterAt("main", x, y, radius);
+
             if (channel.PathGrid == null || !applied.Add(channel.PathGrid))
                 continue;
 
@@ -141,6 +144,42 @@ public partial class GameServer
         }
 
         Logger.Info($"[TILE DATA] {blockedCount} tile(s) bloqueados aplicados ao pathfinding dos mobs/bosses.");
+    }
+
+    private static bool IsTileBlockedForPlayerAt(string sceneName, float x, float y, float radius = DefaultEntityTileCheckRadius)
+    {
+        return IsTileBlockedAt(sceneName, x, y, radius, IsFullBlockTileType);
+    }
+
+    private static bool IsTileBlockedForMonsterAt(string sceneName, float x, float y, float radius = DefaultEntityTileCheckRadius)
+    {
+        return IsTileBlockedAt(sceneName, x, y, radius, IsMobBlockedTileType);
+    }
+
+    private static bool IsTileBlockedAt(string sceneName, float x, float y, float radius, Func<byte, bool> isBlockedType)
+    {
+        sceneName = string.IsNullOrWhiteSpace(sceneName) ? "main" : sceneName.Trim().ToLowerInvariant();
+        if (!_tileData.TryGetValue(sceneName, out var tiles) || tiles.Count == 0)
+            return false;
+
+        float tileSize = GetTileWorldSize(sceneName);
+        radius = MathF.Max(0f, radius);
+
+        int minTileX = (int)MathF.Floor((x - radius) / tileSize);
+        int maxTileX = (int)MathF.Floor((x + radius) / tileSize);
+        int minTileY = (int)MathF.Floor((y - radius) / tileSize);
+        int maxTileY = (int)MathF.Floor((y + radius) / tileSize);
+
+        for (int tileY = minTileY; tileY <= maxTileY; tileY++)
+        {
+            for (int tileX = minTileX; tileX <= maxTileX; tileX++)
+            {
+                if (tiles.TryGetValue((tileX, tileY), out byte type) && isBlockedType(type))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static float GetTileWorldSize(string sceneName)

@@ -1,7 +1,7 @@
 ﻿{
-    "version":  "0.1.67",
+    "version":  "0.1.68",
     "archive":  "MitharaOnline_Update.zip",
-    "archiveSha256":  "E469A171D23C1298272D8463EAEE7F10B8DF4FC55AC0A65EEB8825E1FFA828E3",
+    "archiveSha256":  "D6C294365A8E7D3DB52A86E750706601A41B1FF74E901EC5DF1BA2BD4157FAE7",
     "gameExecutable":  "MitharaOnlineTeste.exe",
     "files":  [
                   {
@@ -953,16 +953,6 @@
                       "path":  "MitharaOnlineTeste.pck",
                       "size":  311588620,
                       "sha256":  "0FEAA45C0A22485F2D8135ADDC620D9968E0C873DA05A02EDA05B71F547A7DB1"
-                  },
-                  {
-                      "path":  "MitharaOnlineTeste.pck14782252.tmp",
-                      "size":  133795952,
-                      "sha256":  "199E247A7420F7DD718A8C2BCCF7CC9C292B0A60313C0C5CFF40BEB9D5E9F9E9"
-                  },
-                  {
-                      "path":  "MitharaOnlineTeste.pck31837182.tmp",
-                      "size":  304689264,
-                      "sha256":  "E58166DF980230873F0DED5F09939F030EBC1DAECAE00AD9BE1525005A078188"
                   },
                   {
                       "path":  "server_endpoint.json",

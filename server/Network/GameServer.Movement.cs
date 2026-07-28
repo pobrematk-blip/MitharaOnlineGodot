@@ -224,17 +224,7 @@ partial class GameServer
 
     private bool IsBlockedTile(string sceneName, float x, float y)
     {
-        if (string.IsNullOrWhiteSpace(sceneName))
-            sceneName = "main";
-
-        sceneName = sceneName.ToLowerInvariant();
-        if (!_tileData.TryGetValue(sceneName, out var tiles))
-            return false;
-
-        float tileSize = GetTileWorldSize(sceneName);
-        int tileX = (int)MathF.Floor(x / tileSize);
-        int tileY = (int)MathF.Floor(y / tileSize);
-        return tiles.TryGetValue((tileX, tileY), out byte type) && IsFullBlockTileType(type);
+        return IsTileBlockedForPlayerAt(sceneName, x, y, 12f);
     }
 
     private bool CheckTeleportTile(NetPeer peer, PlayerSession session, Channel channel, Entity entity, float x, float y)

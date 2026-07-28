@@ -189,12 +189,8 @@ partial class GameServer
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(mobTarget.FactionId)
-                && string.Equals(mobTarget.FactionId, playerAttacker.FactionId, StringComparison.OrdinalIgnoreCase))
-            {
-                reason = "Alvo aliado.";
-                return false;
-            }
+            // Monstros usam faccao/area para configuracao visual e de IA, mas nunca
+            // devem virar aliados do jogador por isso. Pets e NPCs possuem regras proprias.
         }
 
         return true;

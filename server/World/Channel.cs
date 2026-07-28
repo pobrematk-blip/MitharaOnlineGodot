@@ -15,6 +15,7 @@ public class Channel
 
     public List<NoMobZone> NoMobZones { get; set; } = new();
     public PathfindingGrid? PathGrid { get; set; }
+    public Func<float, float, float, bool>? MonsterTileBlocker { get; set; }
 
     private readonly Dictionary<ulong, Entity> _entities = new();
     private readonly SpatialGrid _grid;
@@ -417,9 +418,12 @@ public class Channel
         return false;
     }
 
-    public bool IsMonsterWalkableWorld(float x, float y)
+    public bool IsMonsterWalkableWorld(float x, float y, float radius = 14f)
     {
         if (IsInNoMobZone(x, y))
+            return false;
+
+        if (MonsterTileBlocker?.Invoke(x, y, radius) == true)
             return false;
 
         return PathGrid == null || PathGrid.IsWalkableWorld(x, y);
@@ -468,7 +472,7 @@ public class Channel
         float adjustedX = desiredX + pushX / pushLen * maxPush;
         float adjustedY = desiredY + pushY / pushLen * maxPush;
 
-        if (IsInNoMobZone(adjustedX, adjustedY))
+        if (!IsMonsterWalkableWorld(adjustedX, adjustedY))
             return (desiredX, desiredY);
 
         if (usePathfinding && PathGrid != null && !PathGrid.IsWalkableWorld(adjustedX, adjustedY))
@@ -1021,6 +1025,9 @@ public class Channel
     private bool IsValidMonsterSpawn(SpawnPoint point, float x, float y)
     {
         if (IsInNoMobZone(x, y))
+            return false;
+
+        if (MonsterTileBlocker?.Invoke(x, y, 14f) == true)
             return false;
 
         if (PathGrid != null && !PathGrid.IsWalkableWorld(x, y))
