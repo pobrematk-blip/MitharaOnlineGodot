@@ -94,7 +94,14 @@ New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 $archivePath = Join-Path $outputRoot $ArchiveName
 $manifestPath = Join-Path $outputRoot 'manifest.json'
 
-$files = Get-ChildItem -LiteralPath $gameRoot -Recurse -File | Sort-Object FullName
+$files = Get-ChildItem -LiteralPath $gameRoot -Recurse -File |
+    Where-Object {
+        $_.Extension -notin @('.tmp', '.log') -and
+        $_.Name -notlike '*.tmp' -and
+        $_.Name -notlike '*.download' -and
+        $_.Name -notlike '*.partial'
+    } |
+    Sort-Object FullName
 $manifestFiles = foreach ($file in $files) {
     $rootPrefix = $gameRoot.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
     $relative = $file.FullName.Substring($rootPrefix.Length).Replace('\', '/')
@@ -106,7 +113,29 @@ $manifestFiles = foreach ($file in $files) {
     }
 }
 
-Compress-Archive -Path (Join-Path $gameRoot '*') -DestinationPath $archivePath -CompressionLevel Optimal -Force
+if (Test-Path -LiteralPath $archivePath -PathType Leaf) {
+    Remove-Item -LiteralPath $archivePath -Force
+}
+
+$stagingRoot = Join-Path $outputRoot '__update_staging'
+if (Test-Path -LiteralPath $stagingRoot -PathType Container) {
+    Remove-Item -LiteralPath $stagingRoot -Recurse -Force
+}
+New-Item -ItemType Directory -Path $stagingRoot -Force | Out-Null
+
+foreach ($file in $files) {
+    $rootPrefix = $gameRoot.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+    $relative = $file.FullName.Substring($rootPrefix.Length)
+    $destination = Join-Path $stagingRoot $relative
+    $destinationDirectory = Split-Path -Parent $destination
+    if (-not (Test-Path -LiteralPath $destinationDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+    }
+    Copy-Item -LiteralPath $file.FullName -Destination $destination -Force
+}
+
+Compress-Archive -Path (Join-Path $stagingRoot '*') -DestinationPath $archivePath -CompressionLevel Optimal -Force
+Remove-Item -LiteralPath $stagingRoot -Recurse -Force
 $archiveHash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
 
 $manifest = [ordered]@{
