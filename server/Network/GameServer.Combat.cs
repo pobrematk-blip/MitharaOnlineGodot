@@ -583,6 +583,12 @@ partial class GameServer
             float landingX = castTarget.X + fromTargetX * 52f;
             float landingY = castTarget.Y + fromTargetY * 52f;
 
+            if (!channel.IsMonsterWalkableWorld(landingX, landingY))
+            {
+                landingX = mob.X;
+                landingY = mob.Y;
+            }
+
             channel.MoveEntity(mob.Id, landingX, landingY);
             mob.X = landingX;
             mob.Y = landingY;
@@ -1824,6 +1830,8 @@ partial class GameServer
         {
             float closeX = centerX + tangentSign * TileSize * 0.35f;
             float closeY = centerY - TileSize * 0.65f;
+            if (target is MonsterEntity && !channel.IsMonsterWalkableWorld(closeX, closeY))
+                return;
             channel.MoveEntity(target.Id, closeX, closeY);
             BroadcastPulledEntity(channel, target, closeX, closeY);
             return;
@@ -1836,6 +1844,9 @@ partial class GameServer
         float liftOffset = MathF.Min(TileSize * 1.05f, MathF.Max(TileSize * 0.45f, distance * 0.18f));
         float pulledX = centerX + nx * finalDistance + (-ny * tangentSign * swirlOffset);
         float pulledY = centerY + ny * finalDistance + (nx * tangentSign * swirlOffset) - liftOffset;
+
+        if (target is MonsterEntity && !channel.IsMonsterWalkableWorld(pulledX, pulledY))
+            return;
 
         channel.MoveEntity(target.Id, pulledX, pulledY);
         BroadcastPulledEntity(channel, target, pulledX, pulledY);

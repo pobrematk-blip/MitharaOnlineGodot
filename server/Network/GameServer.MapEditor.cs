@@ -13,6 +13,7 @@ public partial class GameServer
     private const byte TileTypeBlock = 0;
     private const byte TileTypeTeleport = 1;
     private const byte TileTypeNpcVoid = 2;
+    private const float MapTileSize = 16f;
 
     private static readonly Dictionary<string, Dictionary<(int X, int Y), byte>> _tileData = new();
     private static readonly Dictionary<string, Dictionary<(int X, int Y), TeleportTileInfo>> _teleportTargets = new();
@@ -123,15 +124,34 @@ public partial class GameServer
                 if (!IsMobBlockedTileType(kvp.Value))
                     continue;
 
-                float worldX = kvp.Key.X * 32f + 16f;
-                float worldY = kvp.Key.Y * 32f + 16f;
-                var (gx, gy) = channel.PathGrid.WorldToGrid(worldX, worldY);
-                channel.PathGrid.SetBlocked(gx, gy, true);
+                ApplyTileBlockToPathGrid(channel.PathGrid, kvp.Key.X, kvp.Key.Y);
                 blockedCount++;
             }
         }
 
         Logger.Info($"[TILE DATA] {blockedCount} tile(s) bloqueados aplicados ao pathfinding dos mobs/bosses.");
+    }
+
+    private static void ApplyTileBlockToPathGrid(PathfindingGrid grid, int tileX, int tileY)
+    {
+        float minX = tileX * MapTileSize;
+        float minY = tileY * MapTileSize;
+        float maxX = minX + MapTileSize - 0.001f;
+        float maxY = minY + MapTileSize - 0.001f;
+
+        var (minGx, minGy) = grid.WorldToGrid(minX, minY);
+        var (maxGx, maxGy) = grid.WorldToGrid(maxX, maxY);
+
+        int startGx = Math.Min(minGx, maxGx);
+        int endGx = Math.Max(minGx, maxGx);
+        int startGy = Math.Min(minGy, maxGy);
+        int endGy = Math.Max(minGy, maxGy);
+
+        for (int gy = startGy; gy <= endGy; gy++)
+        {
+            for (int gx = startGx; gx <= endGx; gx++)
+                grid.SetBlocked(gx, gy, true);
+        }
     }
 
     private void HandleMapEditorPlaceTile(NetPeer peer, NetDataReader reader)

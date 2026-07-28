@@ -417,6 +417,14 @@ public class Channel
         return false;
     }
 
+    public bool IsMonsterWalkableWorld(float x, float y)
+    {
+        if (IsInNoMobZone(x, y))
+            return false;
+
+        return PathGrid == null || PathGrid.IsWalkableWorld(x, y);
+    }
+
     private PathFollower GetOrCreatePathFollower(ulong entityId)
     {
         if (!_pathFollowers.TryGetValue(entityId, out var follower))
@@ -481,6 +489,12 @@ public class Channel
         float moveX = newX - oldX;
         float moveY = newY - oldY;
         float movedSq = moveX * moveX + moveY * moveY;
+
+        if (!IsMonsterWalkableWorld(newX, newY))
+        {
+            mob.Moving = false;
+            return;
+        }
 
         if (movedSq < 0.04f)
         {
@@ -649,7 +663,7 @@ public class Channel
                         if (moving)
                         {
                             mob.AIState = MonsterAIState.Chase;
-                            if (IsInNoMobZone(newX, newY))
+                            if (!IsMonsterWalkableWorld(newX, newY))
                             {
                                 mob.TargetEntityId = null;
                                 pathFollower.Stop();
@@ -670,9 +684,7 @@ public class Channel
                             float newFx = mob.X + dx * ratio;
                             float newFy = mob.Y + dy * ratio;
 
-                            bool currentWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(mob.X, mob.Y);
-                            bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
-                            if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
+                            if (IsMonsterWalkableWorld(newFx, newFy))
                             {
                                 (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
                                 ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy, dx, dy);
@@ -694,16 +706,7 @@ public class Channel
                         float newFx = mob.X + dx * ratio;
                         float newFy = mob.Y + dy * ratio;
 
-                        if (IsInNoMobZone(newFx, newFy))
-                        {
-                            mob.TargetEntityId = null;
-                            mob.Moving = false;
-                            continue;
-                        }
-
-                        bool currentWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(mob.X, mob.Y);
-                        bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
-                        if (usePathfinding && !newWalkable && currentWalkable)
+                        if (!IsMonsterWalkableWorld(newFx, newFy))
                         {
                             mob.TargetEntityId = null;
                             mob.Moving = false;
@@ -771,7 +774,7 @@ public class Channel
                             if (moving)
                             {
                                 mob.AIState = MonsterAIState.Patrol;
-                                if (IsInNoMobZone(newX, newY))
+                                if (!IsMonsterWalkableWorld(newX, newY))
                                 {
                                     mob.PatrolTargetX = null;
                                     mob.PatrolTargetY = null;
@@ -794,9 +797,7 @@ public class Channel
                                 float newFx = mob.X + dx * ratio;
                                 float newFy = mob.Y + dy * ratio;
 
-                                bool currentWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(mob.X, mob.Y);
-                                bool newWalkable = !usePathfinding || PathGrid!.IsWalkableWorld(newFx, newFy);
-                                if (!IsInNoMobZone(newFx, newFy) && (newWalkable || !currentWalkable))
+                                if (IsMonsterWalkableWorld(newFx, newFy))
                                 {
                                     (newFx, newFy) = ApplyMonsterSeparation(mob, newFx, newFy, dt, usePathfinding);
                                     ApplyMonsterMovement(mob, fallbackOldX, fallbackOldY, newFx, newFy, dx, dy);
@@ -821,7 +822,7 @@ public class Channel
                             float newFx = mob.X + dx * ratio;
                             float newFy = mob.Y + dy * ratio;
 
-                            if (IsInNoMobZone(newFx, newFy))
+                            if (!IsMonsterWalkableWorld(newFx, newFy))
                             {
                                 mob.PatrolTargetX = null;
                                 mob.PatrolTargetY = null;

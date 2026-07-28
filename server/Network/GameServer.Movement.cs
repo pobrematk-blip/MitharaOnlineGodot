@@ -231,8 +231,8 @@ partial class GameServer
         if (!_tileData.TryGetValue(sceneName, out var tiles))
             return false;
 
-        int tileX = (int)MathF.Floor(x / 32f);
-        int tileY = (int)MathF.Floor(y / 32f);
+        int tileX = (int)MathF.Floor(x / MapTileSize);
+        int tileY = (int)MathF.Floor(y / MapTileSize);
         return tiles.TryGetValue((tileX, tileY), out byte type) && IsFullBlockTileType(type);
     }
 
