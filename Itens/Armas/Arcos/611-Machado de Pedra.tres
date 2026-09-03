@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machado 2.png" id="1_c77oy"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_gyjkr"]
+
+[resource]
+script = ExtResource("2_gyjkr")
+ItemID = 611
+Nome = "Machado de Pedra"
+Descricao = "Machado com ponta de pedra. Melhor para cortar arvores."
+Icone = ExtResource("1_c77oy")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 5
+Valor = 120
+DanoFisico = 5
+DanoFisicoMin = 4
+DanoFisicoMax = 6
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

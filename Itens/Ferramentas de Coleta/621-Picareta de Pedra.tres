@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Bag 3.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 621
+Nome = "Picareta de Pedra"
+Descricao = "Picareta com ponta de pedra. Melhor para minerar."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+NivelRequerido = 5
+Valor = 120
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"
+DanoFisico = 5
+DanoFisicoMin = 4
+DanoFisicoMax = 6

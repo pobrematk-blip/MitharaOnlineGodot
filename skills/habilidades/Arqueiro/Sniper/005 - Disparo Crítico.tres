@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10205
-Nome = "Disparo CrÃ­tico"
+Nome = "Disparo Crítico"
 Descricao = "Dispara uma flecha precisa que sempre causa dano critico ao acertar o alvo."
 Icone = ExtResource("2_icon")
 Valor = 180
@@ -19,7 +19,7 @@ EffectType = 7
 Especializacao = "Sniper"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Dano"
 EfeitoPrincipal = "Critico garantido"
 DanoEscala = "180%-320%"

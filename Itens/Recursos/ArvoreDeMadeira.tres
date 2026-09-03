@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=5 format=3 uid="uid://q80xonm2hxga"]
+
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b4mk7o34vujb2" path="res://Itens/Recursos/Sprite Recursos/Toco de arvore 1 (cheia).png" id="2_toco"]
+[ext_resource type="Texture2D" uid="uid://dj2hx6p5vtyyo" path="res://Itens/Recursos/Sprite Recursos/Arvore cheia.png" id="3_tex"]
+[ext_resource type="Resource" uid="uid://ckdq1qv31l2h8" path="res://Itens/Ferramentas de Coleta/610-Machado de Madeira.tres" id="4_machado"]
+
+[resource]
+script = ExtResource("1_script")
+Nome = "Arvore de Madeira"
+TexturaFase1 = ExtResource("2_toco")
+TexturaFase5 = ExtResource("3_tex")
+Scale = Vector2(2, 2)
+FerramentaNecessaria = ExtResource("4_machado")

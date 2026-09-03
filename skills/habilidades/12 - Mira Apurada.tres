@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 12
 Nome = "Mira Apurada"
-Descricao = "Reduz a respiraÃ§Ã£o e concentra toda atenÃ§Ã£o no alvo, aumentando PrecisÃ£o e Chance CrÃ­tica."
+Descricao = "Reduz a respiração e concentra toda atenção no alvo, aumentando Precisão e Chance Crítica."
 Icone = ExtResource("2_icon")
 Valor = 5
 CustoMana = 10

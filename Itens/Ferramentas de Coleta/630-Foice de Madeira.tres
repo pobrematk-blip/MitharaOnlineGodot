@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Foice 0.png" id="1_0mpr1"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_snlni"]
+
+[resource]
+script = ExtResource("2_snlni")
+ItemID = 630
+Nome = "Foice de Madeira"
+Descricao = "Foice simples de madeira. Usada para colher ervas e plantas."
+Icone = ExtResource("1_0mpr1")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+Valor = 50
+DanoFisico = 2
+DanoFisicoMin = 1
+DanoFisicoMax = 3
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

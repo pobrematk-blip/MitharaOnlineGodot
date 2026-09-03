@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=6 format=3 uid="uid://d02ur1thq4qld"]
+
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bpktrkxdmmau0" path="res://Itens/Recursos/Sprite Recursos/Plant3_3.png" id="2_tyha3"]
+[ext_resource type="Resource" uid="uid://dh8i57vhg7q06" path="res://Itens/Ferramentas de Coleta/630-Foice de Madeira.tres" id="3_foice"]
+[ext_resource type="Texture2D" uid="uid://drdi6hjcq6l3e" path="res://Itens/Recursos/Sprite Recursos/Plant3_2.png" id="3_virg5"]
+[ext_resource type="Texture2D" uid="uid://b5ue4npu65026" path="res://Itens/Recursos/Sprite Recursos/Plant3_1.png" id="4_4do0m"]
+
+[resource]
+script = ExtResource("1_script")
+Nome = "Folha Energetica"
+Tipo = "Planta"
+TexturaFase1 = ExtResource("2_tyha3")
+TexturaFase2 = ExtResource("2_tyha3")
+TexturaFase3 = ExtResource("3_virg5")
+TexturaFase4 = ExtResource("3_virg5")
+TexturaFase5 = ExtResource("4_4do0m")
+Scale = Vector2(1.5, 1.5)
+QuantidadeMaxima = 3
+FerramentaNecessaria = ExtResource("3_foice")

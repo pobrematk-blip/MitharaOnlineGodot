@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Bag 3.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 311
+Nome = "Essencia Vital"
+Descricao = "Extrato concentrado de poder vital."
+Icone = ExtResource("2_icon")
+Acumulavel = true
+QuantidadeMaximaPorSlot = 99
+Tipo = 17
+TipoItem = 0
+Raridade = 0
+NivelRequerido = 1
+Valor = 60
+PodeDropar = true
+PodeTrocar = true
+PodeVender = true
+PodeArmazenarBanco = true
+PodeArmazenarBancoGuild = true
+TempoDesaparecimento = 30.0

@@ -145,7 +145,7 @@ partial class GameServer
         string classe = player.CharacterClass?.Trim().ToLowerInvariant() ?? "";
         double baseCooldown = classe switch
         {
-            "berseker" or "berserker" or "bÃ¡rbaro" or "barbaro" => BerserkerBasicAttackCooldown,
+            "berseker" or "berserker" or "bárbaro" or "barbaro" => BerserkerBasicAttackCooldown,
             "arqueiro" or "mago" => RangedBasicAttackCooldown,
             _ => DefaultBasicAttackCooldown,
         };
@@ -164,7 +164,7 @@ partial class GameServer
 
         if (attacker.Id == target.Id)
         {
-            reason = "VocÃª nÃ£o pode atacar a si mesmo.";
+            reason = "Você não pode atacar a si mesmo.";
             return false;
         }
 
@@ -212,13 +212,13 @@ partial class GameServer
 
         if (area == PvpAreaKind.Safe)
         {
-            reason = "Ãrea segura: PvP desativado.";
+            reason = "Área segura: PvP desativado.";
             return false;
         }
 
         if (ArePlayersInSameParty(attacker, target))
         {
-            reason = "VocÃª nÃ£o pode atacar jogadores do seu grupo.";
+            reason = "Você não pode atacar jogadores do seu grupo.";
             return false;
         }
 
@@ -230,7 +230,7 @@ partial class GameServer
 
         if (SameFaction(attacker, target))
         {
-            reason = "VocÃª nÃ£o pode atacar jogadores da sua facÃ§Ã£o nesta Ã¡rea.";
+            reason = "Você não pode atacar jogadores da sua facção nesta área.";
             return false;
         }
 
@@ -387,7 +387,7 @@ partial class GameServer
         {
             var session = _sessions.Values.FirstOrDefault(s => s.EntityId == target.Id);
             if (session != null)
-                SendSystemMessage(session.Peer, "VocÃª morreu!");
+                SendSystemMessage(session.Peer, "Você morreu!");
         }
 
         return target.Health <= 0;
@@ -543,8 +543,8 @@ partial class GameServer
         if (pendingSkill == "speed")
         {
             mob.ActiveServerBuffs["boss_speed"] = gameTime + BossSlimeSpeedBuffDuration;
-            SendBossSlimeNotice(channel, mob, "Boss Slime ficou mais rÃ¡pido!");
-            SendBossCast(channel, mob, "speed_buff", "AceleraÃ§Ã£o Viscosa", 0f, (float)BossSlimeSpeedBuffDuration, true);
+            SendBossSlimeNotice(channel, mob, "Boss Slime ficou mais rápido!");
+            SendBossCast(channel, mob, "speed_buff", "Aceleração Viscosa", 0f, (float)BossSlimeSpeedBuffDuration, true);
             return true;
         }
 
@@ -562,7 +562,7 @@ partial class GameServer
         if (pendingSkill == "slow" && castTarget is PlayerEntity playerTarget)
         {
             playerTarget.ActiveServerBuffs["slow:boss_slime"] = gameTime + BossSlimeSlowDuration;
-            SendStatusEffectToPlayer(channel, playerTarget.Id, "boss_slime_slow", "LentidÃ£o do Slime", true, (float)BossSlimeSlowDuration, BossSlimeSlowPercent, "res://skills/Incone Skills/Debuffs/1.png");
+            SendStatusEffectToPlayer(channel, playerTarget.Id, "boss_slime_slow", "Lentidão do Slime", true, (float)BossSlimeSlowDuration, BossSlimeSlowPercent, "res://skills/Incone Skills/Debuffs/1.png");
             SendBossSlimeNotice(channel, mob, "Boss Slime deixou o alvo lento!");
             DealMonsterDamage(channel, mob, playerTarget, gameTime, 0.35f, 0);
             return true;
@@ -612,7 +612,7 @@ partial class GameServer
             return false;
 
         mob.LastBossSpeedBuffTime = gameTime;
-        StartBossSlimeCast(channel, mob, 0, "speed", "AceleraÃ§Ã£o Viscosa", BossSlimeCastSeconds, BossSlimeSpeedBuffDuration, true);
+        StartBossSlimeCast(channel, mob, 0, "speed", "Aceleração Viscosa", BossSlimeCastSeconds, BossSlimeSpeedBuffDuration, true);
         return true;
     }
 
@@ -970,7 +970,7 @@ partial class GameServer
 
         if (skillId <= 0)
         {
-            SendSystemMessage(peer, "Habilidade invÃ¡lida. Reatribua a skill na barra.");
+            SendSystemMessage(peer, "Habilidade inválida. Reatribua a skill na barra.");
             return;
         }
 
@@ -983,19 +983,19 @@ partial class GameServer
         var skill = ServerSkillCatalog.Get(skillId);
         if (skill == null)
         {
-            SendSystemMessage(peer, $"Skill {skillId} nÃ£o encontrada no catÃ¡logo do servidor.");
+            SendSystemMessage(peer, $"Skill {skillId} não encontrada no catálogo do servidor.");
             return;
         }
 
         if (!ServerSkillCatalog.ClassMatches(caster.CharacterClass, skill.ClasseRestrita))
         {
-            SendSystemMessage(peer, "Esta habilidade nÃ£o pertence Ã  sua classe.");
+            SendSystemMessage(peer, "Esta habilidade não pertence à sua classe.");
             return;
         }
 
         if (caster.Level < skill.NivelRequerido)
         {
-            SendSystemMessage(peer, $"NÃ­vel {skill.NivelRequerido} necessÃ¡rio para usar {skill.Nome}.");
+            SendSystemMessage(peer, $"Nível {skill.NivelRequerido} necessário para usar {skill.Nome}.");
             return;
         }
 
@@ -1244,7 +1244,7 @@ partial class GameServer
 
         if (targets.Count == 0)
         {
-            SendSystemMessage(peer, "Nenhum alvo vÃ¡lido para a habilidade.");
+            SendSystemMessage(peer, "Nenhum alvo válido para a habilidade.");
             return false;
         }
 
@@ -2241,7 +2241,7 @@ partial class GameServer
     {
         if (skill.SkillId != 10101)
         {
-            SendSystemMessage(peer, "Esta invocaÃ§Ã£o ainda nÃ£o estÃ¡ implementada no servidor.");
+            SendSystemMessage(peer, "Esta invocação ainda não está implementada no servidor.");
             return false;
         }
 
@@ -3806,7 +3806,7 @@ partial class GameServer
     private static bool IsGuaranteedCriticalSkill(ServerSkillDefinition skill)
     {
         return skill.SkillId is 10205 or 15
-            || string.Equals(skill.Nome, "Disparo CrÃ­tico", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(skill.Nome, "Disparo Crítico", StringComparison.OrdinalIgnoreCase)
             || string.Equals(skill.Nome, "Disparo Critico", StringComparison.OrdinalIgnoreCase);
     }
 
@@ -4323,7 +4323,7 @@ partial class GameServer
         {
             SendGlobalChat(
                 "Sistema",
-                $"{killer.Name} derrotou o Boss Slime! Ele nascerÃ¡ novamente em 1 hora.");
+                $"{killer.Name} derrotou o Boss Slime! Ele nascerá novamente em 1 hora.");
         }
 
     }
@@ -4928,7 +4928,7 @@ partial class GameServer
             }
             else if (false)
             {
-                SendSystemMessage(peer, "InventÃ¡rio cheio!");
+                SendSystemMessage(peer, "Inventário cheio!");
                 return;
             }
             */
@@ -5010,7 +5010,7 @@ partial class GameServer
             w.Put(loot.Quantity);
         }
 
-        SendSystemMessage(peer, "PoÃ§Ã£o de vida spawnada! Aproxime e aperte F para pegar.");
+        SendSystemMessage(peer, "Poção de vida spawnada! Aproxime e aperte F para pegar.");
     }
 }
 
@@ -5249,14 +5249,14 @@ internal static class ServerSkillCatalog
         string? root = FindProjectRoot();
         if (root == null)
         {
-            Logger.Info("SkillCatalog: raiz do projeto nÃ£o encontrada; catÃ¡logo vazio.");
+            Logger.Info("SkillCatalog: raiz do projeto não encontrada; catálogo vazio.");
             return result;
         }
 
         string skillsDir = Path.Combine(root, "skills", "habilidades");
         if (!Directory.Exists(skillsDir))
         {
-            Logger.Info($"SkillCatalog: pasta nÃ£o encontrada: {skillsDir}");
+            Logger.Info($"SkillCatalog: pasta não encontrada: {skillsDir}");
             return result;
         }
 
@@ -5451,7 +5451,7 @@ internal static class ServerSkillCatalog
     private static bool IsAreaSkill(string tipo, string efeito)
     {
         string text = $"{tipo} {efeito}".ToLowerInvariant();
-        return text.Contains("Ã¡rea") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
+        return text.Contains("área") || text.Contains("area") || text.Contains("multi") || text.Contains("chuva") || text.Contains("explos");
     }
 
     private static int CountFromText(string text)

@@ -107,8 +107,8 @@ partial class GameServer
         return normalized switch
         {
             "berserker" => "berseker",
-            "guardião" or "guardiÃ£o" => "guardiao",
-            "clerigo" or "clérigo" or "clÃ©rigo" => "prist",
+            "guardião" or "guardião" => "guardiao",
+            "clerigo" or "clérigo" or "clérigo" => "prist",
             _ => normalized,
         };
     }
@@ -528,6 +528,8 @@ partial class GameServer
         {
             player.UnlockedTalents = _db.GetCharacterTalents(ch.Id);
             player.SkillBarSlots = _db.GetCharacterSkillSlots(ch.Id);
+            player.KnownAlchemistRecipes = _db.LoadAlchemistRecipes(ch.Id);
+            player.Professions = _db.LoadCharacterProfessions(ch.Id);
             SanitizeSkillBar(player);
         }
 

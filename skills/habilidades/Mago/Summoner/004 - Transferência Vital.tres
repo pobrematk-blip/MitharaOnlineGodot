@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11104
-Nome = "TransferÃªncia Vital"
+Nome = "Transferência Vital"
 Descricao = "Transfere vida."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -19,9 +19,9 @@ EffectType = 5
 Especializacao = "Summoner"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Suporte"
-EfeitoPrincipal = "Cura invocaÃ§Ã£o"
+EfeitoPrincipal = "Cura invocação"
 DanoEscala = ""
 BuffDebuff = "Cura"
 DuracaoTexto = ""

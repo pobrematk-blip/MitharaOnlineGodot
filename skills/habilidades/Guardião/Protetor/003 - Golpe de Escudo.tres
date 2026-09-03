@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 14103
 Nome = "Golpe de Escudo"
-Descricao = "O GuardiÃ£o avanÃ§a com o escudo atÃ© o lado do alvo, causando impacto fÃ­sico e interrompendo a ofensiva inimiga."
+Descricao = "O Guardião avança com o escudo até o lado do alvo, causando impacto físico e interrompendo a ofensiva inimiga."
 Icone = ExtResource("2_icon")
 Valor = 120
 CustoMana = 10
-ClasseRestrita = "GuardiÃ£o"
+ClasseRestrita = "Guardião"
 Cooldown = 10
 Duracao = 2
 TargetType = 2
@@ -19,12 +19,12 @@ EffectType = 8
 Especializacao = "Protetor"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Rush / Controle"
-EfeitoPrincipal = "AvanÃ§a atÃ© o lado do alvo, causa dano fÃ­sico e atordoa."
+EfeitoPrincipal = "Avança até o lado do alvo, causa dano físico e atordoa."
 DanoEscala = "120% -> 220% do dano da arma"
 BuffDebuff = "Stun"
 DuracaoTexto = "2s"
 Progressao = "Lv1 = 120%; Lv10 = 220%."
-Observacoes = "Rush de atÃ© 10 tiles. Bosses sÃ£o imunes ao stun; neles aplica reduÃ§Ã£o de velocidade curta."
+Observacoes = "Rush de até 10 tiles. Bosses são imunes ao stun; neles aplica redução de velocidade curta."
 

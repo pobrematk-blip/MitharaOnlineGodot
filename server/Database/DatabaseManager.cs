@@ -136,6 +136,23 @@ public class DatabaseManager
                 FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS character_professions (
+                character_id INT NOT NULL,
+                profession_type SMALLINT NOT NULL,
+                level INT NOT NULL DEFAULT 1,
+                xp BIGINT NOT NULL DEFAULT 0,
+                PRIMARY KEY (character_id, profession_type),
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS character_alchemist_recipes (
+                character_id INT NOT NULL,
+                recipe_id INT NOT NULL,
+                learned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (character_id, recipe_id),
+                FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS character_skill_slots (
                 character_id INT NOT NULL,
                 slot_index INT NOT NULL,
@@ -2317,6 +2334,18 @@ public class DatabaseManager
         delSkillSlots.Parameters.AddWithValue("@c", characterId);
         int delSkillSlotsRows = delSkillSlots.ExecuteNonQuery();
 
+        using var delProfessions = conn.CreateCommand();
+        delProfessions.Transaction = tx;
+        delProfessions.CommandText = "DELETE FROM character_professions WHERE character_id = @c";
+        delProfessions.Parameters.AddWithValue("@c", characterId);
+        int delProfessionsRows = delProfessions.ExecuteNonQuery();
+
+        using var delRecipes = conn.CreateCommand();
+        delRecipes.Transaction = tx;
+        delRecipes.CommandText = "DELETE FROM character_alchemist_recipes WHERE character_id = @c";
+        delRecipes.Parameters.AddWithValue("@c", characterId);
+        int delRecipesRows = delRecipes.ExecuteNonQuery();
+
         using var delGuild = conn.CreateCommand();
         delGuild.Transaction = tx;
         delGuild.CommandText = "DELETE FROM guild_members WHERE name = @n";
@@ -2408,6 +2437,97 @@ public class DatabaseManager
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = "DELETE FROM character_talents WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public HashSet<int> LoadAlchemistRecipes(int characterId)
+    {
+        var result = new HashSet<int>();
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT recipe_id FROM character_alchemist_recipes WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+            result.Add(reader.GetInt32(0));
+        return result;
+    }
+
+    public void SaveAlchemistRecipe(int characterId, int recipeId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO character_alchemist_recipes (character_id, recipe_id)
+            VALUES (@c, @r)
+            ON CONFLICT (character_id, recipe_id) DO NOTHING
+            """;
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@r", recipeId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteAlchemistRecipes(int characterId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM character_alchemist_recipes WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.ExecuteNonQuery();
+    }
+
+    public Dictionary<ProfessionType, ProfessionData> LoadCharacterProfessions(int characterId)
+    {
+        var result = new Dictionary<ProfessionType, ProfessionData>();
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT profession_type, level, xp FROM character_professions WHERE character_id = @c";
+        cmd.Parameters.AddWithValue("@c", characterId);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var type = (ProfessionType)reader.GetByte(0);
+            int level = reader.GetInt32(1);
+            long xp = reader.GetInt64(2);
+            result[type] = new ProfessionData { Type = type, Level = level, Xp = xp };
+        }
+        return result;
+    }
+
+    public void SaveCharacterProfession(int characterId, ProfessionData prof)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO character_professions (character_id, profession_type, level, xp)
+            VALUES (@c, @t, @l, @x)
+            ON CONFLICT (character_id, profession_type) DO UPDATE SET level = @l, xp = @x
+            """;
+        cmd.Parameters.AddWithValue("@c", characterId);
+        cmd.Parameters.AddWithValue("@t", (byte)prof.Type);
+        cmd.Parameters.AddWithValue("@l", prof.Level);
+        cmd.Parameters.AddWithValue("@x", prof.Xp);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void DeleteCharacterProfessions(int characterId)
+    {
+        using var conn = new NpgsqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM character_professions WHERE character_id = @c";
         cmd.Parameters.AddWithValue("@c", characterId);
         cmd.ExecuteNonQuery();
     }

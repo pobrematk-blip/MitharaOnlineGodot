@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Foice 1.png" id="1_5pg5u"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_g3eof"]
+
+[resource]
+script = ExtResource("2_g3eof")
+ItemID = 631
+Nome = "Foice de Pedra"
+Descricao = "Foice com lamina de pedra. Melhor para colher ervas."
+Icone = ExtResource("1_5pg5u")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 5
+Valor = 120
+DanoFisico = 4
+DanoFisicoMin = 3
+DanoFisicoMax = 5
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

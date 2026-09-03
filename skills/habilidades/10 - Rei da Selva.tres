@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 10
 Nome = "Rei da Selva"
-Descricao = "O vÃ­nculo entre caÃ§ador e companheiro alcanÃ§a seu auge, aumentando atributos do pet e concedendo bÃ´nus ao caÃ§ador."
+Descricao = "O vínculo entre caçador e companheiro alcança seu auge, aumentando atributos do pet e concedendo bônus ao caçador."
 Icone = ExtResource("2_icon")
 CustoMana = 40
 ClasseRestrita = "Arqueiro"

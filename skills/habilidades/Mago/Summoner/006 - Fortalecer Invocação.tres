@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11106
-Nome = "Fortalecer InvocaÃ§Ã£o"
-Descricao = "Fortalece invocaÃ§Ãµes."
+Nome = "Fortalecer Invocação"
+Descricao = "Fortalece invocações."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 23
@@ -19,7 +19,7 @@ EffectType = 3
 Especializacao = "Summoner"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Buff"
 EfeitoPrincipal = "+Dano/+HP"
 DanoEscala = ""

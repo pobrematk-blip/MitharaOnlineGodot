@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15
-Nome = "Disparo CrÃ­tico"
+Nome = "Disparo Crítico"
 Descricao = "Dispara uma flecha precisa que sempre causa dano critico ao acertar o alvo."
 Icone = ExtResource("2_icon")
 Valor = 180

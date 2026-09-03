@@ -6,21 +6,21 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 14101
-Nome = "ProvocaÃ§Ã£o"
-Descricao = "O Protetor ergue seu escudo e desafia os inimigos prÃ³ximos, forÃ§ando-os a encarÃ¡-lo como a maior ameaÃ§a do campo de batalha."
+Nome = "Provocação"
+Descricao = "O Protetor ergue seu escudo e desafia os inimigos próximos, forçando-os a encará-lo como a maior ameaça do campo de batalha."
 Icone = ExtResource("1_fdq82")
 CustoMana = 8
-ClasseRestrita = "GuardiÃ£o"
+ClasseRestrita = "Guardião"
 Cooldown = 12.0
 Duracao = 4.0
 EffectType = 7
 Especializacao = "Protetor"
 Ordem = 1
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle / Taunt"
-EfeitoPrincipal = "Aplica taunt em inimigos prÃ³ximos, aumentando a ameaÃ§a gerada pelo GuardiÃ£o."
+EfeitoPrincipal = "Aplica taunt em inimigos próximos, aumentando a ameaça gerada pelo Guardião."
 BuffDebuff = "Taunt"
 DuracaoTexto = "4s"
-Progressao = "DuraÃ§Ã£o aumenta levemente por nÃ­vel."
+Progressao = "Duração aumenta levemente por nível."
 Observacoes = "Fundamental para manter mobs longe dos aliados."
 

@@ -292,6 +292,14 @@
       "Map": "main",
       "Direction": "down",
       "Enabled": true
+    },
+    {
+      "X": 1660,
+      "Y": 762,
+      "PrefabId": "alquimista_herbert",
+      "Map": "main",
+      "Direction": "down",
+      "Enabled": true
     }
   ],
   "PathfindingGridWidth": 800,

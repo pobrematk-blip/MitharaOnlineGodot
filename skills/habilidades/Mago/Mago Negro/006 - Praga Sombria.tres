@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 11306
 Nome = "Praga Sombria"
-Descricao = "Dano contÃ­nuo."
+Descricao = "Dano contínuo."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 13
@@ -19,7 +19,7 @@ EffectType = 3
 Especializacao = "Mago Negro"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "DoT"
 EfeitoPrincipal = "DoT"
 DanoEscala = ""

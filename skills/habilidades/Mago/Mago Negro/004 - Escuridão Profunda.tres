@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11304
-Nome = "EscuridÃ£o Profunda"
-Descricao = "Reduz precisÃ£o."
+Nome = "Escuridão Profunda"
+Descricao = "Reduz precisão."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 13
@@ -19,9 +19,9 @@ EffectType = 3
 Especializacao = "Mago Negro"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle"
-EfeitoPrincipal = "PrecisÃ£o reduzida"
+EfeitoPrincipal = "Precisão reduzida"
 DanoEscala = ""
 BuffDebuff = "Debuff"
 DuracaoTexto = "8s"

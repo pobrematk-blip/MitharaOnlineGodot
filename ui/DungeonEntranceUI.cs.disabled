@@ -1,0 +1,109 @@
+using Godot;
+
+public partial class DungeonEntranceUI : Control
+{
+    private Panel _panel = null!;
+    private Label _title = null!;
+    private Label _entries = null!;
+    private Label _partyInfo = null!;
+    private Label _status = null!;
+    private Button _solo = null!;
+    private Button _group = null!;
+    private bool _dragging;
+    private Vector2 _dragOffset;
+
+    public override void _Ready()
+    {
+        _panel = GetNode<Panel>("Panel");
+        _title = GetNode<Label>("Panel/TitleBar/Title");
+        _entries = GetNode<Label>("Panel/Content/Entries");
+        _partyInfo = GetNode<Label>("Panel/Content/GroupCard/PartyInfo");
+        _status = GetNode<Label>("Panel/Content/Status");
+        _solo = GetNode<Button>("Panel/Content/SoloCard/EnterSolo");
+        _group = GetNode<Button>("Panel/Content/GroupCard/EnterGroup");
+        GetNode<Button>("Panel/Close").Pressed += Close;
+        GetNode<Panel>("Panel/TitleBar").GuiInput += OnTitleInput;
+        _solo.Pressed += () => Enter(false);
+        _group.Pressed += () => Enter(true);
+        _panel.Visible = false;
+
+        var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (network != null)
+        {
+            network.OnDungeonEntranceData += ShowEntrance;
+            network.OnDungeonEnterResult += OnEnterResult;
+        }
+    }
+
+    private void ShowEntrance(string dungeonId, string dungeonName, int remaining, int limit, int partyCount, bool isLeader)
+    {
+        _title.Text = dungeonName.ToUpperInvariant();
+        _entries.Text = $"Entradas disponíveis hoje: {remaining}/{limit}";
+        _partyInfo.Text = partyCount <= 0
+            ? "Você não está em um grupo."
+            : $"Grupo atual: {partyCount}/5 jogadores";
+        _solo.Disabled = remaining <= 0;
+        _group.Disabled = remaining <= 0 || partyCount < 3 || partyCount > 5 || !isLeader;
+        _group.TooltipText = !isLeader && partyCount > 0
+            ? "Somente o líder pode iniciar."
+            : "Exige de 3 a 5 jogadores.";
+        _status.Text = remaining <= 0 ? "Suas entradas diárias terminaram." : "Escolha o modo de entrada.";
+        _panel.Visible = true;
+        CenterPanel();
+    }
+
+    private void Enter(bool group)
+    {
+        _solo.Disabled = true;
+        _group.Disabled = true;
+        _status.Text = "Validando entrada no servidor...";
+        GetNodeOrNull<GameNetwork>("/root/GameNetwork")?.SendDungeonEnter(group);
+    }
+
+    private void OnEnterResult(bool success, string message)
+    {
+        _status.Text = message;
+        if (success) _panel.Visible = false;
+        else
+        {
+            // Exibe a recusa do servidor em vez de falhar silenciosamente caso a
+            // posicao configurada da entrada esteja incorreta ou fora do alcance.
+            _panel.Visible = true;
+            CenterPanel();
+            GetNodeOrNull<GameNetwork>("/root/GameNetwork")?.RequestDungeonEntrance();
+        }
+    }
+
+    private void Close()
+    {
+        _dragging = false;
+        _panel.Visible = false;
+        GetNodeOrNull<GameNetwork>("/root/GameNetwork")?.CancelDungeonEntranceRequest();
+    }
+
+    private void CenterPanel()
+    {
+        _panel.Position = (GetViewportRect().Size - _panel.Size) * 0.5f;
+    }
+
+    private void OnTitleInput(InputEvent e)
+    {
+        if (e is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left)
+        {
+            _dragging = mb.Pressed;
+            if (_dragging) _dragOffset = mb.GlobalPosition - _panel.Position;
+        }
+        else if (e is InputEventMouseMotion mm && _dragging)
+            _panel.Position = mm.GlobalPosition - _dragOffset;
+    }
+
+    public override void _ExitTree()
+    {
+        var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (network != null)
+        {
+            network.OnDungeonEntranceData -= ShowEntrance;
+            network.OnDungeonEnterResult -= OnEnterResult;
+        }
+    }
+}

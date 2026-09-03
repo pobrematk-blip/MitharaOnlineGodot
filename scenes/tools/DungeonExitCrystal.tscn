@@ -1,0 +1,59 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scenes/tools/DungeonExitCrystal.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/cristal_teleporte.png" id="2_texture"]
+[ext_resource type="PackedScene" path="res://scenes/tools/TeleportPairMarker.tscn" id="3_teleport"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("2_texture")
+region = Rect2(0, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("2_texture")
+region = Rect2(48, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("2_texture")
+region = Rect2(96, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("2_texture")
+region = Rect2(144, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_4"]
+atlas = ExtResource("2_texture")
+region = Rect2(0, 96, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_5"]
+atlas = ExtResource("2_texture")
+region = Rect2(48, 96, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_6"]
+atlas = ExtResource("2_texture")
+region = Rect2(96, 96, 48, 96)
+
+[sub_resource type="AtlasTexture" id="Atlas_7"]
+atlas = ExtResource("2_texture")
+region = Rect2(144, 96, 48, 96)
+
+[sub_resource type="SpriteFrames" id="Frames_crystal"]
+animations = [{
+"frames": [{"duration": 1.0, "texture": SubResource("Atlas_0")}, {"duration": 1.0, "texture": SubResource("Atlas_1")}, {"duration": 1.0, "texture": SubResource("Atlas_2")}, {"duration": 1.0, "texture": SubResource("Atlas_3")}, {"duration": 1.0, "texture": SubResource("Atlas_4")}, {"duration": 1.0, "texture": SubResource("Atlas_5")}, {"duration": 1.0, "texture": SubResource("Atlas_6")}, {"duration": 1.0, "texture": SubResource("Atlas_7")}],
+"loop": true,
+"name": &"active",
+"speed": 10.0
+}]
+
+[node name="DungeonExitCrystal" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="CrystalAnimation" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -48)
+scale = Vector2(1.85, 1.85)
+sprite_frames = SubResource("Frames_crystal")
+animation = &"active"
+autoplay = "active"
+
+[node name="TeleportPairMarker" parent="." instance=ExtResource("3_teleport")]
+PairId = 3
+RequireExitConfirmation = true

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11108
-Nome = "ExÃ©rcito Arcano"
-Descricao = "Invoca vÃ¡rios servos."
+Nome = "Exército Arcano"
+Descricao = "Invoca vários servos."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 23
@@ -19,9 +19,9 @@ EffectType = 5
 Especializacao = "Summoner"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "InvocaÃ§Ã£o"
-EfeitoPrincipal = "MÃºltiplas invocaÃ§Ãµes"
+Escopo = "Especialização"
+Tipo = "Invocação"
+EfeitoPrincipal = "Múltiplas invocações"
 DanoEscala = "Escala"
 BuffDebuff = ""
 DuracaoTexto = "15s"

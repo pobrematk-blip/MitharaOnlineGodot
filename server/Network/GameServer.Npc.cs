@@ -218,6 +218,25 @@ partial class GameServer
                 SendMarketplaceList(peer);
                 break;
 
+            case "station":
+                if (!IsNearNpc(channel, player, "alquimista_herbert", session.CurrentMap))
+                {
+                    SendSystemMessage(peer, "Aproxime-se do Alquimista para abrir a mesa.");
+                    break;
+                }
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                HandleOpenStationDirect(peer, actionData);
+                break;
+
+            case "learn_recipe":
+                if (!IsNearNpc(channel, player, "alquimista_herbert", session.CurrentMap))
+                {
+                    SendSystemMessage(peer, "Aproxime-se do Alquimista para aprender receitas.");
+                    break;
+                }
+                SendNpcDialog(peer, "", new List<(string, string, string)>());
+                break;
+
             case "close":
                 SendNpcDialog(peer, "", new List<(string, string, string)>());
                 break;
@@ -439,5 +458,24 @@ partial class GameServer
     {
         var writer = PacketSerializer.WritePacket(PacketId.S2C_OpenRefine);
         peer.Send(writer, DeliveryMethod.ReliableOrdered);
+    }
+
+    private void HandleOpenStationDirect(NetPeer peer, string profId)
+    {
+        if (!_sessions.TryGetValue(peer, out var session) || session.SelectedCharacter == null)
+            return;
+
+        var channel = _world.GetChannel(session.ChannelId);
+        if (channel?.GetEntity(session.EntityId) is not PlayerEntity player || player.Health <= 0)
+            return;
+
+        var prof = ProfessionCatalog.Get(profId);
+        if (prof == null)
+        {
+            SendSystemMessage(peer, "Mesa de profissao nao encontrada.");
+            return;
+        }
+
+        SendStationData(peer, player, prof);
     }
 }

@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 12203
 Nome = "Salto nas Costas"
-Descricao = "O Assassino salta diretamente para trÃ¡s do alvo escolhido."
+Descricao = "O Assassino salta diretamente para trás do alvo escolhido."
 Icone = ExtResource("2_icon")
 Valor = 130
 CustoMana = 13
@@ -19,12 +19,12 @@ EffectType = 4
 Especializacao = "Assassino"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Mobilidade / Dano"
-EfeitoPrincipal = "Teleporta/avanÃ§a para as costas do inimigo e causa dano."
+EfeitoPrincipal = "Teleporta/avança para as costas do inimigo e causa dano."
 DanoEscala = "130% do dano da arma"
-BuffDebuff = "BÃ´nus se usado durante invisibilidade."
+BuffDebuff = "Bônus se usado durante invisibilidade."
 DuracaoTexto = ""
-Progressao = "Lv1 130% â†’ Lv10 240%"
-Observacoes = "NÃ£o funciona contra bosses imunes a reposicionamento; nesses casos apenas aproxima."
+Progressao = "Lv1 130% → Lv10 240%"
+Observacoes = "Não funciona contra bosses imunes a reposicionamento; nesses casos apenas aproxima."
 

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11203
-Nome = "Raio EstÃ¡tico"
-Descricao = "Raio elÃ©trico."
+Nome = "Raio Estático"
+Descricao = "Raio elétrico."
 Icone = ExtResource("2_icon")
 Valor = 150
 CustoMana = 13
@@ -19,7 +19,7 @@ EffectType = 8
 Especializacao = "Elementalista"
 NivelRequerido = 10
 Ordem = 3
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle"
 EfeitoPrincipal = "Stun"
 DanoEscala = "150%-260%"

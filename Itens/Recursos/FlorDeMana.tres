@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=6 format=3 uid="uid://b4bbpsugw8rsr"]
+
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://sarsw8ykub5n" path="res://Itens/Recursos/Sprite Recursos/Plant2_3.png" id="2_qe60c"]
+[ext_resource type="Resource" path="res://Itens/Ferramentas de Coleta/630-Foice de Madeira.tres" id="3_foice"]
+[ext_resource type="Texture2D" uid="uid://dccp4dm2axfvx" path="res://Itens/Recursos/Sprite Recursos/Plant2_2.png" id="3_n7jjg"]
+[ext_resource type="Texture2D" uid="uid://cadvr6ucbuxyx" path="res://Itens/Recursos/Sprite Recursos/Plant2_1.png" id="4_ccinf"]
+
+[resource]
+script = ExtResource("1_script")
+Nome = "Flor de Mana"
+Tipo = "Planta"
+TexturaFase1 = ExtResource("2_qe60c")
+TexturaFase2 = ExtResource("2_qe60c")
+TexturaFase3 = ExtResource("3_n7jjg")
+TexturaFase4 = ExtResource("3_n7jjg")
+TexturaFase5 = ExtResource("4_ccinf")
+Scale = Vector2(1.5, 1.5)
+QuantidadeMaxima = 3
+FerramentaNecessaria = ExtResource("3_foice")

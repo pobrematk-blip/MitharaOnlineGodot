@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=7 format=3 uid="uid://flfpnqfmduga"]
+
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dx0pedqcisf3l" path="res://Itens/Recursos/Sprite Recursos/Rock_shadow1_4.png" id="2_ctvxg"]
+[ext_resource type="Texture2D" uid="uid://d1vlksyapoc1o" path="res://Itens/Recursos/Sprite Recursos/Rock_shadow2_1.png" id="2_tex"]
+[ext_resource type="Resource" uid="uid://suckl3esyo6g" path="res://Itens/Ferramentas de Coleta/620-Picareta de Madeira.tres" id="3_picareta"]
+[ext_resource type="Texture2D" uid="uid://cu3fgayxj5207" path="res://Itens/Recursos/Sprite Recursos/Rock_shadow1_3.png" id="3_q56o4"]
+[ext_resource type="Texture2D" uid="uid://d4ie5kktsw4j1" path="res://Itens/Recursos/Sprite Recursos/Rock_shadow1_2.png" id="4_2cvjq"]
+
+[resource]
+script = ExtResource("1_script")
+Nome = "No de Pedra"
+Tipo = "Pedra"
+TexturaFase1 = ExtResource("2_ctvxg")
+TexturaFase2 = ExtResource("3_q56o4")
+TexturaFase3 = ExtResource("3_q56o4")
+TexturaFase4 = ExtResource("4_2cvjq")
+TexturaFase5 = ExtResource("2_tex")
+Scale = Vector2(2, 2)
+FerramentaNecessaria = ExtResource("3_picareta")

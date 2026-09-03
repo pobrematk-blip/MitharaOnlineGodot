@@ -24,6 +24,21 @@ public static class Logger
         }
     }
 
+    public static void PlayerAction(string playerName, string action, string details)
+    {
+        Info($"[PLAYER] {playerName} | {action} | {details}");
+    }
+
+    public static void Warn(string msg)
+    {
+        var line = $"[{DateTime.Now:HH:mm:ss}] [AVISO] {msg}";
+        lock (_lock)
+        {
+            Console.WriteLine(line);
+            File.AppendAllText(_logPath, line + Environment.NewLine);
+        }
+    }
+
     public static void Error(string msg, Exception? ex = null)
     {
         var line = $"[{DateTime.Now:HH:mm:ss}] [ERRO] {msg}";

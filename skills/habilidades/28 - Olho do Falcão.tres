@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 28
-Nome = "Olho do FalcÃ£o"
-Descricao = "Aumenta os reflexos e a velocidade do Ranger. +PrecisÃ£o e +Velocidade de Ataque."
+Nome = "Olho do Falcão"
+Descricao = "Aumenta os reflexos e a velocidade do Ranger. +Precisão e +Velocidade de Ataque."
 Icone = ExtResource("2_icon")
 Valor = 10
 CustoMana = 20

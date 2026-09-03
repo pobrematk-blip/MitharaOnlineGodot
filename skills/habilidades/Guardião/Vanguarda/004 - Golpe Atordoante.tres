@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 14204
 Nome = "Golpe Atordoante"
-Descricao = "Um golpe calculado atinge um ponto vulnerÃ¡vel do inimigo, deixando-o desnorteado por alguns instantes."
+Descricao = "Um golpe calculado atinge um ponto vulnerável do inimigo, deixando-o desnorteado por alguns instantes."
 Icone = ExtResource("2_icon")
 Valor = 140
 CustoMana = 13
-ClasseRestrita = "GuardiÃ£o"
+ClasseRestrita = "Guardião"
 Cooldown = 15
 Duracao = 3
 TargetType = 2
@@ -19,12 +19,12 @@ EffectType = 8
 Especializacao = "Vanguarda"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle"
 EfeitoPrincipal = "Causa dano e atordoa o alvo."
-DanoEscala = "140% â†’ 250% do dano da arma"
+DanoEscala = "140% → 250% do dano da arma"
 BuffDebuff = "Stun"
 DuracaoTexto = "3s"
 Progressao = "Lv1 = 140%; Lv10 = 250%."
-Observacoes = "Bosses recebem apenas lentidÃ£o."
+Observacoes = "Bosses recebem apenas lentidão."
 

@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 14
 Nome = "Tiro Paralisante"
-Descricao = "Uma flecha certeira que atinge pontos sensÃ­veis, causando dano e atordoando o alvo."
+Descricao = "Uma flecha certeira que atinge pontos sensíveis, causando dano e atordoando o alvo."
 Icone = ExtResource("2_icon")
 Valor = 100
 CustoMana = 15

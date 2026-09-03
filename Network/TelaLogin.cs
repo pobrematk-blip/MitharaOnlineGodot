@@ -827,7 +827,7 @@ public partial class TelaLogin : CanvasLayer
 
     private void OnBuscarPergunta()
     {
-        _recStatus.Text = "Enviando solicitaÃ§Ã£o...";
+        _recStatus.Text = "Enviando solicitação...";
 
         GameNetwork? net = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
         if (net != null && net.IsConnected)

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12401
-Nome = "LÃ¢mina Envenenada"
+Nome = "Lâmina Envenenada"
 Descricao = "Reveste a adaga com veneno antes de atacar."
 Icone = ExtResource("2_icon")
 Valor = 100
@@ -19,11 +19,11 @@ EffectType = 24
 Especializacao = "Gatuno"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "Dano ContÃ­nuo"
-EfeitoPrincipal = "Causa dano fÃ­sico e aplica veneno."
+Escopo = "Especialização"
+Tipo = "Dano Contínuo"
+EfeitoPrincipal = "Causa dano físico e aplica veneno."
 DanoEscala = "100% do dano da arma"
 BuffDebuff = "Veneno por 8s"
 DuracaoTexto = "8s"
-Progressao = "Dano Lv1 100% â†’ Lv10 180%; veneno escala com nÃ­vel."
+Progressao = "Dano Lv1 100% → Lv10 180%; veneno escala com nível."
 Observacoes = ""

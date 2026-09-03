@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cristal Arcano.png" id="1_t35pm"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_pyd1d"]
+
+[resource]
+script = ExtResource("2_pyd1d")
+ItemID = 306
+Nome = "Cristal Arcano"
+Descricao = "Cristal que irradia energia magica pura."
+Icone = ExtResource("1_t35pm")
+Acumulavel = true
+Tipo = 17
+Valor = 25

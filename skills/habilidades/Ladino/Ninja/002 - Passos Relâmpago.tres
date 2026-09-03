@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12302
-Nome = "Passos RelÃ¢mpago"
+Nome = "Passos Relâmpago"
 Descricao = "O Ninja acelera seus movimentos e ataca com mais velocidade."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -19,11 +19,11 @@ EffectType = 2
 Especializacao = "Ninja"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Buff / Mobilidade"
 EfeitoPrincipal = "Aumenta Velocidade de Movimento e Velocidade de Ataque."
 DanoEscala = ""
 BuffDebuff = "+10% Velocidade de Movimento, +10% Velocidade de Ataque"
 DuracaoTexto = "12s"
-Progressao = "Lv1 +10% â†’ Lv10 +22%"
+Progressao = "Lv1 +10% → Lv10 +22%"
 Observacoes = "Respeita caps globais."

@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11307
-Nome = "ExplosÃ£o Negra"
-Descricao = "ExplosÃ£o sombria."
+Nome = "Explosão Negra"
+Descricao = "Explosão sombria."
 Icone = ExtResource("2_icon")
 Valor = 180
 CustoMana = 18
@@ -19,9 +19,9 @@ EffectType = 7
 Especializacao = "Mago Negro"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "Ãrea"
-EfeitoPrincipal = "Dano em Ã¡rea"
+Escopo = "Especialização"
+Tipo = "Área"
+EfeitoPrincipal = "Dano em área"
 DanoEscala = "180%-320%"
 BuffDebuff = ""
 DuracaoTexto = ""

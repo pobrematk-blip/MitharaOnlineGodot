@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10104
-Nome = "Instinto de SobrevivÃªncia"
+Nome = "Instinto de Sobrevivência"
 Descricao = "Recupera HP e Mana."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -16,12 +16,12 @@ Cooldown = 45
 Duracao = 0
 TargetType = 0
 EffectType = 1
-Especializacao = "CaÃ§ador"
+Especializacao = "Caçador"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Cura"
-EfeitoPrincipal = "RecuperaÃ§Ã£o"
+EfeitoPrincipal = "Recuperação"
 DanoEscala = ""
 BuffDebuff = ""
 DuracaoTexto = ""

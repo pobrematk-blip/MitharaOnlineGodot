@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 6
 Nome = "Armadilha Explosiva"
-Descricao = "Posiciona uma armadilha explosiva que causa dano fÃ­sico em Ã¡rea quando ativada."
+Descricao = "Posiciona uma armadilha explosiva que causa dano físico em área quando ativada."
 Icone = ExtResource("2_icon")
 Valor = 200
 CustoMana = 15

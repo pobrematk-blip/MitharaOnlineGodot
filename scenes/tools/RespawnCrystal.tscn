@@ -1,0 +1,67 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scenes/tools/RespawnCrystal.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://skills/Animacao/cristal_teleporte.png" id="2_texture"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("2_texture")
+region = Rect2(0, 0, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("2_texture")
+region = Rect2(48, 0, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("2_texture")
+region = Rect2(96, 0, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("2_texture")
+region = Rect2(144, 0, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_4"]
+atlas = ExtResource("2_texture")
+region = Rect2(0, 96, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_5"]
+atlas = ExtResource("2_texture")
+region = Rect2(48, 96, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_6"]
+atlas = ExtResource("2_texture")
+region = Rect2(96, 96, 48, 96)
+[sub_resource type="AtlasTexture" id="Atlas_7"]
+atlas = ExtResource("2_texture")
+region = Rect2(144, 96, 48, 96)
+[sub_resource type="SpriteFrames" id="Frames_crystal"]
+animations = [{
+"frames": [{"duration": 1.0, "texture": SubResource("Atlas_0")}, {"duration": 1.0, "texture": SubResource("Atlas_1")}, {"duration": 1.0, "texture": SubResource("Atlas_2")}, {"duration": 1.0, "texture": SubResource("Atlas_3")}, {"duration": 1.0, "texture": SubResource("Atlas_4")}, {"duration": 1.0, "texture": SubResource("Atlas_5")}, {"duration": 1.0, "texture": SubResource("Atlas_6")}, {"duration": 1.0, "texture": SubResource("Atlas_7")}],
+"loop": true,
+"name": &"active",
+"speed": 10.0
+}]
+[sub_resource type="CircleShape2D" id="InteractionShape"]
+radius = 58.0
+
+[node name="RespawnCrystal" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="CrystalAnimation" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -48)
+scale = Vector2(1.85, 1.85)
+sprite_frames = SubResource("Frames_crystal")
+animation = &"active"
+autoplay = "active"
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("InteractionShape")
+
+[node name="InteractPrompt" type="Label" parent="."]
+offset_left = -90.0
+offset_top = -140.0
+offset_right = 90.0
+offset_bottom = -112.0
+text = "[F] Salvar renascimento"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(1, 0.9, 0.25, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 15

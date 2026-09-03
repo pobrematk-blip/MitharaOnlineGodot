@@ -19,12 +19,12 @@ EffectType = 3
 Especializacao = "Assassino"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Buff"
-EfeitoPrincipal = "Aumenta Chance CrÃ­tica e Velocidade de Ataque."
+EfeitoPrincipal = "Aumenta Chance Crítica e Velocidade de Ataque."
 DanoEscala = ""
-BuffDebuff = "+10% CrÃ­tico, +10% Velocidade de Ataque"
+BuffDebuff = "+10% Crítico, +10% Velocidade de Ataque"
 DuracaoTexto = "15s"
-Progressao = "Lv1 +10% â†’ Lv10 +25%"
+Progressao = "Lv1 +10% → Lv10 +25%"
 Observacoes = "Respeita os caps globais."
 

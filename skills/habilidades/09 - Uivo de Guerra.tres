@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 9
 Nome = "Uivo de Guerra"
-Descricao = "Seu companheiro emite um poderoso uivo que aumenta o dano fÃ­sico do grupo."
+Descricao = "Seu companheiro emite um poderoso uivo que aumenta o dano físico do grupo."
 Icone = ExtResource("2_icon")
 Valor = 10
 CustoMana = 20

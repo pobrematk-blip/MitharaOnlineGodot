@@ -102,6 +102,13 @@ public enum PacketId : ushort
     C2S_MapMarkerRemove = 0x01B3,
     C2S_MapMarkerRequest = 0x01B4,
     C2S_BossLootRollChoice = 0x01B5,
+    C2S_ResourceGather = 0x01C0,
+    C2S_LearnRecipe = 0x01C1,
+    C2S_BuyRecipe = 0x01C2,
+    C2S_CraftAlchemist = 0x01C3,
+    C2S_ProfessionInfo = 0x01C4,
+    C2S_StationCraft = 0x01C5,
+    C2S_OpenStation = 0x01C6,
 
     C2S_Ping = 0x01FF,
 
@@ -199,5 +206,13 @@ public enum PacketId : ushort
     S2C_BossLootRollStart = 0x02B4,
     S2C_BossLootRollResult = 0x02B5,
     S2C_EquipmentVisualUpdate = 0x02B6,
+    S2C_ResourceGatherResult = 0x02B7,
+    S2C_ResourceStateChange = 0x02B8,
+    S2C_LearnRecipeResult = 0x02B9,
+    S2C_BuyRecipeResult = 0x02BA,
+    S2C_CraftResult = 0x02BB,
+    S2C_ProfessionInfo = 0x02BC,
+    S2C_ProfessionLevelUp = 0x02BD,
+    S2C_StationData = 0x02BE,
     S2C_Pong = 0x02FF,
 }

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11208
-Nome = "FÃºria Elemental"
+Nome = "Fúria Elemental"
 Descricao = "Amplifica elementos."
 Icone = ExtResource("1_5me6x")
 CustoMana = 15
@@ -17,9 +17,9 @@ EffectType = 3
 Especializacao = "Elementalista"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Buff"
-EfeitoPrincipal = "+Dano mÃ¡gico"
+EfeitoPrincipal = "+Dano mágico"
 BuffDebuff = "+20%"
 DuracaoTexto = "15s"
 

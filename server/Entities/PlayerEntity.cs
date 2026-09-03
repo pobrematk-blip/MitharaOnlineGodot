@@ -82,7 +82,10 @@ public class PlayerEntity : Entity
     public ulong LastAttackerEntityId { get; set; }
     public double LastAttackedAt { get; set; }
     public HashSet<string> UnlockedTalents { get; set; } = new();
+    public Dictionary<string, int> TalentLevels { get; set; } = new();
+    public HashSet<int> KnownAlchemistRecipes { get; set; } = new();
     public int[] SkillBarSlots { get; set; } = new int[20];
+    public Dictionary<ProfessionType, ProfessionData> Professions { get; set; } = new();
 
     public Dictionary<int, PlayerQuest> Quests { get; set; } = new();
 

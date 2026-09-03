@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10209
-Nome = "Tiro da ExecuÃ§Ã£o"
+Nome = "Tiro da Execução"
 Descricao = "Disparo mortal."
 Icone = ExtResource("2_icon")
 Valor = 350
@@ -19,9 +19,9 @@ EffectType = 7
 Especializacao = "Sniper"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Ultimate"
-EfeitoPrincipal = "ExecuÃ§Ã£o"
+EfeitoPrincipal = "Execução"
 DanoEscala = "350%-600%"
 BuffDebuff = "+50% alvo baixo HP"
 DuracaoTexto = ""

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11302
-Nome = "MaldiÃ§Ã£o da Fraqueza"
+Nome = "Maldição da Fraqueza"
 Descricao = "Enfraquece alvo."
 Icone = ExtResource("2_icon")
 Valor = -20
@@ -19,7 +19,7 @@ EffectType = 3
 Especializacao = "Mago Negro"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Debuff"
 EfeitoPrincipal = "-20% dano"
 DanoEscala = ""

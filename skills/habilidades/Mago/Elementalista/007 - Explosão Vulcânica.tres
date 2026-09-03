@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11207
-Nome = "ExplosÃ£o VulcÃ¢nica"
-Descricao = "ExplosÃ£o de fogo."
+Nome = "Explosão Vulcânica"
+Descricao = "Explosão de fogo."
 Icone = ExtResource("2_icon")
 Valor = 180
 CustoMana = 18
@@ -19,9 +19,9 @@ EffectType = 7
 Especializacao = "Elementalista"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "Ãrea"
-EfeitoPrincipal = "Ãrea massiva"
+Escopo = "Especialização"
+Tipo = "Área"
+EfeitoPrincipal = "Área massiva"
 DanoEscala = "180%-320%"
 BuffDebuff = ""
 DuracaoTexto = ""

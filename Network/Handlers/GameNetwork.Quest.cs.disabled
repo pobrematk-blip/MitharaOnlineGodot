@@ -1,0 +1,96 @@
+#nullable enable
+using Godot;
+using LiteNetLib.Utils;
+using Mithara.Network;
+
+partial class GameNetwork
+{
+    public Godot.Collections.Array CachedQuestList { get; private set; } = new();
+
+    public void RequestQuestList() => _client?.SendPacket(PacketId.C2S_QuestList, _ => { });
+
+    public void SendQuestAccept(int questId) => _client?.SendPacket(PacketId.C2S_QuestAccept, w => w.Put(questId));
+
+    public void SendQuestClaimReward(int questId, int selectedItemId = 0) =>
+        _client?.SendPacket(PacketId.C2S_QuestClaimReward, w => { w.Put(questId); w.Put(selectedItemId); });
+
+    private static Godot.Collections.Dictionary ReadQuest(NetDataReader r, bool includeState)
+    {
+        var quest = new Godot.Collections.Dictionary
+        {
+            ["id"] = r.GetInt(), ["name"] = r.GetString(), ["description"] = r.GetString(),
+            ["quest_text"] = r.GetString(), ["required_level"] = r.GetInt(),
+            ["category"] = r.GetString(), ["npc_prefab"] = r.GetString(),
+            ["xp"] = r.GetLong(), ["gold"] = r.GetInt(), ["guild_xp"] = r.GetInt(),
+        };
+        var objectives = new Godot.Collections.Array();
+        int objectiveCount = r.GetInt();
+        for (int i = 0; i < objectiveCount; i++)
+            objectives.Add(new Godot.Collections.Dictionary
+            {
+                ["type"] = r.GetByte(),
+                ["target"] = r.GetString(),
+                ["required"] = r.GetInt(),
+                ["target_x"] = r.GetFloat(),
+                ["target_y"] = r.GetFloat(),
+                ["radius"] = r.GetFloat(),
+            });
+        quest["objectives"] = objectives;
+        var fixedItems = ReadRewardItems(r);
+        var choiceItems = ReadRewardItems(r);
+        quest["items"] = fixedItems;
+        quest["choice_items"] = choiceItems;
+        if (includeState)
+        {
+            quest["accepted"] = r.GetBool();
+            var progress = new Godot.Collections.Array<int>();
+            int progressCount = r.GetInt();
+            for (int i = 0; i < progressCount; i++) progress.Add(r.GetInt());
+            quest["progress"] = progress;
+            quest["completed"] = r.GetBool();
+            quest["claimed"] = r.GetBool();
+        }
+        return quest;
+    }
+
+    private static Godot.Collections.Array ReadRewardItems(NetDataReader r)
+    {
+        var result = new Godot.Collections.Array();
+        int count = r.GetInt();
+        for (int i = 0; i < count; i++)
+            result.Add(new Godot.Collections.Dictionary { ["item_id"] = r.GetInt(), ["quantity"] = r.GetInt() });
+        return result;
+    }
+
+    private void HandleQuestOffer(NetDataReader r) => EmitSignal(SignalName.OnQuestOffer, ReadQuest(r, false));
+
+    private void HandleQuestListPacket(NetDataReader r)
+    {
+        var quests = new Godot.Collections.Array();
+        int count = r.GetInt();
+        for (int i = 0; i < count; i++) quests.Add(ReadQuest(r, true));
+        CachedQuestList = quests.Duplicate(true);
+        EmitSignal(SignalName.OnQuestList, quests);
+    }
+
+    private void HandleQuestProgressPacket(NetDataReader r)
+    {
+        _ = r.GetInt();
+        int count = r.GetInt();
+        for (int i = 0; i < count; i++) _ = r.GetInt();
+        _ = r.GetBool();
+        RequestQuestList();
+    }
+
+    // O pacote de progresso que acompanha a conclusão já solicita a lista
+    // atualizada. não duplique a consulta ao servidor.
+    private void HandleQuestCompletedPacket(NetDataReader r) { _ = r.GetInt(); }
+    // O servidor envia a lista atualizada imediatamente após confirmar a recompensa.
+    private void HandleQuestRewardClaimedPacket(NetDataReader r) { _ = r.GetInt(); _ = r.GetBool(); }
+    private void HandleQuestAcceptedPacket(NetDataReader r)
+    {
+        int id = r.GetInt(); bool success = r.GetBool(); string message = r.GetString();
+        EmitSignal(SignalName.OnQuestAccepted, id, success, message);
+        RequestQuestList();
+    }
+}

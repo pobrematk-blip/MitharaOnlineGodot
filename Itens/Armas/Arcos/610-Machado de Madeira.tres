@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Machado 1.png" id="1_litcs"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_wn37u"]
+
+[resource]
+script = ExtResource("2_wn37u")
+ItemID = 610
+Nome = "Machado de Madeira"
+Descricao = "Machado simples feito de madeira. Usado para cortar arvores."
+Icone = ExtResource("1_litcs")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+Valor = 50
+DanoFisico = 3
+DanoFisicoMin = 2
+DanoFisicoMax = 4
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

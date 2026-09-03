@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 12201
 Nome = "Golpe Sombrio"
-Descricao = "Um corte rÃ¡pido e silencioso feito para iniciar o combate."
+Descricao = "Um corte rápido e silencioso feito para iniciar o combate."
 Icone = ExtResource("2_icon")
 Valor = 120
 CustoMana = 5
@@ -19,12 +19,12 @@ EffectType = 7
 Especializacao = "Assassino"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Dano"
-EfeitoPrincipal = "Causa dano fÃ­sico em alvo Ãºnico."
+EfeitoPrincipal = "Causa dano físico em alvo único."
 DanoEscala = "120% do dano da arma"
 BuffDebuff = ""
 DuracaoTexto = ""
-Progressao = "Lv1 120% â†’ Lv10 220%"
+Progressao = "Lv1 120% → Lv10 220%"
 Observacoes = ""
 

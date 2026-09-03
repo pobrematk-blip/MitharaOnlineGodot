@@ -6,12 +6,12 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15106
-Nome = "Choque EstÃ¡tico"
+Nome = "Choque Estático"
 Descricao = "O Sacerdote descarrega energia sagrada condensada sobre o inimigo, causando dano e atordoando o alvo por alguns segundos."
 Icone = ExtResource("2_icon")
 Valor = 130
 CustoMana = 21
-ClasseRestrita = "ClÃ©rigo"
+ClasseRestrita = "Clérigo"
 Cooldown = 18
 Duracao = 3
 TargetType = 2
@@ -19,12 +19,12 @@ EffectType = 8
 Especializacao = "Sacerdote"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Dano / Controle"
 EfeitoPrincipal = "Causa dano sagrado e aplica stun no inimigo."
-DanoEscala = "Dano: 130% -> 260% do Poder MÃ¡gico"
+DanoEscala = "Dano: 130% -> 260% do Poder Mágico"
 BuffDebuff = "Stun por 3s"
 DuracaoTexto = "3s"
-Progressao = "Aumenta o dano conforme o nÃ­vel da skill."
+Progressao = "Aumenta o dano conforme o nível da skill."
 Observacoes = "Controle ofensivo do Sacerdote para segurar inimigos durante o up solo."
 

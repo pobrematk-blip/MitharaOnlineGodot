@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15002
 Nome = "Passo Divino"
-Descricao = "O ClÃ©rigo Ã© envolvido por um brilho sagrado e avanÃ§a rapidamente pelo campo de batalha, como se fosse guiado por uma forÃ§a divina."
+Descricao = "O Clérigo é envolvido por um brilho sagrado e avança rapidamente pelo campo de batalha, como se fosse guiado por uma força divina."
 Icone = ExtResource("2_icon")
 Valor = 10
 CustoMana = 8
-ClasseRestrita = "ClÃ©rigo"
+ClasseRestrita = "Clérigo"
 Cooldown = 15
 Duracao = 0
 TargetType = 0
@@ -19,13 +19,13 @@ EffectType = 2
 Especializacao = "Todas"
 NivelRequerido = 1
 Ordem = 2
-Escopo = "Compartilhada do ClÃ©rigo"
+Escopo = "Compartilhada do Clérigo"
 Tipo = "Mobilidade"
-EfeitoPrincipal = "Teleporta o personagem 10 tiles na direÃ§Ã£o escolhida."
+EfeitoPrincipal = "Teleporta o personagem 10 tiles na direção escolhida."
 DanoEscala = ""
 BuffDebuff = "Mobilidade"
-DuracaoTexto = "InstantÃ¢neo"
-Progressao = "DistÃ¢ncia fixa: 10 tiles."
+DuracaoTexto = "Instantâneo"
+Progressao = "Distância fixa: 10 tiles."
 Observacoes = "Skill compartilhada entre Sacerdote, Paladino e Inquisidor."
 
 

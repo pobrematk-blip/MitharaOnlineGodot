@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 8
-Nome = "Rede de CaÃ§a"
-Descricao = "Arremessa uma rede reforÃ§ada que reduz drasticamente a velocidade de movimento dos alvos."
+Nome = "Rede de Caça"
+Descricao = "Arremessa uma rede reforçada que reduz drasticamente a velocidade de movimento dos alvos."
 Icone = ExtResource("2_icon")
 CustoMana = 15
 ClasseRestrita = "Arqueiro"

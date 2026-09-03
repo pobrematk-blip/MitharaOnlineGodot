@@ -1,0 +1,28 @@
+using Godot;
+
+[Tool]
+public partial class AncientCaveEntrance : Area2D
+{
+    private bool _playerInside;
+
+    public override void _Ready()
+    {
+        CollisionLayer = 0;
+        CollisionMask = 2;
+        Monitoring = true;
+        if (Engine.IsEditorHint()) return;
+        GetNodeOrNull<Polygon2D>("Preview")?.Hide();
+        BodyEntered += OnBodyEntered;
+        BodyExited += body => { if (body is Player) _playerInside = false; };
+    }
+
+    private void OnBodyEntered(Node2D body)
+    {
+        if (_playerInside || body is not Player) return;
+        if (body.GlobalPosition.DistanceSquaredTo(GlobalPosition) > 48f * 48f) return;
+        var network = GetNodeOrNull<GameNetwork>("/root/GameNetwork");
+        if (network == null || !network.IsConnected) return;
+        _playerInside = true;
+        network.RequestDungeonEntrance();
+    }
+}

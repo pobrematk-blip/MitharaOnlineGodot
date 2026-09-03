@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=6 format=3 uid="uid://b1h8t0fqgfbkt"]
+
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dpy0ni8yuisut" path="res://Itens/Recursos/Sprite Recursos/Crystal1_3.png" id="2_f21gm"]
+[ext_resource type="Texture2D" uid="uid://173qdtrhlr2w" path="res://Itens/Recursos/Sprite Recursos/Crystal1_2.png" id="3_ahkd3"]
+[ext_resource type="Resource" uid="uid://suckl3esyo6g" path="res://Itens/Ferramentas de Coleta/620-Picareta de Madeira.tres" id="3_picareta"]
+[ext_resource type="Texture2D" uid="uid://cv4p7fkku3trq" path="res://Itens/Recursos/Sprite Recursos/Crystal1_1.png" id="4_or8k0"]
+
+[resource]
+script = ExtResource("1_script")
+Nome = "No de Bronze"
+Tipo = "Minerio"
+TexturaFase1 = ExtResource("2_f21gm")
+TexturaFase2 = ExtResource("2_f21gm")
+TexturaFase3 = ExtResource("3_ahkd3")
+TexturaFase4 = ExtResource("3_ahkd3")
+TexturaFase5 = ExtResource("4_or8k0")
+Scale = Vector2(2, 2)
+FerramentaNecessaria = ExtResource("3_picareta")

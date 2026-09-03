@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 20
-Nome = "Salto para TrÃ¡s"
-Descricao = "O arqueiro realiza um rÃ¡pido salto para trÃ¡s para escapar do perigo."
+Nome = "Salto para Trás"
+Descricao = "O arqueiro realiza um rápido salto para trás para escapar do perigo."
 Icone = ExtResource("2_icon")
 Valor = 3
 CustoMana = 8

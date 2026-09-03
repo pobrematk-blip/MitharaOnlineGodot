@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 12206
 Nome = "Marca da Morte"
-Descricao = "Marca a vÃ­tima para receber ataques letais."
+Descricao = "Marca a vítima para receber ataques letais."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 13
@@ -19,12 +19,12 @@ EffectType = 3
 Especializacao = "Assassino"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Debuff"
 EfeitoPrincipal = "Aumenta o dano que o Assassino causa no alvo."
 DanoEscala = ""
 BuffDebuff = "+10% dano recebido do Assassino"
 DuracaoTexto = "12s"
-Progressao = "Lv1 +10% â†’ Lv10 +25%"
-Observacoes = "Combina com Punhalada nas Costas e ExecuÃ§Ã£o Final."
+Progressao = "Lv1 +10% → Lv10 +25%"
+Observacoes = "Combina com Punhalada nas Costas e Execução Final."
 

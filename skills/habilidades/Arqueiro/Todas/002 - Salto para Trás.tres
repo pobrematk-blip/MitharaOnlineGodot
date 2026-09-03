@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10002
-Nome = "Salto para TrÃ¡s"
-Descricao = "Salta para trÃ¡s 6 tiles e dispara uma flecha durante o recuo."
+Nome = "Salto para Trás"
+Descricao = "Salta para trás 6 tiles e dispara uma flecha durante o recuo."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 8

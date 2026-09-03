@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12301
-Nome = "Shuriken RÃ¡pida"
+Nome = "Shuriken Rápida"
 Descricao = "O Ninja arremessa uma shuriken em alta velocidade."
 Icone = ExtResource("2_icon")
 Valor = 110
@@ -19,11 +19,11 @@ EffectType = 7
 Especializacao = "Ninja"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "Dano Ã  distÃ¢ncia"
-EfeitoPrincipal = "Causa dano fÃ­sico Ã  distÃ¢ncia."
+Escopo = "Especialização"
+Tipo = "Dano à distância"
+EfeitoPrincipal = "Causa dano físico à distância."
 DanoEscala = "110% do dano da arma"
 BuffDebuff = ""
 DuracaoTexto = ""
-Progressao = "Lv1 110% â†’ Lv10 200%"
+Progressao = "Lv1 110% → Lv10 200%"
 Observacoes = ""

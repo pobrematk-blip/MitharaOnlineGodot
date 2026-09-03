@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10107
-Nome = "Rede de CaÃ§a"
+Nome = "Rede de Caça"
 Descricao = "Reduz movimento."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -16,12 +16,12 @@ Cooldown = 16
 Duracao = 5
 TargetType = 2
 EffectType = 12
-Especializacao = "CaÃ§ador"
+Especializacao = "Caçador"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle"
-EfeitoPrincipal = "LentidÃ£o"
+EfeitoPrincipal = "Lentidão"
 DanoEscala = ""
 BuffDebuff = "Slow"
 DuracaoTexto = "5s"

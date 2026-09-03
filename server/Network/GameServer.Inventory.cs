@@ -929,6 +929,7 @@ partial class GameServer
                 player.StatPoints);
             _db.DeleteCharacterTalents(session.SelectedCharacter.Id);
             _db.DeleteCharacterSkillSlots(session.SelectedCharacter.Id);
+            _db.DeleteAlchemistRecipes(session.SelectedCharacter.Id);
 
             session.SelectedCharacter.Forca = player.BaseForca;
             session.SelectedCharacter.Agilidade = player.BaseAgilidade;

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Foice 3.png" id="1_8bbl6"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_n6fwc"]
+
+[resource]
+script = ExtResource("2_n6fwc")
+ItemID = 633
+Nome = "Foice de Ferro"
+Descricao = "Foice robusta de ferro. Colhe qualquer tipo de planta."
+Icone = ExtResource("1_8bbl6")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 30
+Valor = 500
+DanoFisico = 10
+DanoFisicoMin = 8
+DanoFisicoMax = 12
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

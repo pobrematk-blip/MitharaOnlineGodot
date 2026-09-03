@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11105
-Nome = "EspÃ­rito Elemental"
+Nome = "Espírito Elemental"
 Descricao = "Invoca elemental."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -19,8 +19,8 @@ EffectType = 5
 Especializacao = "Summoner"
 NivelRequerido = 20
 Ordem = 5
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "InvocaÃ§Ã£o"
+Escopo = "Especialização"
+Tipo = "Invocação"
 EfeitoPrincipal = "Dano elemental"
 DanoEscala = "Escala"
 BuffDebuff = ""

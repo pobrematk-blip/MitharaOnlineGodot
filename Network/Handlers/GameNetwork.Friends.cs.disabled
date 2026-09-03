@@ -1,0 +1,76 @@
+#nullable enable
+using Godot;
+using LiteNetLib.Utils;
+using Mithara.Network;
+
+public partial class GameNetwork
+{
+    public void SendFriendListRequest()
+    {
+        _client?.SendPacket(PacketId.C2S_FriendListRequest, _ => { });
+    }
+
+    public void SendFriendInvite(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return;
+
+        _client?.SendPacket(PacketId.C2S_FriendInvite, w =>
+        {
+            w.Put(targetName.Trim());
+        });
+    }
+
+    public void SendFriendAccept()
+    {
+        _client?.SendPacket(PacketId.C2S_FriendAccept, _ => { });
+    }
+
+    public void SendFriendDecline()
+    {
+        _client?.SendPacket(PacketId.C2S_FriendDecline, _ => { });
+    }
+
+    public void SendFriendRemove(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return;
+
+        _client?.SendPacket(PacketId.C2S_FriendRemove, w =>
+        {
+            w.Put(targetName.Trim());
+        });
+    }
+
+    private void HandleFriendList(NetDataReader r)
+    {
+        int count = r.GetUShort();
+        var friends = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        for (int i = 0; i < count; i++)
+        {
+            var entry = new Godot.Collections.Dictionary
+            {
+                ["name"] = r.GetString(),
+                ["online"] = r.GetBool(),
+            };
+            friends.Add(entry);
+        }
+
+        EmitSignal(SignalName.OnFriendList, friends);
+    }
+
+    private void HandleFriendInviteReceived(NetDataReader r)
+    {
+        string senderName = r.GetString();
+        InvitePopupUI.ShowInvite("friend", senderName);
+        EmitSignal(SignalName.OnFriendInviteReceived, senderName);
+    }
+
+    private void HandleFriendActionResult(NetDataReader r)
+    {
+        bool success = r.GetBool();
+        string message = r.GetString();
+        Log($"[AMIGOS] {(success ? "OK" : "Falha")}: {message}");
+        EmitSignal(SignalName.OnFriendActionResult, success, message);
+    }
+}

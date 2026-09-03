@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 5
-Nome = "Instinto de SobrevivÃªncia"
-Descricao = "O caÃ§ador utiliza sua experiÃªncia em ambientes hostis para recuperar suas energias."
+Nome = "Instinto de Sobrevivência"
+Descricao = "O caçador utiliza sua experiência em ambientes hostis para recuperar suas energias."
 Icone = ExtResource("2_icon")
 Valor = 20
 CustoMana = 8

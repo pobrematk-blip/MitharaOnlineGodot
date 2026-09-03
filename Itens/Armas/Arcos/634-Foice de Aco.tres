@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Foice 4.png" id="1_iyfm8"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_dpo2j"]
+
+[resource]
+script = ExtResource("2_dpo2j")
+ItemID = 634
+Nome = "Foice de Aco"
+Descricao = "Foice de aco temperado. A melhor ferramenta para colher ervas."
+Icone = ExtResource("1_iyfm8")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+NivelRequerido = 50
+Valor = 1000
+DanoFisico = 14
+DanoFisicoMin = 12
+DanoFisicoMax = 16
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

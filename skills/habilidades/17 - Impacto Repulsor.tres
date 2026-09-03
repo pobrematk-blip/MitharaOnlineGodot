@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 17
 Nome = "Impacto Repulsor"
-Descricao = "Uma flecha pesada disparada com forÃ§a suficiente para lanÃ§ar o inimigo para trÃ¡s."
+Descricao = "Uma flecha pesada disparada com força suficiente para lançar o inimigo para trás."
 Icone = ExtResource("2_icon")
 Valor = 140
 CustoMana = 18

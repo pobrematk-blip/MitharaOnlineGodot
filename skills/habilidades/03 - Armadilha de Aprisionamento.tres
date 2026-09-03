@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 3
 Nome = "Armadilha de Aprisionamento"
-Descricao = "Posiciona uma armadilha invisÃ­vel que prende o primeiro inimigo que pisar nela."
+Descricao = "Posiciona uma armadilha invisível que prende o primeiro inimigo que pisar nela."
 Icone = ExtResource("2_icon")
 CustoMana = 13
 ClasseRestrita = "Arqueiro"

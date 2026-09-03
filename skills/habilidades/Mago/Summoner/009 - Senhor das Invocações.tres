@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11109
-Nome = "Senhor das InvocaÃ§Ãµes"
-Descricao = "Fortalece todas as invocaÃ§Ãµes."
+Nome = "Senhor das Invocações"
+Descricao = "Fortalece todas as invocações."
 Icone = ExtResource("2_icon")
 Valor = 50
 CustoMana = 40
@@ -19,7 +19,7 @@ EffectType = 3
 Especializacao = "Summoner"
 NivelRequerido = 70
 Ordem = 9
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Ultimate"
 EfeitoPrincipal = "+50% HP e Dano"
 DanoEscala = ""

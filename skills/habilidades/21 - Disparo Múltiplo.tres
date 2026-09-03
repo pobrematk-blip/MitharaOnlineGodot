@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 21
-Nome = "Disparo MÃºltiplo"
-Descricao = "Dispara trÃªs flechas simultaneamente em formato de V. 90% do dano da arma cada."
+Nome = "Disparo Múltiplo"
+Descricao = "Dispara três flechas simultaneamente em formato de V. 90% do dano da arma cada."
 Icone = ExtResource("2_icon")
 Valor = 90
 CustoMana = 8

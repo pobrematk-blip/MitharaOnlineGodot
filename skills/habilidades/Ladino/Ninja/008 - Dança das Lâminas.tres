@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 12308
-Nome = "DanÃ§a das LÃ¢minas"
-Descricao = "O Ninja entra em um fluxo de ataques contÃ­nuos."
+Nome = "Dança das Lâminas"
+Descricao = "O Ninja entra em um fluxo de ataques contínuos."
 Icone = ExtResource("2_icon")
 Valor = 0
 CustoMana = 23
@@ -19,11 +19,11 @@ EffectType = 3
 Especializacao = "Ninja"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Buff / Dano"
-EfeitoPrincipal = "Aumenta velocidade de ataque e faz ataques bÃ¡sicos causarem dano adicional."
+EfeitoPrincipal = "Aumenta velocidade de ataque e faz ataques básicos causarem dano adicional."
 DanoEscala = ""
-BuffDebuff = "+20% Velocidade de Ataque; ataques bÃ¡sicos causam dano extra"
+BuffDebuff = "+20% Velocidade de Ataque; ataques básicos causam dano extra"
 DuracaoTexto = "15s"
-Progressao = "Lv1 +20% â†’ Lv10 +35%"
+Progressao = "Lv1 +20% → Lv10 +35%"
 Observacoes = "Respeita cap de velocidade de ataque."

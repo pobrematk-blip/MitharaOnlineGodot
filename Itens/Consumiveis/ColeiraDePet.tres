@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
 
-[ext_resource type="Texture2D" path="res://Itens/Incones/Pergaminho de Captura de Pet.png" id="1_icon"]
+[ext_resource type="Texture2D" path="res://Itens/Incones/Cinto leve level 40.png" id="1_e8wcj"]
 [ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_script"]
 
 [resource]
@@ -8,9 +8,6 @@ script = ExtResource("2_script")
 ItemID = 121
 Nome = "Coleira de Pet (30 Dias)"
 Descricao = "Ativa a coleta automatica do pet por 30 dias. Sem coleira ativa o pet nao coleta itens do chao."
-Icone = ExtResource("1_icon")
+Icone = ExtResource("1_e8wcj")
 Acumulavel = true
-QuantidadeMaximaPorSlot = 99
 Tipo = 17
-PodeDropar = true
-PodeVender = true

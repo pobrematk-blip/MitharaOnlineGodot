@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 16
 Nome = "Marca do Executor"
-Descricao = "Marca a vÃ­tima para receber dano aumentado das habilidades do Sniper."
+Descricao = "Marca a vítima para receber dano aumentado das habilidades do Sniper."
 Icone = ExtResource("2_icon")
 Valor = 10
 CustoMana = 10

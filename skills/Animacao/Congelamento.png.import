@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://daomqq3cwy3wc"
-path="res://.godot/imported/congelamento.png-a80c0b52da272bbe15ea3b762fd3d479.ctex"
+path="res://.godot/imported/Congelamento.png-0fd7dbde9dbebb956663566bf851ef51.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://skills/Animacao/congelamento.png"
-dest_files=["res://.godot/imported/congelamento.png-a80c0b52da272bbe15ea3b762fd3d479.ctex"]
+source_file="res://skills/Animacao/Congelamento.png"
+dest_files=["res://.godot/imported/Congelamento.png-0fd7dbde9dbebb956663566bf851ef51.ctex"]
 
 [params]
 

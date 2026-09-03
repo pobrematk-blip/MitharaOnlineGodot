@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 12204
 Nome = "Golpe Atordoante"
-Descricao = "Um ataque preciso que interrompe o inimigo e o deixa vulnerÃ¡vel."
+Descricao = "Um ataque preciso que interrompe o inimigo e o deixa vulnerável."
 Icone = ExtResource("2_icon")
 Valor = 100
 CustoMana = 15
@@ -19,12 +19,12 @@ EffectType = 8
 Especializacao = "Assassino"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle"
 EfeitoPrincipal = "Causa dano e aplica atordoamento."
 DanoEscala = "100% do dano da arma"
 BuffDebuff = "Stun por 3s"
 DuracaoTexto = "3s"
-Progressao = "Dano Lv1 100% â†’ Lv10 180%; stun mantÃ©m 3s"
-Observacoes = "Bosses sÃ£o imunes ao stun; em bosses aplica lentidÃ£o curta."
+Progressao = "Dano Lv1 100% → Lv10 180%; stun mantém 3s"
+Observacoes = "Bosses são imunes ao stun; em bosses aplica lentidão curta."
 

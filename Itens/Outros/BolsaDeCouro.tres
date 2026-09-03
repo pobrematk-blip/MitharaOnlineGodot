@@ -11,5 +11,5 @@ Descricao = "Uma bolsa simples de couro, talvez tenha algo dentro."
 Icone = ExtResource("1_bgdb1")
 QuantidadeMaximaPorSlot = 1
 EhBolsa = true
-SlotsAdicionais = 5
+SlotsAdicionais = 3
 Valor = 5

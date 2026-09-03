@@ -1,24 +1,14 @@
 [gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
-[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
-[ext_resource type="Texture2D" uid="uid://b6rhiqmvjrb8k" path="res://Itens/Incones/Pergaminho de Captura de Pet.png" id="2_peticon"]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Scroll de Captura de Pet 7.png" id="1_1sxvx"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="1_taxcw"]
 
 [resource]
 script = ExtResource("1_taxcw")
 ItemID = 114
 Nome = "Pergaminho do Pet (5 Tentativas)"
 Descricao = "Um pergaminho encantado que permite capturar um pet enfraquecido. Versao com menos tentativas."
-Icone = ExtResource("2_peticon")
+Icone = ExtResource("1_1sxvx")
 Acumulavel = true
-QuantidadeMaximaPorSlot = 99
 Tipo = 17
-NivelRequerido = 1
-Valor = 0
-PodeDropar = true
-PodeTrocar = true
-PodeVender = true
-PodeArmazenarBanco = true
-PodeArmazenarBancoGuild = true
-ChanceDrop = 0.0
-TempoDesaparecimento = 30.0
-TipoItem = 0
 Raridade = 1

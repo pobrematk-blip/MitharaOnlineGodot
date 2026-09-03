@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://suckl3esyo6g"]
+
+[ext_resource type="Script" uid="uid://ck8h0m5wglv8a" path="res://resources/Inventario/ItemResource.cs" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://v2ubwyqf6sr1" path="res://Itens/Incones/Bag 3.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+ItemID = 620
+Nome = "Picareta de Madeira"
+Descricao = "Picareta simples de madeira. Usada para minerar pedras."
+Icone = ExtResource("2_icon")
+QuantidadeMaximaPorSlot = 1
+Tipo = 7
+EhDuasMaos = true
+Valor = 50
+DanoFisico = 3
+DanoFisicoMin = 2
+DanoFisicoMax = 4
+ClassesPermitidas = "Berseker,Guardiao,Arqueiro,Ladino,Mago,Prist"

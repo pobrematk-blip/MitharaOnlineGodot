@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11107
-Nome = "SacrifÃ­cio Arcano"
-Descricao = "Sacrifica invocaÃ§Ã£o."
+Nome = "Sacrifício Arcano"
+Descricao = "Sacrifica invocação."
 Icone = ExtResource("2_icon")
 Valor = 180
 CustoMana = 18
@@ -19,9 +19,9 @@ EffectType = 7
 Especializacao = "Summoner"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Dano"
-EfeitoPrincipal = "ExplosÃ£o mÃ¡gica"
+EfeitoPrincipal = "Explosão mágica"
 DanoEscala = "180%-320%"
 BuffDebuff = ""
 DuracaoTexto = ""

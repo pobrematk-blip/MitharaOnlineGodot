@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15101
 Nome = "Cura Menor"
-Descricao = "O Sacerdote canaliza uma pequena quantidade de luz divina nas mÃ£os, fechando ferimentos recentes e restaurando a forÃ§a de um aliado."
+Descricao = "O Sacerdote canaliza uma pequena quantidade de luz divina nas mãos, fechando ferimentos recentes e restaurando a força de um aliado."
 Icone = ExtResource("2_icon")
 Valor = 120
 CustoMana = 8
-ClasseRestrita = "ClÃ©rigo"
+ClasseRestrita = "Clérigo"
 Cooldown = 4
 Duracao = 0
 TargetType = 1
@@ -19,12 +19,12 @@ EffectType = 1
 Especializacao = "Sacerdote"
 NivelRequerido = 1
 Ordem = 1
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Cura"
 EfeitoPrincipal = "Cura um alvo aliado selecionado."
-DanoEscala = "Cura: 120% â†’ 250% do Poder MÃ¡gico"
+DanoEscala = "Cura: 120% → 250% do Poder Mágico"
 BuffDebuff = "Cura"
-DuracaoTexto = "InstantÃ¢neo"
+DuracaoTexto = "Instantâneo"
 Progressao = "Lv1 = 120%; Lv10 = 250%."
-Observacoes = "Principal cura rÃ¡pida do Sacerdote."
+Observacoes = "Principal cura rápida do Sacerdote."
 

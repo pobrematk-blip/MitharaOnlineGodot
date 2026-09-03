@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://Itens/Incones/Flor de Mana.png" id="1_3rv3c"]
+[ext_resource type="Script" path="res://resources/Inventario/ItemResource.cs" id="2_k131v"]
+
+[resource]
+script = ExtResource("2_k131v")
+ItemID = 301
+Nome = "Flor de Mana"
+Descricao = "Flor que pulsa com energia magica. Ingrediente base para pocoes de mana."
+Icone = ExtResource("1_3rv3c")
+Acumulavel = true
+Tipo = 17
+Valor = 15

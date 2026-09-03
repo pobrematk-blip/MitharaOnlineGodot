@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 11202
-Nome = "LanÃ§a de Gelo"
-Descricao = "LanÃ§a de gelo."
+Nome = "Lança de Gelo"
+Descricao = "Lança de gelo."
 Icone = ExtResource("2_icon")
 Valor = 100
 CustoMana = 13
@@ -19,9 +19,9 @@ EffectType = 12
 Especializacao = "Elementalista"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Controle"
-EfeitoPrincipal = "LentidÃ£o"
+EfeitoPrincipal = "Lentidão"
 DanoEscala = "100%-180%"
 BuffDebuff = "Slow 30%"
 DuracaoTexto = "5s"

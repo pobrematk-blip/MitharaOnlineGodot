@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 13102
-Nome = "Golpes FrenÃ©ticos"
-Descricao = "O BÃ¡rbaro desfere uma sequÃªncia brutal de trÃªs golpes rÃ¡pidos na direÃ§Ã£o em que estÃ¡ olhando."
+Nome = "Golpes Frenéticos"
+Descricao = "O Bárbaro desfere uma sequência brutal de três golpes rápidos na direção em que está olhando."
 Icone = ExtResource("2_icon")
 Valor = 120
 CustoMana = 8
@@ -16,15 +16,15 @@ Cooldown = 8
 Duracao = 0
 TargetType = 2
 EffectType = 7
-Especializacao = "BÃ¡rbaro"
+Especializacao = "Bárbaro"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "EspecializaÃ§Ã£o"
-Tipo = "SequÃªncia de Ataque"
-EfeitoPrincipal = "Dispara trÃªs golpes rÃ¡pidos em linha reta na direÃ§Ã£o do personagem."
-DanoEscala = "120% â†’ 220% do dano da arma"
-BuffDebuff = "3 golpes rÃ¡pidos"
-DuracaoTexto = "InstantÃ¢neo"
-Progressao = "Skill possui 10 nÃ­veis. O dano total escala conforme o nÃ­vel e Ã© dividido entre os trÃªs golpes."
-Observacoes = "Precisa ter alvo vÃ¡lido na direÃ§Ã£o do personagem."
+Escopo = "Especialização"
+Tipo = "Sequência de Ataque"
+EfeitoPrincipal = "Dispara três golpes rápidos em linha reta na direção do personagem."
+DanoEscala = "120% → 220% do dano da arma"
+BuffDebuff = "3 golpes rápidos"
+DuracaoTexto = "Instantâneo"
+Progressao = "Skill possui 10 níveis. O dano total escala conforme o nível e é dividido entre os três golpes."
+Observacoes = "Precisa ter alvo válido na direção do personagem."
 

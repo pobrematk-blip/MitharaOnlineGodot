@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RecursoResource" load_steps=6 format=3 uid="uid://c0jdelif6tfmy"]
+
+[ext_resource type="Script" uid="uid://bkrhxnyoa0hea" path="res://Itens/Recursos/RecursoResource.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://botj6mm221u2b" path="res://Itens/Recursos/Sprite Recursos/Plant1_3.png" id="2_sw4k8"]
+[ext_resource type="Resource" uid="uid://dh8i57vhg7q06" path="res://Itens/Ferramentas de Coleta/630-Foice de Madeira.tres" id="3_foice"]
+[ext_resource type="Texture2D" uid="uid://drolfk2eyw8hq" path="res://Itens/Recursos/Sprite Recursos/Plant1_2.png" id="3_r42p8"]
+[ext_resource type="Texture2D" uid="uid://b0mn3snxummxu" path="res://Itens/Recursos/Sprite Recursos/Plant1_1.png" id="4_lexhq"]
+
+[resource]
+script = ExtResource("1_script")
+Nome = "Erva Vital"
+Tipo = "Planta"
+TexturaFase1 = ExtResource("2_sw4k8")
+TexturaFase2 = ExtResource("2_sw4k8")
+TexturaFase3 = ExtResource("3_r42p8")
+TexturaFase4 = ExtResource("3_r42p8")
+TexturaFase5 = ExtResource("4_lexhq")
+Scale = Vector2(1.5, 1.5)
+QuantidadeMaxima = 3
+FerramentaNecessaria = ExtResource("3_foice")

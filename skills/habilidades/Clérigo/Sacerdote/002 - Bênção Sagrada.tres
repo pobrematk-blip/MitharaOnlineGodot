@@ -6,23 +6,23 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15102
-Nome = "Martelo da DesolaÃ§Ã£o"
+Nome = "Martelo da Desolação"
 Descricao = "O Sacerdote invoca um martelo de energia sagrada que desaba sobre o inimigo, causando dano direto com forte impacto."
 Icone = ExtResource("1_mffwe")
 Valor = 155
 CustoMana = 14
-ClasseRestrita = "ClÃ©rigo"
+ClasseRestrita = "Clérigo"
 Cooldown = 8.0
 TargetType = 2
 EffectType = 7
 Especializacao = "Sacerdote"
 NivelRequerido = 5
 Ordem = 2
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Dano Sagrado"
 EfeitoPrincipal = "Causa dano sagrado pesado em um inimigo."
-DanoEscala = "Dano: 155% -> 310% do Poder MÃ¡gico"
-DuracaoTexto = "InstantÃ¢neo"
-Progressao = "Aumenta o dano conforme o nÃ­vel da skill."
-Observacoes = "Skill ofensiva de recarga mÃ©dia do Sacerdote."
+DanoEscala = "Dano: 155% -> 310% do Poder Mágico"
+DuracaoTexto = "Instantâneo"
+Progressao = "Aumenta o dano conforme o nível da skill."
+Observacoes = "Skill ofensiva de recarga média do Sacerdote."
 

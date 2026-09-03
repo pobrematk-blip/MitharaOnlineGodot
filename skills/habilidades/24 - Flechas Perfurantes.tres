@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 24
 Nome = "Flechas Perfurantes"
-Descricao = "SequÃªncia de flechas que atravessa inimigos alinhados. 130% do dano, atravessa atÃ© 5 inimigos."
+Descricao = "Sequência de flechas que atravessa inimigos alinhados. 130% do dano, atravessa até 5 inimigos."
 Icone = ExtResource("2_icon")
 Valor = 130
 CustoMana = 13

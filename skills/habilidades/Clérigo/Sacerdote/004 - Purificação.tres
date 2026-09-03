@@ -6,21 +6,21 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 15104
-Nome = "PurificaÃ§Ã£o"
-Descricao = "O Sacerdote invoca uma luz pura que dissolve venenos, maldiÃ§Ãµes e energias nocivas presas ao corpo de um aliado."
+Nome = "Purificação"
+Descricao = "O Sacerdote invoca uma luz pura que dissolve venenos, maldições e energias nocivas presas ao corpo de um aliado."
 Icone = ExtResource("1_5dmve")
 CustoMana = 15
-ClasseRestrita = "ClÃ©rigo"
+ClasseRestrita = "Clérigo"
 Cooldown = 18.0
 EffectType = 3
 Especializacao = "Sacerdote"
 NivelRequerido = 15
 Ordem = 4
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Suporte"
 EfeitoPrincipal = "Remove efeitos negativos de um aliado."
 BuffDebuff = "Remove debuffs"
-DuracaoTexto = "InstantÃ¢neo"
-Progressao = "Aumenta a quantidade de efeitos removidos em nÃ­veis altos."
-Observacoes = "NÃ£o remove controles muito fortes de bosses se o sistema bloquear."
+DuracaoTexto = "Instantâneo"
+Progressao = "Aumenta a quantidade de efeitos removidos em níveis altos."
+Observacoes = "Não remove controles muito fortes de bosses se o sistema bloquear."
 

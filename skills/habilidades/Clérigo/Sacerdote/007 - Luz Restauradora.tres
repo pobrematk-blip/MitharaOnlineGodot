@@ -7,11 +7,11 @@
 script = ExtResource("1_sk")
 SkillId = 15107
 Nome = "Luz Restauradora"
-Descricao = "Uma poderosa coluna de luz desce sobre o aliado ferido, restaurando uma grande quantidade de vida em um Ãºnico instante."
+Descricao = "Uma poderosa coluna de luz desce sobre o aliado ferido, restaurando uma grande quantidade de vida em um único instante."
 Icone = ExtResource("2_icon")
 Valor = 220
 CustoMana = 28
-ClasseRestrita = "ClÃ©rigo"
+ClasseRestrita = "Clérigo"
 Cooldown = 20
 Duracao = 0
 TargetType = 1
@@ -19,12 +19,12 @@ EffectType = 1
 Especializacao = "Sacerdote"
 NivelRequerido = 40
 Ordem = 7
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Cura Forte"
-EfeitoPrincipal = "Grande cura em alvo Ãºnico."
-DanoEscala = "Cura: 220% â†’ 420% do Poder MÃ¡gico"
+EfeitoPrincipal = "Grande cura em alvo único."
+DanoEscala = "Cura: 220% → 420% do Poder Mágico"
 BuffDebuff = "Cura"
-DuracaoTexto = "InstantÃ¢neo"
+DuracaoTexto = "Instantâneo"
 Progressao = "Lv1 = 220%; Lv10 = 420%."
 Observacoes = "Cura emergencial com recarga maior."
 

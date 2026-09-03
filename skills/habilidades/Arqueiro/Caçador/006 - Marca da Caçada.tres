@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10106
-Nome = "Marca da CaÃ§ada"
+Nome = "Marca da Caçada"
 Descricao = "Marca o alvo."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -16,10 +16,10 @@ Cooldown = 12
 Duracao = 12
 TargetType = 0
 EffectType = 3
-Especializacao = "CaÃ§ador"
+Especializacao = "Caçador"
 NivelRequerido = 30
 Ordem = 6
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Debuff"
 EfeitoPrincipal = "+ dano recebido"
 DanoEscala = ""

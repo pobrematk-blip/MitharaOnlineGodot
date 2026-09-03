@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 13
 Nome = "Tiro Penetrante"
-Descricao = "Uma flecha reforÃ§ada capaz de atravessar armaduras, causando 150% do dano da arma."
+Descricao = "Uma flecha reforçada capaz de atravessar armaduras, causando 150% do dano da arma."
 Icone = ExtResource("2_icon")
 Valor = 150
 CustoMana = 10

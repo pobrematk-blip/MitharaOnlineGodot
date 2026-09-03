@@ -7,7 +7,7 @@
 script = ExtResource("1_sk")
 SkillId = 2
 Nome = "Invocar Sherigan"
-Descricao = "Invoca Sherigan, o lobo espiritual, para lutar ao lado do CaÃ§ador."
+Descricao = "Invoca Sherigan, o lobo espiritual, para lutar ao lado do Caçador."
 Icone = ExtResource("2_icon")
 Valor = 1
 CustoMana = 10

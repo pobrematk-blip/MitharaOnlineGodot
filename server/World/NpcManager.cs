@@ -86,7 +86,7 @@ public class NpcManager
             PrefabId = "refiner",
             Name = "Refinador",
             DialogId = "refino",
-            Race = "CidadÃ£o",
+            Race = "Cidadão",
             AnimPrefix = "padrao",
             FactionId = "solari",
         });
@@ -101,11 +101,23 @@ public class NpcManager
             FactionId = "solari",
         });
 
+        RegisterTemplate(new NpcTemplate
+        {
+            PrefabId = "alquimista_herbert",
+            Name = "Alquimista Herbert",
+            DialogId = "alquimista",
+            ShopId = "alquimista_recipes",
+            Race = "Alquimista",
+            AnimPrefix = "padrao",
+            FactionId = "solari",
+        });
+
         _spawnPoints.Add(new NpcSpawnPoint { X = 1077, Y = 778, PrefabId = "banqueiro" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1557, Y = 762, PrefabId = "guarda_solareth" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 710, Y = 780, PrefabId = "general_merchant" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 1287, Y = 775, PrefabId = "refiner" });
         _spawnPoints.Add(new NpcSpawnPoint { X = 901, Y = 779, PrefabId = "merchant_auctioneer" });
+        _spawnPoints.Add(new NpcSpawnPoint { X = 1660, Y = 762, PrefabId = "alquimista_herbert" });
     }
 
     private void RegisterDialogs()
@@ -117,30 +129,30 @@ public class NpcManager
             Options = new List<DialogOption>
             {
                 new() { Text = "Sim, abrir banco", Action = "bank", ActionData = "open" },
-                new() { Text = "NÃ£o, depois", Action = "close" },
+                new() { Text = "Não, depois", Action = "close" },
             },
         };
 
         _dialogs["guilda"] = new DialogNode
         {
             Id = "guilda",
-            Text = "Bem-vindo, aventureiro! JÃ¡ ouviu falar de Solareth? " +
-                   "Dizem que Ã© uma terra prÃ³spera onde aventureiros audaciosos " +
-                   "fundaram sua prÃ³pria guilda. VocÃª tem coragem de comeÃ§ar essa jornada? " +
-                   "(Para fundar uma guilda Ã© preciso ter 10.000 moedas de ouro " +
-                   "ou um Pergaminho de CriaÃ§Ã£o de ClÃ£.)",
+            Text = "Bem-vindo, aventureiro! Já ouviu falar de Solareth? " +
+                   "Dizem que é uma terra próspera onde aventureiros audaciosos " +
+                   "fundaram sua própria guilda. Você tem coragem de começar essa jornada? " +
+                   "(Para fundar uma guilda é preciso ter 10.000 moedas de ouro " +
+                   "ou um Pergaminho de Criação de Clã.)",
             Options = new List<DialogOption>
             {
                 new() { Text = "Quero fundar uma guilda em Solareth!", Action = "guild_open_form", ActionData = "" },
-                new() { Text = "Ainda nÃ£o estou pronto", Action = "close" },
+                new() { Text = "Ainda não estou pronto", Action = "close" },
             },
         };
 
         _dialogs["general_merchant"] = new DialogNode
         {
             Id = "general_merchant",
-            Text = "Bem-vindo Ã  loja geral! Compro itens de aventureiros e vendo suprimentos. " +
-                   "O que vocÃª deseja?",
+            Text = "Bem-vindo à loja geral! Compro itens de aventureiros e vendo suprimentos. " +
+                   "O que você deseja?",
             Options = new List<DialogOption>
             {
                 new() { Text = "Comprar itens", Action = "shop", ActionData = "general_merchant_shop" },
@@ -163,11 +175,25 @@ public class NpcManager
         _dialogs["refino"] = new DialogNode
         {
             Id = "refino",
-            Text = "Bem-vindo Ã  forja! Posso refinar seu equipamento para tornÃ¡-lo mais poderoso. " +
-                   "Cada nÃ­vel de refino aumenta os atributos do item permanentemente!",
+            Text = "Bem-vindo a forja! Posso refinar seu equipamento para torna-lo mais poderoso. " +
+                   "Cada nivel de refino aumenta os atributos do item permanentemente!",
             Options = new List<DialogOption>
             {
                 new() { Text = "Abrir Forja de Refino", Action = "open_refine", ActionData = "" },
+                new() { Text = "Sair", Action = "close" },
+            },
+        };
+
+        _dialogs["alquimista"] = new DialogNode
+        {
+            Id = "alquimista",
+            Text = "Ola, aventureiro! Sou Herbert, o alquimista. Posso te ensinar a criar pocoes e runas magicas. " +
+                   "Traga os materiais necessarios e eu te mostrarei como fazer!",
+            Options = new List<DialogOption>
+            {
+                new() { Text = "Abrir Mesa de Alquimia", Action = "station", ActionData = "alquimista" },
+                new() { Text = "Comprar Receitas", Action = "shop", ActionData = "alquimista_recipes" },
+                new() { Text = "Aprender Receita (usar item)", Action = "learn_recipe", ActionData = "" },
                 new() { Text = "Sair", Action = "close" },
             },
         };
@@ -182,6 +208,8 @@ public class NpcManager
             new() { ItemId = ItemDefinitions.PocaoMana, Price = 10, Stock = -1 },
             new() { ItemId = ItemDefinitions.PergaminhoResetTalentos, Price = 300, Stock = -1 },
         };
+
+        _shops["alquimista_recipes"] = new List<ShopEntry>();
     }
 
     public void RegisterTemplate(NpcTemplate template)

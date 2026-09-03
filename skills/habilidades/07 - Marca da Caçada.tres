@@ -6,8 +6,8 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 7
-Nome = "Marca da CaÃ§ada"
-Descricao = "Marca um inimigo como presa, fazendo-o receber dano aumentado do caÃ§ador e seu companheiro."
+Nome = "Marca da Caçada"
+Descricao = "Marca um inimigo como presa, fazendo-o receber dano aumentado do caçador e seu companheiro."
 Icone = ExtResource("2_icon")
 Valor = 10
 CustoMana = 10

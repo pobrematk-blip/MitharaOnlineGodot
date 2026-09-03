@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_sk")
 SkillId = 10308
-Nome = "Olho do FalcÃ£o"
+Nome = "Olho do Falcão"
 Descricao = "Aumenta reflexos."
 Icone = ExtResource("2_icon")
 Valor = 0
@@ -19,9 +19,9 @@ EffectType = 3
 Especializacao = "Ranger"
 NivelRequerido = 50
 Ordem = 8
-Escopo = "EspecializaÃ§Ã£o"
+Escopo = "Especialização"
 Tipo = "Buff"
-EfeitoPrincipal = "PrecisÃ£o e Vel.Atq"
+EfeitoPrincipal = "Precisão e Vel.Atq"
 DanoEscala = ""
 BuffDebuff = "+10%-25%"
 DuracaoTexto = "15s"

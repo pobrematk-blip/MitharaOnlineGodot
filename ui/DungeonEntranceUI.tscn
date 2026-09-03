@@ -1,0 +1,140 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://ui/DungeonEntranceUI.cs" id="1"]
+[ext_resource type="Theme" path="res://ui/MitharaWindowTheme.tres" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_closeNormal"]
+bg_color = Color(0.8, 0.15, 0.15, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_closeHover"]
+bg_color = Color(1, 0.25, 0.25, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_closePressed"]
+bg_color = Color(0.6, 0.1, 0.1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="DungeonEntranceUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2")
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(520, 430)
+offset_right = 520.0
+offset_bottom = 430.0
+mouse_filter = 0
+
+[node name="TitleBar" type="Panel" parent="Panel"]
+offset_right = 520.0
+offset_bottom = 32.0
+
+[node name="Title" type="Label" parent="Panel/TitleBar"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "CAVERNA DOS ANCIÕES"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Close" type="Button" parent="Panel"]
+offset_left = 488.0
+offset_top = 4.0
+offset_right = 514.0
+offset_bottom = 28.0
+text = "X"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_closeNormal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_closeHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_closePressed")
+
+[node name="Content" type="VBoxContainer" parent="Panel"]
+offset_left = 16.0
+offset_top = 44.0
+offset_right = 504.0
+offset_bottom = 414.0
+theme_override_constants/separation = 10
+
+[node name="Entries" type="Label" parent="Panel/Content"]
+layout_mode = 2
+text = "Entradas disponíveis hoje: 3/3"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.35, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Divider" type="HSeparator" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="SoloCard" type="VBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Mode" type="Label" parent="Panel/Content/SoloCard"]
+layout_mode = 2
+text = "ENTRADA SOLO"
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Description" type="Label" parent="Panel/Content/SoloCard"]
+layout_mode = 2
+text = "Monstros mais fracos e recompensas voltadas para materiais de criação.\nItens especiais poderão aparecer com uma chance muito pequena."
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.82, 0.82, 1)
+
+[node name="EnterSolo" type="Button" parent="Panel/Content/SoloCard"]
+layout_mode = 2
+text = "ENTRAR SOLO"
+
+[node name="GroupCard" type="VBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Mode" type="Label" parent="Panel/Content/GroupCard"]
+layout_mode = 2
+text = "ENTRADA EM GRUPO"
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="Description" type="Label" parent="Panel/Content/GroupCard"]
+layout_mode = 2
+text = "Instância exclusiva para grupos com 3 a 5 jogadores.\nSomente o líder pode iniciar; todos os membros entram juntos."
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.82, 0.82, 1)
+
+[node name="PartyInfo" type="Label" parent="Panel/Content/GroupCard"]
+layout_mode = 2
+text = "Você não está em um grupo."
+theme_override_colors/font_color = Color(0.45, 0.8, 1, 1)
+
+[node name="EnterGroup" type="Button" parent="Panel/Content/GroupCard"]
+layout_mode = 2
+text = "ENTRAR COM O GRUPO"
+
+[node name="Status" type="Label" parent="Panel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Escolha o modo de entrada."
+horizontal_alignment = 1
+vertical_alignment = 2
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.75, 0.75, 1)
